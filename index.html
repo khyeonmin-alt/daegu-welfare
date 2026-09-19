@@ -12,17 +12,17 @@
     .header-inner { max-width: 1280px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
     .header-title h1 { font-size: 18px; font-weight: bold; }
     .header-title p { font-size: 12px; color: #93c5fd; margin-top: 2px; }
-    .header-badge { background: #10b981; color: #fff; font-size: 12px; padding: 4px 10px; rounded: 20px; border-radius: 20px; font-weight: bold; }
+    .header-badge { background: #10b981; color: #fff; font-size: 12px; padding: 4px 10px; border-radius: 20px; font-weight: bold; }
 
     main { max-width: 1280px; margin: 20px auto; padding: 0 16px; }
 
     .box { background: #fff; border-radius: 10px; border: 1px solid #cbd5e1; padding: 18px; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
 
-    .preset-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; margin-top: 10px; }
-    .preset-btn { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; text-align: left; cursor: pointer; transition: all 0.2s; }
+    .preset-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 10px; }
+    .preset-btn { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; text-align: left; cursor: pointer; transition: all 0.2s; }
     .preset-btn:hover { background: #e0f2fe; border-color: #38bdf8; }
-    .preset-btn strong { display: block; font-size: 12px; color: #0f172a; margin-bottom: 2px; }
-    .preset-btn span { font-size: 11px; color: #64748b; }
+    .preset-btn strong { display: block; font-size: 13px; color: #0f172a; margin-bottom: 3px; }
+    .preset-btn span { font-size: 11px; color: #64748b; line-height: 1.3; display: block; }
 
     .main-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
     @media (min-width: 992px) {
@@ -84,8 +84,8 @@
   <header>
     <div class="header-inner">
       <div class="header-title">
-        <h1>대구광역시 읍·면·동 복지상담 모의계산기</h1>
-        <p>복지깔때기 방지 다부처 연계 & 행복e음 초기상담이력 표준 연동도구</p>
+        <h1>대구광역시 읍·면·동 맞춤형 복지상담 모의계산기</h1>
+        <p>기초보장·차상위 4종·긴급복지·기초연금 스크리닝 & 행복e음 이력 생성도구</p>
       </div>
       <div class="header-badge">대구광역시 (대도시 기본재산 9,900만 공제)</div>
     </div>
@@ -96,24 +96,20 @@
       <div style="font-weight:bold; font-size:12px; color:#334155; margin-bottom:6px;">지침별 대표 위기사례 (원클릭 테스트)</div>
       <div class="preset-grid">
         <button class="preset-btn" onclick="loadScenario('basic')">
-          <strong>기초보장(부양단절·노후차)</strong>
-          <span>생계·의료·주거 + 16년 노후차</span>
+          <strong>기초보장 (부양단절·노후차)</strong>
+          <span>생계·의료·주거 + 가족단절 + 16년차량</span>
+        </button>
+        <button class="preset-btn" onclick="loadScenario('chasangwi')">
+          <strong>차상위 패키지 (본인부담경감·확인)</strong>
+          <span>만성질환·장애인·한부모 + 중위 50%</span>
         </button>
         <button class="preset-btn" onclick="loadScenario('emergency')">
-          <strong>긴급복지(실직·중병)</strong>
-          <span>긴급생계비 + 건보공단 재난의료비</span>
+          <strong>긴급복지 (실직·체납·중병)</strong>
+          <span>72시간 내 선지원 + 건보 재난적의료비</span>
         </button>
-        <button class="preset-btn" onclick="loadScenario('prison')">
-          <strong>출소·채무(법무·신복위)</strong>
-          <span>법무공단 주거 + 소액생계비</span>
-        </button>
-        <button class="preset-btn" onclick="loadScenario('single')">
-          <strong>한부모·임금체불</strong>
-          <span>양육비 + 법률구조공단 변호</span>
-        </button>
-        <button class="preset-btn" onclick="loadScenario('senior')">
-          <strong>독거노인·치매돌봄</strong>
-          <span>기초연금 + 건보공단 장기요양</span>
+        <button class="preset-btn" onclick="loadScenario('pension')">
+          <strong>기초연금 & 노인돌봄</strong>
+          <span>만 65세+ 어르신 단독/부부 + 장기요양</span>
         </button>
       </div>
     </div>
@@ -134,7 +130,7 @@
         </div>
 
         <div class="box">
-          <div class="section-title">1. 가구 기본 구성 및 지역 기준</div>
+          <div class="section-title">1. 가구 기본 구성 및 대상자 특성</div>
           <div class="form-row">
             <div class="form-group">
               <label>가구원 수</label>
@@ -150,10 +146,10 @@
             </div>
           </div>
           <div class="chk-grid">
-            <label class="chk-item"><input type="checkbox" id="hasSenior" onchange="runSimulation()"> 노인(만 65세+)</label>
-            <label class="chk-item"><input type="checkbox" id="hasSevereDisabled" onchange="runSimulation()"> 중증장애인</label>
-            <label class="chk-item"><input type="checkbox" id="hasSingleParent" onchange="runSimulation()"> 한부모가구</label>
-            <label class="chk-item"><input type="checkbox" id="hasChild" onchange="runSimulation()"> 아동·청소년</label>
+            <label class="chk-item"><input type="checkbox" id="hasSenior" onchange="runSimulation()"> 노인(만 65세 이상)</label>
+            <label class="chk-item"><input type="checkbox" id="hasSevereDisabled" onchange="runSimulation()"> 등록 장애인</label>
+            <label class="chk-item"><input type="checkbox" id="hasSingleParent" onchange="runSimulation()"> 한부모가구 (모/부자)</label>
+            <label class="chk-item"><input type="checkbox" id="hasChild" onchange="runSimulation()"> 아동·청소년 (만 18세 미만)</label>
           </div>
 
           <div class="section-title" style="margin-top:16px;">2. 소득 평가액 (월 기준)</div>
@@ -188,14 +184,12 @@
             <span>일반 승용자동차 보유 (월 100% 재산환산 대상) <small style="display:block; font-weight:normal;">※ 10년 이상 노후차, 2000cc 미만 생업용은 해제</small></span>
           </label>
 
-          <div class="section-title" style="margin-top:16px;">4. 위기사유 및 타기관 스크리닝 (복지깔때기 방지)</div>
+          <div class="section-title" style="margin-top:16px;">4. 차상위·의료·위기 스크리닝 항목</div>
           <div class="chk-grid">
+            <label class="chk-item"><input type="checkbox" id="checkChronicIll" onchange="runSimulation()"> 희귀·중증난치·만성질환 가구</label>
             <label class="chk-item"><input type="checkbox" id="checkSeverelyIll" onchange="runSimulation()"> 고액 병원비 부담 (건보공단)</label>
-            <label class="chk-item"><input type="checkbox" id="checkElderlyCare" onchange="runSimulation()"> 치매·거동불편 (장기요양)</label>
-            <label class="chk-item"><input type="checkbox" id="checkPrison" onchange="runSimulation()"> 출소·보호관찰 (법무보호공단)</label>
-            <label class="chk-item"><input type="checkbox" id="checkDebt" onchange="runSimulation()"> 과중채무·연체 (신복위·서민금융)</label>
-            <label class="chk-item"><input type="checkbox" id="checkWage" onchange="runSimulation()"> 임금체불·분쟁 (법률구조공단)</label>
-            <label class="chk-item"><input type="checkbox" id="checkEmergencyCrisis" onchange="runSimulation()"> 실직·월세체납 (긴급복지)</label>
+            <label class="chk-item"><input type="checkbox" id="checkElderlyCare" onchange="runSimulation()"> 치매·거동불편 (노인돌봄·장기요양)</label>
+            <label class="chk-item"><input type="checkbox" id="checkEmergencyCrisis" onchange="runSimulation()"> 실직·월세체납 등 위기사유</label>
             <label class="chk-item col2"><input type="checkbox" id="checkFamilyCutoff" onchange="runSimulation()"> 부양의무자(자녀/부모) 연락두절·가족관계 해체</label>
           </div>
 
@@ -236,8 +230,8 @@
             </div>
             <div class="tab-bar" style="margin-bottom:0;">
               <button class="tab-btn active" id="tabAll" onclick="setFilter('all')">전체보기</button>
-              <button class="tab-btn" id="tabOther" onclick="setFilter('other')">타기관 특화</button>
-              <button class="tab-btn" id="tabBasic" onclick="setFilter('basic')">핵심 복지부</button>
+              <button class="tab-btn" id="tabChasangwi" onclick="setFilter('chasangwi')">차상위·연금</button>
+              <button class="tab-btn" id="tabBasic" onclick="setFilter('basic')">기초보장·긴급</button>
             </div>
           </div>
           <div id="serviceListContainer"></div>
@@ -306,7 +300,7 @@
     function setFilter(type) {
       currentFilter = type;
       document.getElementById('tabAll').className = (type === 'all') ? 'tab-btn active' : 'tab-btn';
-      document.getElementById('tabOther').className = (type === 'other') ? 'tab-btn active' : 'tab-btn';
+      document.getElementById('tabChasangwi').className = (type === 'chasangwi') ? 'tab-btn active' : 'tab-btn';
       document.getElementById('tabBasic').className = (type === 'basic') ? 'tab-btn active' : 'tab-btn';
       runSimulation();
     }
@@ -314,6 +308,17 @@
     function loadScenario(type) {
       if (type === 'basic') {
         document.getElementById('memoInput').value = INITIAL_TEMPLATE;
+      } else if (type === 'chasangwi') {
+        document.getElementById('memoInput').value = 
+`나이: 만 42세
+건강: 뇌병변 중증장애 및 당뇨 만성질환 (6개월 이상 치료 필요)
+가족: 2인 가구 (모 및 만 9세 초등생 자녀, 한부모가구)
+자동차: 없음
+소득: 일용근로 월 120만원
+주거: 다세대 월세 (보증금 2000만원)
+재산: 통장예금 300만원
+부채: 500만원
+위기사유: 만성질환 치료비 부담 및 한부모 아동 양육비 부족, 차상위계층 혜택 전반 상담 요청`;
       } else if (type === 'emergency') {
         document.getElementById('memoInput').value = 
 `나이: 만 51세
@@ -325,39 +330,17 @@
 재산: 통장예금 350만원
 부채: 1000만원
 위기사유: 주소득자 뇌출혈 입원으로 수술비·치료비 1,400만원 발생, 당장 결제 불가하여 파산 위기`;
-      } else if (type === 'prison') {
+      } else if (type === 'pension') {
         document.getElementById('memoInput').value = 
-`나이: 만 45세
-건강: 일용직 단순노무 가능
-가족: 1인 가구
+`나이: 만 72세
+건강: 고혈압, 퇴행성관절염으로 거동 불편 (장기요양 등급 필요)
+가족: 2인 가구 (부부 어르신 가구, 만 72세/69세)
 자동차: 없음
-소득: 월 0원
-주거: 보증금 0만원
-재산: 통장예금 20만원
-부채: 대출 2500만원
-위기사유: 교도소 출소 1개월 차 만기출소자, 월세방 구할 돈 전무, 빚 독촉으로 금융거래 정지 상태`;
-      } else if (type === 'single') {
-        document.getElementById('memoInput').value = 
-`나이: 만 34세
-건강: 양호하나 영유아 양육으로 전일제 불가
-가족: 2인 가구 (모 및 자녀 1명)
-자동차: 없음
-소득: 파트타임 월 90만원
-주거: 보증금 4000만원
-재산: 통장예금 200만원
-부채: 500만원
-위기사유: 대표 야반도주로 3개월 임금 체납, 양육비도 받지 못해 생계 위기`;
-      } else if (type === 'senior') {
-        document.getElementById('memoInput').value = 
-`나이: 만 78세
-건강: 알츠하이머 초기 치매 판정 및 거동불편
-가족: 1인 가구 (독거노인)
-자동차: 없음
-소득: 월 0원
-주거: 보증금 250만원
-재산: 통장예금 150만원
-부채: 0만원
-위기사유: 거동 및 식사 준비가 불가능하여 돌봄 손길이 절실함`;
+소득: 무직, 정기소득 없음
+주거: 영구임대주택 (보증금 350만원, 월 5만원)
+재산: 통장예금 400만원
+부채: 0원
+위기사유: 정기 수입 부재로 생계비 부족, 기초연금 수급 자격 및 방문돌봄 서비스 신청 희망`;
       }
       parseCounselingMemo();
     }
@@ -401,35 +384,29 @@
         document.getElementById('hasStandardCar').checked = false;
       }
 
-      if (text.includes('노인') || text.includes('어르신') || text.includes('78세') || text.includes('65세')) {
+      if (text.includes('노인') || text.includes('어르신') || text.includes('72세') || text.includes('69세') || text.includes('65세') || text.includes('기초연금')) {
         document.getElementById('hasSenior').checked = true;
       }
-      if (text.includes('장애인') || text.includes('중증장애')) {
+      if (text.includes('장애인') || text.includes('중증장애') || text.includes('뇌병변')) {
         document.getElementById('hasSevereDisabled').checked = true;
       }
-      if (text.includes('한부모') || text.includes('모자가정')) {
+      if (text.includes('한부모') || text.includes('모자가정') || text.includes('양육')) {
         document.getElementById('hasSingleParent').checked = true;
       }
-      if (text.includes('자녀') || text.includes('아동') || text.includes('영유아')) {
+      if (text.includes('자녀') || text.includes('아동') || text.includes('초등') || text.includes('영유아')) {
         document.getElementById('hasChild').checked = true;
       }
 
-      if (text.includes('병원비') || text.includes('뇌출혈') || text.includes('수술비')) {
+      if (text.includes('만성질환') || text.includes('희귀') || text.includes('당뇨') || text.includes('협심증') || text.includes('척추')) {
+        document.getElementById('checkChronicIll').checked = true;
+      }
+      if (text.includes('병원비') || text.includes('뇌출혈') || text.includes('수술비') || text.includes('입원')) {
         document.getElementById('checkSeverelyIll').checked = true;
       }
-      if (text.includes('치매') || text.includes('거동불편') || text.includes('장기요양')) {
+      if (text.includes('치매') || text.includes('거동불편') || text.includes('장기요양') || text.includes('돌봄')) {
         document.getElementById('checkElderlyCare').checked = true;
       }
-      if (text.includes('출소') || text.includes('교도소') || text.includes('보호관찰')) {
-        document.getElementById('checkPrison').checked = true;
-      }
-      if (text.includes('채무') || text.includes('빚') || text.includes('연체') || text.includes('대출')) {
-        document.getElementById('checkDebt').checked = true;
-      }
-      if (text.includes('임금체불') || text.includes('체불')) {
-        document.getElementById('checkWage').checked = true;
-      }
-      if (text.includes('실직') || text.includes('체납') || text.includes('갈 곳 없음')) {
+      if (text.includes('실직') || text.includes('체납') || text.includes('생계 곤란')) {
         document.getElementById('checkEmergencyCrisis').checked = true;
       }
       if (text.includes('연락두절') || text.includes('부양단절') || text.includes('가족관계 해체')) {
@@ -489,34 +466,35 @@
     function evaluateServices(size, totalIncome, median100, finProp) {
       const services = [];
       const hasSenior = document.getElementById('hasSenior').checked;
+      const hasSevereDisabled = document.getElementById('hasSevereDisabled').checked;
       const hasSingleParent = document.getElementById('hasSingleParent').checked;
+      const hasChild = document.getElementById('hasChild').checked;
 
+      const checkChronicIll = document.getElementById('checkChronicIll').checked;
       const checkSeverelyIll = document.getElementById('checkSeverelyIll').checked;
       const checkElderlyCare = document.getElementById('checkElderlyCare').checked;
-      const checkPrison = document.getElementById('checkPrison').checked;
-      const checkDebt = document.getElementById('checkDebt').checked;
-      const checkWage = document.getElementById('checkWage').checked;
       const checkEmergency = document.getElementById('checkEmergencyCrisis').checked;
       const checkFamilyCutoff = document.getElementById('checkFamilyCutoff').checked;
 
+      // 1. 기초생활보장 3종
       if (totalIncome <= (median100 * 0.32)) {
         const estLivingBenefit = Math.max(0, Math.round((median100 * 0.32) - totalIncome));
         services.push({
           category: 'basic', agency: '보건복지부',
           title: '국민기초생활보장 [생계급여]',
-          desc: `기준 중위 32% 이하 가구 대상 생계비 지원 (매월 최대 약 ${estLivingBenefit.toLocaleString()}원 입금)`,
-          action: '사회보장급여 신청서 접수 및 공적자료 연계 조사 착수'
+          desc: `기준 중위 32% 이하 대상 소득보장 (매월 최대 약 ${estLivingBenefit.toLocaleString()}원 현금 입금)`,
+          action: '사회보장급여 신청서 접수 및 공적소득자료 연계'
         });
       }
 
       if (totalIncome <= (median100 * 0.40)) {
         let note = '외래 1,000~1,500원 / 입원 0~10% 본인부담 감면';
-        if (checkFamilyCutoff) note += ' (※ 부양의무자 단절 확인: 가족관계 해체 사유서 징구 후 우선보장 심의)';
+        if (checkFamilyCutoff) note += ' (※ 부양의무자 단절 확인: 가족관계 해체 사유서 징구 후 심의 구제)';
         services.push({
           category: 'basic', agency: '보건복지부',
           title: '국민기초생활보장 [의료급여 1·2종]',
           desc: note,
-          action: checkFamilyCutoff ? '가족관계 해체 사유서 징구 및 생활보장위원회 심의 연계' : '부양의무자 기준 조사 및 서류 접수'
+          action: checkFamilyCutoff ? '가족관계 해체 사유서 징구 및 생활보장위원회 심의 연계' : '부양의무자 기준 조사 서류 접수'
         });
       }
 
@@ -524,89 +502,85 @@
         services.push({
           category: 'basic', agency: '국토교통부·LH',
           title: '국민기초생활보장 [주거급여]',
-          desc: '부양의무자 기준 전면 미적용. 전월세 기준임대료 내 전액 지원 및 자가가구 무료 집수리',
+          desc: '부양의무자 기준 전면 미적용. 전월세 임차급여 지원 및 자가가구 무료 집수리',
           action: '임대차계약서 확인 및 LH 주택조사 의뢰'
         });
       }
 
+      // 2. 긴급복지
       if (checkEmergency && totalIncome <= (median100 * 0.75) && finProp <= 8220000) {
         services.push({
           category: 'basic', agency: '보건복지부',
           title: '긴급복지지원 (생계·의료)',
-          desc: '실직·체납 등 법정 위기 시 72시간 내 선지원 원칙 (1인 가구 월 71.3만원 생계비 또는 300만원 내 의료비)',
+          desc: '실직·체납 등 법정 위기 시 72시간 내 선지원 원칙 (월 71.3만원 생계비 또는 300만원 내 의료비)',
           action: '72시간 내 현장확인 및 긴급생계비 선지원 품의'
         });
       }
 
+      // 3. 차상위 패키지 4종
       if (totalIncome <= (median100 * 0.50)) {
+        if (checkChronicIll || hasChild || checkSeverelyIll) {
+          services.push({
+            category: 'chasangwi', agency: '국민건강보험공단',
+            title: '차상위 본인부담경감',
+            desc: '만성·중증난치질환자, 18세 미만 아동의 건강보험 본인부담금을 의료급여 수준(14% 또는 1,000~1,500원)으로 대폭 경감',
+            action: '진단서 및 6개월 이상 치료확인서 징구 후 신청서 접수'
+          });
+        }
+
         services.push({
-          category: 'basic', agency: '지자체',
-          title: '차상위계층 확인 및 간접감면',
-          desc: '정부양곡 50% 할인, 통신요금 감면(월 최대 1.1만+35%), 전기·가스요금 감면, 문화누리카드',
-          action: '사회보장급여 신청서 접수 및 요금감면 원스톱 대행'
+          category: 'chasangwi', agency: '지자체 복지팀',
+          title: '차상위계층 확인사업 & 요금감면',
+          desc: '정부양곡 50% 할인, 이동통신요금 감면(기본료 1.1만원+통화료 35%), 전기·도시가스 감면, 문화누리카드 지원',
+          action: '사회보장급여 신청서 접수 및 복지감면 일괄 대행'
         });
+
+        if (hasSevereDisabled) {
+          services.push({
+            category: 'chasangwi', agency: '보건복지부',
+            title: '차상위 장애인연금 / 장애수당',
+            desc: '중증장애인 대상 차상위 장애인연금(월 최대 약 42만원) 또는 경증 장애수당(월 6만원) 지급',
+            action: '장애인연금/수당 지급신청서 접수 및 직권 조사'
+          });
+        }
       }
 
-      if (hasSenior && totalIncome <= (median100 * 0.70)) {
-        services.push({
-          category: 'basic', agency: '국민연금공단',
-          title: '기초연금 지원사업',
-          desc: '만 65세 이상 어르신 소득하위 70% 충족 시 매월 최대 334,810원 현금 입금',
-          action: '기초연금 지급신청서 접수 및 금융정보동의'
-        });
-      }
-
+      // 4. 한부모가족지원
       if (hasSingleParent && totalIncome <= (median100 * 0.60)) {
         services.push({
-          category: 'basic', agency: '여성가족부',
-          title: '한부모가족 아동양육비 지원',
-          desc: '만 18세 미만 자녀 1인당 월 21만원 아동양육비 및 학용품비 지급',
-          action: '한부모가족 증명서 발급 및 양육비 신청서 접수'
+          category: 'chasangwi', agency: '여성가족부',
+          title: '한부모가족지원 (아동양육비)',
+          desc: '만 18세 미만 자녀 1인당 월 21만원(청소년한부모 월 35만원) 아동양육비 지원 및 한부모 증명서 발급',
+          action: '한부모가족 증명서 발급 신청 및 양육비 청구 접수'
         });
       }
 
+      // 5. 기초연금 및 노인돌봄
+      if (hasSenior && totalIncome <= (median100 * 0.70)) {
+        services.push({
+          category: 'chasangwi', agency: '보건복지부 / 국민연금공단',
+          title: '기초연금 지원사업',
+          desc: '만 65세 이상 어르신 소득하위 70% 충족 시 단독 매월 최대 334,810원(부부 최대 535,680원) 현금 입금',
+          action: '기초연금 지급신청서 접수 및 금융정보제공동의'
+        });
+      }
+
+      if (checkElderlyCare || (hasSenior && totalIncome <= (median100 * 0.50))) {
+        services.push({
+          category: 'chasangwi', agency: '지자체 / 건보공단',
+          title: '노인맞춤돌봄 및 장기요양보험',
+          desc: '독거·거동불편 어르신 전담 생활지원사 안부확인(주 2~3회 방문/말벗) 및 장기요양 등급 신청',
+          action: '노인맞춤돌봄 수행기관 연계의뢰 및 장기요양 신청서 대리접수'
+        });
+      }
+
+      // 6. 건보공단 재난적의료비
       if (checkSeverelyIll || (hasSenior && totalIncome <= median100)) {
         services.push({
           category: 'other', agency: '국민건강보험공단',
           title: '건보공단 [재난적의료비 지원]',
           desc: '고액 병원비 본인부담금의 50~80% 지원 (최대 5,000만원 한도, 비급여 포함)',
-          action: '퇴원 후 180일 이내 건보공단 지사 전용의뢰서 발급 및 안내'
-        });
-      }
-
-      if (checkElderlyCare || hasSenior) {
-        services.push({
-          category: 'other', agency: '국민건강보험공단',
-          title: '건보공단 [노인장기요양보험]',
-          desc: '65세 이상 또는 노인성 질병 대상 방문요양·방문목욕 급여(85~100% 공단부담)',
-          action: '장기요양인정 신청서 대리접수 및 공단 지사 연계'
-        });
-      }
-
-      if (checkPrison) {
-        services.push({
-          category: 'other', agency: '한국법무보호복지공단',
-          title: '법무보호공단 [출소자 LH 긴급주거 & 취업]',
-          desc: '출소 후 3년 이내자 대상 LH 연계 주거지원(보증금 100% 공단부담), 긴급원호금',
-          action: '한국법무보호복지공단 대구지부 긴급연계 의뢰서 작성'
-        });
-      }
-
-      if (checkDebt) {
-        services.push({
-          category: 'other', agency: '신용회복위원회·서민금융',
-          title: '서민금융·신복위 [채무조정·소액생계비대출]',
-          desc: '원금 최대 90% 감면 특례, 당일 즉시 100만원 대출, 압류방지 통장 발급',
-          action: '서민금융통합지원센터 방문 안내 및 상담의뢰서 교부'
-        });
-      }
-
-      if (checkWage) {
-        services.push({
-          category: 'other', agency: '대한법률구조공단',
-          title: '대한법률구조공단 [무료 소송대리]',
-          desc: '임금체불 피해근로자·수급자 대상 변호사 비용 무료 소송대리 및 개인파산 진행',
-          action: '대한법률구조공단 대구지부 무료상담 예약 안내'
+          action: '퇴원 후 180일 이내 건보공단 지사 전용의뢰서 발급 및 연계'
         });
       }
 
@@ -620,18 +594,19 @@
 
       let filtered = services;
       if (currentFilter === 'basic') filtered = services.filter(s => s.category === 'basic');
-      else if (currentFilter === 'other') filtered = services.filter(s => s.category === 'other');
+      else if (currentFilter === 'chasangwi') filtered = services.filter(s => s.category === 'chasangwi');
 
       document.getElementById('serviceCountBadge').textContent = `${filtered.length}건`;
 
       if (filtered.length === 0) {
-        container.innerHTML = '<div style="padding:20px; text-align:center; font-size:11px; color:#94a3b8;">조건에 맞는 서비스가 없습니다.</div>';
+        container.innerHTML = '<div style="padding:20px; text-align:center; font-size:11px; color:#94a3b8;">조건에 부합하는 서비스가 없습니다.</div>';
         return;
       }
 
       filtered.forEach(s => {
         const card = document.createElement('div');
-        card.className = `service-card ${s.category}`;
+        const isBasic = (s.category === 'basic');
+        card.className = `service-card ${isBasic ? 'basic' : 'other'}`;
         card.innerHTML = `
           <div class="service-top">
             <strong>${s.title}</strong>
@@ -658,17 +633,23 @@
       if (services.some(s => s.title.includes('기초생활보장'))) {
         actionDetails.push("- [기초보장] 사회보장급여 신청서 접수 및 공적자료 연계 조사 착수");
       }
+      if (services.some(s => s.title.includes('차상위 본인부담경감'))) {
+        actionDetails.push("- [차상위의료] 6개월 이상 치료 진단서 징구 및 본인부담경감 대상자 신청 등록");
+      }
+      if (services.some(s => s.title.includes('기초연금'))) {
+        actionDetails.push("- [기초연금] 기초연금 지급신청서 접수 및 금융정보제공동의 진행");
+      }
       if (hasCutoff) {
         actionDetails.push("- [부양의무] 가족관계 해체 확인서 징구 및 소명자료(통장내역 등) 첨부 조치");
       }
       if (hasStandardCar) {
         actionDetails.push("- [차량기준] 일반승용차 100% 월환산 규정 안내 및 생업용 소명서류 징구 안내");
       }
-      if (services.some(s => s.category === 'other')) {
-        actionDetails.push("- [타기관연계] 건보공단(의료비)/신복위(채무조정)/법무공단 전용 의뢰서 작성 및 안내");
+      if (services.some(s => s.title.includes('노인맞춤돌봄'))) {
+        actionDetails.push("- [노인돌봄] 독거노인 맞춤돌봄 전담기관 안부확인 의뢰서 송부");
       }
       if (actionDetails.length === 0) {
-        actionDetails.push("- [일반상담] 제도 안내문 교부 및 향후 위기상황 발생 시 재상담 안내");
+        actionDetails.push("- [일반상담] 제도 안내문 교부 및 향후 소득·건강 변동 시 재상담 안내");
       }
 
       const log = 
