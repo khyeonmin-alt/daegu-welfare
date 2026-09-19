@@ -271,9 +271,9 @@
 가족: 1인 가구 (자녀와 12년 전 이혼 후 연락두절, 부양단절)
 자동차: 2010년식(16년 경과) 노후 승용차 보유 (일반재산 환산 적용)
 소득: 월 0원
-주거: 보증부 월세 (보증금 500만원, 월 25만원)
+주거: 보증부 월세 (보증금 5백만원, 월 25만원)
 재산: 통장예금 삼십만원
-부채: 금융대출 삼백만원
+부채: 금융대출 3백만원
 위기사유: 만성질환으로 실직 후 월세 체납 위기, 생계 곤란`;
 
     const EMPTY_TEMPLATE = 
@@ -353,86 +353,79 @@
       parseCounselingMemo();
     }
 
-    // 자연어 한글/숫자 금액을 만원 단위 정수로 정규화하는 파서
+    // [전면 개선] 5백만원, 삼백, 1억2천 등 숫자/한글 혼합 수식을 만원 단위 정수로 환산
     function parseKoreanAmount(str) {
       if (!str) return null;
       let clean = str.replace(/[, \t]/g, '');
 
       if (clean.includes('없음') || clean.includes('0원') || clean === '0') return 0;
 
-      // 1. 순수 숫자 + '만' 형태 (예: 300만, 50만원, 120)
-      const numManMatch = clean.match(/(\d+(?:\.\d+)?)\s*만?/);
-      if (numManMatch && !/[일이삼사오육칠팔구십백천억]/.test(clean)) {
-        let val = parseFloat(numManMatch[1]);
-        if (clean.includes('원') && !clean.includes('만') && val >= 10000) {
-          return Math.round(val / 10000);
-        }
-        return Math.round(val);
-      }
-
-      // 2. 한글 수사 복합 처리 (삼백만원, 백이십만, 삼천오백, 1억2천 등)
       const digitMap = { '영':0, '일':1, '이':2, '삼':3, '사':4, '오':5, '육':6, '칠':7, '팔':8, '구':9 };
-      
-      function parseSegment(seg) {
-        let segTotal = 0;
-        let currentNum = 0;
-        for (let i = 0; i < seg.length; i++) {
-          let char = seg[i];
-          if (char >= '0' && char <= '9') {
+
+      // 1000 이하 소블록(천, 백, 십) 계산기 (5백, 삼백오십, 1천2백 등 지원)
+      function parseSmallBlock(s) {
+        if (!s) return 0;
+        let total = 0;
+        let current = 0;
+        for (let i = 0; i < s.length; i++) {
+          let ch = s[i];
+          if (ch >= '0' && ch <= '9') {
             let numBuf = '';
-            while (i < seg.length && seg[i] >= '0' && seg[i] <= '9') {
-              numBuf += seg[i];
+            while (i < s.length && s[i] >= '0' && s[i] <= '9') {
+              numBuf += s[i];
               i++;
             }
             i--;
-            currentNum = parseInt(numBuf, 10);
-          } else if (digitMap[char] !== undefined) {
-            currentNum = digitMap[char];
-          } else if (char === '십') {
-            segTotal += (currentNum === 0 ? 1 : currentNum) * 10;
-            currentNum = 0;
-          } else if (char === '백') {
-            segTotal += (currentNum === 0 ? 1 : currentNum) * 100;
-            currentNum = 0;
-          } else if (char === '천') {
-            segTotal += (currentNum === 0 ? 1 : currentNum) * 1000;
-            currentNum = 0;
+            current = parseInt(numBuf, 10);
+          } else if (digitMap[ch] !== undefined) {
+            current = digitMap[ch];
+          } else if (ch === '천') {
+            total += (current === 0 ? 1 : current) * 1000;
+            current = 0;
+          } else if (ch === '백') {
+            total += (current === 0 ? 1 : current) * 100;
+            current = 0;
+          } else if (ch === '십') {
+            total += (current === 0 ? 1 : current) * 10;
+            current = 0;
           }
         }
-        segTotal += currentNum;
-        return segTotal;
+        total += current;
+        return total;
       }
 
-      let totalWon = 0;
-      let eokIdx = clean.indexOf('억');
-      let manIdx = clean.indexOf('만');
-
-      let beforeEok = '';
+      // '억' 단위 분리
+      let eokVal = 0;
       let afterEok = clean;
-
-      if (eokIdx !== -1) {
-        beforeEok = clean.slice(0, eokIdx);
-        afterEok = clean.slice(eokIdx + 1);
-        totalWon += parseSegment(beforeEok) * 100000000;
+      if (clean.includes('억')) {
+        let parts = clean.split('억');
+        eokVal = parseSmallBlock(parts[0]);
+        afterEok = parts[1] || '';
       }
 
-      if (manIdx !== -1) {
-        let manPart = (eokIdx !== -1) ? afterEok.slice(0, afterEok.indexOf('만')) : clean.slice(0, manIdx);
-        totalWon += parseSegment(manPart) * 10000;
+      // '만' 단위 분리
+      let manVal = 0;
+      let afterMan = afterEok;
+      if (afterEok.includes('만')) {
+        let parts = afterEok.split('만');
+        manVal = parseSmallBlock(parts[0]);
+        afterMan = parts[1] || '';
       } else {
-        // 단위 '만'이 명시되지 않고 '삼백', '오십' 등만 입력된 경우 (상담 관례상 만원으로 해석)
-        let restVal = parseSegment(afterEok.replace(/원/g, ''));
-        if (restVal > 0) {
-          totalWon += restVal * 10000;
+        // '만' 없이 '5백원', '삼백', '50' 만 들어온 경우
+        let restDigits = parseSmallBlock(afterMan.replace(/원/g, ''));
+        // 10000 이상인 순수 숫자는 원 단위로 처리 (예: 5000000원 -> 500만원)
+        if (restDigits >= 10000) {
+          return Math.round(restDigits / 10000);
         }
+        manVal = restDigits;
       }
 
-      return Math.round(totalWon / 10000);
+      let totalMan = (eokVal * 10000) + manVal;
+      return totalMan > 0 ? totalMan : null;
     }
 
-    // 생년월일 자연어 파싱 및 만 나이 산출
+    // 생년월일/주민번호 기반 만 나이 자동 계산기
     function parseBirthDateToAge(text) {
-      // 패턴: 1968.05.12, 1968-05-12, 1968년 5월 12일, 680512-1
       let y = null, m = null, d = null;
       let match = text.match(/(19\d{2}|20\d{2})[\s.\-/년]+(0?[1-9]|1[0-2])[\s.\-/월]+(0?[1-9]|[12]\d|3[01])/);
       if (match) {
@@ -446,6 +439,12 @@
           y = prefix + parseInt(rrnMatch[1], 10);
           m = parseInt(rrnMatch[2], 10);
           d = parseInt(rrnMatch[3], 10);
+        } else {
+          let yearMatch = text.match(/(19\d{2}|20\d{2})년생/);
+          if (yearMatch) {
+            y = parseInt(yearMatch[1], 10);
+            m = 1; d = 1;
+          }
         }
       }
 
@@ -469,7 +468,7 @@
         const trimmed = line.trim();
 
         // 1. 생년월일 또는 나이 추출
-        if (trimmed.startsWith('생년월일:') || trimmed.startsWith('생일:') || trimmed.startsWith('나이:')) {
+        if (trimmed.startsWith('생년월일:') || trimmed.startsWith('생일:') || trimmed.startsWith('나이:') || trimmed.startsWith('생년:')) {
           const content = trimmed.substring(trimmed.indexOf(':') + 1);
           const calculatedAge = parseBirthDateToAge(content);
           if (calculatedAge !== null) {
@@ -483,7 +482,7 @@
           }
         }
 
-        // 2. 가족 및 가구원 수
+        // 2. 가구원 수
         if (trimmed.startsWith('가족:')) {
           const content = trimmed.substring(trimmed.indexOf(':') + 1);
           const m = content.match(/(\d+)\s*인/);
@@ -500,14 +499,14 @@
           }
         }
 
-        // 3. 소득 (자연어 한글 금액 처리)
+        // 3. 소득
         if (trimmed.startsWith('소득:')) {
           const content = trimmed.substring(trimmed.indexOf(':') + 1);
           const val = parseKoreanAmount(content);
           if (val !== null) document.getElementById('earnedIncome').value = val;
         }
 
-        // 4. 주거/보증금 (일반재산)
+        // 4. 주거 (보증금)
         if (trimmed.startsWith('주거:')) {
           const content = trimmed.substring(trimmed.indexOf(':') + 1);
           let target = content;
@@ -533,7 +532,7 @@
         }
       });
 
-      // 자동차 판정
+      // 차량 판정
       const hasVehicle = (text.includes('승용차') || text.includes('자동차') || text.includes('차량'));
       const isExempt = (text.includes('10년') || text.includes('노후') || text.includes('생업') || text.includes('경차') || text.includes('일반재산'));
       if (hasVehicle && !isExempt && !text.includes('자동차: 없음') && !text.includes('차량: 없음')) {
@@ -542,7 +541,7 @@
         document.getElementById('hasStandardCar').checked = false;
       }
 
-      // 대상자 특성 및 위기 체크
+      // 대상자 특성
       if (text.includes('노인') || text.includes('어르신') || text.includes('기초연금')) {
         document.getElementById('hasSenior').checked = true;
       }
@@ -562,6 +561,7 @@
         document.getElementById('hasChild').checked = false;
       }
 
+      // 위기사유 및 기관 연계
       if (text.includes('만성질환') || text.includes('희귀') || text.includes('당뇨') || text.includes('협심증') || text.includes('척추')) {
         document.getElementById('checkChronicIll').checked = true;
       } else {
