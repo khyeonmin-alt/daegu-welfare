@@ -89,7 +89,7 @@
     <div class="header-inner">
       <div class="header-title">
         <h1>대구광역시 읍·면·동 맞춤형 복지상담 모의계산기</h1>
-        <p>기초보장·차상위·유관기관(건보·신복위·법무) 연계 핫라인 & 행복e음 이력 도구</p>
+        <p>기초생활보장·차상위·유관기관(건보·신복위·법무) 연계 핫라인 & 행복e음 이력 도구</p>
       </div>
       <div class="header-badge">대구광역시 (대도시 기본재산 9,900만 공제)</div>
     </div>
@@ -100,20 +100,20 @@
       <div style="font-weight:bold; font-size:12px; color:#334155; margin-bottom:6px;">지침별 대표 위기사례 (원클릭 테스트)</div>
       <div class="preset-grid">
         <button class="preset-btn" onclick="loadScenario('basic')">
-          <strong>기초보장 (부양단절·노후차)</strong>
-          <span>생계·의료·주거 + 가족단절 + 16년차량</span>
-        </button>
-        <button class="preset-btn" onclick="loadScenario('chasangwi')">
-          <strong>차상위 패키지 (본인부담경감·확인)</strong>
-          <span>만성질환·장애인·한부모 + 중위 50%</span>
+          <strong>기초생활보장(부양단절·노후차)</strong>
+          <span>생계·의료·주거 + 16년 노후차</span>
         </button>
         <button class="preset-btn" onclick="loadScenario('emergency')">
-          <strong>긴급복지 (실직·체납·중병)</strong>
-          <span>72시간 내 선지원 + 건보 재난적의료비</span>
+          <strong>긴급복지(실직·중병)</strong>
+          <span>긴급생계비 + 건보공단 재난의료비</span>
+        </button>
+        <button class="preset-btn" onclick="loadScenario('chasangwi')">
+          <strong>차상위 패키지</strong>
+          <span>한부모·본인부담경감·계층확인·장애인</span>
         </button>
         <button class="preset-btn" onclick="loadScenario('pension')">
-          <strong>기초연금 & 노인돌봄</strong>
-          <span>만 65세+ 어르신 단독/부부 + 장기요양</span>
+          <strong>기초연금</strong>
+          <span>만 65세+ 기초연금 및 노인돌봄 연계</span>
         </button>
       </div>
     </div>
@@ -279,7 +279,7 @@
     const EMPTY_TEMPLATE = 
 `나이: 만  세
 건강: 
-가족:   인 가구 (부양단절 여부: )
+가족:    인 가구 (부양단절 여부: )
 자동차: 
 소득: 월  만원
 주거: 보증금  만원
@@ -326,7 +326,7 @@
 주거: 다세대 월세 (보증금 2000만원)
 재산: 통장예금 300만원
 부채: 500만원
-위기사유: 만성질환 치료비 부담 및 한부모 아동 양육비 부족, 차상위계층 혜택 전반 상담 요청`;
+위기사유: 만성질환 치료비 부담 및 한부모 아동 양육비 부족, 차상위계층 혜택 전반(한부모, 본인부담경감, 차상위확인, 장애인연금) 상담 요청`;
       } else if (type === 'emergency') {
         document.getElementById('memoInput').value = 
 `나이: 만 51세
@@ -394,37 +394,68 @@
 
       if (text.includes('노인') || text.includes('어르신') || text.includes('72세') || text.includes('69세') || text.includes('65세') || text.includes('기초연금')) {
         document.getElementById('hasSenior').checked = true;
+      } else {
+        document.getElementById('hasSenior').checked = false;
       }
+
       if (text.includes('장애인') || text.includes('중증장애') || text.includes('뇌병변')) {
         document.getElementById('hasSevereDisabled').checked = true;
+      } else {
+        document.getElementById('hasSevereDisabled').checked = false;
       }
+
       if (text.includes('한부모') || text.includes('모자가정') || text.includes('양육')) {
         document.getElementById('hasSingleParent').checked = true;
+      } else {
+        document.getElementById('hasSingleParent').checked = false;
       }
+
       if (text.includes('자녀') || text.includes('아동') || text.includes('초등') || text.includes('영유아')) {
         document.getElementById('hasChild').checked = true;
+      } else {
+        document.getElementById('hasChild').checked = false;
       }
 
       if (text.includes('만성질환') || text.includes('희귀') || text.includes('당뇨') || text.includes('협심증') || text.includes('척추')) {
         document.getElementById('checkChronicIll').checked = true;
+      } else {
+        document.getElementById('checkChronicIll').checked = false;
       }
+
       if (text.includes('병원비') || text.includes('뇌출혈') || text.includes('수술비') || text.includes('입원')) {
         document.getElementById('checkSeverelyIll').checked = true;
+      } else {
+        document.getElementById('checkSeverelyIll').checked = false;
       }
+
       if (text.includes('치매') || text.includes('거동불편') || text.includes('장기요양') || text.includes('돌봄')) {
         document.getElementById('checkElderlyCare').checked = true;
+      } else {
+        document.getElementById('checkElderlyCare').checked = false;
       }
+
       if (text.includes('실직') || text.includes('체납') || text.includes('생계 곤란')) {
         document.getElementById('checkEmergencyCrisis').checked = true;
+      } else {
+        document.getElementById('checkEmergencyCrisis').checked = false;
       }
+
       if (text.includes('채무') || text.includes('빚') || text.includes('연체') || text.includes('대출') || text.includes('파산')) {
         document.getElementById('checkDebt').checked = true;
+      } else {
+        document.getElementById('checkDebt').checked = false;
       }
+
       if (text.includes('출소') || text.includes('교도소') || text.includes('보호관찰')) {
         document.getElementById('checkPrison').checked = true;
+      } else {
+        document.getElementById('checkPrison').checked = false;
       }
+
       if (text.includes('연락두절') || text.includes('부양단절') || text.includes('가족관계 해체')) {
         document.getElementById('checkFamilyCutoff').checked = true;
+      } else {
+        document.getElementById('checkFamilyCutoff').checked = false;
       }
 
       runSimulation();
@@ -599,7 +630,7 @@
         });
       }
 
-      // 5. 유관기관 특화연계 (건보공단, 신복위, 법무보호공단)
+      // 5. 유관기관 특화연계
       if (checkSeverelyIll || (hasSenior && totalIncome <= median100)) {
         services.push({
           category: 'other', agency: '국민건강보험공단',
