@@ -156,7 +156,7 @@
             <label class="chk-item"><input type="checkbox" id="hasChild" onchange="runSimulation()"> 아동·청소년 (만 18세 미만)</label>
           </div>
 
-          <div class="section-title" style="margin-top:16px;">2. 소득 평가액 (월 기준)</div>
+          <div class="section-title" style="margin-top:16px;">2. 소득 평가액 (월 기준, 만원 단위)</div>
           <div class="form-row">
             <div class="form-group">
               <label>근로·사업소득 (30% 기본공제 자동)</label>
@@ -266,25 +266,25 @@
     let currentFilter = 'all';
 
     const INITIAL_TEMPLATE = 
-`나이: 만 58세
+`생년월일: 1968.05.12
 건강: 협심증, 척추질환 (만성질환으로 근로 불가)
 가족: 1인 가구 (자녀와 12년 전 이혼 후 연락두절, 부양단절)
 자동차: 2010년식(16년 경과) 노후 승용차 보유 (일반재산 환산 적용)
 소득: 월 0원
 주거: 보증부 월세 (보증금 500만원, 월 25만원)
-재산: 통장예금 30만원
-부채: 금융대출 300만원
+재산: 통장예금 삼십만원
+부채: 금융대출 삼백만원
 위기사유: 만성질환으로 실직 후 월세 체납 위기, 생계 곤란`;
 
     const EMPTY_TEMPLATE = 
-`나이: 만  세
+`생년월일: 19  .  .  
 건강: 
 가족:    인 가구 (부양단절 여부: )
 자동차: 
-소득: 월  만원
-주거: 보증금  만원
-재산: 통장예금  만원
-부채: 금융대출  만원
+소득: 월   만원
+주거: 보증금   만원
+재산: 통장예금   만원
+부채: 금융대출   만원
 위기사유: `;
 
     window.onload = function() {
@@ -318,39 +318,146 @@
         document.getElementById('memoInput').value = INITIAL_TEMPLATE;
       } else if (type === 'chasangwi') {
         document.getElementById('memoInput').value = 
-`나이: 만 42세
+`생년월일: 1984.09.20
 건강: 뇌병변 중증장애 및 당뇨 만성질환 (6개월 이상 치료 필요)
 가족: 2인 가구 (모 및 만 9세 초등생 자녀, 한부모가구)
 자동차: 없음
-소득: 일용근로 월 120만원
-주거: 다세대 월세 (보증금 2000만원)
-재산: 통장예금 300만원
-부채: 500만원
+소득: 일용근로 월 백이십만원
+주거: 다세대 월세 (보증금 이천만원)
+재산: 통장예금 삼백만원
+부채: 오백만원
 위기사유: 만성질환 치료비 부담 및 한부모 아동 양육비 부족, 차상위계층 혜택 전반(한부모, 본인부담경감, 차상위확인, 장애인연금) 상담 요청`;
       } else if (type === 'emergency') {
         document.getElementById('memoInput').value = 
-`나이: 만 51세
+`생년월일: 1975.03.15
 건강: 뇌출혈로 대학병원 중환자실 입원 치료 중
 가족: 4인 가구 (배우자 및 미성년 자녀 2명)
 자동차: 없음
-소득: 주소득자 실직으로 가구 총소득 70만원
-주거: 보증금 3000만원
-재산: 통장예금 350만원
-부채: 1000만원
+소득: 주소득자 실직으로 가구 총소득 칠십만원
+주거: 보증금 삼천만원
+재산: 통장예금 삼백오십만원
+부채: 일천만원
 위기사유: 주소득자 뇌출혈 입원으로 수술비·치료비 1,400만원 발생, 당장 결제 불가하여 파산 위기`;
       } else if (type === 'pension') {
         document.getElementById('memoInput').value = 
-`나이: 만 72세
+`생년월일: 1954.11.08
 건강: 고혈압, 퇴행성관절염으로 거동 불편 (장기요양 등급 필요)
-가족: 2인 가구 (부부 어르신 가구, 만 72세/69세)
+가족: 2인 가구 (부부 어르신 가구)
 자동차: 없음
 소득: 무직, 정기소득 없음
-주거: 영구임대주택 (보증금 350만원, 월 5만원)
-재산: 통장예금 400만원
+주거: 영구임대주택 (보증금 삼백오십만원, 월 5만원)
+재산: 통장예금 사백만원
 부채: 0원
 위기사유: 정기 수입 부재로 생계비 부족, 기초연금 수급 자격 및 방문돌봄 서비스 신청 희망`;
       }
       parseCounselingMemo();
+    }
+
+    // 자연어 한글/숫자 금액을 만원 단위 정수로 정규화하는 파서
+    function parseKoreanAmount(str) {
+      if (!str) return null;
+      let clean = str.replace(/[, \t]/g, '');
+
+      if (clean.includes('없음') || clean.includes('0원') || clean === '0') return 0;
+
+      // 1. 순수 숫자 + '만' 형태 (예: 300만, 50만원, 120)
+      const numManMatch = clean.match(/(\d+(?:\.\d+)?)\s*만?/);
+      if (numManMatch && !/[일이삼사오육칠팔구십백천억]/.test(clean)) {
+        let val = parseFloat(numManMatch[1]);
+        if (clean.includes('원') && !clean.includes('만') && val >= 10000) {
+          return Math.round(val / 10000);
+        }
+        return Math.round(val);
+      }
+
+      // 2. 한글 수사 복합 처리 (삼백만원, 백이십만, 삼천오백, 1억2천 등)
+      const digitMap = { '영':0, '일':1, '이':2, '삼':3, '사':4, '오':5, '육':6, '칠':7, '팔':8, '구':9 };
+      
+      function parseSegment(seg) {
+        let segTotal = 0;
+        let currentNum = 0;
+        for (let i = 0; i < seg.length; i++) {
+          let char = seg[i];
+          if (char >= '0' && char <= '9') {
+            let numBuf = '';
+            while (i < seg.length && seg[i] >= '0' && seg[i] <= '9') {
+              numBuf += seg[i];
+              i++;
+            }
+            i--;
+            currentNum = parseInt(numBuf, 10);
+          } else if (digitMap[char] !== undefined) {
+            currentNum = digitMap[char];
+          } else if (char === '십') {
+            segTotal += (currentNum === 0 ? 1 : currentNum) * 10;
+            currentNum = 0;
+          } else if (char === '백') {
+            segTotal += (currentNum === 0 ? 1 : currentNum) * 100;
+            currentNum = 0;
+          } else if (char === '천') {
+            segTotal += (currentNum === 0 ? 1 : currentNum) * 1000;
+            currentNum = 0;
+          }
+        }
+        segTotal += currentNum;
+        return segTotal;
+      }
+
+      let totalWon = 0;
+      let eokIdx = clean.indexOf('억');
+      let manIdx = clean.indexOf('만');
+
+      let beforeEok = '';
+      let afterEok = clean;
+
+      if (eokIdx !== -1) {
+        beforeEok = clean.slice(0, eokIdx);
+        afterEok = clean.slice(eokIdx + 1);
+        totalWon += parseSegment(beforeEok) * 100000000;
+      }
+
+      if (manIdx !== -1) {
+        let manPart = (eokIdx !== -1) ? afterEok.slice(0, afterEok.indexOf('만')) : clean.slice(0, manIdx);
+        totalWon += parseSegment(manPart) * 10000;
+      } else {
+        // 단위 '만'이 명시되지 않고 '삼백', '오십' 등만 입력된 경우 (상담 관례상 만원으로 해석)
+        let restVal = parseSegment(afterEok.replace(/원/g, ''));
+        if (restVal > 0) {
+          totalWon += restVal * 10000;
+        }
+      }
+
+      return Math.round(totalWon / 10000);
+    }
+
+    // 생년월일 자연어 파싱 및 만 나이 산출
+    function parseBirthDateToAge(text) {
+      // 패턴: 1968.05.12, 1968-05-12, 1968년 5월 12일, 680512-1
+      let y = null, m = null, d = null;
+      let match = text.match(/(19\d{2}|20\d{2})[\s.\-/년]+(0?[1-9]|1[0-2])[\s.\-/월]+(0?[1-9]|[12]\d|3[01])/);
+      if (match) {
+        y = parseInt(match[1], 10);
+        m = parseInt(match[2], 10);
+        d = parseInt(match[3], 10);
+      } else {
+        let rrnMatch = text.match(/(\d{2})(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\s*[-]\s*([1-4])/);
+        if (rrnMatch) {
+          let prefix = (rrnMatch[4] === '1' || rrnMatch[4] === '2') ? 1900 : 2000;
+          y = prefix + parseInt(rrnMatch[1], 10);
+          m = parseInt(rrnMatch[2], 10);
+          d = parseInt(rrnMatch[3], 10);
+        }
+      }
+
+      if (y && m && d) {
+        const today = new Date();
+        let age = today.getFullYear() - y;
+        const currentMD = (today.getMonth() + 1) * 100 + today.getDate();
+        const birthMD = m * 100 + d;
+        if (currentMD < birthMD) age--;
+        return age;
+      }
+      return null;
     }
 
     function parseCounselingMemo() {
@@ -360,30 +467,73 @@
       const lines = text.split('\n');
       lines.forEach(line => {
         const trimmed = line.trim();
+
+        // 1. 생년월일 또는 나이 추출
+        if (trimmed.startsWith('생년월일:') || trimmed.startsWith('생일:') || trimmed.startsWith('나이:')) {
+          const content = trimmed.substring(trimmed.indexOf(':') + 1);
+          const calculatedAge = parseBirthDateToAge(content);
+          if (calculatedAge !== null) {
+            document.getElementById('hasSenior').checked = (calculatedAge >= 65);
+          } else {
+            const ageMatch = content.match(/(\d+)\s*세/);
+            if (ageMatch) {
+              const age = parseInt(ageMatch[1], 10);
+              document.getElementById('hasSenior').checked = (age >= 65);
+            }
+          }
+        }
+
+        // 2. 가족 및 가구원 수
         if (trimmed.startsWith('가족:')) {
-          const m = trimmed.match(/(\d+)\s*인/);
-          if (m) document.getElementById('householdSize').value = m[1];
+          const content = trimmed.substring(trimmed.indexOf(':') + 1);
+          const m = content.match(/(\d+)\s*인/);
+          if (m) {
+            document.getElementById('householdSize').value = m[1];
+          } else if (content.includes('혼자') || content.includes('단독') || content.includes('1인')) {
+            document.getElementById('householdSize').value = 1;
+          } else if (content.includes('두명') || content.includes('부부') || content.includes('2인')) {
+            document.getElementById('householdSize').value = 2;
+          } else if (content.includes('세명') || content.includes('3인')) {
+            document.getElementById('householdSize').value = 3;
+          } else if (content.includes('네명') || content.includes('4인')) {
+            document.getElementById('householdSize').value = 4;
+          }
         }
+
+        // 3. 소득 (자연어 한글 금액 처리)
         if (trimmed.startsWith('소득:')) {
-          const m = trimmed.match(/(\d+)\s*만/);
-          if (m) document.getElementById('earnedIncome').value = m[1];
-          else if (trimmed.includes('0원') || trimmed.includes('없음')) document.getElementById('earnedIncome').value = 0;
+          const content = trimmed.substring(trimmed.indexOf(':') + 1);
+          const val = parseKoreanAmount(content);
+          if (val !== null) document.getElementById('earnedIncome').value = val;
         }
+
+        // 4. 주거/보증금 (일반재산)
         if (trimmed.startsWith('주거:')) {
-          const m = trimmed.match(/보증금\s*(\d+)\s*만/);
-          if (m) document.getElementById('generalProperty').value = m[1];
+          const content = trimmed.substring(trimmed.indexOf(':') + 1);
+          let target = content;
+          if (content.includes('보증금')) {
+            target = content.substring(content.indexOf('보증금'));
+          }
+          const val = parseKoreanAmount(target);
+          if (val !== null) document.getElementById('generalProperty').value = val;
         }
+
+        // 5. 금융재산
         if (trimmed.startsWith('재산:')) {
-          const m = trimmed.match(/(\d+)\s*만/);
-          if (m) document.getElementById('financeProperty').value = m[1];
+          const content = trimmed.substring(trimmed.indexOf(':') + 1);
+          const val = parseKoreanAmount(content);
+          if (val !== null) document.getElementById('financeProperty').value = val;
         }
+
+        // 6. 부채
         if (trimmed.startsWith('부채:')) {
-          const m = trimmed.match(/(\d+)\s*만/);
-          if (m) document.getElementById('debtAmount').value = m[1];
-          else if (trimmed.includes('0원') || trimmed.includes('없음')) document.getElementById('debtAmount').value = 0;
+          const content = trimmed.substring(trimmed.indexOf(':') + 1);
+          const val = parseKoreanAmount(content);
+          if (val !== null) document.getElementById('debtAmount').value = val;
         }
       });
 
+      // 자동차 판정
       const hasVehicle = (text.includes('승용차') || text.includes('자동차') || text.includes('차량'));
       const isExempt = (text.includes('10년') || text.includes('노후') || text.includes('생업') || text.includes('경차') || text.includes('일반재산'));
       if (hasVehicle && !isExempt && !text.includes('자동차: 없음') && !text.includes('차량: 없음')) {
@@ -392,24 +542,20 @@
         document.getElementById('hasStandardCar').checked = false;
       }
 
-      if (text.includes('노인') || text.includes('어르신') || text.includes('72세') || text.includes('69세') || text.includes('65세') || text.includes('기초연금')) {
+      // 대상자 특성 및 위기 체크
+      if (text.includes('노인') || text.includes('어르신') || text.includes('기초연금')) {
         document.getElementById('hasSenior').checked = true;
-      } else {
-        document.getElementById('hasSenior').checked = false;
       }
-
       if (text.includes('장애인') || text.includes('중증장애') || text.includes('뇌병변')) {
         document.getElementById('hasSevereDisabled').checked = true;
       } else {
         document.getElementById('hasSevereDisabled').checked = false;
       }
-
-      if (text.includes('한부모') || text.includes('모자가정') || text.includes('양육')) {
+      if (text.includes('한부모') || text.includes('모자가정') || text.includes('양육비')) {
         document.getElementById('hasSingleParent').checked = true;
       } else {
         document.getElementById('hasSingleParent').checked = false;
       }
-
       if (text.includes('자녀') || text.includes('아동') || text.includes('초등') || text.includes('영유아')) {
         document.getElementById('hasChild').checked = true;
       } else {
@@ -421,37 +567,31 @@
       } else {
         document.getElementById('checkChronicIll').checked = false;
       }
-
       if (text.includes('병원비') || text.includes('뇌출혈') || text.includes('수술비') || text.includes('입원')) {
         document.getElementById('checkSeverelyIll').checked = true;
       } else {
         document.getElementById('checkSeverelyIll').checked = false;
       }
-
       if (text.includes('치매') || text.includes('거동불편') || text.includes('장기요양') || text.includes('돌봄')) {
         document.getElementById('checkElderlyCare').checked = true;
       } else {
         document.getElementById('checkElderlyCare').checked = false;
       }
-
       if (text.includes('실직') || text.includes('체납') || text.includes('생계 곤란')) {
         document.getElementById('checkEmergencyCrisis').checked = true;
       } else {
         document.getElementById('checkEmergencyCrisis').checked = false;
       }
-
       if (text.includes('채무') || text.includes('빚') || text.includes('연체') || text.includes('대출') || text.includes('파산')) {
         document.getElementById('checkDebt').checked = true;
       } else {
         document.getElementById('checkDebt').checked = false;
       }
-
       if (text.includes('출소') || text.includes('교도소') || text.includes('보호관찰')) {
         document.getElementById('checkPrison').checked = true;
       } else {
         document.getElementById('checkPrison').checked = false;
       }
-
       if (text.includes('연락두절') || text.includes('부양단절') || text.includes('가족관계 해체')) {
         document.getElementById('checkFamilyCutoff').checked = true;
       } else {
