@@ -91,7 +91,7 @@
         <h1>대구광역시 읍·면·동 맞춤형 복지상담 모의계산기</h1>
         <p>기초생활보장·차상위·유관기관(건보·신복위·법무) 연계 핫라인 & 행복e음 이력 도구</p>
       </div>
-      <div class="header-badge">대구광역시 (대도시 기본재산 9,900만 공제)</div>
+      <div class="header-badge">대구광역시 (기본재산 7,700만 공제)</div>
     </div>
   </header>
 
@@ -143,8 +143,8 @@
             <div class="form-group">
               <label>지역 구분</label>
               <select id="regionType" onchange="runSimulation()">
-                <option value="metro" selected>대구광역시 (대도시 / 9,900만 공제)</option>
-                <option value="mid">중소도시 (7,700만 공제)</option>
+                <option value="metro" selected>대구광역시 (중소도시급 / 7,700만 공제)</option>
+                <option value="special">특별·광역시 (대도시 / 9,900만 공제)</option>
                 <option value="rural">농어촌 (5,300만 공제)</option>
               </select>
             </div>
@@ -261,7 +261,9 @@
       4: 6097773, 5: 7108170, 6: 8058742,
       7: 8979100, 8: 9899458, 9: 10819816, 10: 11740174
     };
-    const EXEMPTION_PROPERTY = { metro: 9900, mid: 7700, rural: 5300 };
+    
+    // 대구광역시 기본재산액 7,700만원으로 설정
+    const EXEMPTION_PROPERTY = { metro: 7700, special: 9900, rural: 5300 };
 
     let currentFilter = 'all';
 
