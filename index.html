@@ -160,11 +160,11 @@
           <div class="form-row">
             <div class="form-group">
               <label>근로·사업소득 (30% 기본공제 자동)</label>
-              <input type="number" id="earnedIncome" value="0" step="5" oninput="runSimulation()">
+              <input type="text" id="earnedIncome" value="0" oninput="formatCurrencyInput(this); runSimulation();">
             </div>
             <div class="form-group">
               <label>기타 공적/사적 이전소득</label>
-              <input type="number" id="otherIncome" value="0" step="5" oninput="runSimulation()">
+              <input type="text" id="otherIncome" value="0" oninput="formatCurrencyInput(this); runSimulation();">
             </div>
           </div>
 
@@ -172,15 +172,15 @@
           <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr;">
             <div class="form-group">
               <label>보증금/일반재산</label>
-              <input type="number" id="generalProperty" value="500" step="50" oninput="runSimulation()">
+              <input type="text" id="generalProperty" value="500" oninput="formatCurrencyInput(this); runSimulation();">
             </div>
             <div class="form-group">
               <label>통장 금융예금</label>
-              <input type="number" id="financeProperty" value="30" step="10" oninput="runSimulation()">
+              <input type="text" id="financeProperty" value="30" oninput="formatCurrencyInput(this); runSimulation();">
             </div>
             <div class="form-group">
               <label>대출/공적부채</label>
-              <input type="number" id="debtAmount" value="300" step="50" oninput="runSimulation()">
+              <input type="text" id="debtAmount" value="300" oninput="formatCurrencyInput(this); runSimulation();">
             </div>
           </div>
           <label class="chk-item warn" style="margin-top:8px;">
@@ -289,6 +289,12 @@
 
     window.onload = function() {
       document.getElementById('memoInput').value = INITIAL_TEMPLATE;
+      // 초기 기본값에 콤마 반영
+      setFormattedValue('generalProperty', 500);
+      setFormattedValue('financeProperty', 30);
+      setFormattedValue('debtAmount', 300);
+      setFormattedValue('earnedIncome', 0);
+      setFormattedValue('otherIncome', 0);
       parseCounselingMemo();
     };
 
@@ -302,6 +308,30 @@
     }
     function clearMemo() {
       document.getElementById('memoInput').value = '';
+    }
+
+    // 인풋 필드 콤마 포맷터
+    function formatCurrencyInput(el) {
+      let raw = el.value.replace(/[^0-9]/g, '');
+      if (raw === '') {
+        el.value = '0';
+      } else {
+        el.value = parseInt(raw, 10).toLocaleString('ko-KR');
+      }
+    }
+
+    function setFormattedValue(id, num) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.value = (num || 0).toLocaleString('ko-KR');
+      }
+    }
+
+    function getNumericValue(id) {
+      const el = document.getElementById(id);
+      if (!el) return 0;
+      const clean = el.value.replace(/[^0-9]/g, '');
+      return clean ? parseInt(clean, 10) : 0;
     }
 
     function setFilter(type) {
@@ -353,7 +383,7 @@
       parseCounselingMemo();
     }
 
-    // [전면 개선] 5백만원, 삼백, 1억2천 등 숫자/한글 혼합 수식을 만원 단위 정수로 환산
+    // 자연어 한글/숫자 금액 파서 (만원 단위 정수 반환)
     function parseKoreanAmount(str) {
       if (!str) return null;
       let clean = str.replace(/[, \t]/g, '');
@@ -362,7 +392,6 @@
 
       const digitMap = { '영':0, '일':1, '이':2, '삼':3, '사':4, '오':5, '육':6, '칠':7, '팔':8, '구':9 };
 
-      // 1000 이하 소블록(천, 백, 십) 계산기 (5백, 삼백오십, 1천2백 등 지원)
       function parseSmallBlock(s) {
         if (!s) return 0;
         let total = 0;
@@ -394,7 +423,6 @@
         return total;
       }
 
-      // '억' 단위 분리
       let eokVal = 0;
       let afterEok = clean;
       if (clean.includes('억')) {
@@ -403,7 +431,6 @@
         afterEok = parts[1] || '';
       }
 
-      // '만' 단위 분리
       let manVal = 0;
       let afterMan = afterEok;
       if (afterEok.includes('만')) {
@@ -411,9 +438,7 @@
         manVal = parseSmallBlock(parts[0]);
         afterMan = parts[1] || '';
       } else {
-        // '만' 없이 '5백원', '삼백', '50' 만 들어온 경우
         let restDigits = parseSmallBlock(afterMan.replace(/원/g, ''));
-        // 10000 이상인 순수 숫자는 원 단위로 처리 (예: 5000000원 -> 500만원)
         if (restDigits >= 10000) {
           return Math.round(restDigits / 10000);
         }
@@ -503,7 +528,7 @@
         if (trimmed.startsWith('소득:')) {
           const content = trimmed.substring(trimmed.indexOf(':') + 1);
           const val = parseKoreanAmount(content);
-          if (val !== null) document.getElementById('earnedIncome').value = val;
+          if (val !== null) setFormattedValue('earnedIncome', val);
         }
 
         // 4. 주거 (보증금)
@@ -514,21 +539,21 @@
             target = content.substring(content.indexOf('보증금'));
           }
           const val = parseKoreanAmount(target);
-          if (val !== null) document.getElementById('generalProperty').value = val;
+          if (val !== null) setFormattedValue('generalProperty', val);
         }
 
         // 5. 금융재산
         if (trimmed.startsWith('재산:')) {
           const content = trimmed.substring(trimmed.indexOf(':') + 1);
           const val = parseKoreanAmount(content);
-          if (val !== null) document.getElementById('financeProperty').value = val;
+          if (val !== null) setFormattedValue('financeProperty', val);
         }
 
         // 6. 부채
         if (trimmed.startsWith('부채:')) {
           const content = trimmed.substring(trimmed.indexOf(':') + 1);
           const val = parseKoreanAmount(content);
-          if (val !== null) document.getElementById('debtAmount').value = val;
+          if (val !== null) setFormattedValue('debtAmount', val);
         }
       });
 
@@ -605,8 +630,8 @@
       const size = parseInt(document.getElementById('householdSize').value) || 1;
       const median100 = MEDIAN_INCOME_2026[Math.min(size, 10)];
 
-      const earnedRaw = (parseFloat(document.getElementById('earnedIncome').value) || 0) * 10000;
-      const otherRaw = (parseFloat(document.getElementById('otherIncome').value) || 0) * 10000;
+      const earnedRaw = getNumericValue('earnedIncome') * 10000;
+      const otherRaw = getNumericValue('otherIncome') * 10000;
       const earnedDeducted = earnedRaw > 0 ? earnedRaw * 0.7 : 0;
       const incomeVal = earnedDeducted + otherRaw;
 
@@ -614,9 +639,9 @@
       const exemptGeneral = EXEMPTION_PROPERTY[regionKey] * 10000;
       const exemptFinance = 500 * 10000;
 
-      const genProp = (parseFloat(document.getElementById('generalProperty').value) || 0) * 10000;
-      const finProp = (parseFloat(document.getElementById('financeProperty').value) || 0) * 10000;
-      const debt = (parseFloat(document.getElementById('debtAmount').value) || 0) * 10000;
+      const genProp = getNumericValue('generalProperty') * 10000;
+      const finProp = getNumericValue('financeProperty') * 10000;
+      const debt = getNumericValue('debtAmount') * 10000;
 
       let netFin = Math.max(0, finProp - exemptFinance);
       let netGen = Math.max(0, genProp - exemptGeneral);
