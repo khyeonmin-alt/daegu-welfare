@@ -272,7 +272,7 @@
 자동차: 2010년식(16년 경과) 노후 승용차 보유 (일반재산 환산 적용)
 소득: 월 0원
 주거: 보증부 월세 (보증금 5백만원, 월 25만원)
-재산: 통장예금 삼십만원
+재산: 통장예금 30만원
 부채: 금융대출 3백만원
 위기사유: 만성질환으로 실직 후 월세 체납 위기, 생계 곤란`;
 
@@ -289,7 +289,6 @@
 
     window.onload = function() {
       document.getElementById('memoInput').value = INITIAL_TEMPLATE;
-      // 초기 기본값에 콤마 반영
       setFormattedValue('generalProperty', 500);
       setFormattedValue('financeProperty', 30);
       setFormattedValue('debtAmount', 300);
@@ -310,7 +309,6 @@
       document.getElementById('memoInput').value = '';
     }
 
-    // 인풋 필드 콤마 포맷터
     function formatCurrencyInput(el) {
       let raw = el.value.replace(/[^0-9]/g, '');
       if (raw === '') {
@@ -352,10 +350,10 @@
 건강: 뇌병변 중증장애 및 당뇨 만성질환 (6개월 이상 치료 필요)
 가족: 2인 가구 (모 및 만 9세 초등생 자녀, 한부모가구)
 자동차: 없음
-소득: 일용근로 월 백이십만원
-주거: 다세대 월세 (보증금 이천만원)
-재산: 통장예금 삼백만원
-부채: 오백만원
+소득: 일용근로 월 1백20만원
+주거: 다세대 월세 (보증금 2천만원)
+재산: 통장예금 3백만원
+부채: 5백만원
 위기사유: 만성질환 치료비 부담 및 한부모 아동 양육비 부족, 차상위계층 혜택 전반(한부모, 본인부담경감, 차상위확인, 장애인연금) 상담 요청`;
       } else if (type === 'emergency') {
         document.getElementById('memoInput').value = 
@@ -363,10 +361,10 @@
 건강: 뇌출혈로 대학병원 중환자실 입원 치료 중
 가족: 4인 가구 (배우자 및 미성년 자녀 2명)
 자동차: 없음
-소득: 주소득자 실직으로 가구 총소득 칠십만원
-주거: 보증금 삼천만원
-재산: 통장예금 삼백오십만원
-부채: 일천만원
+소득: 주소득자 실직으로 가구 총소득 70만원
+주거: 보증금 3천만원
+재산: 통장예금 3백50만원
+부채: 1천만원
 위기사유: 주소득자 뇌출혈 입원으로 수술비·치료비 1,400만원 발생, 당장 결제 불가하여 파산 위기`;
       } else if (type === 'pension') {
         document.getElementById('memoInput').value = 
@@ -375,15 +373,14 @@
 가족: 2인 가구 (부부 어르신 가구)
 자동차: 없음
 소득: 무직, 정기소득 없음
-주거: 영구임대주택 (보증금 삼백오십만원, 월 5만원)
-재산: 통장예금 사백만원
+주거: 영구임대주택 (보증금 3백50만원, 월 5만원)
+재산: 통장예금 4백만원
 부채: 0원
 위기사유: 정기 수입 부재로 생계비 부족, 기초연금 수급 자격 및 방문돌봄 서비스 신청 희망`;
       }
       parseCounselingMemo();
     }
 
-    // 자연어 한글/숫자 금액 파서 (만원 단위 정수 반환)
     function parseKoreanAmount(str) {
       if (!str) return null;
       let clean = str.replace(/[, \t]/g, '');
@@ -449,7 +446,6 @@
       return totalMan > 0 ? totalMan : null;
     }
 
-    // 생년월일/주민번호 기반 만 나이 자동 계산기
     function parseBirthDateToAge(text) {
       let y = null, m = null, d = null;
       let match = text.match(/(19\d{2}|20\d{2})[\s.\-/년]+(0?[1-9]|1[0-2])[\s.\-/월]+(0?[1-9]|[12]\d|3[01])/);
@@ -492,7 +488,6 @@
       lines.forEach(line => {
         const trimmed = line.trim();
 
-        // 1. 생년월일 또는 나이 추출
         if (trimmed.startsWith('생년월일:') || trimmed.startsWith('생일:') || trimmed.startsWith('나이:') || trimmed.startsWith('생년:')) {
           const content = trimmed.substring(trimmed.indexOf(':') + 1);
           const calculatedAge = parseBirthDateToAge(content);
@@ -507,7 +502,6 @@
           }
         }
 
-        // 2. 가구원 수
         if (trimmed.startsWith('가족:')) {
           const content = trimmed.substring(trimmed.indexOf(':') + 1);
           const m = content.match(/(\d+)\s*인/);
@@ -524,14 +518,12 @@
           }
         }
 
-        // 3. 소득
         if (trimmed.startsWith('소득:')) {
           const content = trimmed.substring(trimmed.indexOf(':') + 1);
           const val = parseKoreanAmount(content);
           if (val !== null) setFormattedValue('earnedIncome', val);
         }
 
-        // 4. 주거 (보증금)
         if (trimmed.startsWith('주거:')) {
           const content = trimmed.substring(trimmed.indexOf(':') + 1);
           let target = content;
@@ -542,14 +534,12 @@
           if (val !== null) setFormattedValue('generalProperty', val);
         }
 
-        // 5. 금융재산
         if (trimmed.startsWith('재산:')) {
           const content = trimmed.substring(trimmed.indexOf(':') + 1);
           const val = parseKoreanAmount(content);
           if (val !== null) setFormattedValue('financeProperty', val);
         }
 
-        // 6. 부채
         if (trimmed.startsWith('부채:')) {
           const content = trimmed.substring(trimmed.indexOf(':') + 1);
           const val = parseKoreanAmount(content);
@@ -557,7 +547,6 @@
         }
       });
 
-      // 차량 판정
       const hasVehicle = (text.includes('승용차') || text.includes('자동차') || text.includes('차량'));
       const isExempt = (text.includes('10년') || text.includes('노후') || text.includes('생업') || text.includes('경차') || text.includes('일반재산'));
       if (hasVehicle && !isExempt && !text.includes('자동차: 없음') && !text.includes('차량: 없음')) {
@@ -566,7 +555,6 @@
         document.getElementById('hasStandardCar').checked = false;
       }
 
-      // 대상자 특성
       if (text.includes('노인') || text.includes('어르신') || text.includes('기초연금')) {
         document.getElementById('hasSenior').checked = true;
       }
@@ -586,7 +574,6 @@
         document.getElementById('hasChild').checked = false;
       }
 
-      // 위기사유 및 기관 연계
       if (text.includes('만성질환') || text.includes('희귀') || text.includes('당뇨') || text.includes('협심증') || text.includes('척추')) {
         document.getElementById('checkChronicIll').checked = true;
       } else {
