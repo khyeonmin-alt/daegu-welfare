@@ -67,13 +67,17 @@
 
     .service-card { border-radius: 7px; padding: 12px; margin-bottom: 10px; font-size: 11px; border: 1px solid #cbd5e1; }
     .service-card.basic { background: #f0fdf4; border-color: #bbf7d0; }
+    .service-card.chasangwi { background: #eff6ff; border-color: #bfdbfe; }
     .service-card.other { background: #f5f3ff; border-color: #ddd6fe; }
     .service-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
     .service-top strong { font-size: 12px; color: #0f172a; }
     .service-tag { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
     .service-card.basic .service-tag { background: #dcfce7; color: #166534; }
+    .service-card.chasangwi .service-tag { background: #dbeafe; color: #1e40af; }
     .service-card.other .service-tag { background: #ede9fe; color: #5b21b6; }
-    .service-action { margin-top: 6px; padding: 6px 8px; background: rgba(255,255,255,0.85); border-radius: 4px; border: 1px solid #e2e8f0; font-weight: bold; color: #1e3a8a; }
+    
+    .contact-badge { display: inline-block; margin-top: 4px; padding: 3px 7px; border-radius: 4px; background: #f1f5f9; color: #334155; font-size: 10.5px; border: 1px solid #e2e8f0; font-weight: 600; }
+    .service-action { margin-top: 6px; padding: 6px 8px; background: rgba(255,255,255,0.9); border-radius: 4px; border: 1px solid #e2e8f0; font-weight: bold; color: #1e3a8a; }
 
     .btn-copy { background: #059669; color: #fff; border: none; padding: 6px 12px; border-radius: 5px; font-size: 11px; font-weight: bold; }
     .btn-copy:hover { background: #047857; }
@@ -85,7 +89,7 @@
     <div class="header-inner">
       <div class="header-title">
         <h1>대구광역시 읍·면·동 맞춤형 복지상담 모의계산기</h1>
-        <p>기초보장·차상위 4종·긴급복지·기초연금 스크리닝 & 행복e음 이력 생성도구</p>
+        <p>기초보장·차상위·유관기관(건보·신복위·법무) 연계 핫라인 & 행복e음 이력 도구</p>
       </div>
       <div class="header-badge">대구광역시 (대도시 기본재산 9,900만 공제)</div>
     </div>
@@ -184,12 +188,14 @@
             <span>일반 승용자동차 보유 (월 100% 재산환산 대상) <small style="display:block; font-weight:normal;">※ 10년 이상 노후차, 2000cc 미만 생업용은 해제</small></span>
           </label>
 
-          <div class="section-title" style="margin-top:16px;">4. 차상위·의료·위기 스크리닝 항목</div>
+          <div class="section-title" style="margin-top:16px;">4. 질환·위기 및 유관기관 연계 체크</div>
           <div class="chk-grid">
-            <label class="chk-item"><input type="checkbox" id="checkChronicIll" onchange="runSimulation()"> 희귀·중증난치·만성질환 가구</label>
+            <label class="chk-item"><input type="checkbox" id="checkChronicIll" onchange="runSimulation()"> 만성·중증난치질환 (차상위경감)</label>
             <label class="chk-item"><input type="checkbox" id="checkSeverelyIll" onchange="runSimulation()"> 고액 병원비 부담 (건보공단)</label>
-            <label class="chk-item"><input type="checkbox" id="checkElderlyCare" onchange="runSimulation()"> 치매·거동불편 (노인돌봄·장기요양)</label>
-            <label class="chk-item"><input type="checkbox" id="checkEmergencyCrisis" onchange="runSimulation()"> 실직·월세체납 등 위기사유</label>
+            <label class="chk-item"><input type="checkbox" id="checkElderlyCare" onchange="runSimulation()"> 치매·거동불편 (장기요양·노인돌봄)</label>
+            <label class="chk-item"><input type="checkbox" id="checkEmergencyCrisis" onchange="runSimulation()"> 실직·월세체납 등 긴급위기</label>
+            <label class="chk-item"><input type="checkbox" id="checkDebt" onchange="runSimulation()"> 과중채무·연체 (신복위·서민금융)</label>
+            <label class="chk-item"><input type="checkbox" id="checkPrison" onchange="runSimulation()"> 출소자·보호관찰 (법무보호공단)</label>
             <label class="chk-item col2"><input type="checkbox" id="checkFamilyCutoff" onchange="runSimulation()"> 부양의무자(자녀/부모) 연락두절·가족관계 해체</label>
           </div>
 
@@ -232,6 +238,7 @@
               <button class="tab-btn active" id="tabAll" onclick="setFilter('all')">전체보기</button>
               <button class="tab-btn" id="tabChasangwi" onclick="setFilter('chasangwi')">차상위·연금</button>
               <button class="tab-btn" id="tabBasic" onclick="setFilter('basic')">기초보장·긴급</button>
+              <button class="tab-btn" id="tabOther" onclick="setFilter('other')">유관기관연계</button>
             </div>
           </div>
           <div id="serviceListContainer"></div>
@@ -242,7 +249,7 @@
             <strong style="font-size:12px; color:#0f172a;">행복e음 복지상담이력 종합 생성기</strong>
             <button class="btn-copy" onclick="copyCounselLog()">행복e음 복사하기</button>
           </div>
-          <textarea id="haengbokLogArea" rows="11" readonly style="background:#f8fafc;"></textarea>
+          <textarea id="haengbokLogArea" rows="12" readonly style="background:#f8fafc;"></textarea>
         </div>
       </div>
     </div>
@@ -302,6 +309,7 @@
       document.getElementById('tabAll').className = (type === 'all') ? 'tab-btn active' : 'tab-btn';
       document.getElementById('tabChasangwi').className = (type === 'chasangwi') ? 'tab-btn active' : 'tab-btn';
       document.getElementById('tabBasic').className = (type === 'basic') ? 'tab-btn active' : 'tab-btn';
+      document.getElementById('tabOther').className = (type === 'other') ? 'tab-btn active' : 'tab-btn';
       runSimulation();
     }
 
@@ -409,6 +417,12 @@
       if (text.includes('실직') || text.includes('체납') || text.includes('생계 곤란')) {
         document.getElementById('checkEmergencyCrisis').checked = true;
       }
+      if (text.includes('채무') || text.includes('빚') || text.includes('연체') || text.includes('대출') || text.includes('파산')) {
+        document.getElementById('checkDebt').checked = true;
+      }
+      if (text.includes('출소') || text.includes('교도소') || text.includes('보호관찰')) {
+        document.getElementById('checkPrison').checked = true;
+      }
       if (text.includes('연락두절') || text.includes('부양단절') || text.includes('가족관계 해체')) {
         document.getElementById('checkFamilyCutoff').checked = true;
       }
@@ -474,25 +488,29 @@
       const checkSeverelyIll = document.getElementById('checkSeverelyIll').checked;
       const checkElderlyCare = document.getElementById('checkElderlyCare').checked;
       const checkEmergency = document.getElementById('checkEmergencyCrisis').checked;
+      const checkDebt = document.getElementById('checkDebt').checked;
+      const checkPrison = document.getElementById('checkPrison').checked;
       const checkFamilyCutoff = document.getElementById('checkFamilyCutoff').checked;
 
-      // 1. 기초생활보장 3종
+      // 1. 기초생활보장
       if (totalIncome <= (median100 * 0.32)) {
         const estLivingBenefit = Math.max(0, Math.round((median100 * 0.32) - totalIncome));
         services.push({
           category: 'basic', agency: '보건복지부',
           title: '국민기초생활보장 [생계급여]',
+          contact: '보건복지상담센터 ☎ 129 / 주소지 읍면동 행정복지센터',
           desc: `기준 중위 32% 이하 대상 소득보장 (매월 최대 약 ${estLivingBenefit.toLocaleString()}원 현금 입금)`,
-          action: '사회보장급여 신청서 접수 및 공적소득자료 연계'
+          action: '사회보장급여 신청서 접수 및 공적소득자료 연계 조사'
         });
       }
 
       if (totalIncome <= (median100 * 0.40)) {
         let note = '외래 1,000~1,500원 / 입원 0~10% 본인부담 감면';
-        if (checkFamilyCutoff) note += ' (※ 부양의무자 단절 확인: 가족관계 해체 사유서 징구 후 심의 구제)';
+        if (checkFamilyCutoff) note += ' (※ 부양의무자 단절 확인: 가족관계 해체 사유서 징구 후 지방생활보장위 우선보장 심의)';
         services.push({
           category: 'basic', agency: '보건복지부',
           title: '국민기초생활보장 [의료급여 1·2종]',
+          contact: '보건복지상담센터 ☎ 129 / 주소지 읍면동 행정복지센터',
           desc: note,
           action: checkFamilyCutoff ? '가족관계 해체 사유서 징구 및 생활보장위원회 심의 연계' : '부양의무자 기준 조사 서류 접수'
         });
@@ -502,7 +520,8 @@
         services.push({
           category: 'basic', agency: '국토교통부·LH',
           title: '국민기초생활보장 [주거급여]',
-          desc: '부양의무자 기준 전면 미적용. 전월세 임차급여 지원 및 자가가구 무료 집수리',
+          contact: '마이홈 콜센터 ☎ 1600-1004 / LH 대구경북지역본부 ☎ 053-603-2600',
+          desc: '부양의무자 기준 전면 미적용. 임차가구 전월세 기준임대료 내 전액 지원 및 자가가구 무료 집수리',
           action: '임대차계약서 확인 및 LH 주택조사 의뢰'
         });
       }
@@ -512,18 +531,20 @@
         services.push({
           category: 'basic', agency: '보건복지부',
           title: '긴급복지지원 (생계·의료)',
+          contact: '보건복지상담센터 ☎ 129 / 시·군·구 희망복지팀',
           desc: '실직·체납 등 법정 위기 시 72시간 내 선지원 원칙 (월 71.3만원 생계비 또는 300만원 내 의료비)',
           action: '72시간 내 현장확인 및 긴급생계비 선지원 품의'
         });
       }
 
-      // 3. 차상위 패키지 4종
+      // 3. 차상위 패키지
       if (totalIncome <= (median100 * 0.50)) {
         if (checkChronicIll || hasChild || checkSeverelyIll) {
           services.push({
             category: 'chasangwi', agency: '국민건강보험공단',
             title: '차상위 본인부담경감',
-            desc: '만성·중증난치질환자, 18세 미만 아동의 건강보험 본인부담금을 의료급여 수준(14% 또는 1,000~1,500원)으로 대폭 경감',
+            contact: '국민건강보험공단 ☎ 1577-1000 / 주소지 관할 공단지사',
+            desc: '만성·중증난치질환자, 18세 미만 아동의 건강보험 본인부담금을 의료급여 수준(14% 또는 1,000~1,500원)으로 경감',
             action: '진단서 및 6개월 이상 치료확인서 징구 후 신청서 접수'
           });
         }
@@ -531,7 +552,8 @@
         services.push({
           category: 'chasangwi', agency: '지자체 복지팀',
           title: '차상위계층 확인사업 & 요금감면',
-          desc: '정부양곡 50% 할인, 이동통신요금 감면(기본료 1.1만원+통화료 35%), 전기·도시가스 감면, 문화누리카드 지원',
+          contact: '보건복지상담센터 ☎ 129 / 한국전력 ☎ 123 / 가스공사',
+          desc: '정부양곡 50% 할인, 이동통신요금 감면(월 최대 1.1만+35%), 전기·도시가스 감면, 문화누리카드 지원',
           action: '사회보장급여 신청서 접수 및 복지감면 일괄 대행'
         });
 
@@ -539,27 +561,29 @@
           services.push({
             category: 'chasangwi', agency: '보건복지부',
             title: '차상위 장애인연금 / 장애수당',
-            desc: '중증장애인 대상 차상위 장애인연금(월 최대 약 42만원) 또는 경증 장애수당(월 6만원) 지급',
+            contact: '보건복지상담센터 ☎ 129 / 국민연금공단 ☎ 1355',
+            desc: '중증장애인 차상위 장애인연금(월 최대 약 42만원) 또는 경증 장애수당(월 6만원) 지급',
             action: '장애인연금/수당 지급신청서 접수 및 직권 조사'
           });
         }
       }
 
-      // 4. 한부모가족지원
       if (hasSingleParent && totalIncome <= (median100 * 0.60)) {
         services.push({
           category: 'chasangwi', agency: '여성가족부',
           title: '한부모가족지원 (아동양육비)',
-          desc: '만 18세 미만 자녀 1인당 월 21만원(청소년한부모 월 35만원) 아동양육비 지원 및 한부모 증명서 발급',
+          contact: '한부모상담전화 ☎ 1644-6621 / 양육비이행관리원 ☎ 1644-6621',
+          desc: '만 18세 미만 자녀 1인당 월 21만원(청소년한부모 월 35만원) 아동양육비 지원 및 증명서 발급',
           action: '한부모가족 증명서 발급 신청 및 양육비 청구 접수'
         });
       }
 
-      // 5. 기초연금 및 노인돌봄
+      // 4. 기초연금 & 노인돌봄
       if (hasSenior && totalIncome <= (median100 * 0.70)) {
         services.push({
-          category: 'chasangwi', agency: '보건복지부 / 국민연금공단',
+          category: 'chasangwi', agency: '국민연금공단',
           title: '기초연금 지원사업',
+          contact: '국민연금공단 ☎ 1355 / 주소지 관할 국민연금공단 지사',
           desc: '만 65세 이상 어르신 소득하위 70% 충족 시 단독 매월 최대 334,810원(부부 최대 535,680원) 현금 입금',
           action: '기초연금 지급신청서 접수 및 금융정보제공동의'
         });
@@ -567,20 +591,42 @@
 
       if (checkElderlyCare || (hasSenior && totalIncome <= (median100 * 0.50))) {
         services.push({
-          category: 'chasangwi', agency: '지자체 / 건보공단',
-          title: '노인맞춤돌봄 및 장기요양보험',
-          desc: '독거·거동불편 어르신 전담 생활지원사 안부확인(주 2~3회 방문/말벗) 및 장기요양 등급 신청',
+          category: 'chasangwi', agency: '국민건강보험공단',
+          title: '노인장기요양보험 & 맞춤돌봄',
+          contact: '건보공단 장기요양 ☎ 1577-1000 / 독거노인종합지원센터 ☎ 1661-2129',
+          desc: '독거·거동불편 어르신 전담 생활지원사 안부확인(주 2~3회 방문/말벗) 및 장기요양 등급 신청(방문요양/목욕)',
           action: '노인맞춤돌봄 수행기관 연계의뢰 및 장기요양 신청서 대리접수'
         });
       }
 
-      // 6. 건보공단 재난적의료비
+      // 5. 유관기관 특화연계 (건보공단, 신복위, 법무보호공단)
       if (checkSeverelyIll || (hasSenior && totalIncome <= median100)) {
         services.push({
           category: 'other', agency: '국민건강보험공단',
           title: '건보공단 [재난적의료비 지원]',
-          desc: '고액 병원비 본인부담금의 50~80% 지원 (최대 5,000만원 한도, 비급여 포함)',
-          action: '퇴원 후 180일 이내 건보공단 지사 전용의뢰서 발급 및 연계'
+          contact: '국민건강보험공단 ☎ 1577-1000 (대구 각 구·군 지사)',
+          desc: '고액 병원비 본인부담금의 50~80% 지원 (연간 최대 5,000만원 한도, 비급여 포함)',
+          action: '퇴원 후 180일 이내 건보공단 지사 전용의뢰서 발급 및 안내'
+        });
+      }
+
+      if (checkDebt) {
+        services.push({
+          category: 'other', agency: '신용회복위원회·서민금융진흥원',
+          title: '신용회복위원회·서민금융 [채무조정 & 소액생계대출]',
+          contact: '서민금융콜센터 ☎ 1397 / 신용회복위원회 ☎ 1600-5500 (대구센터)',
+          desc: '취약계층 원금 최대 90% 감면 특례, 당일 즉시 100만원 소액생계비대출, 압류방지 행복지킴이통장',
+          action: '대구 서민금융통합지원센터 방문 안내 및 상담의뢰서 교부'
+        });
+      }
+
+      if (checkPrison) {
+        services.push({
+          category: 'other', agency: '한국법무보호복지공단',
+          title: '한국법무보호복지공단 [출소자 LH 긴급주거 & 취업]',
+          contact: '법무보호공단 ☎ 1670-7004 / 대구지부 ☎ 053-431-2000',
+          desc: '출소 후 3년 이내 무의탁자 대상 LH 연계 주거지원(보증금 100% 공단부담), 긴급원호금, 허그일자리',
+          action: '한국법무보호복지공단 대구지부 긴급의뢰서 작성 및 연계'
         });
       }
 
@@ -595,6 +641,7 @@
       let filtered = services;
       if (currentFilter === 'basic') filtered = services.filter(s => s.category === 'basic');
       else if (currentFilter === 'chasangwi') filtered = services.filter(s => s.category === 'chasangwi');
+      else if (currentFilter === 'other') filtered = services.filter(s => s.category === 'other');
 
       document.getElementById('serviceCountBadge').textContent = `${filtered.length}건`;
 
@@ -605,14 +652,14 @@
 
       filtered.forEach(s => {
         const card = document.createElement('div');
-        const isBasic = (s.category === 'basic');
-        card.className = `service-card ${isBasic ? 'basic' : 'other'}`;
+        card.className = `service-card ${s.category}`;
         card.innerHTML = `
           <div class="service-top">
             <strong>${s.title}</strong>
             <span class="service-tag">${s.agency}</span>
           </div>
-          <p style="color:#475569; margin:4px 0;">${s.desc}</p>
+          <div class="contact-badge">📞 연락처: ${s.contact}</div>
+          <p style="color:#475569; margin:6px 0 4px 0;">${s.desc}</p>
           <div class="service-action">▶ 조치: ${s.action}</div>
         `;
         container.appendChild(card);
@@ -624,20 +671,22 @@
       const today = new Date().toISOString().slice(0, 10);
       const hasStandardCar = document.getElementById('hasStandardCar').checked;
       
-      const cleanServices = services.map((s, idx) => `${idx + 1}. [${s.title}] : ${s.desc}`).join('\n');
+      const cleanServices = services.map((s, idx) => {
+        return `${idx + 1}. [${s.title}] (${s.contact})\n   - ${s.desc}`;
+      }).join('\n');
 
       let actionDetails = [];
       if (services.some(s => s.title.includes('긴급복지'))) {
-        actionDetails.push("- [긴급지원] 72시간 내 현장 확인 및 긴급생계비 선지원 품의 상정");
+        actionDetails.push("- [긴급지원] 72시간 내 현장 확인 및 긴급생계비 선지원 품의 상정 (문의 129)");
       }
       if (services.some(s => s.title.includes('기초생활보장'))) {
         actionDetails.push("- [기초보장] 사회보장급여 신청서 접수 및 공적자료 연계 조사 착수");
       }
       if (services.some(s => s.title.includes('차상위 본인부담경감'))) {
-        actionDetails.push("- [차상위의료] 6개월 이상 치료 진단서 징구 및 본인부담경감 대상자 신청 등록");
+        actionDetails.push("- [차상위의료] 진단서 징구 및 본인부담경감 등록 (건보공단 1577-1000)");
       }
       if (services.some(s => s.title.includes('기초연금'))) {
-        actionDetails.push("- [기초연금] 기초연금 지급신청서 접수 및 금융정보제공동의 진행");
+        actionDetails.push("- [기초연금] 기초연금 지급신청서 접수 및 금융정보제공동의 (국민연금 1355)");
       }
       if (hasCutoff) {
         actionDetails.push("- [부양의무] 가족관계 해체 확인서 징구 및 소명자료(통장내역 등) 첨부 조치");
@@ -645,8 +694,11 @@
       if (hasStandardCar) {
         actionDetails.push("- [차량기준] 일반승용차 100% 월환산 규정 안내 및 생업용 소명서류 징구 안내");
       }
-      if (services.some(s => s.title.includes('노인맞춤돌봄'))) {
-        actionDetails.push("- [노인돌봄] 독거노인 맞춤돌봄 전담기관 안부확인 의뢰서 송부");
+      if (services.some(s => s.title.includes('신용회복위원회'))) {
+        actionDetails.push("- [채무조정] 대구 서민금융통합지원센터 방문 안내 (서민금융콜 1397)");
+      }
+      if (services.some(s => s.title.includes('법무보호공단'))) {
+        actionDetails.push("- [법무원호] 한국법무보호복지공단 대구지부 긴급연계 의뢰 (1670-7004)");
       }
       if (actionDetails.length === 0) {
         actionDetails.push("- [일반상담] 제도 안내문 교부 및 향후 소득·건강 변동 시 재상담 안내");
@@ -667,7 +719,7 @@ ${memoText.trim()}
 3. 부양의무자 판단 소견:
 ${hasCutoff ? '- 가족관계 해체 및 연락두절 상태 확인됨 -> 의료급여 지방생활보장위원회 우선심의 구제 대상 검토 필요' : '- 해당사항 없음 (일반 조사절차 진행)'}
 
-4. 지원 가능 서비스:
+4. 지원 가능 서비스 및 안내 연락처:
 ${cleanServices || '- 기준초과로 지원가능 공적급여 없음 (민간후원 연계 검토)'}
 
 5. 행정 조치내용:
