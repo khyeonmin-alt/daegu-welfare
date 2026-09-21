@@ -54,12 +54,15 @@
 
     .summary-card { background: #0f172a; color: #fff; border-radius: 8px; padding: 16px; margin-bottom: 18px; }
     .summary-title { font-size: 13px; font-weight: bold; margin-bottom: 12px; border-bottom: 1px solid #334155; padding-bottom: 6px; display: flex; justify-content: space-between; }
-    .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center; }
-    .summary-box { background: rgba(255,255,255,0.07); padding: 8px; border-radius: 6px; }
-    .summary-box.highlight { background: #1e3a8a; border: 1px solid #3b82f6; }
-    .summary-box span { font-size: 10px; color: #94a3b8; display: block; margin-bottom: 2px; }
-    .summary-box strong { font-size: 14px; color: #f8fafc; }
-    .summary-box.highlight strong { color: #fde047; font-size: 16px; }
+    
+    /* 2개 영역 분할 요약 그리드 */
+    .summary-dual { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .dual-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 10px; }
+    .dual-card.active { border-color: #38bdf8; background: rgba(56,189,248,0.08); }
+    .dual-head { font-size: 11px; color: #94a3b8; font-weight: bold; margin-bottom: 4px; display: flex; justify-content: space-between; }
+    .dual-val { font-size: 16px; font-weight: bold; color: #f8fafc; }
+    .dual-val.highlight { color: #fde047; }
+    .dual-sub { font-size: 10px; color: #cbd5e1; margin-top: 3px; }
 
     .tab-bar { display: flex; gap: 6px; margin-bottom: 12px; }
     .tab-btn { padding: 5px 10px; font-size: 11px; border: 1px solid #cbd5e1; border-radius: 5px; background: #f8fafc; cursor: pointer; }
@@ -162,7 +165,7 @@
           <div class="section-title" style="margin-top:16px;">2. 소득 평가액 (월 기준, 만원 단위)</div>
           <div class="form-row">
             <div class="form-group">
-              <label>근로·사업소득 (30% 기본공제 자동)</label>
+              <label>근로·사업소득 (자동 공제 반영)</label>
               <input type="text" id="earnedIncome" value="0" oninput="formatCurrencyInput(this); runSimulation();">
             </div>
             <div class="form-group">
@@ -174,11 +177,11 @@
           <div class="section-title" style="margin-top:16px;">3. 재산 및 부채 현황 (만원 단위)</div>
           <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr;">
             <div class="form-group">
-              <label>보증금/주거용재산 (월 1.04% 한도)</label>
+              <label>주택/보증금 (주거재산)</label>
               <input type="text" id="generalProperty" value="500" oninput="formatCurrencyInput(this); runSimulation();">
             </div>
             <div class="form-group">
-              <label>통장 금융예금 (500만 공제)</label>
+              <label>통장 금융예금</label>
               <input type="text" id="financeProperty" value="30" oninput="formatCurrencyInput(this); runSimulation();">
             </div>
             <div class="form-group">
@@ -209,26 +212,33 @@
       <div>
         <div class="summary-card">
           <div class="summary-title">
-            <span>소득인정액 모의계산 요약</span>
+            <span>제도별 소득인정액 비교 산출</span>
             <span id="resHousehold">1인 가구 (대구광역시)</span>
           </div>
-          <div class="summary-grid">
-            <div class="summary-box">
-              <span>소득평가액</span>
-              <strong id="resEarnedVal">0원</strong>
+
+          <div class="summary-dual">
+            <div class="dual-card">
+              <div class="dual-head">
+                <span>기초생활보장 소득인정액</span>
+                <span id="resBasicRatio" style="color:#38bdf8;">중위 0.0%</span>
+              </div>
+              <div class="dual-val" id="resTotalIncomeVal">0원</div>
+              <div class="dual-sub">생계 32% / 의료 40% / 주거 48%</div>
             </div>
-            <div class="summary-box">
-              <span>재산환산액</span>
-              <strong id="resPropertyVal">0원</strong>
-            </div>
-            <div class="summary-box highlight">
-              <span>기초보장 인정액</span>
-              <strong id="resTotalIncomeVal">0원</strong>
+
+            <div class="dual-card active">
+              <div class="dual-head">
+                <span>기초연금 전용 소득인정액</span>
+                <span id="resPensionStatus" style="color:#34d399;">해당여부 계산중</span>
+              </div>
+              <div class="dual-val highlight" id="resPensionIncomeVal">0원</div>
+              <div class="dual-sub" id="resPensionCriteria">선정기준액 247만 원 이하</div>
             </div>
           </div>
-          <div style="margin-top:10px; font-size:11px; color:#cbd5e1; display:flex; justify-content:space-between;">
+
+          <div style="font-size:11px; color:#cbd5e1; display:flex; justify-content:space-between; border-top:1px solid #334155; padding-top:8px;">
             <span>2026년 기준 중위소득 100%: <strong id="resMedian100" style="color:#fff;">2,392,013원</strong></span>
-            <span id="resMedianRatio" style="color:#34d399; font-weight:bold;">중위소득 0.0% 구간</span>
+            <span>기초연금 공제: 대도시 1억3,500만 / 금융 2,000만</span>
           </div>
         </div>
 
@@ -396,10 +406,10 @@
 가족: 2인 가구 (부부 어르신 가구)
 자동차: 없음
 소득: 무직, 정기소득 없음
-주거: 영구임대주택 (보증금 3백50만원, 월 5만원)
-재산: 통장예금 4백만원
-부채: 0원
-위기사유: 정기 수입 부재로 생계비 부족, 기초연금 수급 자격 및 방문돌봄 서비스 신청 희망`;
+주거: 자가 주택 (공시가격 3억원)
+재산: 통장예금 3천만원
+부채: 주택담보대출 5천만원
+위기사유: 정기 수입 부재로 생계비 부족, 자가 주택(3억원) 보유 시 기초연금 수급 가능 여부 상담 희망`;
       }
       parseCounselingMemo();
     }
@@ -552,6 +562,8 @@
           let target = content;
           if (content.includes('보증금')) {
             target = content.substring(content.indexOf('보증금'));
+          } else if (content.includes('가격') || content.includes('공시')) {
+            target = content;
           }
           const val = parseKoreanAmount(target);
           if (val !== null) setFormattedValue('generalProperty', val);
@@ -655,6 +667,7 @@
       const finProp = getNumericValue('financeProperty') * 10000;
       const debt = getNumericValue('debtAmount') * 10000;
 
+      // 1. 기초생활보장 재산환산
       let netFin = Math.max(0, finProp - exemptFinance);
       let remainDebt = debt;
 
@@ -689,17 +702,61 @@
       const totalRecognizedIncome = Math.round(incomeVal + propMonthly);
       const ratio = (totalRecognizedIncome / median100) * 100;
 
-      document.getElementById('resHousehold').textContent = `${size}인 가구 (${regStandard.name})`;
-      document.getElementById('resEarnedVal').textContent = Math.round(incomeVal).toLocaleString() + '원';
-      document.getElementById('resPropertyVal').textContent = Math.round(propMonthly).toLocaleString() + '원';
-      document.getElementById('resTotalIncomeVal').textContent = totalRecognizedIncome.toLocaleString() + '원';
-      document.getElementById('resMedian100').textContent = median100.toLocaleString() + '원';
-      document.getElementById('resMedianRatio').textContent = `중위소득 ${ratio.toFixed(1)}% 구간`;
+      // 2. 기초연금 전용 소득인정액 별도 산출
+      // 대도시 1억 3,500만 / 중소도시 8,500만 / 농어촌 7,250만
+      const pensionBasicExempt = (regionKey === 'metro' || regionKey === 'seoul') ? 13500 * 10000 : 8500 * 10000;
+      const pensionFinExempt = 2000 * 10000; // 기초연금 금융재산 2,000만원 공제
 
-      evaluateServices(size, totalRecognizedIncome, median100, finProp, housingProp, debt, earnedRaw, otherRaw, regionKey);
+      let pensionNetFin = Math.max(0, finProp - pensionFinExempt);
+      let pensionNetGeneral = Math.max(0, housingProp - pensionBasicExempt);
+      let pensionRemainDebt = debt;
+
+      if (pensionNetGeneral > 0 && pensionRemainDebt > 0) {
+        if (pensionNetGeneral >= pensionRemainDebt) {
+          pensionNetGeneral -= pensionRemainDebt;
+          pensionRemainDebt = 0;
+        } else {
+          pensionRemainDebt -= pensionNetGeneral;
+          pensionNetGeneral = 0;
+        }
+      }
+      if (pensionNetFin > 0 && pensionRemainDebt > 0) {
+        if (pensionNetFin >= pensionRemainDebt) {
+          pensionNetFin -= pensionRemainDebt;
+          pensionRemainDebt = 0;
+        } else {
+          pensionRemainDebt -= pensionNetFin;
+          pensionNetFin = 0;
+        }
+      }
+
+      // 기초연금 월환산율: 연 4% (월 0.04 / 12)
+      const pensionPropMonthly = (pensionNetGeneral + pensionNetFin) * (0.04 / 12);
+      // 근로소득 기본공제: 월 110만원 공제 후 30% 추가 공제
+      const pensionEarnedDeducted = earnedRaw > 1100000 ? (earnedRaw - 1100000) * 0.7 : 0;
+      const pensionIncomeMonthly = pensionEarnedDeducted + otherRaw;
+      const pensionRecognizedIncome = Math.round(pensionIncomeMonthly + pensionPropMonthly);
+
+      // 2026년 선정기준액: 단독 247만 원, 부부 395.2만 원
+      const PENSION_LIMIT = (size === 1) ? 2470000 : 3952000;
+      const isPensionEligible = (pensionRecognizedIncome <= PENSION_LIMIT);
+
+      // 상단 요약 카드 업데이트
+      document.getElementById('resHousehold').textContent = `${size}인 가구 (${regStandard.name})`;
+      document.getElementById('resTotalIncomeVal').textContent = totalRecognizedIncome.toLocaleString() + '원';
+      document.getElementById('resBasicRatio').textContent = `중위 ${ratio.toFixed(1)}%`;
+      
+      document.getElementById('resPensionIncomeVal').textContent = pensionRecognizedIncome.toLocaleString() + '원';
+      document.getElementById('resPensionCriteria').textContent = `선정기준: ${size === 1 ? '단독 247만' : '부부 395.2만'}원 이하`;
+      document.getElementById('resPensionStatus').textContent = isPensionEligible ? '수급 가능' : '기준 초과';
+      document.getElementById('resPensionStatus').style.color = isPensionEligible ? '#34d399' : '#f87171';
+
+      document.getElementById('resMedian100').textContent = median100.toLocaleString() + '원';
+
+      evaluateServices(size, totalRecognizedIncome, median100, finProp, housingProp, debt, earnedRaw, otherRaw, regionKey, pensionRecognizedIncome, PENSION_LIMIT, isPensionEligible);
     }
 
-    function evaluateServices(size, totalIncome, median100, finProp, housingProp, debt, earnedRaw, otherRaw, regionKey) {
+    function evaluateServices(size, totalIncome, median100, finProp, housingProp, debt, earnedRaw, otherRaw, regionKey, pensionRecognizedIncome, PENSION_LIMIT, isPensionEligible) {
       const services = [];
       const hasSenior = document.getElementById('hasSenior').checked;
       const hasSevereDisabled = document.getElementById('hasSevereDisabled').checked;
@@ -800,46 +857,16 @@
         });
       }
 
-      // 4. 기초연금 (기초연금 전용 소득 및 재산환산 산식 적용)
-      if (hasSenior) {
-        // 지역별 기본재산 공제: 특·광역시(대구, 서울 등) 1억 3,500만원, 중소도시 8,500만원, 농어촌 7,250만원
-        const pensionBasicExempt = (regionKey === 'metro' || regionKey === 'seoul') ? 13500 * 10000 : 8500 * 10000;
-        const pensionFinExempt = 2000 * 10000; // 기초연금 금융재산 공제: 2,000만원
-
-        const netPensionFin = Math.max(0, finProp - pensionFinExempt);
-        let netPensionGeneral = Math.max(0, housingProp - pensionBasicExempt);
-        let remainPensionDebt = debt;
-
-        if (netPensionGeneral > 0 && remainPensionDebt > 0) {
-          if (netPensionGeneral >= remainPensionDebt) {
-            netPensionGeneral -= remainPensionDebt;
-            remainPensionDebt = 0;
-          } else {
-            remainPensionDebt -= netPensionGeneral;
-            netPensionGeneral = 0;
-          }
-        }
-
-        // 재산의 월 소득환산율: 연 4% (월 0.04 / 12)
-        const pensionPropMonthly = (netPensionGeneral + netPensionFin) * (0.04 / 12);
-
-        // 근로소득 기본공제: 110만원 정액 공제 후 30% 추가 공제
-        const pensionEarnedDeducted = earnedRaw > 1100000 ? (earnedRaw - 1100000) * 0.7 : 0;
-        const pensionIncomeMonthly = pensionEarnedDeducted + otherRaw;
-
-        const pensionRecognizedIncome = Math.round(pensionIncomeMonthly + pensionPropMonthly);
-        const PENSION_LIMIT = (size === 1) ? 2130000 : 3408000;
-
-        if (pensionRecognizedIncome <= PENSION_LIMIT) {
-          const maxPension = (size === 1) ? '단독가구 매월 최대 334,810원' : '부부가구 합산 최대 535,680원';
-          services.push({
-            category: 'chasangwi', agency: '국민연금공단',
-            title: '기초연금 지원사업',
-            contact: '국민연금공단 ☎ 1355 / 주소지 관할 국민연금공단 지사',
-            desc: `만 65세 이상 (기초연금 산정액: 월 ${pensionRecognizedIncome.toLocaleString()}원 / 선정기준 ${PENSION_LIMIT.toLocaleString()}원 이하 충족) → ${maxPension} 지급 대상`,
-            action: '기초연금 지급신청서 접수 및 금융정보제공동의'
-          });
-        }
+      // 4. 기초연금 (기초연금 전용 소득인정액 적용)
+      if (hasSenior && isPensionEligible) {
+        const maxPension = (size === 1) ? '단독가구 매월 최대 약 34만 9,700원' : '부부가구 합산 최대 약 55만 9,520원';
+        services.push({
+          category: 'chasangwi', agency: '국민연금공단',
+          title: '기초연금 지원사업',
+          contact: '국민연금공단 ☎ 1355 / 주소지 관할 국민연금공단 지사',
+          desc: `만 65세 이상 (기초연금 인정액: 월 ${pensionRecognizedIncome.toLocaleString()}원 / 기준 ${PENSION_LIMIT.toLocaleString()}원 이하 충족) → ${maxPension} 현금 지급 대상`,
+          action: '기초연금 지급신청서 접수 및 금융정보제공동의'
+        });
       }
 
       if (checkElderlyCare || (hasSenior && totalIncome <= (median100 * 0.50))) {
@@ -884,7 +911,7 @@
       }
 
       renderServices(services);
-      generateHaengbokLog(size, totalIncome, services, checkFamilyCutoff);
+      generateHaengbokLog(size, totalIncome, pensionRecognizedIncome, PENSION_LIMIT, isPensionEligible, services, checkFamilyCutoff);
     }
 
     function renderServices(services) {
@@ -919,7 +946,7 @@
       });
     }
 
-    function generateHaengbokLog(size, totalIncome, services, hasCutoff) {
+    function generateHaengbokLog(size, totalIncome, pensionIncome, pensionLimit, isPensionEligible, services, hasCutoff) {
       const memoText = document.getElementById('memoInput').value;
       const today = new Date().toISOString().slice(0, 10);
       const hasStandardCar = document.getElementById('hasStandardCar').checked;
@@ -931,17 +958,14 @@
       }).join('\n');
 
       let actionDetails = [];
+      if (services.some(s => s.title.includes('기초연금'))) {
+        actionDetails.push("- [기초연금] 기초생활 탈락과 무관하게 기초연금 수급기준 충족 확인 → 기초연금 지급신청서 접수 및 금융동의서 징구 (문의 1355)");
+      }
       if (services.some(s => s.title.includes('긴급복지'))) {
         actionDetails.push("- [긴급지원] 72시간 내 현장 확인 및 긴급생계비 선지원 품의 상정 (문의 129)");
       }
       if (services.some(s => s.title.includes('기초생활보장'))) {
         actionDetails.push("- [기초보장] 사회보장급여 신청서 접수 및 공적자료 연계 조사 착수");
-      }
-      if (services.some(s => s.title.includes('차상위 본인부담경감'))) {
-        actionDetails.push("- [차상위의료] 진단서 징구 및 본인부담경감 등록 (건보공단 1577-1000)");
-      }
-      if (services.some(s => s.title.includes('기초연금'))) {
-        actionDetails.push("- [기초연금] 기초연금 지급신청서 접수 및 금융정보제공동의 (국민연금 1355)");
       }
       if (hasCutoff) {
         actionDetails.push("- [부양의무] 가족관계 해체 확인서 징구 및 소명자료(통장내역 등) 첨부 조치");
@@ -949,14 +973,8 @@
       if (hasStandardCar) {
         actionDetails.push("- [차량기준] 일반승용차 100% 월환산 규정 안내 및 생업용 소명서류 징구 안내");
       }
-      if (services.some(s => s.title.includes('신용회복위원회'))) {
-        actionDetails.push("- [채무조정] 대구 서민금융통합지원센터 방문 안내 (서민금융콜 1397)");
-      }
-      if (services.some(s => s.title.includes('법무보호공단'))) {
-        actionDetails.push("- [법무원호] 한국법무보호복지공단 대구지부 긴급연계 의뢰 (1670-7004)");
-      }
       if (actionDetails.length === 0) {
-        actionDetails.push("- [일반상담] 제도 안내문 교부 및 향후 소득·건강 변동 시 재상담 안내");
+        actionDetails.push("- [일반상담] 기준 초과 안내문 교부 및 향후 소득·건강 변동 시 재상담 안내");
       }
 
       const log = 
@@ -968,8 +986,9 @@
 ${memoText.trim()}
 
 2. 모의계산 산출 내역:
-- 기초생활 소득인정액: 월 ${totalIncome.toLocaleString()}원
-- 재산기준 적용: ${regName} (기본재산 ${REGION_STANDARDS[regionKey].basic.toLocaleString()}만원, 주거한도 ${REGION_STANDARDS[regionKey].housingLimit.toLocaleString()}만원)
+- 기초생활보장 소득인정액: 월 ${totalIncome.toLocaleString()}원 (기본재산 ${REGION_STANDARDS[regionKey].basic.toLocaleString()}만원, 주거한도 ${REGION_STANDARDS[regionKey].housingLimit.toLocaleString()}만원 적용)
+- 기초연금 전용 소득인정액: 월 ${pensionIncome.toLocaleString()}원 (기본공제 1억3,500만원, 금융공제 2,000만원, 연 4% 환산 적용)
+  ※ 2026년 기초연금 선정기준: ${pensionLimit.toLocaleString()}원 이하 → ${isPensionEligible ? '충족(수급가능)' : '기준초과(탈락)'}
 - 자동차 판정: ${hasStandardCar ? '일반승용차 100% 월환산 대상' : '노후차량/생업용 감면 또는 차량 없음'}
 
 3. 부양의무자 판단 소견:
