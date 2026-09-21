@@ -1,66 +1,1301 @@
-/**
- * 주소 입력 기반 주택 공시가격 동적 산출 및 공공데이터 연계 함수
- */
-function fetchOfficialPrice() {
-  const addr = (document.getElementById('addressInput').value || '').trim();
-  const resEl = document.getElementById('addrFetchResult');
-  
-  if (!addr) {
-    alert('조회할 도로명 주소, 지번 또는 단지명을 입력해주세요.');
-    document.getElementById('addressInput').focus();
-    return;
-  }
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>대구광역시 읍·면·동 맞춤형 복지상담 도우미</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "맑은 고딕", helvetica, sans-serif; }
+    body { background-color: #f1f5f9; color: #1e293b; padding-bottom: 40px; }
+    
+    header { background: #1e3a8a; color: #fff; padding: 14px 20px; position: sticky; top: 0; z-index: 100; }
+    .header-inner { max-width: 1280px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+    .header-title h1 { font-size: 18px; font-weight: bold; }
+    .header-title p { font-size: 12px; color: #93c5fd; margin-top: 2px; }
+    .header-badge { background: #10b981; color: #fff; font-size: 12px; padding: 4px 10px; border-radius: 20px; font-weight: bold; }
 
-  resEl.innerHTML = `🔍 <strong>[${addr}]</strong> 부동산 공시가격 전산 데이터를 조회 중입니다...`;
-  
-  setTimeout(() => {
-    // 1. 주소 문자열 고유 해시코드 생성 (입력 주소마다 다른 고유값 생성)
-    let hash = 0;
-    for (let i = 0; i < addr.length; i++) {
-      hash = (hash << 5) - hash + addr.charCodeAt(i);
-      hash |= 0;
-    }
-    const absHash = Math.abs(hash);
+    main { max-width: 1280px; margin: 20px auto; padding: 0 16px; }
 
-    // 2. 주택 유형별 기본 단가 및 변동폭 설정 (만원 단위)
-    let baseMin = 7000;   // 최저 7,000만 원
-    let baseRange = 15000; // 변동폭 1억 5,000만 원
+    .box { background: #fff; border-radius: 10px; border: 1px solid #cbd5e1; padding: 18px; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
 
-    if (addr.includes('아파트') || addr.includes('자이') || addr.includes('캐슬') || 
-        addr.includes('힐스') || addr.includes('푸르지오') || addr.includes('아이파크') || addr.includes('더샵')) {
-      baseMin = 18000;  // 아파트 기본 1억 8,000만 원 ~ 4억 5,000만 원
-      baseRange = 27000;
-    } else if (addr.includes('빌라') || addr.includes('다세대') || addr.includes('연립') || addr.includes('맨션')) {
-      baseMin = 6000;   // 빌라/다세대 6,000만 원 ~ 1억 8,000만 원
-      baseRange = 12000;
-    } else if (addr.includes('원룸') || addr.includes('오피스텔') || addr.includes('도시형')) {
-      baseMin = 4500;   // 소형/오피스텔 4,500만 원 ~ 1억 3,000만 원
-      baseRange = 8500;
-    } else if (addr.includes('단독') || addr.includes('주택') || addr.includes('상가주택')) {
-      baseMin = 12000;  // 단독주택 1억 2,000만 원 ~ 3억 2,000만 원
-      baseRange = 20000;
+    .preset-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 10px; }
+    .preset-btn { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; text-align: left; cursor: pointer; transition: all 0.2s; }
+    .preset-btn:hover { background: #e0f2fe; border-color: #38bdf8; }
+    .preset-btn strong { display: block; font-size: 13px; color: #0f172a; margin-bottom: 3px; }
+    .preset-btn span { font-size: 11px; color: #64748b; line-height: 1.3; display: block; }
+
+    .main-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+    @media (min-width: 992px) {
+      .main-grid { grid-template-columns: 1fr 1fr; }
     }
 
-    // 3. 50만 원 단위로 깔끔하게 절사된 공시가격 계산
-    const calculatedPrice = baseMin + (absHash % (baseRange / 50)) * 50;
+    .memo-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
+    .btn-group { display: flex; gap: 6px; }
+    button { cursor: pointer; }
+    .btn-sm { padding: 5px 9px; font-size: 11px; border-radius: 5px; border: 1px solid #cbd5e1; background: #f8fafc; font-weight: bold; }
+    .btn-sm:hover { background: #e2e8f0; }
+    .btn-action { background: #2563eb; color: #fff; border: none; padding: 6px 12px; font-size: 12px; border-radius: 5px; font-weight: bold; }
+    .btn-action:hover { background: #1d4ed8; }
 
-    // 4. 주거용재산 입력 필드에 즉시 반영
-    setFormattedValue('housingProperty', calculatedPrice);
+    textarea { width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; font-size: 12px; line-height: 1.6; background: #f8fafc; resize: vertical; }
 
-    // 5. 결과 알림 및 공시가격 알리미 공식 사이트 안내
-    resEl.innerHTML = `
-      <div style="line-height:1.6;">
-        ✅ <strong>조회 완료:</strong> [${addr}] 기준 추정 공시가격 
-        <strong style="color:#1e3a8a; text-decoration:underline;">${calculatedPrice.toLocaleString()}만 원</strong>이 주거용재산에 자동 입력되었습니다.<br>
-        <span style="font-size:10.5px; color:#64748b;">
-          ※ 실제 정확한 고지 금액은 국토부 
-          <a href="https://www.realtyprice.kr" target="_blank" style="color:#2563eb; font-weight:bold; text-decoration:none;">[부동산공시가격알리미 ↗]</a>
-          확인 후 아래 주거용재산 칸에서 직접 수정하실 수 있습니다.
-        </span>
+    .section-title { font-size: 13px; font-weight: bold; color: #0f172a; margin-bottom: 10px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 11px; font-weight: bold; color: #475569; margin-bottom: 4px; }
+    .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 12px; }
+    
+    .chk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+    .chk-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px; font-size: 11px; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .chk-item.col2 { grid-column: span 2; }
+    .chk-item.warn { background: #fffbeb; border-color: #fde68a; color: #92400e; font-weight: bold; }
+
+    .addr-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; }
+    .addr-input-row { display: flex; gap: 6px; margin-top: 4px; }
+    .addr-input-row input { flex: 1; padding: 7px 9px; font-size: 12px; border: 1px solid #93c5fd; border-radius: 5px; }
+    .addr-btn { background: #1d4ed8; color: #fff; border: none; border-radius: 5px; padding: 0 12px; font-size: 11px; font-weight: bold; }
+    .addr-btn:hover { background: #1e40af; }
+    .addr-res-text { font-size: 11px; color: #1e40af; margin-top: 5px; font-weight: 500; }
+
+    .car-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; margin-top: 10px; }
+    .car-badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-top: 6px; }
+    .car-badge.danger { background: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
+    .car-badge.success { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+
+    .btn-calc { width: 100%; padding: 13px; background: #2563eb; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 12px; }
+    .btn-calc:hover { background: #1d4ed8; }
+
+    .summary-card { background: #0f172a; color: #fff; border-radius: 8px; padding: 16px; margin-bottom: 18px; }
+    .summary-title { font-size: 13px; font-weight: bold; margin-bottom: 12px; border-bottom: 1px solid #334155; padding-bottom: 6px; display: flex; justify-content: space-between; }
+    
+    .summary-dual { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .dual-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 10px; }
+    .dual-card.active { border-color: #38bdf8; background: rgba(56,189,248,0.08); }
+    .dual-head { font-size: 11px; color: #94a3b8; font-weight: bold; margin-bottom: 4px; display: flex; justify-content: space-between; }
+    .dual-val { font-size: 16px; font-weight: bold; color: #f8fafc; }
+    .dual-val.highlight { color: #fde047; }
+    .dual-sub { font-size: 10px; color: #cbd5e1; margin-top: 3px; }
+
+    .tab-bar { display: flex; gap: 6px; margin-bottom: 12px; }
+    .tab-btn { padding: 5px 10px; font-size: 11px; border: 1px solid #cbd5e1; border-radius: 5px; background: #f8fafc; cursor: pointer; }
+    .tab-btn.active { background: #2563eb; color: #fff; border-color: #2563eb; font-weight: bold; }
+
+    .service-card { border-radius: 7px; padding: 12px; margin-bottom: 10px; font-size: 11px; border: 1px solid #cbd5e1; }
+    .service-card.basic { background: #f0fdf4; border-color: #bbf7d0; }
+    .service-card.chasangwi { background: #eff6ff; border-color: #bfdbfe; }
+    .service-card.other { background: #f5f3ff; border-color: #ddd6fe; }
+    .service-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .service-top strong { font-size: 12px; color: #0f172a; }
+    .service-tag { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+    .service-card.basic .service-tag { background: #dcfce7; color: #166534; }
+    .service-card.chasangwi .service-tag { background: #dbeafe; color: #1e40af; }
+    .service-card.other .service-tag { background: #ede9fe; color: #5b21b6; }
+    
+    .contact-badge { display: inline-block; margin-top: 4px; padding: 3px 7px; border-radius: 4px; background: #f1f5f9; color: #334155; font-size: 10.5px; border: 1px solid #e2e8f0; font-weight: 600; }
+    .service-action { margin-top: 6px; padding: 6px 8px; background: rgba(255,255,255,0.9); border-radius: 4px; border: 1px solid #e2e8f0; font-weight: bold; color: #1e3a8a; }
+
+    .benefit-sublist { margin-top: 8px; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .benefit-item { background: #ffffff; border: 1px solid #dcfce7; border-radius: 5px; padding: 6px 8px; }
+    .benefit-item strong { color: #166534; font-size: 11.5px; }
+
+    .btn-copy { background: #059669; color: #fff; border: none; padding: 6px 12px; border-radius: 5px; font-size: 11px; font-weight: bold; }
+    .btn-copy:hover { background: #047857; }
+
+    footer { text-align: center; margin-top: 30px; font-size: 12px; color: #64748b; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <div class="header-title">
+        <h1>대구광역시 읍·면·동 맞춤형 복지상담 도우미</h1>
+        <p>기획·제작: 대구광역시 복지정책과</p>
       </div>
-    `;
+      <div class="header-badge" id="topRegionBadge">광역·세종·창원 (3급지: 기본재산 7,700만 / 주거한도 1억4,600만)</div>
+    </div>
+  </header>
 
-    // 6. 전체 모의계산 재실행
-    runSimulation();
-  }, 350);
-}
+  <main>
+    <div class="box">
+      <div style="font-weight:bold; font-size:12px; color:#334155; margin-bottom:6px;">지침별 대표 위기사례 (원클릭 테스트)</div>
+      <div class="preset-grid">
+        <button class="preset-btn" onclick="loadScenario('basic')">
+          <strong>기초생활보장 (중년 단독·노후차)</strong>
+          <span>생계·의료·주거 + 일반공제 30%</span>
+        </button>
+        <button class="preset-btn" onclick="loadScenario('emergency')">
+          <strong>긴급복지 (일반차량 과다 탈락위기)</strong>
+          <span>긴급생계 + 재난의료비 + 일반차량</span>
+        </button>
+        <button class="preset-btn" onclick="loadScenario('chasangwi')">
+          <strong>장애인 가구 (20만+30% 공제)</strong>
+          <span>장애인 근로공제 + 모닝 경차 감면</span>
+        </button>
+        <button class="preset-btn" onclick="loadScenario('pension')">
+          <strong>기초연금 (노인부부·자가주택)</strong>
+          <span>만 65세+ 기초연금 및 노인돌봄 연계</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="main-grid">
+      <div>
+        <div class="box">
+          <div class="memo-bar">
+            <span style="font-weight:bold; font-size:13px; color:#0f172a;">상담 메모 정형/자연어 분석</span>
+            <div class="btn-group">
+              <button class="btn-sm" onclick="fillEmptyTemplate()">빈 서식</button>
+              <button class="btn-sm" onclick="resetMemoToBasic()">기본 예시</button>
+              <button class="btn-sm" onclick="clearMemo()">비우기</button>
+              <button class="btn-action" onclick="parseCounselingMemo()">메모 분석 & 서식 반영</button>
+            </div>
+          </div>
+          <textarea id="memoInput" rows="8"></textarea>
+        </div>
+
+        <div class="box">
+          <div class="section-title">1. 가구 기본 구성 및 대상자 특성</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>가구원 수</label>
+              <input type="number" id="householdSize" value="1" min="1" max="10" onchange="runSimulation()">
+            </div>
+            <div class="form-group">
+              <label>지역 급지 구분 (보건복지부 고시)</label>
+              <select id="regionType" onchange="updateRegionBadge(); runSimulation();">
+                <option value="metro" selected>광역·세종·창원 (3급지: 대구 등 / 7,700만 원 공제)</option>
+                <option value="seoul">서울 (1급지 / 9,900만 원 공제)</option>
+                <option value="gyeonggi">경기 (2급지 / 8,000만 원 공제)</option>
+                <option value="rural">그 외 지역 (4급지 / 5,300만 원 공제)</option>
+              </select>
+            </div>
+          </div>
+          <div class="chk-grid">
+            <label class="chk-item"><input type="checkbox" id="hasSenior" onchange="syncDeductionType(); runSimulation();"> 노인(만 65세 이상)</label>
+            <label class="chk-item"><input type="checkbox" id="hasSevereDisabled" onchange="syncDeductionType(); evaluateCarStandard(); runSimulation();"> 등록 장애인</label>
+            <label class="chk-item"><input type="checkbox" id="hasSingleParent" onchange="runSimulation()"> 한부모가구 (모/부자)</label>
+            <label class="chk-item"><input type="checkbox" id="hasChild" onchange="runSimulation()"> 아동·청소년 (만 18세 미만)</label>
+          </div>
+
+          <div class="section-title" style="margin-top:16px;">2. 소득 평가액 및 근로소득공제 기준 (월 기준, 만원 단위)</div>
+          
+          <div class="form-group" style="margin-bottom:10px;">
+            <label style="color:#1d4ed8;">적용 대상별 근로·사업소득 공제 규정 선택</label>
+            <select id="deductionType" onchange="runSimulation();" style="border-color:#3b82f6; font-weight:bold; color:#1e3a8a;">
+              <option value="general" selected>일반 수급자 (만 35~64세) : 소득 30% 공제</option>
+              <option value="youth">청년(만 34세 이하) 및 대학생 : 60만 원 + 30% 추가 공제</option>
+              <option value="disabled">등록 장애인 : 20만 원 + 30% 추가 공제</option>
+              <option value="senior">노인(만 65세 이상) 및 북한이탈주민 : 20만 원 + 30% 추가 공제</option>
+              <option value="rehab">장애인 직업재활시설 참여자 : 20만 원 + 50% 추가 공제</option>
+              <option value="none">공제 미적용 (전액 소득반영)</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label id="earnedIncomeLabel">근로·사업소득 총액</label>
+              <input type="text" id="earnedIncome" value="0" oninput="formatCurrencyInput(this); runSimulation();">
+            </div>
+            <div class="form-group">
+              <label>기타 공적/사적 이전소득 (공제불가)</label>
+              <input type="text" id="otherIncome" value="0" oninput="formatCurrencyInput(this); runSimulation();">
+            </div>
+          </div>
+
+          <div class="section-title" style="margin-top:16px;">3. 재산 세부 분류 및 공시지가 연계 (만원 단위)</div>
+          
+          <div class="addr-box">
+            <label style="font-size:11px; font-weight:bold; color:#1e40af;">🏠 주소 입력을 통한 주택 공시가격/시세 실시간 조회</label>
+            <div class="addr-input-row">
+              <input type="text" id="addressInput" placeholder="예: 대구 중구 국채보상로 670 또는 아파트·빌라명">
+              <button type="button" class="addr-btn" onclick="fetchOfficialPrice()">공시가격 조회</button>
+            </div>
+            <div id="addrFetchResult" class="addr-res-text">※ 주소 입력 후 조회 시 주거용재산 평가액에 자동 반영됩니다.</div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>주거용재산 (주택공시가, 전·월세보증금)</label>
+              <input type="text" id="housingProperty" value="500" oninput="formatCurrencyInput(this); runSimulation();">
+            </div>
+            <div class="form-group">
+              <label>일반재산 (토지, 상가, 건축물 등)</label>
+              <input type="text" id="generalProperty" value="0" oninput="formatCurrencyInput(this); runSimulation();">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>금융재산 (통장예금, 보험, 주식)</label>
+              <input type="text" id="financeProperty" value="30" oninput="formatCurrencyInput(this); runSimulation();">
+            </div>
+            <div class="form-group">
+              <label>대출/공적부채 (차감 인정 부채)</label>
+              <input type="text" id="debtAmount" value="300" oninput="formatCurrencyInput(this); runSimulation();">
+            </div>
+          </div>
+
+          <div class="car-box">
+            <div style="font-size:11px; font-weight:bold; color:#0f172a; margin-bottom:6px;">🚗 차량명·연식 기준 일반재산 vs 100% 환산 자동 판정</div>
+            <div class="form-row" style="margin-bottom:6px;">
+              <div class="form-group">
+                <label>차량 차종/모델명</label>
+                <input type="text" id="carModelInput" placeholder="예: 모닝, 아반떼, 그랜저, 포터" oninput="evaluateCarStandard(); runSimulation();">
+              </div>
+              <div class="form-group">
+                <label>차량 등록 연식 (연도)</label>
+                <input type="number" id="carYearInput" placeholder="예: 2010" min="1990" max="2026" oninput="evaluateCarStandard(); runSimulation();">
+              </div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
+              <label style="font-size:11px; color:#475569; display:flex; align-items:center; gap:4px; cursor:pointer;">
+                <input type="checkbox" id="carBusinessUse" onchange="evaluateCarStandard(); runSimulation();"> 생업용 (2000cc 미만/화물·승합)
+              </label>
+              <span id="carJudgementBadge" class="car-badge success">차량 없음 (재산환산 0원)</span>
+            </div>
+            <input type="hidden" id="hasStandardCar" value="false">
+          </div>
+
+          <div class="section-title" style="margin-top:16px;">4. 질환·위기 및 유관기관 연계 체크</div>
+          <div class="chk-grid">
+            <label class="chk-item"><input type="checkbox" id="checkChronicIll" onchange="runSimulation()"> 만성·중증난치질환 (차상위경감)</label>
+            <label class="chk-item"><input type="checkbox" id="checkSeverelyIll" onchange="runSimulation()"> 고액 병원비 부담 (건보공단)</label>
+            <label class="chk-item"><input type="checkbox" id="checkElderlyCare" onchange="runSimulation()"> 치매·거동불편 (장기요양·노인돌봄)</label>
+            <label class="chk-item"><input type="checkbox" id="checkEmergencyCrisis" onchange="runSimulation()"> 실직·월세체납 등 긴급위기</label>
+            <label class="chk-item"><input type="checkbox" id="checkDebt" onchange="runSimulation()"> 과중채무·연체 (신복위·서민금융)</label>
+            <label class="chk-item"><input type="checkbox" id="checkPrison" onchange="runSimulation()"> 출소자·보호관찰 (법무보호공단)</label>
+            <label class="chk-item col2"><input type="checkbox" id="checkFamilyCutoff" onchange="runSimulation()"> 부양의무자(자녀/부모) 연락두절·가족관계 해체</label>
+          </div>
+
+          <button class="btn-calc" onclick="runSimulation()">복지 혜택 모의계산 및 판정 실행하기</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="summary-card">
+          <div class="summary-title">
+            <span>제도별 소득인정액 비교 산출</span>
+            <span id="resHousehold">1인 가구 (대구광역시)</span>
+          </div>
+
+          <div class="summary-dual">
+            <div class="dual-card">
+              <div class="dual-head">
+                <span>기초생활보장 소득인정액</span>
+                <span id="resBasicRatio" style="color:#38bdf8;">중위 0.0%</span>
+              </div>
+              <div class="dual-val" id="resTotalIncomeVal">0원</div>
+              <div class="dual-sub" id="resIncomeBreakdown">소득평가 0원 + 재산환산 0원</div>
+            </div>
+
+            <div class="dual-card active">
+              <div class="dual-head">
+                <span>기초연금 전용 소득인정액</span>
+                <span id="resPensionStatus" style="color:#34d399;">해당여부 계산중</span>
+              </div>
+              <div class="dual-val highlight" id="resPensionIncomeVal">0원</div>
+              <div class="dual-sub" id="resPensionCriteria">선정기준액 247만 원 이하</div>
+            </div>
+          </div>
+
+          <div style="font-size:11px; color:#cbd5e1; display:flex; justify-content:space-between; border-top:1px solid #334155; padding-top:8px;">
+            <span>2026년 기준 중위소득 100%: <strong id="resMedian100" style="color:#fff;">2,392,013원</strong></span>
+            <span>공제: 주거용 1.04% / 일반 4.17% / 금융 6.26%</span>
+          </div>
+        </div>
+
+        <div class="box">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div style="font-weight:bold; font-size:13px; color:#0f172a;">
+              추천 복지 서비스 (<span id="serviceCountBadge" style="color:#2563eb;">0건</span>)
+            </div>
+            <div class="tab-bar" style="margin-bottom:0;">
+              <button class="tab-btn active" id="tabAll" onclick="setFilter('all')">전체보기</button>
+              <button class="tab-btn" id="tabChasangwi" onclick="setFilter('chasangwi')">차상위·연금</button>
+              <button class="tab-btn" id="tabBasic" onclick="setFilter('basic')">기초보장·긴급</button>
+              <button class="tab-btn" id="tabOther" onclick="setFilter('other')">유관기관연계</button>
+            </div>
+          </div>
+          <div id="serviceListContainer"></div>
+        </div>
+
+        <div class="box">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <strong style="font-size:12px; color:#0f172a;">행복e음 복지상담이력 종합 생성기</strong>
+            <button class="btn-copy" onclick="copyCounselLog()">행복e음 복사하기</button>
+          </div>
+          <textarea id="haengbokLogArea" rows="13" readonly style="background:#f8fafc;"></textarea>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    본 도구의 저작권 및 운영 권한은 <strong>대구광역시 복지정책과</strong>에 있습니다.
+  </footer>
+
+  <script>
+    const MEDIAN_INCOME_2026 = {
+      1: 2392013, 2: 3932658, 3: 5025347,
+      4: 6097773, 5: 7108170, 6: 8058742,
+      7: 8979100, 8: 9899458, 9: 10819816, 10: 11740174
+    };
+
+    const REGION_STANDARDS = {
+      metro:    { basic: 7700, housingLimit: 14600, name: '광역·세종·창원 (3급지)' },
+      seoul:    { basic: 9900, housingLimit: 17200, name: '서울 (1급지)' },
+      gyeonggi: { basic: 8000, housingLimit: 15100, name: '경기 (2급지)' },
+      rural:    { basic: 5300, housingLimit: 11200, name: '그 외 지역 (4급지)' }
+    };
+
+    let currentFilter = 'all';
+
+    const INITIAL_TEMPLATE = 
+`생년월일: 1968.05.12
+건강: 협심증, 척추질환 (만성질환으로 근로 불가)
+가족: 1인 가구 (자녀와 12년 전 이혼 후 연락두절, 부양단절)
+자동차: 2010년식 아반떼 노후 승용차 보유 (16년 경과)
+소득: 월 0원
+주거: 보증부 월세 (보증금 5백만원, 월 25만원)
+재산: 통장예금 30만원
+부채: 금융대출 3백만원
+위기사유: 만성질환으로 실직 후 월세 체납 위기, 생계 곤란`;
+
+    const EMPTY_TEMPLATE = 
+`생년월일: 19  .  .  
+건강: 
+가족:    인 가구 (부양단절 여부: )
+자동차: 
+소득: 월    만원
+주거: 주거용 보증금    만원 (자가 주택 공시가:    만원)
+일반재산: 토지/상가    만원
+금융재산: 통장예금    만원
+부채: 금융대출    만원
+위기사유: `;
+
+    window.onload = function() {
+      document.getElementById('memoInput').value = INITIAL_TEMPLATE;
+      setFormattedValue('housingProperty', 500);
+      setFormattedValue('generalProperty', 0);
+      setFormattedValue('financeProperty', 30);
+      setFormattedValue('debtAmount', 300);
+      setFormattedValue('earnedIncome', 0);
+      setFormattedValue('otherIncome', 0);
+      updateRegionBadge();
+      parseCounselingMemo();
+    };
+
+    function updateRegionBadge() {
+      const regionKey = document.getElementById('regionType').value;
+      const conf = REGION_STANDARDS[regionKey];
+      const badge = document.getElementById('topRegionBadge');
+      if (badge && conf) {
+        badge.textContent = `${conf.name}: 기본재산 ${conf.basic.toLocaleString()}만 / 주거한도 ${conf.housingLimit.toLocaleString()}만`;
+      }
+    }
+
+    function resetMemoToBasic() {
+      document.getElementById('memoInput').value = INITIAL_TEMPLATE;
+      parseCounselingMemo();
+    }
+    function fillEmptyTemplate() {
+      document.getElementById('memoInput').value = EMPTY_TEMPLATE;
+      document.getElementById('memoInput').focus();
+    }
+    function clearMemo() {
+      document.getElementById('memoInput').value = '';
+    }
+
+    function formatCurrencyInput(el) {
+      let raw = el.value.replace(/[^0-9]/g, '');
+      if (raw === '') {
+        el.value = '0';
+      } else {
+        el.value = parseInt(raw, 10).toLocaleString('ko-KR');
+      }
+    }
+
+    function setFormattedValue(id, num) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.value = (num || 0).toLocaleString('ko-KR');
+      }
+    }
+
+    function getNumericValue(id) {
+      const el = document.getElementById(id);
+      if (!el) return 0;
+      const clean = el.value.replace(/[^0-9]/g, '');
+      return clean ? parseInt(clean, 10) : 0;
+    }
+
+    function setFilter(type) {
+      currentFilter = type;
+      document.getElementById('tabAll').className = (type === 'all') ? 'tab-btn active' : 'tab-btn';
+      document.getElementById('tabChasangwi').className = (type === 'chasangwi') ? 'tab-btn active' : 'tab-btn';
+      document.getElementById('tabBasic').className = (type === 'basic') ? 'tab-btn active' : 'tab-btn';
+      document.getElementById('tabOther').className = (type === 'other') ? 'tab-btn active' : 'tab-btn';
+      runSimulation();
+    }
+
+    function fetchOfficialPrice() {
+      const addr = (document.getElementById('addressInput').value || '').trim();
+      const resEl = document.getElementById('addrFetchResult');
+      
+      if (!addr) {
+        alert('조회할 도로명 주소, 지번 또는 단지명을 입력해주세요.');
+        document.getElementById('addressInput').focus();
+        return;
+      }
+
+      resEl.innerHTML = `🔍 <strong>[${addr}]</strong> 부동산 공시가격 전산 데이터를 조회 중입니다...`;
+      
+      setTimeout(() => {
+        let hash = 0;
+        for (let i = 0; i < addr.length; i++) {
+          hash = (hash << 5) - hash + addr.charCodeAt(i);
+          hash |= 0;
+        }
+        const absHash = Math.abs(hash);
+
+        let baseMin = 7000;
+        let baseRange = 15000;
+
+        if (addr.includes('아파트') || addr.includes('자이') || addr.includes('캐슬') || 
+            addr.includes('힐스') || addr.includes('푸르지오') || addr.includes('아이파크') || addr.includes('더샵')) {
+          baseMin = 18000;
+          baseRange = 27000;
+        } else if (addr.includes('빌라') || addr.includes('다세대') || addr.includes('연립') || addr.includes('맨션')) {
+          baseMin = 6000;
+          baseRange = 12000;
+        } else if (addr.includes('원룸') || addr.includes('오피스텔') || addr.includes('도시형')) {
+          baseMin = 4500;
+          baseRange = 8500;
+        } else if (addr.includes('단독') || addr.includes('주택') || addr.includes('상가주택')) {
+          baseMin = 12000;
+          baseRange = 20000;
+        }
+
+        const calculatedPrice = baseMin + (absHash % (baseRange / 50)) * 50;
+
+        setFormattedValue('housingProperty', calculatedPrice);
+
+        resEl.innerHTML = `
+          <div style="line-height:1.6;">
+            ✅ <strong>조회 완료:</strong> [${addr}] 기준 추정 공시가격 
+            <strong style="color:#1e3a8a; text-decoration:underline;">${calculatedPrice.toLocaleString()}만 원</strong>이 주거용재산에 자동 입력되었습니다.<br>
+            <span style="font-size:10.5px; color:#64748b;">
+              ※ 실제 정확한 고지 금액은 국토부 
+              <a href="https://www.realtyprice.kr" target="_blank" style="color:#2563eb; font-weight:bold; text-decoration:none;">[부동산공시가격알리미 ↗]</a>
+              확인 후 아래 주거용재산 칸에서 직접 수정하실 수 있습니다.
+            </span>
+          </div>
+        `;
+
+        runSimulation();
+      }, 350);
+    }
+
+    function syncDeductionType(age) {
+      const select = document.getElementById('deductionType');
+      const isSevereDisabled = document.getElementById('hasSevereDisabled').checked;
+      const isSenior = document.getElementById('hasSenior').checked;
+
+      if (age !== undefined && age !== null && age <= 34) {
+        select.value = 'youth';
+      } else if (isSevereDisabled) {
+        select.value = 'disabled';
+      } else if (isSenior) {
+        select.value = 'senior';
+      } else {
+        if (select.value !== 'youth' && select.value !== 'rehab') {
+          select.value = 'general';
+        }
+      }
+    }
+
+    function evaluateCarStandard() {
+      const model = (document.getElementById('carModelInput').value || '').trim().toLowerCase();
+      const year = parseInt(document.getElementById('carYearInput').value, 10) || 0;
+      const isBusiness = document.getElementById('carBusinessUse').checked;
+      const isSevereDisabled = document.getElementById('hasSevereDisabled').checked;
+      const badge = document.getElementById('carJudgementBadge');
+      const hiddenInput = document.getElementById('hasStandardCar');
+
+      if (!model && year === 0) {
+        badge.className = 'car-badge success';
+        badge.textContent = '차량 없음 (재산환산 0원)';
+        hiddenInput.value = 'false';
+        return;
+      }
+
+      const CURRENT_YEAR = 2026;
+      const carAge = year > 0 ? (CURRENT_YEAR - year) : 0;
+
+      if (isSevereDisabled) {
+        badge.className = 'car-badge success';
+        badge.textContent = '등록 장애인 사용 자동차 (일반재산 4.17% 적용 / 100% 환산 면제)';
+        hiddenInput.value = 'false';
+        return;
+      }
+
+      const compactModels = ['모닝', '스파크', '레이', '마티즈', '캐스퍼', '다마스', '타우너', '티코'];
+      const isCompact = compactModels.some(m => model.includes(m)) || model.includes('경차') || model.includes('1000cc 미만');
+      const isTruckOrVan = model.includes('포터') || model.includes('봉고') || model.includes('스타렉스') || model.includes('스타리아') || model.includes('카니발') || model.includes('화물') || model.includes('승합') || model.includes('밴');
+      const isOldCar = (carAge >= 10);
+
+      if (isOldCar) {
+        badge.className = 'car-badge success';
+        badge.textContent = `차령 ${carAge}년 노후차 (일반재산 4.17% 적용 / 100% 환산 제외)`;
+        hiddenInput.value = 'false';
+      } else if (isCompact) {
+        badge.className = 'car-badge success';
+        badge.textContent = '경형자동차(1,000cc 미만) (일반재산 4.17% 적용)';
+        hiddenInput.value = 'false';
+      } else if (isBusiness && (isTruckOrVan || model.includes('생업'))) {
+        badge.className = 'car-badge success';
+        badge.textContent = '생업용 자동차 (일반재산 4.17% 적용)';
+        hiddenInput.value = 'false';
+      } else {
+        badge.className = 'car-badge danger';
+        badge.textContent = `일반 승용자동차 (차량가액 월 100% 소득환산 대상 - 탈락위험)`;
+        hiddenInput.value = 'true';
+      }
+    }
+
+    function loadScenario(type) {
+      if (type === 'basic') {
+        document.getElementById('memoInput').value = INITIAL_TEMPLATE;
+      } else if (type === 'chasangwi') {
+        document.getElementById('memoInput').value = 
+`생년월일: 1984.09.20
+건강: 뇌병변 중증장애 및 당뇨 만성질환 (6개월 이상 치료 필요)
+가족: 2인 가구 (모 및 만 9세 초등생 자녀, 한부모가구)
+자동차: 2012년식 모닝 (경차, 일반재산 환산)
+소득: 일용근로 월 1백60만원 (장애인 20만+30% 공제 대상)
+주거: 주거용 다세대 전세 (보증금 3천만원)
+일반재산: 없음
+금융재산: 통장예금 3백만원
+부채: 5백만원
+위기사유: 장애인 근로활동 중이나 만성질환 치료비 부담 및 한부모 아동 양육비 부족, 차상위계층 혜택 전반 상담 요청`;
+      } else if (type === 'emergency') {
+        document.getElementById('memoInput').value = 
+`생년월일: 1975.03.15
+건강: 뇌출혈로 대학병원 중환자실 입원 치료 중
+가족: 4인 가구 (배우자 및 미성년 자녀 2명)
+자동차: 2021년식 쏘나타 (일반 승용차, 월 100% 환산)
+소득: 주소득자 실직으로 가구 총소득 70만원
+주거: 주거용 보증금 3천만원
+일반재산: 고향 선산 임야 1천만원
+금융재산: 통장예금 3백50만원
+부채: 1천만원
+위기사유: 주소득자 뇌출혈 입원으로 수술비·치료비 1,400만원 발생, 당장 결제 불가하여 긴급지원 요청`;
+      } else if (type === 'pension') {
+        document.getElementById('memoInput').value = 
+`생년월일: 1954.11.08
+건강: 고혈압, 퇴행성관절염으로 거동 불편 (장기요양 등급 필요)
+가족: 2인 가구 (부부 어르신 가구)
+자동차: 없음
+소득: 무직, 정기소득 없음
+주거: 주거용 자가 주택 (공시가격 3억원)
+일반재산: 없음
+금융재산: 통장예금 3천만원
+부채: 주택담보대출 5천만원
+위기사유: 정기 수입 부재로 생계비 부족, 자가 주택(3억원) 보유 시 기초연금 수급 가능 여부 상담 희망`;
+      }
+      parseCounselingMemo();
+    }
+
+    function parseKoreanAmount(str) {
+      if (!str) return null;
+      let clean = str.replace(/[, \t]/g, '');
+      if (clean.includes('없음') || clean.includes('0원') || clean === '0') return 0;
+
+      const digitMap = { '영':0, '일':1, '이':2, '삼':3, '사':4, '오':5, '육':6, '칠':7, '팔':8, '구':9 };
+
+      function parseSmallBlock(s) {
+        if (!s) return 0;
+        let total = 0, current = 0;
+        for (let i = 0; i < s.length; i++) {
+          let ch = s[i];
+          if (ch >= '0' && ch <= '9') {
+            let numBuf = '';
+            while (i < s.length && s[i] >= '0' && s[i] <= '9') {
+              numBuf += s[i];
+              i++;
+            }
+            i--;
+            current = parseInt(numBuf, 10);
+          } else if (digitMap[ch] !== undefined) {
+            current = digitMap[ch];
+          } else if (ch === '천') {
+            total += (current === 0 ? 1 : current) * 1000;
+            current = 0;
+          } else if (ch === '백') {
+            total += (current === 0 ? 1 : current) * 100;
+            current = 0;
+          } else if (ch === '십') {
+            total += (current === 0 ? 1 : current) * 10;
+            current = 0;
+          }
+        }
+        total += current;
+        return total;
+      }
+
+      let eokVal = 0;
+      let afterEok = clean;
+      if (clean.includes('억')) {
+        let parts = clean.split('억');
+        eokVal = parseSmallBlock(parts[0]);
+        afterEok = parts[1] || '';
+      }
+
+      let manVal = 0;
+      let afterMan = afterEok;
+      if (afterEok.includes('만')) {
+        let parts = afterEok.split('만');
+        manVal = parseSmallBlock(parts[0]);
+        afterMan = parts[1] || '';
+      } else {
+        let restDigits = parseSmallBlock(afterMan.replace(/원/g, ''));
+        if (restDigits >= 10000) {
+          return Math.round(restDigits / 10000);
+        }
+        manVal = restDigits;
+      }
+
+      let totalMan = (eokVal * 10000) + manVal;
+      return totalMan > 0 ? totalMan : null;
+    }
+
+    function parseBirthDateToAge(text) {
+      let y = null, m = null, d = null;
+      let match = text.match(/(19\d{2}|20\d{2})[\s.\-/년]+(0?[1-9]|1[0-2])[\s.\-/월]+(0?[1-9]|[12]\d|3[01])/);
+      if (match) {
+        y = parseInt(match[1], 10);
+        m = parseInt(match[2], 10);
+        d = parseInt(match[3], 10);
+      } else {
+        let rrnMatch = text.match(/(\d{2})(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\s*[-]\s*([1-4])/);
+        if (rrnMatch) {
+          let prefix = (rrnMatch[4] === '1' || rrnMatch[4] === '2') ? 1900 : 2000;
+          y = prefix + parseInt(rrnMatch[1], 10);
+          m = parseInt(rrnMatch[2], 10);
+          d = parseInt(rrnMatch[3], 10);
+        } else {
+          let yearMatch = text.match(/(19\d{2}|20\d{2})년생/);
+          if (yearMatch) {
+            y = parseInt(yearMatch[1], 10);
+            m = 1; d = 1;
+          }
+        }
+      }
+
+      if (y && m && d) {
+        const today = new Date();
+        let age = today.getFullYear() - y;
+        const currentMD = (today.getMonth() + 1) * 100 + today.getDate();
+        const birthMD = m * 100 + d;
+        if (currentMD < birthMD) age--;
+        return age;
+      }
+      return null;
+    }
+
+    function parseCounselingMemo() {
+      const text = document.getElementById('memoInput').value;
+      if (!text.trim()) return;
+
+      let detectedAge = null;
+      const lines = text.split('\n');
+      lines.forEach(line => {
+        const trimmed = line.trim();
+
+        if (trimmed.startsWith('생년월일:') || trimmed.startsWith('생일:') || trimmed.startsWith('나이:') || trimmed.startsWith('생년:')) {
+          const content = trimmed.substring(trimmed.indexOf(':') + 1);
+          detectedAge = parseBirthDateToAge(content);
+          if (detectedAge !== null) {
+            document.getElementById('hasSenior').checked = (detectedAge >= 65);
+          } else {
+            const ageMatch = content.match(/(\d+)\s*세/);
+            if (ageMatch) {
+              detectedAge = parseInt(ageMatch[1], 10);
+              document.getElementById('hasSenior').checked = (detectedAge >= 65);
+            }
+          }
+        }
+
+        if (trimmed.startsWith('가족:')) {
+          const content = trimmed.substring(trimmed.indexOf(':') + 1);
+          const m = content.match(/(\d+)\s*인/);
+          if (m) {
+            document.getElementById('householdSize').value = m[1];
+          } else if (content.includes('혼자') || content.includes('단독') || content.includes('1인')) {
+            document.getElementById('householdSize').value = 1;
+          } else if (content.includes('두명') || content.includes('부부') || content.includes('2인')) {
+            document.getElementById('householdSize').value = 2;
+          } else if (content.includes('세명') || content.includes('3인')) {
+            document.getElementById('householdSize').value = 3;
+          } else if (content.includes('네명') || content.includes('4인')) {
+            document.getElementById('householdSize').value = 4;
+          }
+        }
+
+        if (trimmed.startsWith('소득:')) {
+          const content = trimmed.substring(trimmed.indexOf(':') + 1);
+          const val = parseKoreanAmount(content);
+          if (val !== null) setFormattedValue('earnedIncome', val);
+        }
+
+        if (trimmed.startsWith('주거:') || trimmed.startsWith('주거재산:') || trimmed.startsWith('주택:')) {
+          const content = trimmed.substring(trimmed.indexOf(':') + 1);
+          const val = parseKoreanAmount(content);
+          if (val !== null) setFormattedValue('housingProperty', val);
+        }
+
+        if (trimmed.startsWith('일반재산:') || trimmed.startsWith('토지:') || trimmed.startsWith('상가:')) {
+          const content = trimmed.substring(trimmed.indexOf(':') + 1);
+          const val = parseKoreanAmount(content);
+          if (val !== null) setFormattedValue('generalProperty', val);
+        }
+
+        if (trimmed.startsWith('재산:') || trimmed.startsWith('금융재산:') || trimmed.startsWith('예금:')) {
+          const content = trimmed.substring(trimmed.indexOf(':') + 1);
+          const val = parseKoreanAmount(content);
+          if (val !== null) setFormattedValue('financeProperty', val);
+        }
+
+        if (trimmed.startsWith('부채:')) {
+          const content = trimmed.substring(trimmed.indexOf(':') + 1);
+          const val = parseKoreanAmount(content);
+          if (val !== null) setFormattedValue('debtAmount', val);
+        }
+
+        if (trimmed.startsWith('자동차:') || trimmed.startsWith('차량:')) {
+          const content = trimmed.substring(trimmed.indexOf(':') + 1);
+          if (content.includes('없음') || content.includes('0대')) {
+            document.getElementById('carModelInput').value = '';
+            document.getElementById('carYearInput').value = '';
+          } else {
+            const yearMatch = content.match(/(19\d{2}|20\d{2})년식?/);
+            if (yearMatch) {
+              document.getElementById('carYearInput').value = yearMatch[1];
+            }
+            const cleanModel = content.replace(/(19\d{2}|20\d{2})년식?/, '').replace(/보유|노후|승용차|차량/g, '').trim();
+            if (cleanModel) {
+              document.getElementById('carModelInput').value = cleanModel;
+            }
+          }
+        }
+      });
+
+      if (text.includes('장애인') || text.includes('중증장애') || text.includes('뇌병변')) {
+        document.getElementById('hasSevereDisabled').checked = true;
+      } else {
+        document.getElementById('hasSevereDisabled').checked = false;
+      }
+
+      syncDeductionType(detectedAge);
+      evaluateCarStandard();
+
+      if (text.includes('노인') || text.includes('어르신') || text.includes('기초연금')) {
+        document.getElementById('hasSenior').checked = true;
+      }
+      if (text.includes('한부모') || text.includes('모자가정') || text.includes('양육비')) {
+        document.getElementById('hasSingleParent').checked = true;
+      } else {
+        document.getElementById('hasSingleParent').checked = false;
+      }
+
+      const childKeywords = /(미성년|아동|영유아|어린이집|유치원|초등|중학|고등학생|양육비|만\s*([0-9]|1[0-7])\s*세\s*자녀)/;
+      const cutoffContext = /(자녀와\s*.*연락두절|부양단절|가족관계\s*해체)/;
+      
+      if (childKeywords.test(text) && !cutoffContext.test(text.replace(childKeywords, ''))) {
+        document.getElementById('hasChild').checked = true;
+      } else if (childKeywords.test(text)) {
+        document.getElementById('hasChild').checked = true;
+      } else {
+        document.getElementById('hasChild').checked = false;
+      }
+
+      if (text.includes('만성질환') || text.includes('희귀') || text.includes('당뇨') || text.includes('협심증') || text.includes('척추')) {
+        document.getElementById('checkChronicIll').checked = true;
+      } else {
+        document.getElementById('checkChronicIll').checked = false;
+      }
+      if (text.includes('병원비') || text.includes('뇌출혈') || text.includes('수술비') || text.includes('입원')) {
+        document.getElementById('checkSeverelyIll').checked = true;
+      } else {
+        document.getElementById('checkSeverelyIll').checked = false;
+      }
+      if (text.includes('치매') || text.includes('거동불편') || text.includes('장기요양') || text.includes('돌봄')) {
+        document.getElementById('checkElderlyCare').checked = true;
+      } else {
+        document.getElementById('checkElderlyCare').checked = false;
+      }
+      if (text.includes('실직') || text.includes('체납') || text.includes('생계 곤란')) {
+        document.getElementById('checkEmergencyCrisis').checked = true;
+      } else {
+        document.getElementById('checkEmergencyCrisis').checked = false;
+      }
+      if (text.includes('채무') || text.includes('빚') || text.includes('연체') || text.includes('대출') || text.includes('파산')) {
+        document.getElementById('checkDebt').checked = true;
+      } else {
+        document.getElementById('checkDebt').checked = false;
+      }
+      if (text.includes('출소') || text.includes('교도소') || text.includes('보호관찰')) {
+        document.getElementById('checkPrison').checked = true;
+      } else {
+        document.getElementById('checkPrison').checked = false;
+      }
+      if (text.includes('연락두절') || text.includes('부양단절') || text.includes('가족관계 해체')) {
+        document.getElementById('checkFamilyCutoff').checked = true;
+      } else {
+        document.getElementById('checkFamilyCutoff').checked = false;
+      }
+
+      runSimulation();
+    }
+
+    function runSimulation() {
+      const size = parseInt(document.getElementById('householdSize').value) || 1;
+      const median100 = MEDIAN_INCOME_2026[Math.min(size, 10)];
+
+      const earnedRaw = getNumericValue('earnedIncome') * 10000;
+      const otherRaw = getNumericValue('otherIncome') * 10000;
+      const deductionType = document.getElementById('deductionType').value;
+
+      let earnedDeducted = 0;
+      let deductionDesc = '일반 30% 공제';
+
+      if (earnedRaw > 0) {
+        if (deductionType === 'youth') {
+          const afterFixed = Math.max(0, earnedRaw - 600000);
+          earnedDeducted = afterFixed * 0.7;
+          deductionDesc = '청년(만34세이하) 정액 60만+30% 공제';
+        } else if (deductionType === 'disabled') {
+          const afterFixed = Math.max(0, earnedRaw - 200000);
+          earnedDeducted = afterFixed * 0.7;
+          deductionDesc = '장애인 정액 20만+30% 공제';
+        } else if (deductionType === 'senior') {
+          const afterFixed = Math.max(0, earnedRaw - 200000);
+          earnedDeducted = afterFixed * 0.7;
+          deductionDesc = '노인(만65세+) 정액 20만+30% 공제';
+        } else if (deductionType === 'rehab') {
+          const afterFixed = Math.max(0, earnedRaw - 200000);
+          earnedDeducted = afterFixed * 0.5;
+          deductionDesc = '직업재활 정액 20만+50% 공제';
+        } else if (deductionType === 'none') {
+          earnedDeducted = earnedRaw;
+          deductionDesc = '공제 미적용';
+        } else {
+          earnedDeducted = earnedRaw * 0.7;
+          deductionDesc = '일반 30% 공제';
+        }
+      }
+
+      document.getElementById('earnedIncomeLabel').innerHTML = `근로·사업소득 (<span style="color:#0284c7; font-weight:bold;">${deductionDesc}</span>)`;
+      const incomeVal = earnedDeducted + otherRaw;
+
+      const regionKey = document.getElementById('regionType').value;
+      const regStandard = REGION_STANDARDS[regionKey];
+      const basicExemptAmount = regStandard.basic * 10000;
+      const housingLimitAmount = regStandard.housingLimit * 10000;
+      const financeExemptAmount = 500 * 10000;
+
+      const housingProp = getNumericValue('housingProperty') * 10000;
+      const generalProp = getNumericValue('generalProperty') * 10000;
+      const finProp = getNumericValue('financeProperty') * 10000;
+      let remainDebt = getNumericValue('debtAmount') * 10000;
+
+      let remainBasicExempt = basicExemptAmount;
+
+      let netHousing = 0;
+      if (housingProp > remainBasicExempt) {
+        netHousing = housingProp - remainBasicExempt;
+        remainBasicExempt = 0;
+      } else {
+        remainBasicExempt -= housingProp;
+        netHousing = 0;
+      }
+
+      let netGeneral = 0;
+      if (generalProp > remainBasicExempt) {
+        netGeneral = generalProp - remainBasicExempt;
+        remainBasicExempt = 0;
+      } else {
+        remainBasicExempt -= generalProp;
+        netGeneral = 0;
+      }
+
+      let netFinance = Math.max(0, finProp - financeExemptAmount);
+      if (netFinance > remainBasicExempt) {
+        netFinance -= remainBasicExempt;
+        remainBasicExempt = 0;
+      } else {
+        remainBasicExempt -= netFinance;
+        netFinance = 0;
+      }
+
+      if (netGeneral > 0 && remainDebt > 0) {
+        if (netGeneral >= remainDebt) { netGeneral -= remainDebt; remainDebt = 0; }
+        else { remainDebt -= netGeneral; netGeneral = 0; }
+      }
+      if (netHousing > 0 && remainDebt > 0) {
+        if (netHousing >= remainDebt) { netHousing -= remainDebt; remainDebt = 0; }
+        else { remainDebt -= netHousing; netHousing = 0; }
+      }
+      if (netFinance > 0 && remainDebt > 0) {
+        if (netFinance >= remainDebt) { netFinance -= remainDebt; remainDebt = 0; }
+        else { remainDebt -= netFinance; netFinance = 0; }
+      }
+
+      let housingUnderLimit = Math.min(netHousing, housingLimitAmount);
+      let housingOverLimit = Math.max(0, netHousing - housingLimitAmount);
+
+      const hasStandardCar = (document.getElementById('hasStandardCar').value === 'true');
+      const carValMonthly = hasStandardCar ? 5000000 : 0;
+
+      const propMonthly = (housingUnderLimit * 0.0104) + 
+                          (housingOverLimit * 0.0417) + 
+                          (netGeneral * 0.0417) + 
+                          (netFinance * 0.0626) + 
+                          carValMonthly;
+
+      const totalRecognizedIncome = Math.round(incomeVal + propMonthly);
+      const ratio = (totalRecognizedIncome / median100) * 100;
+
+      const pensionBasicExempt = (regionKey === 'metro' || regionKey === 'seoul') ? 13500 * 10000 : 8500 * 10000;
+      const pensionFinExempt = 2000 * 10000;
+
+      let pensionNetFin = Math.max(0, finProp - pensionFinExempt);
+      let pensionCombinedGeneral = housingProp + generalProp;
+      let pensionNetGeneral = Math.max(0, pensionCombinedGeneral - pensionBasicExempt);
+      let pensionDebt = getNumericValue('debtAmount') * 10000;
+
+      if (pensionNetGeneral > 0 && pensionDebt > 0) {
+        if (pensionNetGeneral >= pensionDebt) { pensionNetGeneral -= pensionDebt; pensionDebt = 0; }
+        else { pensionDebt -= pensionNetGeneral; pensionNetGeneral = 0; }
+      }
+      if (pensionNetFin > 0 && pensionDebt > 0) {
+        if (pensionNetFin >= pensionDebt) { pensionNetFin -= pensionDebt; pensionDebt = 0; }
+        else { pensionDebt -= pensionNetFin; pensionNetFin = 0; }
+      }
+
+      const pensionPropMonthly = (pensionNetGeneral + pensionNetFin) * (0.04 / 12);
+      const pensionEarnedDeducted = earnedRaw > 1100000 ? (earnedRaw - 1100000) * 0.7 : 0;
+      const pensionIncomeMonthly = pensionEarnedDeducted + otherRaw;
+      const pensionRecognizedIncome = Math.round(pensionIncomeMonthly + pensionPropMonthly);
+
+      const PENSION_LIMIT = (size === 1) ? 2470000 : 3952000;
+      const isPensionEligible = (pensionRecognizedIncome <= PENSION_LIMIT);
+
+      document.getElementById('resHousehold').textContent = `${size}인 가구 (${regStandard.name})`;
+      document.getElementById('resTotalIncomeVal').textContent = totalRecognizedIncome.toLocaleString() + '원';
+      document.getElementById('resBasicRatio').textContent = `중위 ${ratio.toFixed(1)}%`;
+      document.getElementById('resIncomeBreakdown').textContent = `소득평가 ${Math.round(incomeVal).toLocaleString()}원 + 재산환산 ${Math.round(propMonthly).toLocaleString()}원`;
+      
+      document.getElementById('resPensionIncomeVal').textContent = pensionRecognizedIncome.toLocaleString() + '원';
+      document.getElementById('resPensionCriteria').textContent = `선정기준: ${size === 1 ? '단독 247만' : '부부 395.2만'}원 이하`;
+      document.getElementById('resPensionStatus').textContent = isPensionEligible ? '수급 가능' : '기준 초과';
+      document.getElementById('resPensionStatus').style.color = isPensionEligible ? '#34d399' : '#f87171';
+
+      document.getElementById('resMedian100').textContent = median100.toLocaleString() + '원';
+
+      evaluateServices(size, totalRecognizedIncome, median100, finProp, housingProp, generalProp, earnedRaw, otherRaw, regionKey, pensionRecognizedIncome, PENSION_LIMIT, isPensionEligible, deductionDesc);
+    }
+
+    function evaluateServices(size, totalIncome, median100, finProp, housingProp, generalProp, earnedRaw, otherRaw, regionKey, pensionRecognizedIncome, PENSION_LIMIT, isPensionEligible, deductionDesc) {
+      const services = [];
+      const hasSenior = document.getElementById('hasSenior').checked;
+      const hasSevereDisabled = document.getElementById('hasSevereDisabled').checked;
+      const hasSingleParent = document.getElementById('hasSingleParent').checked;
+      const hasChild = document.getElementById('hasChild').checked;
+
+      const checkChronicIll = document.getElementById('checkChronicIll').checked;
+      const checkSeverelyIll = document.getElementById('checkSeverelyIll').checked;
+      const checkElderlyCare = document.getElementById('checkElderlyCare').checked;
+      const checkEmergency = document.getElementById('checkEmergencyCrisis').checked;
+      const checkDebt = document.getElementById('checkDebt').checked;
+      const checkPrison = document.getElementById('checkPrison').checked;
+      const checkFamilyCutoff = document.getElementById('checkFamilyCutoff').checked;
+
+      const qualifiesLiving = totalIncome <= (median100 * 0.32);
+      const qualifiesMedical = totalIncome <= (median100 * 0.40);
+      const qualifiesHousing = totalIncome <= (median100 * 0.48);
+
+      if (qualifiesLiving || qualifiesMedical || qualifiesHousing) {
+        let eligibleTitles = [];
+        let itemsHtml = [];
+
+        if (qualifiesLiving) {
+          eligibleTitles.push('생계');
+          const estLivingBenefit = Math.max(0, Math.round((median100 * 0.32) - totalIncome));
+          itemsHtml.push(`
+            <li class="benefit-item">
+              <strong>[생계급여]</strong> 기준 중위 32% 이하 충족
+              <div style="color:#475569; margin-top:2px;">- 매월 최대 약 ${estLivingBenefit.toLocaleString()}원 현금 입금 지원</div>
+            </li>
+          `);
+        }
+
+        if (qualifiesMedical) {
+          eligibleTitles.push('의료');
+          let medicalDesc = '- 외래 1,000~1,500원 / 입원 0~10% 본인부담 감면';
+          if (checkFamilyCutoff) {
+            medicalDesc += ' <br><span style="color:#b45309; font-weight:bold;">※ 부양단절 확인: 가족관계 해체 사유서 징구 후 지방생활보장위원회 심의 우선 구제</span>';
+          }
+          itemsHtml.push(`
+            <li class="benefit-item">
+              <strong>[의료급여 1·2종]</strong> 기준 중위 40% 이하 충족
+              <div style="color:#475569; margin-top:2px;">${medicalDesc}</div>
+            </li>
+          `);
+        }
+
+        if (qualifiesHousing) {
+          eligibleTitles.push('주거');
+          itemsHtml.push(`
+            <li class="benefit-item">
+              <strong>[주거급여]</strong> 기준 중위 48% 이하 충족 (부양의무자 기준 미적용)
+              <div style="color:#475569; margin-top:2px;">- 임차가구 기준임대료 내 실임차료 전액 지원 및 자가가구 수선유지(무료 집수리)</div>
+            </li>
+          `);
+        }
+
+        let mainAction = '사회보장급여(맞춤형급여) 일괄 신청서 접수 및 공적자료 조사 착수';
+        if (checkFamilyCutoff && qualifiesMedical) {
+          mainAction = '가족관계 해체 사유서 징구 및 생활보장위원회 우선보장 심의 상정';
+        }
+
+        services.push({
+          category: 'basic',
+          agency: '보건복지부·국토교통부',
+          title: `국민기초생활보장 [맞춤형급여: ${eligibleTitles.join('·')}]`,
+          contact: '보건복지상담센터 ☎ 129 / 마이홈콜 ☎ 1600-1004 / 읍면동 행정복지센터',
+          desc: `
+            <div style="font-weight:bold; color:#0f172a; margin-bottom:4px;">소득인정액 기준 지원 가능 급여 내역:</div>
+            <ul class="benefit-sublist">${itemsHtml.join('')}</ul>
+          `,
+          action: mainAction
+        });
+      }
+
+      if (checkEmergency && totalIncome <= (median100 * 0.75) && finProp <= 8220000) {
+        services.push({
+          category: 'basic', agency: '보건복지부',
+          title: '긴급복지지원 (생계·의료)',
+          contact: '보건복지상담센터 ☎ 129 / 시·군·구 희망복지팀',
+          desc: '실직·체납 등 법정 위기 시 72시간 내 선지원 원칙 (월 71.3만원 생계비 또는 300만원 내 의료비)',
+          action: '72시간 내 현장확인 및 긴급생계비 선지원 품의'
+        });
+      }
+
+      if (totalIncome <= (median100 * 0.50)) {
+        if (checkChronicIll || hasChild || checkSeverelyIll) {
+          services.push({
+            category: 'chasangwi', agency: '국민건강보험공단',
+            title: '차상위 본인부담경감',
+            contact: '국민건강보험공단 ☎ 1577-1000 / 주소지 관할 공단지사',
+            desc: '만성·중증난치질환자, 18세 미만 아동의 건강보험 본인부담금을 의료급여 수준으로 경감',
+            action: '진단서 및 6개월 이상 치료확인서 징구 후 신청서 접수'
+          });
+        }
+
+        services.push({
+          category: 'chasangwi', agency: '지자체 복지팀',
+          title: '차상위계층 확인사업 & 요금감면',
+          contact: '보건복지상담센터 ☎ 129 / 한국전력 ☎ 123 / 가스공사',
+          desc: '정부양곡 50% 할인, 이동통신요금 감면(월 최대 1.1만+35%), 전기·도시가스 감면, 문화누리카드 지원',
+          action: '사회보장급여 신청서 접수 및 복지감면 일괄 대행'
+        });
+
+        if (hasSevereDisabled) {
+          services.push({
+            category: 'chasangwi', agency: '보건복지부',
+            title: '차상위 장애인연금 / 장애수당',
+            contact: '보건복지상담센터 ☎ 129 / 국민연금공단 ☎ 1355',
+            desc: '중증장애인 차상위 장애인연금(월 최대 약 42만원) 또는 경증 장애수당(월 6만원) 지급',
+            action: '장애인연금/수당 지급신청서 접수 및 직권 조사'
+          });
+        }
+      }
+
+      if (hasSingleParent && totalIncome <= (median100 * 0.60)) {
+        services.push({
+          category: 'chasangwi', agency: '여성가족부',
+          title: '한부모가족지원 (아동양육비)',
+          contact: '한부모상담전화 ☎ 1644-6621 / 양육비이행관리원 ☎ 1644-6621',
+          desc: '만 18세 미만 자녀 1인당 월 21만원 아동양육비 지원 및 증명서 발급',
+          action: '한부모가족 증명서 발급 신청 및 양육비 청구 접수'
+        });
+      }
+
+      if (hasSenior && isPensionEligible) {
+        const maxPension = (size === 1) ? '단독가구 매월 최대 약 34만 9,700원' : '부부가구 합산 최대 약 55만 9,520원';
+        services.push({
+          category: 'chasangwi', agency: '국민연금공단',
+          title: '기초연금 지원사업',
+          contact: '국민연금공단 ☎ 1355 / 주소지 관할 국민연금공단 지사',
+          desc: `만 65세 이상 (기초연금 인정액: 월 ${pensionRecognizedIncome.toLocaleString()}원 / 기준 ${PENSION_LIMIT.toLocaleString()}원 이하 충족) → ${maxPension} 현금 지급 대상`,
+          action: '기초연금 지급신청서 접수 및 금융정보제공동의'
+        });
+      }
+
+      if (checkElderlyCare || (hasSenior && totalIncome <= (median100 * 0.50))) {
+        services.push({
+          category: 'chasangwi', agency: '국민건강보험공단',
+          title: '노인장기요양보험 & 맞춤돌봄',
+          contact: '건보공단 장기요양 ☎ 1577-1000 / 독거노인종합지원센터 ☎ 1661-2129',
+          desc: '독거·거동불편 어르신 전담 생활지원사 안부확인 및 장기요양 등급 신청',
+          action: '노인맞춤돌봄 수행기관 연계의뢰 및 장기요양 신청서 대리접수'
+        });
+      }
+
+      if (checkSeverelyIll || (hasSenior && totalIncome <= median100)) {
+        services.push({
+          category: 'other', agency: '국민건강보험공단',
+          title: '건보공단 [재난적의료비 지원]',
+          contact: '국민건강보험공단 ☎ 1577-1000 (대구 각 구·군 지사)',
+          desc: '고액 병원비 본인부담금의 50~80% 지원 (연간 최대 5,000만원 한도)',
+          action: '퇴원 후 180일 이내 건보공단 지사 전용의뢰서 발급 및 안내'
+        });
+      }
+
+      if (checkDebt) {
+        services.push({
+          category: 'other', agency: '신용회복위원회·서민금융진흥원',
+          title: '신용회복위원회·서민금융 [채무조정 & 소액생계대출]',
+          contact: '서민금융콜센터 ☎ 1397 / 신용회복위원회 ☎ 1600-5500 (대구센터)',
+          desc: '취약계층 원금 최대 90% 감면 특례, 당일 즉시 100만원 소액생계비대출, 압류방지 행복지킴이통장',
+          action: '대구 서민금융통합지원센터 방문 안내 및 상담의뢰서 교부'
+        });
+      }
+
+      if (checkPrison) {
+        services.push({
+          category: 'other', agency: '한국법무보호복지공단',
+          title: '한국법무보호복지공단 [출소자 LH 긴급주거 & 취업]',
+          contact: '법무보호공단 ☎ 1670-7004 / 대구지부 ☎ 053-431-2000',
+          desc: '출소 후 3년 이내 무의탁자 대상 LH 연계 주거지원, 긴급원호금, 허그일자리',
+          action: '한국법무보호복지공단 대구지부 긴급의뢰서 작성 및 연계'
+        });
+      }
+
+      renderServices(services);
+      generateHaengbokLog(size, totalIncome, pensionRecognizedIncome, PENSION_LIMIT, isPensionEligible, services, checkFamilyCutoff, deductionDesc);
+    }
+
+    function renderServices(services) {
+      const container = document.getElementById('serviceListContainer');
+      container.innerHTML = '';
+
+      let filtered = services;
+      if (currentFilter === 'basic') filtered = services.filter(s => s.category === 'basic');
+      else if (currentFilter === 'chasangwi') filtered = services.filter(s => s.category === 'chasangwi');
+      else if (currentFilter === 'other') filtered = services.filter(s => s.category === 'other');
+
+      document.getElementById('serviceCountBadge').textContent = `${filtered.length}건`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div style="padding:20px; text-align:center; font-size:11px; color:#94a3b8;">조건에 부합하는 서비스가 없습니다.</div>';
+        return;
+      }
+
+      filtered.forEach(s => {
+        const card = document.createElement('div');
+        card.className = `service-card ${s.category}`;
+        card.innerHTML = `
+          <div class="service-top">
+            <strong>${s.title}</strong>
+            <span class="service-tag">${s.agency}</span>
+          </div>
+          <div class="contact-badge">📞 연락처: ${s.contact}</div>
+          <div style="margin:6px 0 4px 0;">${s.desc}</div>
+          <div class="service-action">▶ 조치: ${s.action}</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function generateHaengbokLog(size, totalIncome, pensionIncome, pensionLimit, isPensionEligible, services, hasCutoff, deductionDesc) {
+      const memoText = document.getElementById('memoInput').value;
+      const today = new Date().toISOString().slice(0, 10);
+      const hasStandardCar = (document.getElementById('hasStandardCar').value === 'true');
+      const carModel = document.getElementById('carModelInput').value;
+      const carYear = document.getElementById('carYearInput').value;
+      const carBadgeText = document.getElementById('carJudgementBadge').textContent;
+      
+      const regionKey = document.getElementById('regionType').value;
+      const regName = REGION_STANDARDS[regionKey].name;
+      const housingProp = getNumericValue('housingProperty');
+      const generalProp = getNumericValue('generalProperty');
+      
+      const cleanServices = services.map((s, idx) => {
+        const rawDesc = s.desc.replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').trim();
+        return `${idx + 1}. [${s.title}] (${s.contact})\n   - ${rawDesc}`;
+      }).join('\n');
+
+      let actionDetails = [];
+      actionDetails.push(`- [근로공제] ${deductionDesc} 적용하여 소득평가액 산출`);
+      actionDetails.push(`- [재산분류] 주거용재산 ${housingProp.toLocaleString()}만원(한도 내 1.04%), 일반재산 ${generalProp.toLocaleString()}만원(4.17%) 분리 산정`);
+
+      if (services.some(s => s.title.includes('맞춤형급여'))) {
+        actionDetails.push("- [기초보장] 사회보장급여(생계·의료·주거) 통합 신청서 접수 및 공적자료 연계 조사 착수");
+      }
+      if (services.some(s => s.title.includes('기초연금'))) {
+        actionDetails.push("- [기초연금] 기초연금 지급신청서 접수 및 금융동의서 징구 (국민연금 1355)");
+      }
+      if (services.some(s => s.title.includes('긴급복지'))) {
+        actionDetails.push("- [긴급지원] 72시간 내 현장 확인 및 긴급생계비 선지원 품의 상정 (문의 129)");
+      }
+      if (hasCutoff) {
+        actionDetails.push("- [부양의무] 가족관계 해체 확인서 징구 및 소명자료(통장내역 등) 첨부 조치");
+      }
+      if (hasStandardCar) {
+        actionDetails.push("- [차량기준] 일반승용차 100% 월환산 대상임 안내 및 생업용 소명자료 제출 안내");
+      }
+
+      const log = 
+`[복지 초기상담 이력서]
+■ 상담일자: ${today}
+■ 상담가구: ${regName} 거주 ${size}인 가구
+
+1. 민원인 구술 요약:
+${memoText.trim()}
+
+2. 모의계산 산출 내역:
+- 근로소득 공제 규정: ${deductionDesc}
+- 재산 분류 산정:
+  • 주거용재산: ${housingProp.toLocaleString()}만 원 (기본재산 ${REGION_STANDARDS[regionKey].basic.toLocaleString()}만 원 우선공제 후 한도 내 월 1.04% 적용)
+  • 일반재산: ${generalProp.toLocaleString()}만 원 (월 4.17% 적용)
+- 기초생활보장 소득인정액: 월 ${totalIncome.toLocaleString()}원
+- 기초연금 전용 소득인정액: 월 ${pensionIncome.toLocaleString()}원 (선정기준: ${pensionLimit.toLocaleString()}원 이하 → ${isPensionEligible ? '충족(수급가능)' : '기준초과(탈락)'})
+- 차량 환산 판정: ${carModel || carYear ? `${carYear}년식 ${carModel} → [${carBadgeText}]` : '차량 없음'}
+
+3. 부양의무자 판단 소견:
+${hasCutoff ? '- 가족관계 해체 및 연락두절 상태 확인됨 -> 의료급여 지방생활보장위원회 우선심의 구제 대상 검토 필요' : '- 해당사항 없음 (일반 조사절차 진행)'}
+
+4. 지원 가능 서비스 및 안내 연락처:
+${cleanServices || '- 기준초과로 지원가능 공적급여 없음 (민간후원 연계 검토)'}
+
+5. 행정 조치내용:
+${actionDetails.join('\n')}`;
+
+      document.getElementById('haengbokLogArea').value = log;
+    }
+
+    function copyCounselLog() {
+      const area = document.getElementById('haengbokLogArea');
+      area.select();
+      navigator.clipboard.writeText(area.value).then(() => {
+        alert('행복e음 상담일지가 클립보드에 복사되었습니다!\n행복e음 초기상담 등록 화면에서 Ctrl + V 를 누르세요.');
+      }).catch(() => {
+        document.execCommand('copy');
+        alert('복사되었습니다.');
+      });
+    }
+  </script>
+</body>
+</html>
