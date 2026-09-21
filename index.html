@@ -49,7 +49,12 @@
     .chk-item.col2 { grid-column: span 2; }
     .chk-item.warn { background: #fffbeb; border-color: #fde68a; color: #92400e; font-weight: bold; }
 
-    .btn-calc { width: 100%; padding: 13px; background: #2563eb; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+    .car-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; margin-top: 10px; }
+    .car-badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-top: 6px; }
+    .car-badge.danger { background: #fee2e2; color: #991b1b; border: 1px solid #f87171; }
+    .car-badge.success { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+
+    .btn-calc { width: 100%; padding: 13px; background: #2563eb; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 12px; }
     .btn-calc:hover { background: #1d4ed8; }
 
     .summary-card { background: #0f172a; color: #fff; border-radius: 8px; padding: 16px; margin-bottom: 18px; }
@@ -81,7 +86,6 @@
     .contact-badge { display: inline-block; margin-top: 4px; padding: 3px 7px; border-radius: 4px; background: #f1f5f9; color: #334155; font-size: 10.5px; border: 1px solid #e2e8f0; font-weight: 600; }
     .service-action { margin-top: 6px; padding: 6px 8px; background: rgba(255,255,255,0.9); border-radius: 4px; border: 1px solid #e2e8f0; font-weight: bold; color: #1e3a8a; }
 
-    /* 통합 급여 카드 내부 리스트 */
     .benefit-sublist { margin-top: 8px; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
     .benefit-item { background: #ffffff; border: 1px solid #dcfce7; border-radius: 5px; padding: 6px 8px; }
     .benefit-item strong { color: #166534; font-size: 11.5px; }
@@ -117,8 +121,8 @@
           <span>긴급생계비 + 건보공단 재난의료비</span>
         </button>
         <button class="preset-btn" onclick="loadScenario('chasangwi')">
-          <strong>차상위 패키지</strong>
-          <span>한부모·본인부담경감·계층확인·장애인</span>
+          <strong>차상위 패키지(장애소득공제)</strong>
+          <span>한부모·본인부담경감·장애인 소득공제</span>
         </button>
         <button class="preset-btn" onclick="loadScenario('pension')">
           <strong>기초연금</strong>
@@ -161,7 +165,7 @@
           </div>
           <div class="chk-grid">
             <label class="chk-item"><input type="checkbox" id="hasSenior" onchange="runSimulation()"> 노인(만 65세 이상)</label>
-            <label class="chk-item"><input type="checkbox" id="hasSevereDisabled" onchange="runSimulation()"> 등록 장애인</label>
+            <label class="chk-item" style="border-color:#38bdf8; background:#f0f9ff;"><input type="checkbox" id="hasSevereDisabled" onchange="runSimulation()"> <strong>등록 장애인 (소득 20만+30% 공제)</strong></label>
             <label class="chk-item"><input type="checkbox" id="hasSingleParent" onchange="runSimulation()"> 한부모가구 (모/부자)</label>
             <label class="chk-item"><input type="checkbox" id="hasChild" onchange="runSimulation()"> 아동·청소년 (만 18세 미만)</label>
           </div>
@@ -169,7 +173,7 @@
           <div class="section-title" style="margin-top:16px;">2. 소득 평가액 (월 기준, 만원 단위)</div>
           <div class="form-row">
             <div class="form-group">
-              <label>근로·사업소득 (자동 공제 반영)</label>
+              <label id="earnedIncomeLabel">근로·사업소득 (기본 30% 공제)</label>
               <input type="text" id="earnedIncome" value="0" oninput="formatCurrencyInput(this); runSimulation();">
             </div>
             <div class="form-group">
@@ -193,10 +197,28 @@
               <input type="text" id="debtAmount" value="300" oninput="formatCurrencyInput(this); runSimulation();">
             </div>
           </div>
-          <label class="chk-item warn" style="margin-top:8px;">
-            <input type="checkbox" id="hasStandardCar" onchange="runSimulation()">
-            <span>일반 승용자동차 보유 (월 100% 재산환산 대상) <small style="display:block; font-weight:normal;">※ 10년 이상 노후차, 2000cc 미만 생업용은 해제</small></span>
-          </label>
+
+          <!-- 차량명 및 연식 자동 판정 블록 -->
+          <div class="car-box">
+            <div style="font-size:11px; font-weight:bold; color:#0f172a; margin-bottom:6px;">🚗 보유 차량 자동 판정 (기초생활보장 지침)</div>
+            <div class="form-row" style="margin-bottom:6px;">
+              <div class="form-group">
+                <label>차량 차종/모델명</label>
+                <input type="text" id="carModelInput" placeholder="예: 모닝, 아반떼, 그랜저, 포터" oninput="evaluateCarStandard(); runSimulation();">
+              </div>
+              <div class="form-group">
+                <label>차량 등록 연식 (연도)</label>
+                <input type="number" id="carYearInput" placeholder="예: 2010" min="1990" max="2026" oninput="evaluateCarStandard(); runSimulation();">
+              </div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
+              <label style="font-size:11px; color:#475569; display:flex; align-items:center; gap:4px; cursor:pointer;">
+                <input type="checkbox" id="carBusinessUse" onchange="evaluateCarStandard(); runSimulation();"> 생업용 화물/승합/2000cc 미만
+              </label>
+              <span id="carJudgementBadge" class="car-badge success">차량 없음 (재산환산 0원)</span>
+            </div>
+            <input type="hidden" id="hasStandardCar" value="false">
+          </div>
 
           <div class="section-title" style="margin-top:16px;">4. 질환·위기 및 유관기관 연계 체크</div>
           <div class="chk-grid">
@@ -227,7 +249,7 @@
                 <span id="resBasicRatio" style="color:#38bdf8;">중위 0.0%</span>
               </div>
               <div class="dual-val" id="resTotalIncomeVal">0원</div>
-              <div class="dual-sub">생계 32% / 의료 40% / 주거 48%</div>
+              <div class="dual-sub" id="resIncomeBreakdown">소득 0원 + 재산 0원</div>
             </div>
 
             <div class="dual-card active">
@@ -266,7 +288,7 @@
             <strong style="font-size:12px; color:#0f172a;">행복e음 복지상담이력 종합 생성기</strong>
             <button class="btn-copy" onclick="copyCounselLog()">행복e음 복사하기</button>
           </div>
-          <textarea id="haengbokLogArea" rows="12" readonly style="background:#f8fafc;"></textarea>
+          <textarea id="haengbokLogArea" rows="13" readonly style="background:#f8fafc;"></textarea>
         </div>
       </div>
     </div>
@@ -296,7 +318,7 @@
 `생년월일: 1968.05.12
 건강: 협심증, 척추질환 (만성질환으로 근로 불가)
 가족: 1인 가구 (자녀와 12년 전 이혼 후 연락두절, 부양단절)
-자동차: 2010년식(16년 경과) 노후 승용차 보유 (일반재산 환산 적용)
+자동차: 2010년식 아반떼 노후 승용차 보유 (16년 경과)
 소득: 월 0원
 주거: 보증부 월세 (보증금 5백만원, 월 25만원)
 재산: 통장예금 30만원
@@ -308,10 +330,10 @@
 건강: 
 가족:    인 가구 (부양단절 여부: )
 자동차: 
-소득: 월   만원
-주거: 보증금   만원
-재산: 통장예금   만원
-부채: 금융대출   만원
+소득: 월    만원
+주거: 보증금    만원
+재산: 통장예금    만원
+부채: 금융대출    만원
 위기사유: `;
 
     window.onload = function() {
@@ -386,18 +408,18 @@
 `생년월일: 1984.09.20
 건강: 뇌병변 중증장애 및 당뇨 만성질환 (6개월 이상 치료 필요)
 가족: 2인 가구 (모 및 만 9세 초등생 자녀, 한부모가구)
-자동차: 없음
-소득: 일용근로 월 1백20만원
+자동차: 2012년식 모닝 (경차, 일반재산 환산)
+소득: 일용근로 월 1백50만원 (장애인 추가소득공제 대상)
 주거: 다세대 월세 (보증금 2천만원)
 재산: 통장예금 3백만원
 부채: 5백만원
-위기사유: 만성질환 치료비 부담 및 한부모 아동 양육비 부족, 차상위계층 혜택 전반(한부모, 본인부담경감, 차상위확인, 장애인연금) 상담 요청`;
+위기사유: 장애인 근로활동 중이나 만성질환 치료비 부담 및 한부모 아동 양육비 부족, 차상위계층 혜택 전반 상담 요청`;
       } else if (type === 'emergency') {
         document.getElementById('memoInput').value = 
 `생년월일: 1975.03.15
 건강: 뇌출혈로 대학병원 중환자실 입원 치료 중
 가족: 4인 가구 (배우자 및 미성년 자녀 2명)
-자동차: 없음
+자동차: 2021년식 쏘나타 승용차 보유 (일반 승용차)
 소득: 주소득자 실직으로 가구 총소득 70만원
 주거: 보증금 3천만원
 재산: 통장예금 3백50만원
@@ -517,6 +539,66 @@
       return null;
     }
 
+    /**
+     * 차량명 및 연식 기반 일반재산 vs 100% 월환산 자동 판정
+     */
+    function evaluateCarStandard() {
+      const model = (document.getElementById('carModelInput').value || '').trim().toLowerCase();
+      const year = parseInt(document.getElementById('carYearInput').value, 10) || 0;
+      const isBusiness = document.getElementById('carBusinessUse').checked;
+      const isSevereDisabled = document.getElementById('hasSevereDisabled').checked;
+      const badge = document.getElementById('carJudgementBadge');
+      const hiddenInput = document.getElementById('hasStandardCar');
+
+      // 차량 미보유 상태
+      if (!model && year === 0) {
+        badge.className = 'car-badge success';
+        badge.textContent = '차량 없음 (재산환산 0원)';
+        hiddenInput.value = 'false';
+        return;
+      }
+
+      const CURRENT_YEAR = 2026;
+      const carAge = year > 0 ? (CURRENT_YEAR - year) : 0;
+
+      // 1. 등록 장애인용 전용차량 감면 (1가구 1대 기준)
+      if (isSevereDisabled) {
+        badge.className = 'car-badge success';
+        badge.textContent = '등록 장애인 사용 자동차 (일반재산 4.17% 적용/환산특례)';
+        hiddenInput.value = 'false';
+        return;
+      }
+
+      // 2. 경형자동차 (1,000cc 미만)
+      const compactModels = ['모닝', '스파크', '레이', '마티즈', '캐스퍼', '다마스', '타우너', '티코'];
+      const isCompact = compactModels.some(m => model.includes(m)) || model.includes('경차') || model.includes('1000cc 미만');
+
+      // 3. 생업용 차량 (2000cc 미만 승용 또는 화물·승합)
+      const isTruckOrVan = model.includes('포터') || model.includes('봉고') || model.includes('스타렉스') || model.includes('스타리아') || model.includes('카니발') || model.includes('화물') || model.includes('승합') || model.includes('밴');
+
+      // 4. 노후차 기준 (차령 10년 이상)
+      const isOldCar = (carAge >= 10);
+
+      if (isOldCar) {
+        badge.className = 'car-badge success';
+        badge.textContent = `차령 ${carAge}년 노후차 (일반재산 4.17% 적용 / 100% 환산 제외)`;
+        hiddenInput.value = 'false';
+      } else if (isCompact) {
+        badge.className = 'car-badge success';
+        badge.textContent = '경형자동차(1,000cc 미만) (일반재산 4.17% 적용)';
+        hiddenInput.value = 'false';
+      } else if (isBusiness && (isTruckOrVan || model.includes('생업'))) {
+        badge.className = 'car-badge success';
+        badge.textContent = '생업용 자동차 (일반재산 4.17% 적용)';
+        hiddenInput.value = 'false';
+      } else {
+        // 일반 기준 미달 시 월 100% 전액 재산환산 대상
+        badge.className = 'car-badge danger';
+        badge.textContent = `일반 승용자동차 (차량가액 월 100% 소득환산 대상 - 탈락위험)`;
+        hiddenInput.value = 'true';
+      }
+    }
+
     function parseCounselingMemo() {
       const text = document.getElementById('memoInput').value;
       if (!text.trim()) return;
@@ -584,23 +666,36 @@
           const val = parseKoreanAmount(content);
           if (val !== null) setFormattedValue('debtAmount', val);
         }
+
+        // 차량 정보 정형 파싱
+        if (trimmed.startsWith('자동차:') || trimmed.startsWith('차량:')) {
+          const content = trimmed.substring(trimmed.indexOf(':') + 1);
+          if (content.includes('없음') || content.includes('0대')) {
+            document.getElementById('carModelInput').value = '';
+            document.getElementById('carYearInput').value = '';
+          } else {
+            const yearMatch = content.match(/(19\d{2}|20\d{2})년식?/);
+            if (yearMatch) {
+              document.getElementById('carYearInput').value = yearMatch[1];
+            }
+            const cleanModel = content.replace(/(19\d{2}|20\d{2})년식?/, '').replace(/보유|노후|승용차|차량/g, '').trim();
+            if (cleanModel) {
+              document.getElementById('carModelInput').value = cleanModel;
+            }
+          }
+        }
       });
 
-      const hasVehicle = (text.includes('승용차') || text.includes('자동차') || text.includes('차량'));
-      const isExempt = (text.includes('10년') || text.includes('노후') || text.includes('생업') || text.includes('경차') || text.includes('일반재산'));
-      if (hasVehicle && !isExempt && !text.includes('자동차: 없음') && !text.includes('차량: 없음')) {
-        document.getElementById('hasStandardCar').checked = true;
-      } else {
-        document.getElementById('hasStandardCar').checked = false;
-      }
-
-      if (text.includes('노인') || text.includes('어르신') || text.includes('기초연금')) {
-        document.getElementById('hasSenior').checked = true;
-      }
       if (text.includes('장애인') || text.includes('중증장애') || text.includes('뇌병변')) {
         document.getElementById('hasSevereDisabled').checked = true;
       } else {
         document.getElementById('hasSevereDisabled').checked = false;
+      }
+
+      evaluateCarStandard();
+
+      if (text.includes('노인') || text.includes('어르신') || text.includes('기초연금')) {
+        document.getElementById('hasSenior').checked = true;
       }
       if (text.includes('한부모') || text.includes('모자가정') || text.includes('양육비')) {
         document.getElementById('hasSingleParent').checked = true;
@@ -608,7 +703,6 @@
         document.getElementById('hasSingleParent').checked = false;
       }
 
-      // 아동·청소년 파싱: 단순 '자녀와 연락두절'은 제외하고 실제 미성년 문맥만 반영
       const childKeywords = /(미성년|아동|영유아|어린이집|유치원|초등|중학|고등학생|양육비|만\s*([0-9]|1[0-7])\s*세\s*자녀)/;
       const cutoffContext = /(자녀와\s*.*연락두절|부양단절|가족관계\s*해체)/;
       
@@ -665,7 +759,24 @@
 
       const earnedRaw = getNumericValue('earnedIncome') * 10000;
       const otherRaw = getNumericValue('otherIncome') * 10000;
-      const earnedDeducted = earnedRaw > 0 ? earnedRaw * 0.7 : 0;
+      const hasSevereDisabled = document.getElementById('hasSevereDisabled').checked;
+
+      // 장애인 소득공제 로직 반영: 장애인일 경우 20만원 기본공제 후 잔여소득의 30% 추가 공제
+      let earnedDeducted = 0;
+      if (earnedRaw > 0) {
+        if (hasSevereDisabled) {
+          const afterFixedDeduction = Math.max(0, earnedRaw - 200000);
+          earnedDeducted = afterFixedDeduction * 0.7;
+          document.getElementById('earnedIncomeLabel').innerHTML = '근로소득 (<strong style="color:#0284c7;">장애인 정액 20만+30% 공제</strong>)';
+        } else {
+          earnedDeducted = earnedRaw * 0.7;
+          document.getElementById('earnedIncomeLabel').textContent = '근로·사업소득 (일반 30% 공제)';
+        }
+      } else {
+        document.getElementById('earnedIncomeLabel').textContent = hasSevereDisabled ? 
+          '근로소득 (장애인 정액 20만+30% 공제)' : '근로·사업소득 (일반 30% 공제)';
+      }
+
       const incomeVal = earnedDeducted + otherRaw;
 
       const regionKey = document.getElementById('regionType').value;
@@ -702,7 +813,8 @@
       let propHousingUnderLimit = Math.min(afterBasicHousing, housingLimit);
       let propHousingOverLimit = Math.max(0, afterBasicHousing - housingLimit);
 
-      const hasStandardCar = document.getElementById('hasStandardCar').checked;
+      // 차량 판정에 따른 재산가액 산정 (월 100% 대상 차량 보유 시 500만 원 가산)
+      const hasStandardCar = (document.getElementById('hasStandardCar').value === 'true');
       const carValMonthly = hasStandardCar ? 5000000 : 0;
 
       const propMonthly = (propHousingUnderLimit * 0.0104) + 
@@ -713,7 +825,7 @@
       const totalRecognizedIncome = Math.round(incomeVal + propMonthly);
       const ratio = (totalRecognizedIncome / median100) * 100;
 
-      // 2. 기초연금 전용 소득인정액 별도 산출
+      // 2. 기초연금 전용 소득인정액 산출
       const pensionBasicExempt = (regionKey === 'metro' || regionKey === 'seoul') ? 13500 * 10000 : 8500 * 10000;
       const pensionFinExempt = 2000 * 10000;
 
@@ -752,6 +864,7 @@
       document.getElementById('resHousehold').textContent = `${size}인 가구 (${regStandard.name})`;
       document.getElementById('resTotalIncomeVal').textContent = totalRecognizedIncome.toLocaleString() + '원';
       document.getElementById('resBasicRatio').textContent = `중위 ${ratio.toFixed(1)}%`;
+      document.getElementById('resIncomeBreakdown').textContent = `소득평가 ${Math.round(incomeVal).toLocaleString()}원 + 재산환산 ${Math.round(propMonthly).toLocaleString()}원`;
       
       document.getElementById('resPensionIncomeVal').textContent = pensionRecognizedIncome.toLocaleString() + '원';
       document.getElementById('resPensionCriteria').textContent = `선정기준: ${size === 1 ? '단독 247만' : '부부 395.2만'}원 이하`;
@@ -778,9 +891,7 @@
       const checkPrison = document.getElementById('checkPrison').checked;
       const checkFamilyCutoff = document.getElementById('checkFamilyCutoff').checked;
 
-      // =========================================================================
-      // 1. 국민기초생활보장 맞춤형급여 (하나의 통합 카드로 묶기)
-      // =========================================================================
+      // 1. 국민기초생활보장 맞춤형급여
       const qualifiesLiving = totalIncome <= (median100 * 0.32);
       const qualifiesMedical = totalIncome <= (median100 * 0.40);
       const qualifiesHousing = totalIncome <= (median100 * 0.48);
@@ -860,7 +971,7 @@
             category: 'chasangwi', agency: '국민건강보험공단',
             title: '차상위 본인부담경감',
             contact: '국민건강보험공단 ☎ 1577-1000 / 주소지 관할 공단지사',
-            desc: '만성·중증난치질환자, 18세 미만 아동의 건강보험 본인부담금을 의료급여 수준(14% 또는 1,000~1,500원)으로 경감',
+            desc: '만성·중증난치질환자, 18세 미만 아동의 건강보험 본인부담금을 의료급여 수준으로 경감',
             action: '진단서 및 6개월 이상 치료확인서 징구 후 신청서 접수'
           });
         }
@@ -889,12 +1000,12 @@
           category: 'chasangwi', agency: '여성가족부',
           title: '한부모가족지원 (아동양육비)',
           contact: '한부모상담전화 ☎ 1644-6621 / 양육비이행관리원 ☎ 1644-6621',
-          desc: '만 18세 미만 자녀 1인당 월 21만원(청소년한부모 월 35만원) 아동양육비 지원 및 증명서 발급',
+          desc: '만 18세 미만 자녀 1인당 월 21만원 아동양육비 지원 및 증명서 발급',
           action: '한부모가족 증명서 발급 신청 및 양육비 청구 접수'
         });
       }
 
-      // 4. 기초연금 (기초연금 전용 소득인정액 적용)
+      // 4. 기초연금
       if (hasSenior && isPensionEligible) {
         const maxPension = (size === 1) ? '단독가구 매월 최대 약 34만 9,700원' : '부부가구 합산 최대 약 55만 9,520원';
         services.push({
@@ -911,7 +1022,7 @@
           category: 'chasangwi', agency: '국민건강보험공단',
           title: '노인장기요양보험 & 맞춤돌봄',
           contact: '건보공단 장기요양 ☎ 1577-1000 / 독거노인종합지원센터 ☎ 1661-2129',
-          desc: '독거·거동불편 어르신 전담 생활지원사 안부확인(주 2~3회 방문/말벗) 및 장기요양 등급 신청(방문요양/목욕)',
+          desc: '독거·거동불편 어르신 전담 생활지원사 안부확인 및 장기요양 등급 신청',
           action: '노인맞춤돌봄 수행기관 연계의뢰 및 장기요양 신청서 대리접수'
         });
       }
@@ -922,7 +1033,7 @@
           category: 'other', agency: '국민건강보험공단',
           title: '건보공단 [재난적의료비 지원]',
           contact: '국민건강보험공단 ☎ 1577-1000 (대구 각 구·군 지사)',
-          desc: '고액 병원비 본인부담금의 50~80% 지원 (연간 최대 5,000만원 한도, 비급여 포함)',
+          desc: '고액 병원비 본인부담금의 50~80% 지원 (연간 최대 5,000만원 한도)',
           action: '퇴원 후 180일 이내 건보공단 지사 전용의뢰서 발급 및 안내'
         });
       }
@@ -942,7 +1053,7 @@
           category: 'other', agency: '한국법무보호복지공단',
           title: '한국법무보호복지공단 [출소자 LH 긴급주거 & 취업]',
           contact: '법무보호공단 ☎ 1670-7004 / 대구지부 ☎ 053-431-2000',
-          desc: '출소 후 3년 이내 무의탁자 대상 LH 연계 주거지원(보증금 100% 공단부담), 긴급원호금, 허그일자리',
+          desc: '출소 후 3년 이내 무의탁자 대상 LH 연계 주거지원, 긴급원호금, 허그일자리',
           action: '한국법무보호복지공단 대구지부 긴급의뢰서 작성 및 연계'
         });
       }
@@ -986,17 +1097,24 @@
     function generateHaengbokLog(size, totalIncome, pensionIncome, pensionLimit, isPensionEligible, services, hasCutoff) {
       const memoText = document.getElementById('memoInput').value;
       const today = new Date().toISOString().slice(0, 10);
-      const hasStandardCar = document.getElementById('hasStandardCar').checked;
+      const hasStandardCar = (document.getElementById('hasStandardCar').value === 'true');
+      const carModel = document.getElementById('carModelInput').value;
+      const carYear = document.getElementById('carYearInput').value;
+      const carBadgeText = document.getElementById('carJudgementBadge').textContent;
+      const hasSevereDisabled = document.getElementById('hasSevereDisabled').checked;
+
       const regionKey = document.getElementById('regionType').value;
       const regName = REGION_STANDARDS[regionKey].name;
       
       const cleanServices = services.map((s, idx) => {
-        // HTML 태그 제거 후 깔끔한 텍스트로 정리
         const rawDesc = s.desc.replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').trim();
         return `${idx + 1}. [${s.title}] (${s.contact})\n   - ${rawDesc}`;
       }).join('\n');
 
       let actionDetails = [];
+      if (hasSevereDisabled) {
+        actionDetails.push("- [장애공제] 등록 장애인 근로소득 기본공제(20만원)+30% 추가공제 적용 조사 반영");
+      }
       if (services.some(s => s.title.includes('맞춤형급여'))) {
         actionDetails.push("- [기초보장] 사회보장급여(생계·의료·주거) 통합 신청서 접수 및 공적자료 연계 조사 착수");
       }
@@ -1010,7 +1128,7 @@
         actionDetails.push("- [부양의무] 가족관계 해체 확인서 징구 및 소명자료(통장내역 등) 첨부 조치");
       }
       if (hasStandardCar) {
-        actionDetails.push("- [차량기준] 일반승용차 100% 월환산 규정 안내 및 생업용 소명서류 징구 안내");
+        actionDetails.push("- [차량기준] 일반승용차 100% 월환산 대상임 안내 및 생업용 소명자료 제출 안내");
       }
       if (actionDetails.length === 0) {
         actionDetails.push("- [일반상담] 기준 초과 안내문 교부 및 향후 소득·건강 변동 시 재상담 안내");
@@ -1025,10 +1143,11 @@
 ${memoText.trim()}
 
 2. 모의계산 산출 내역:
+- 등록 장애인 공제: ${hasSevereDisabled ? '적용 (근로소득 정액 20만 원 + 잔여액 30% 추가공제)' : '해당 없음 (일반 30% 공제)'}
 - 기초생활보장 소득인정액: 월 ${totalIncome.toLocaleString()}원 (기본재산 ${REGION_STANDARDS[regionKey].basic.toLocaleString()}만원, 주거한도 ${REGION_STANDARDS[regionKey].housingLimit.toLocaleString()}만원 적용)
 - 기초연금 전용 소득인정액: 월 ${pensionIncome.toLocaleString()}원 (기본공제 1억3,500만원, 금융공제 2,000만원, 연 4% 환산 적용)
   ※ 2026년 기초연금 선정기준: ${pensionLimit.toLocaleString()}원 이하 → ${isPensionEligible ? '충족(수급가능)' : '기준초과(탈락)'}
-- 자동차 판정: ${hasStandardCar ? '일반승용차 100% 월환산 대상' : '노후차량/생업용 감면 또는 차량 없음'}
+- 차량 정보 및 환산 판정: ${carModel || carYear ? `${carYear}년식 ${carModel} → [${carBadgeText}]` : '차량 없음'}
 
 3. 부양의무자 판단 소견:
 ${hasCutoff ? '- 가족관계 해체 및 연락두절 상태 확인됨 -> 의료급여 지방생활보장위원회 우선심의 구제 대상 검토 필요' : '- 해당사항 없음 (일반 조사절차 진행)'}
