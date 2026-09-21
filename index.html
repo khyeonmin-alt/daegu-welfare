@@ -55,7 +55,6 @@
     .summary-card { background: #0f172a; color: #fff; border-radius: 8px; padding: 16px; margin-bottom: 18px; }
     .summary-title { font-size: 13px; font-weight: bold; margin-bottom: 12px; border-bottom: 1px solid #334155; padding-bottom: 6px; display: flex; justify-content: space-between; }
     
-    /* 2개 영역 분할 요약 그리드 */
     .summary-dual { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
     .dual-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 10px; }
     .dual-card.active { border-color: #38bdf8; background: rgba(56,189,248,0.08); }
@@ -603,7 +602,15 @@
       } else {
         document.getElementById('hasSingleParent').checked = false;
       }
-      if (text.includes('자녀') || text.includes('아동') || text.includes('초등') || text.includes('영유아')) {
+
+      // [수정된 부분] 아동·청소년(만 18세 미만) 파싱 정밀화:
+      // 성인 자녀와의 연락두절 등 단순 '자녀' 단어는 배제하고, 실제 미성년 아동 문맥인 경우에만 체크
+      const childKeywords = /(미성년|아동|영유아|어린이집|유치원|초등|중학|고등학생|양육비|만\s*([0-9]|1[0-7])\s*세\s*자녀)/;
+      const cutoffContext = /(자녀와\s*.*연락두절|부양단절|가족관계\s*해체)/;
+      
+      if (childKeywords.test(text) && !cutoffContext.test(text.replace(childKeywords, ''))) {
+        document.getElementById('hasChild').checked = true;
+      } else if (childKeywords.test(text)) {
         document.getElementById('hasChild').checked = true;
       } else {
         document.getElementById('hasChild').checked = false;
