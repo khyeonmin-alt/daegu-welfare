@@ -222,7 +222,7 @@
               <strong id="resPropertyVal">0원</strong>
             </div>
             <div class="summary-box highlight">
-              <span>총 소득인정액</span>
+              <span>기초보장 인정액</span>
               <strong id="resTotalIncomeVal">0원</strong>
             </div>
           </div>
@@ -696,10 +696,10 @@
       document.getElementById('resMedian100').textContent = median100.toLocaleString() + '원';
       document.getElementById('resMedianRatio').textContent = `중위소득 ${ratio.toFixed(1)}% 구간`;
 
-      evaluateServices(size, totalRecognizedIncome, median100, finProp);
+      evaluateServices(size, totalRecognizedIncome, median100, finProp, housingProp, debt, earnedRaw, otherRaw, regionKey);
     }
 
-    function evaluateServices(size, totalIncome, median100, finProp) {
+    function evaluateServices(size, totalIncome, median100, finProp, housingProp, debt, earnedRaw, otherRaw, regionKey) {
       const services = [];
       const hasSenior = document.getElementById('hasSenior').checked;
       const hasSevereDisabled = document.getElementById('hasSevereDisabled').checked;
@@ -800,17 +800,46 @@
         });
       }
 
-      // 4. 기초연금 & 노인돌봄 (보건복지부 고시 가구원별 선정기준액 적용)
-      const PENSION_LIMIT = (size === 1) ? 2130000 : 3408000;
-      if (hasSenior && totalIncome <= PENSION_LIMIT) {
-        const maxPension = (size === 1) ? '단독가구 매월 최대 334,810원' : '부부가구 합산 최대 535,680원';
-        services.push({
-          category: 'chasangwi', agency: '국민연금공단',
-          title: '기초연금 지원사업',
-          contact: '국민연금공단 ☎ 1355 / 주소지 관할 국민연금공단 지사',
-          desc: `만 65세 이상 어르신 선정기준액(${PENSION_LIMIT.toLocaleString()}원 이하) 충족 시 ${maxPension} 현금 입금`,
-          action: '기초연금 지급신청서 접수 및 금융정보제공동의'
-        });
+      // 4. 기초연금 (기초연금 전용 소득 및 재산환산 산식 적용)
+      if (hasSenior) {
+        // 지역별 기본재산 공제: 특·광역시(대구, 서울 등) 1억 3,500만원, 중소도시 8,500만원, 농어촌 7,250만원
+        const pensionBasicExempt = (regionKey === 'metro' || regionKey === 'seoul') ? 13500 * 10000 : 8500 * 10000;
+        const pensionFinExempt = 2000 * 10000; // 기초연금 금융재산 공제: 2,000만원
+
+        const netPensionFin = Math.max(0, finProp - pensionFinExempt);
+        let netPensionGeneral = Math.max(0, housingProp - pensionBasicExempt);
+        let remainPensionDebt = debt;
+
+        if (netPensionGeneral > 0 && remainPensionDebt > 0) {
+          if (netPensionGeneral >= remainPensionDebt) {
+            netPensionGeneral -= remainPensionDebt;
+            remainPensionDebt = 0;
+          } else {
+            remainPensionDebt -= netPensionGeneral;
+            netPensionGeneral = 0;
+          }
+        }
+
+        // 재산의 월 소득환산율: 연 4% (월 0.04 / 12)
+        const pensionPropMonthly = (netPensionGeneral + netPensionFin) * (0.04 / 12);
+
+        // 근로소득 기본공제: 110만원 정액 공제 후 30% 추가 공제
+        const pensionEarnedDeducted = earnedRaw > 1100000 ? (earnedRaw - 1100000) * 0.7 : 0;
+        const pensionIncomeMonthly = pensionEarnedDeducted + otherRaw;
+
+        const pensionRecognizedIncome = Math.round(pensionIncomeMonthly + pensionPropMonthly);
+        const PENSION_LIMIT = (size === 1) ? 2130000 : 3408000;
+
+        if (pensionRecognizedIncome <= PENSION_LIMIT) {
+          const maxPension = (size === 1) ? '단독가구 매월 최대 334,810원' : '부부가구 합산 최대 535,680원';
+          services.push({
+            category: 'chasangwi', agency: '국민연금공단',
+            title: '기초연금 지원사업',
+            contact: '국민연금공단 ☎ 1355 / 주소지 관할 국민연금공단 지사',
+            desc: `만 65세 이상 (기초연금 산정액: 월 ${pensionRecognizedIncome.toLocaleString()}원 / 선정기준 ${PENSION_LIMIT.toLocaleString()}원 이하 충족) → ${maxPension} 지급 대상`,
+            action: '기초연금 지급신청서 접수 및 금융정보제공동의'
+          });
+        }
       }
 
       if (checkElderlyCare || (hasSenior && totalIncome <= (median100 * 0.50))) {
@@ -939,7 +968,7 @@
 ${memoText.trim()}
 
 2. 모의계산 산출 내역:
-- 소득인정액: 월 ${totalIncome.toLocaleString()}원
+- 기초생활 소득인정액: 월 ${totalIncome.toLocaleString()}원
 - 재산기준 적용: ${regName} (기본재산 ${REGION_STANDARDS[regionKey].basic.toLocaleString()}만원, 주거한도 ${REGION_STANDARDS[regionKey].housingLimit.toLocaleString()}만원)
 - 자동차 판정: ${hasStandardCar ? '일반승용차 100% 월환산 대상' : '노후차량/생업용 감면 또는 차량 없음'}
 
