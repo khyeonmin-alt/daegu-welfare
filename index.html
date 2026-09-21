@@ -8,8 +8,8 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "맑은 고딕", helvetica, sans-serif; }
     body { background-color: #f1f5f9; color: #1e293b; padding-bottom: 40px; }
     
-    header { background: #1e3a8a; color: #fff; padding: 14px 20px; position: sticky; top: 0; z-index: 50; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .header-inner { max-width: 1280px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    header { background: #1e3a8a; color: #fff; padding: 14px 20px; position: sticky; top: 0; z-index: 100; }
+    .header-inner { max-width: 1280px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
     .header-title h1 { font-size: 18px; font-weight: bold; }
     .header-title p { font-size: 12px; color: #93c5fd; margin-top: 2px; }
     .header-badge { background: #10b981; color: #fff; font-size: 12px; padding: 4px 10px; border-radius: 20px; font-weight: bold; }
@@ -800,13 +800,15 @@
         });
       }
 
-      // 4. 기초연금 & 노인돌봄
-      if (hasSenior && totalIncome <= (median100 * 0.70)) {
+      // 4. 기초연금 & 노인돌봄 (보건복지부 고시 가구원별 선정기준액 적용)
+      const PENSION_LIMIT = (size === 1) ? 2130000 : 3408000;
+      if (hasSenior && totalIncome <= PENSION_LIMIT) {
+        const maxPension = (size === 1) ? '단독가구 매월 최대 334,810원' : '부부가구 합산 최대 535,680원';
         services.push({
           category: 'chasangwi', agency: '국민연금공단',
           title: '기초연금 지원사업',
           contact: '국민연금공단 ☎ 1355 / 주소지 관할 국민연금공단 지사',
-          desc: '만 65세 이상 어르신 소득하위 70% 충족 시 단독 매월 최대 334,810원(부부 최대 535,680원) 현금 입금',
+          desc: `만 65세 이상 어르신 선정기준액(${PENSION_LIMIT.toLocaleString()}원 이하) 충족 시 ${maxPension} 현금 입금`,
           action: '기초연금 지급신청서 접수 및 금융정보제공동의'
         });
       }
