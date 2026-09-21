@@ -81,6 +81,11 @@
     .contact-badge { display: inline-block; margin-top: 4px; padding: 3px 7px; border-radius: 4px; background: #f1f5f9; color: #334155; font-size: 10.5px; border: 1px solid #e2e8f0; font-weight: 600; }
     .service-action { margin-top: 6px; padding: 6px 8px; background: rgba(255,255,255,0.9); border-radius: 4px; border: 1px solid #e2e8f0; font-weight: bold; color: #1e3a8a; }
 
+    /* 통합 급여 카드 내부 리스트 */
+    .benefit-sublist { margin-top: 8px; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .benefit-item { background: #ffffff; border: 1px solid #dcfce7; border-radius: 5px; padding: 6px 8px; }
+    .benefit-item strong { color: #166534; font-size: 11.5px; }
+
     .btn-copy { background: #059669; color: #fff; border: none; padding: 6px 12px; border-radius: 5px; font-size: 11px; font-weight: bold; }
     .btn-copy:hover { background: #047857; }
 
@@ -603,8 +608,7 @@
         document.getElementById('hasSingleParent').checked = false;
       }
 
-      // [수정된 부분] 아동·청소년(만 18세 미만) 파싱 정밀화:
-      // 성인 자녀와의 연락두절 등 단순 '자녀' 단어는 배제하고, 실제 미성년 아동 문맥인 경우에만 체크
+      // 아동·청소년 파싱: 단순 '자녀와 연락두절'은 제외하고 실제 미성년 문맥만 반영
       const childKeywords = /(미성년|아동|영유아|어린이집|유치원|초등|중학|고등학생|양육비|만\s*([0-9]|1[0-7])\s*세\s*자녀)/;
       const cutoffContext = /(자녀와\s*.*연락두절|부양단절|가족관계\s*해체)/;
       
@@ -710,9 +714,8 @@
       const ratio = (totalRecognizedIncome / median100) * 100;
 
       // 2. 기초연금 전용 소득인정액 별도 산출
-      // 대도시 1억 3,500만 / 중소도시 8,500만 / 농어촌 7,250만
       const pensionBasicExempt = (regionKey === 'metro' || regionKey === 'seoul') ? 13500 * 10000 : 8500 * 10000;
-      const pensionFinExempt = 2000 * 10000; // 기초연금 금융재산 2,000만원 공제
+      const pensionFinExempt = 2000 * 10000;
 
       let pensionNetFin = Math.max(0, finProp - pensionFinExempt);
       let pensionNetGeneral = Math.max(0, housingProp - pensionBasicExempt);
@@ -737,14 +740,11 @@
         }
       }
 
-      // 기초연금 월환산율: 연 4% (월 0.04 / 12)
       const pensionPropMonthly = (pensionNetGeneral + pensionNetFin) * (0.04 / 12);
-      // 근로소득 기본공제: 월 110만원 공제 후 30% 추가 공제
       const pensionEarnedDeducted = earnedRaw > 1100000 ? (earnedRaw - 1100000) * 0.7 : 0;
       const pensionIncomeMonthly = pensionEarnedDeducted + otherRaw;
       const pensionRecognizedIncome = Math.round(pensionIncomeMonthly + pensionPropMonthly);
 
-      // 2026년 선정기준액: 단독 247만 원, 부부 395.2만 원
       const PENSION_LIMIT = (size === 1) ? 2470000 : 3952000;
       const isPensionEligible = (pensionRecognizedIncome <= PENSION_LIMIT);
 
@@ -778,37 +778,67 @@
       const checkPrison = document.getElementById('checkPrison').checked;
       const checkFamilyCutoff = document.getElementById('checkFamilyCutoff').checked;
 
-      // 1. 기초생활보장
-      if (totalIncome <= (median100 * 0.32)) {
-        const estLivingBenefit = Math.max(0, Math.round((median100 * 0.32) - totalIncome));
-        services.push({
-          category: 'basic', agency: '보건복지부',
-          title: '국민기초생활보장 [생계급여]',
-          contact: '보건복지상담센터 ☎ 129 / 주소지 읍면동 행정복지센터',
-          desc: `기준 중위 32% 이하 대상 소득보장 (매월 최대 약 ${estLivingBenefit.toLocaleString()}원 현금 입금)`,
-          action: '사회보장급여 신청서 접수 및 공적소득자료 연계 조사'
-        });
-      }
+      // =========================================================================
+      // 1. 국민기초생활보장 맞춤형급여 (하나의 통합 카드로 묶기)
+      // =========================================================================
+      const qualifiesLiving = totalIncome <= (median100 * 0.32);
+      const qualifiesMedical = totalIncome <= (median100 * 0.40);
+      const qualifiesHousing = totalIncome <= (median100 * 0.48);
 
-      if (totalIncome <= (median100 * 0.40)) {
-        let note = '외래 1,000~1,500원 / 입원 0~10% 본인부담 감면';
-        if (checkFamilyCutoff) note += ' (※ 부양의무자 단절 확인: 가족관계 해체 사유서 징구 후 지방생활보장위 우선보장 심의)';
-        services.push({
-          category: 'basic', agency: '보건복지부',
-          title: '국민기초생활보장 [의료급여 1·2종]',
-          contact: '보건복지상담센터 ☎ 129 / 주소지 읍면동 행정복지센터',
-          desc: note,
-          action: checkFamilyCutoff ? '가족관계 해체 사유서 징구 및 생활보장위원회 심의 연계' : '부양의무자 기준 조사 서류 접수'
-        });
-      }
+      if (qualifiesLiving || qualifiesMedical || qualifiesHousing) {
+        let eligibleTitles = [];
+        let itemsHtml = [];
 
-      if (totalIncome <= (median100 * 0.48)) {
+        if (qualifiesLiving) {
+          eligibleTitles.push('생계');
+          const estLivingBenefit = Math.max(0, Math.round((median100 * 0.32) - totalIncome));
+          itemsHtml.push(`
+            <li class="benefit-item">
+              <strong>[생계급여]</strong> 기준 중위 32% 이하 충족
+              <div style="color:#475569; margin-top:2px;">- 매월 최대 약 ${estLivingBenefit.toLocaleString()}원 현금 입금 지원</div>
+            </li>
+          `);
+        }
+
+        if (qualifiesMedical) {
+          eligibleTitles.push('의료');
+          let medicalDesc = '- 외래 1,000~1,500원 / 입원 0~10% 본인부담 감면';
+          if (checkFamilyCutoff) {
+            medicalDesc += ' <br><span style="color:#b45309; font-weight:bold;">※ 부양단절 확인: 가족관계 해체 사유서 징구 후 지방생활보장위원회 심의 우선 구제</span>';
+          }
+          itemsHtml.push(`
+            <li class="benefit-item">
+              <strong>[의료급여 1·2종]</strong> 기준 중위 40% 이하 충족
+              <div style="color:#475569; margin-top:2px;">${medicalDesc}</div>
+            </li>
+          `);
+        }
+
+        if (qualifiesHousing) {
+          eligibleTitles.push('주거');
+          itemsHtml.push(`
+            <li class="benefit-item">
+              <strong>[주거급여]</strong> 기준 중위 48% 이하 충족 (부양의무자 기준 미적용)
+              <div style="color:#475569; margin-top:2px;">- 임차가구 기준임대료 내 실임차료 전액 지원 및 자가가구 수선유지(무료 집수리)</div>
+            </li>
+          `);
+        }
+
+        let mainAction = '사회보장급여(맞춤형급여) 일괄 신청서 접수 및 공적자료 조사 착수';
+        if (checkFamilyCutoff && qualifiesMedical) {
+          mainAction = '가족관계 해체 사유서 징구 및 생활보장위원회 우선보장 심의 상정';
+        }
+
         services.push({
-          category: 'basic', agency: '국토교통부·LH',
-          title: '국민기초생활보장 [주거급여]',
-          contact: '마이홈 콜센터 ☎ 1600-1004 / LH 대구경북지역본부 ☎ 053-603-2600',
-          desc: '부양의무자 기준 전면 미적용. 임차가구 전월세 기준임대료 내 전액 지원 및 자가가구 무료 집수리',
-          action: '임대차계약서 확인 및 LH 주택조사 의뢰'
+          category: 'basic',
+          agency: '보건복지부·국토교통부',
+          title: `국민기초생활보장 [맞춤형급여: ${eligibleTitles.join('·')}]`,
+          contact: '보건복지상담센터 ☎ 129 / 마이홈콜 ☎ 1600-1004 / 읍면동 행정복지센터',
+          desc: `
+            <div style="font-weight:bold; color:#0f172a; margin-bottom:4px;">소득인정액 기준 지원 가능 급여 내역:</div>
+            <ul class="benefit-sublist">${itemsHtml.join('')}</ul>
+          `,
+          action: mainAction
         });
       }
 
@@ -946,7 +976,7 @@
             <span class="service-tag">${s.agency}</span>
           </div>
           <div class="contact-badge">📞 연락처: ${s.contact}</div>
-          <p style="color:#475569; margin:6px 0 4px 0;">${s.desc}</p>
+          <div style="margin:6px 0 4px 0;">${s.desc}</div>
           <div class="service-action">▶ 조치: ${s.action}</div>
         `;
         container.appendChild(card);
@@ -961,18 +991,20 @@
       const regName = REGION_STANDARDS[regionKey].name;
       
       const cleanServices = services.map((s, idx) => {
-        return `${idx + 1}. [${s.title}] (${s.contact})\n   - ${s.desc}`;
+        // HTML 태그 제거 후 깔끔한 텍스트로 정리
+        const rawDesc = s.desc.replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').trim();
+        return `${idx + 1}. [${s.title}] (${s.contact})\n   - ${rawDesc}`;
       }).join('\n');
 
       let actionDetails = [];
+      if (services.some(s => s.title.includes('맞춤형급여'))) {
+        actionDetails.push("- [기초보장] 사회보장급여(생계·의료·주거) 통합 신청서 접수 및 공적자료 연계 조사 착수");
+      }
       if (services.some(s => s.title.includes('기초연금'))) {
-        actionDetails.push("- [기초연금] 기초생활 탈락과 무관하게 기초연금 수급기준 충족 확인 → 기초연금 지급신청서 접수 및 금융동의서 징구 (문의 1355)");
+        actionDetails.push("- [기초연금] 기초연금 지급신청서 접수 및 금융동의서 징구 (국민연금 1355)");
       }
       if (services.some(s => s.title.includes('긴급복지'))) {
         actionDetails.push("- [긴급지원] 72시간 내 현장 확인 및 긴급생계비 선지원 품의 상정 (문의 129)");
-      }
-      if (services.some(s => s.title.includes('기초생활보장'))) {
-        actionDetails.push("- [기초보장] 사회보장급여 신청서 접수 및 공적자료 연계 조사 착수");
       }
       if (hasCutoff) {
         actionDetails.push("- [부양의무] 가족관계 해체 확인서 징구 및 소명자료(통장내역 등) 첨부 조치");
