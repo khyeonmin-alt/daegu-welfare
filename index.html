@@ -1,645 +1,485 @@
-import React, { useState } from 'react';
-import { 
-  FileText, CheckSquare, Compass, Calculator, 
-  Copy, Printer, AlertTriangle, CheckCircle, RefreshCw, Eye
-} from 'lucide-react';
-
-export default function WelfareDeskAssistant() {
-  const [activeTab, setActiveTab] = useState('notes');
-
-  // --- Tab 1: 상담일지 상태 ---
-  const [rawNote, setRawNote] = useState(
-    "67세 남성 1인가구, 반지하 보증금 300/월 30 거주, 뇌졸중 후유증으로 거동 불편하고 일 못함, 공과금 4개월 밀림, 쌀 떨어졌다고 호소, 아들은 5년 전 연락두절"
-  );
-  const [formattedNote, setFormattedNote] = useState(null);
-  const [copied, setCopied] = useState(false);
-
-  // 규칙 기반 표준 서식 변환 (실제 서비스 시 LLM API 엔드포인트로 대체 가능)
-  const handleFormatNote = () => {
-    const lines = rawNote.split(/[,\n]/).map(s => s.trim()).filter(Boolean);
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>읍면동 복지상담 원스톱 어시스턴트</title>
+  <!-- Tailwind CSS CDN (무료 & 무설치) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Phosphor Icons (Lucide 대체용 초경량 CDN 아이콘) -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <style>
+    @media print {
+      body * { visibility: hidden; }
+      #printArea, #printArea * { visibility: visible; }
+      #printArea { position: absolute; left: 0; top: 0; width: 100%; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen p-3 md:p-6">
+  <div class="max-w-5xl mx-auto space-y-4">
     
-    setFormattedNote({
-      title: "【초기상담 및 복지욕구 사정서 (행복e음 연계용)】",
-      clientSummary: lines.slice(0, 2).join(", ") || "내방 민원인 (익명 상담)",
-      complaint: lines.filter(l => l.includes("호소") || l.includes("못함") || l.includes("불편")).join(", ") || "생계 불안정 및 건강 악화",
-      environment: lines.filter(l => l.includes("월세") || l.includes("보증금") || l.includes("체납") || l.includes("거주")).join(" / ") || "주거 및 공과금 취약",
-      familyStatus: lines.filter(l => l.includes("아들") || l.includes("자녀") || l.includes("가족") || l.includes("연락")).join(", ") || "실질적 부양의무자 연락단절 추정",
-      riskLevel: "【위기】 주거비 체납, 만성질환으로 인한 근로소득 결손, 결식 우려",
-      actionPlan: [
-        "1. 긴급복지지원(생계·의료) 선제적 접수 검토 (위기사유: 질병 및 단기생계곤란)",
-        "2. 기초생활보장 맞춤형급여(생계·의료·주거) 신청 안내 및 금융정보제공동의서 징구",
-        "3. 부양의무자 실질적 가족관계단절 소명서 접수 안내",
-        "4. 행정복지센터 긴급 구호물품(쌀, 라면) 즉시 지급 및 푸드마켓 연계"
-      ]
-    });
-  };
-
-  const copyToClipboard = () => {
-    if (!formattedNote) return;
-    const text = `
-${formattedNote.title}
-■ 상담 요약: ${formattedNote.clientSummary}
-■ 주요 호소: ${formattedNote.complaint}
-■ 주거 및 경제 실태: ${formattedNote.environment}
-■ 가족 관계망: ${formattedNote.familyStatus}
-■ 위기도 종합: ${formattedNote.riskLevel}
-■ 초동 조치 및 개입 계획:
-${formattedNote.actionPlan.join('\n')}
-    `.trim();
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  // --- Tab 2: 구비서류 상태 ---
-  const [housingType, setHousingType] = useState('rent'); // rent, own, free
-  const [healthType, setHealthType] = useState('chronic'); // none, chronic, work
-  const [householdType, setHouseholdType] = useState('singleElder'); // singleElder, disabled, general
-  const [isBigText, setIsBigText] = useState(false);
-
-  const getDocList = () => {
-    const common = [
-      { name: "사회보장급여 신청서", required: true, note: "행정복지센터 비치 서식" },
-      { name: "금융정보 등 제공동의서", required: true, note: "가구원 전원 서명 필수(신분증 지참)" },
-      { name: "신분증(주민등록증/운전면허증)", required: true, note: "본인 확인용" },
-      { name: "급여 입금용 통장 사본", required: true, note: "본인 명의(압류방지통장은 수급 결정 후 가능)" }
-    ];
-
-    const specific = [];
-    if (housingType === 'rent') {
-      specific.push({ name: "확정일자부 임대차계약서", required: true, note: "보증금 및 월세 증빙" });
-    } else if (housingType === 'free') {
-      specific.push({ name: "무상임대차 확인서", required: true, note: "주택 소유자의 확인 날인 필수" });
-    }
-
-    if (healthType === 'chronic') {
-      specific.push({ name: "근로능력평가용 진단서 및 진료기록지", required: true, note: "최근 2~3개월 통원/입원 내역" });
-    } else if (healthType === 'work') {
-      specific.push({ name: "급여명세서 또는 고용임금확인서", required: false, note: "최근 3개월 내역" });
-    }
-
-    if (householdType === 'disabled') {
-      specific.push({ name: "장애인 증명서 / 복지카드", required: true, note: "장애연금 및 감면 확인용" });
-    }
-
-    return { common, specific };
-  };
-
-  // --- Tab 3: 제도 우선순위 상태 ---
-  const [crisisType, setCrisisType] = useState('medical'); // medical, incomeLoss, debt
-  const [householdSize, setHouseholdSize] = useState(1);
-
-  // --- Tab 4: 차량 및 재산 컷오프 상태 ---
-  const [region, setRegion] = useState('metro'); // metro: 9900만, city: 7700만, rural: 7200만
-  const [carCc, setCarCc] = useState(1500);
-  const [carAge, setCarAge] = useState(11);
-  const [carLpgDisability, setCarLpgDisability] = useState(false);
-  const [generalAsset, setGeneralAsset] = useState(3500); // 만원
-  const [financeAsset, setFinanceAsset] = useState(300); // 만원
-
-  const regionDeductions = {
-    metro: { name: '대도시', limit: 9900 },
-    city: { name: '중소도시', limit: 7700 },
-    rural: { name: '농어촌', limit: 7200 }
-  };
-
-  // 차량 판정: 1600cc 미만 & 10년 이상이거나, 장애인/생계용 차량은 일반재산 환산(4.17%)
-  const isCarExemptOrGeneral = (carCc < 1600 && carAge >= 10) || carLpgDisability;
-  const netAsset = Math.max(0, (generalAsset + financeAsset) - regionDeductions[region].limit);
-
-  return (
-    <div className="max-w-5xl mx-auto p-4 bg-slate-50 min-h-screen text-slate-800 font-sans">
-      {/* 헤더 */}
-      <header className="mb-6 bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <Compass className="w-6 h-6 text-blue-600" />
-            읍면동 복지상담 원스톱 어시스턴트
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            민원인 상담 메모 정제 · 구비서류 안내 · 제도 매칭 · 차량 소득환산 판정
-          </p>
+    <!-- 상단 헤더 -->
+    <header class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+      <div>
+        <div class="flex items-center gap-2">
+          <i class="ph-bold ph-hand-heart text-2xl text-blue-600"></i>
+          <h1 class="text-xl font-bold text-slate-900">읍면동 복지상담 원스톱 어시스턴트</h1>
         </div>
-        <span className="text-xs bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full border border-emerald-200 font-medium">
-          개인식별정보(주민번호/성명) 비저장 모드
+        <p class="text-xs text-slate-500 mt-1">
+          상담일지 구조화 · 구비서류 체크리스트 · 제도 우선순위 · 차량 및 재산 간이판정
+        </p>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-xs bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full border border-emerald-200 font-medium">
+          🔒 개인정보 비저장 로컬 모드
         </span>
-      </header>
+      </div>
+    </header>
 
-      {/* 상단 탭 네비게이션 */}
-      <nav className="flex space-x-2 mb-6 border-b border-slate-200 pb-2 overflow-x-auto">
-        <button
-          onClick={() => setActiveTab('notes')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-            activeTab === 'notes' ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-100'
-          }`}
-        >
-          <FileText className="w-4 h-4" /> 1. 상담일지 구조화
-        </button>
-        <button
-          onClick={() => setActiveTab('docs')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-            activeTab === 'docs' ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-100'
-          }`}
-        >
-          <CheckSquare className="w-4 h-4" /> 2. 맞춤 구비서류
-        </button>
-        <button
-          onClick={() => setActiveTab('schemes')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-            activeTab === 'schemes' ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-100'
-          }`}
-        >
-          <Compass className="w-4 h-4" /> 3. 제도 우선순위
-        </button>
-        <button
-          onClick={() => setActiveTab('calc')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-            activeTab === 'calc' ? 'bg-blue-600 text-white shadow-sm' : 'bg-white text-slate-600 hover:bg-slate-100'
-          }`}
-        >
-          <Calculator className="w-4 h-4" /> 4. 차량·재산 간이판정
-        </button>
-      </nav>
+    <!-- 탭 메뉴 버튼 -->
+    <nav class="flex space-x-2 border-b border-slate-200 pb-2 overflow-x-auto no-print">
+      <button onclick="switchTab('tab-notes')" id="btn-tab-notes" class="tab-btn px-4 py-2.5 rounded-lg text-sm font-semibold transition bg-blue-600 text-white flex items-center gap-2 shadow-sm">
+        <i class="ph-bold ph-notepad text-base"></i> 1. 상담일지 변환
+      </button>
+      <button onclick="switchTab('tab-docs')" id="btn-tab-docs" class="tab-btn px-4 py-2.5 rounded-lg text-sm font-semibold transition bg-white text-slate-600 hover:bg-slate-50 flex items-center gap-2">
+        <i class="ph-bold ph-check-square-offset text-base"></i> 2. 맞춤 구비서류
+      </button>
+      <button onclick="switchTab('tab-schemes')" id="btn-tab-schemes" class="tab-btn px-4 py-2.5 rounded-lg text-sm font-semibold transition bg-white text-slate-600 hover:bg-slate-50 flex items-center gap-2">
+        <i class="ph-bold ph-ladder text-base"></i> 3. 제도 우선순위
+      </button>
+      <button onclick="switchTab('tab-calc')" id="btn-tab-calc" class="tab-btn px-4 py-2.5 rounded-lg text-sm font-semibold transition bg-white text-slate-600 hover:bg-slate-50 flex items-center gap-2">
+        <i class="ph-bold ph-calculator text-base"></i> 4. 차량·재산 판정
+      </button>
+    </nav>
 
-      {/* ========================================================================= */}
-      {/* 탭 1: 상담일지 구조화 */}
-      {/* ========================================================================= */}
-      {activeTab === 'notes' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">
-                상담 중 파편화된 메모 (단문, 키워드 입력)
-              </label>
-              <p className="text-xs text-slate-500 mb-3">
-                * 개인정보(주민번호 등)를 제외하고 상황, 건강, 주거, 가족상태 위주로 적어주세요.
-              </p>
-              <textarea
-                value={rawNote}
-                onChange={(e) => setRawNote(e.target.value)}
-                rows={8}
-                className="w-full p-3 border border-slate-300 rounded-lg text-sm focus:outline-blue-500 focus:border-blue-500"
-                placeholder="예: 60대 독거, 고시원 거주, 3개월 월세 밀림, 당뇨 합병증, 가족 연락 안 됨"
-              />
+    <!-- =================================================================== -->
+    <!-- 탭 1: 상담일지 표준화 -->
+    <!-- =================================================================== -->
+    <section id="tab-notes" class="tab-content block">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <label class="block text-sm font-bold text-slate-800 mb-1">민원인 상담 거친 메모</label>
+            <p class="text-xs text-slate-400 mb-3">상담 중 적은 비정형 단어와 문장을 입력하세요. (개인식별정보 제외)</p>
+            <textarea id="rawNoteInput" rows="9" class="w-full p-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="예: 67세 독거 남성, 반지하 월세 30 거주, 뇌졸중 후유증으로 거동 불편해서 일 못함, 공과금 4개월 밀림, 쌀 떨어짐 호소, 아들 5년 전 연락두절">67세 남성 1인가구, 반지하 보증금 300/월 30 거주, 뇌졸중 후유증으로 거동 불편하고 일 못함, 공과금 4개월 밀림, 쌀 떨어졌다고 호소, 아들은 5년 전 연락두절</textarea>
+          </div>
+          <button onclick="formatCaseNote()" class="mt-4 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg flex items-center justify-center gap-2 text-sm transition shadow-sm">
+            <i class="ph-bold ph-arrows-clockwise text-base"></i> 행복e음 표준 서식으로 정제
+          </button>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <label class="text-sm font-bold text-slate-800">정제된 표준 상담일지</label>
+              <button onclick="copyFormattedNote()" class="text-xs flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-md transition">
+                <i class="ph-bold ph-copy"></i> <span id="copyBtnText">행복e음용 복사</span>
+              </button>
             </div>
-            <button
-              onClick={handleFormatNote}
-              className="mt-4 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition"
-            >
-              <RefreshCw className="w-4 h-4" /> 행복e음 표준 서식으로 변환
+            <div id="formattedNoteBox" class="bg-slate-50 border border-slate-200 rounded-lg p-4 text-xs font-mono leading-relaxed text-slate-700 min-h-[220px] whitespace-pre-line">
+              좌측 변환 버튼을 누르면 정제된 상담일지가 여기에 표시됩니다.
+            </div>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-2">※ 복사 후 행복e음 상담관리의 [상담내용] 입력창에 Ctrl+V 하시면 됩니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- 탭 2: 맞춤 구비서류 안내 -->
+    <!-- =================================================================== -->
+    <section id="tab-docs" class="tab-content hidden">
+      <div id="printArea" class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-5">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b pb-4">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900">맞춤형 구비서류 체크리스트</h2>
+            <p class="text-xs text-slate-500">대상자의 주거 및 건강 조건에 맞춰 필요한 서류만 추출합니다.</p>
+          </div>
+          <div class="flex items-center gap-2 no-print">
+            <button onclick="toggleBigFont()" id="fontToggleBtn" class="text-xs px-3.5 py-2 rounded-lg font-semibold border border-slate-300 hover:bg-slate-50 flex items-center gap-1.5">
+              <i class="ph-bold ph-text-aa text-sm"></i> 어르신용 큰 글씨
+            </button>
+            <button onclick="window.print()" class="text-xs px-3.5 py-2 rounded-lg font-semibold bg-slate-800 hover:bg-slate-900 text-white flex items-center gap-1.5">
+              <i class="ph-bold ph-printer text-sm"></i> 서류 목록 인쇄
             </button>
           </div>
-
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
-            <div>
-              <div className="flex justify-between items-center mb-3">
-                <label className="text-sm font-bold text-slate-700">
-                  정제된 복지상담 기록지
-                </label>
-                {formattedNote && (
-                  <button
-                    onClick={copyToClipboard}
-                    className="text-xs flex items-center gap-1 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md font-medium transition"
-                  >
-                    <Copy className="w-3.5 h-3.5" />
-                    {copied ? "복사완료!" : "행복e음 붙여넣기용 복사"}
-                  </button>
-                )}
-              </div>
-
-              {formattedNote ? (
-                <div className="bg-slate-50 p-4 rounded-lg text-xs space-y-3 border border-slate-200 font-mono text-slate-700">
-                  <div className="font-bold text-blue-800 text-sm border-b pb-1">
-                    {formattedNote.title}
-                  </div>
-                  <div><span className="font-semibold text-slate-900">■ 주요 호소:</span> {formattedNote.complaint}</div>
-                  <div><span className="font-semibold text-slate-900">■ 주거 및 경제 실태:</span> {formattedNote.environment}</div>
-                  <div><span className="font-semibold text-slate-900">■ 가족 관계망:</span> {formattedNote.familyStatus}</div>
-                  <div><span className="font-semibold text-rose-700">■ 위기도 평가:</span> {formattedNote.riskLevel}</div>
-                  <div>
-                    <span className="font-semibold text-slate-900">■ 초동 조치 계획:</span>
-                    <ul className="list-disc pl-4 mt-1 space-y-0.5 text-slate-600">
-                      {formattedNote.actionPlan.map((plan, idx) => (
-                        <li key={idx}>{plan}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              ) : (
-                <div className="h-64 flex flex-col items-center justify-center text-slate-400 border border-dashed rounded-lg">
-                  <FileText className="w-8 h-8 mb-2 stroke-1" />
-                  <p className="text-sm">좌측에서 메모를 입력하고 변환 버튼을 누르세요.</p>
-                </div>
-              )}
-            </div>
-            <p className="text-[11px] text-slate-400 mt-2">
-              ※ 행복e음 상담관리 메뉴의 [상담내용] 란에 그대로 붙여넣을 수 있습니다.
-            </p>
-          </div>
         </div>
-      )}
 
-      {/* ========================================================================= */}
-      {/* 탭 2: 맞춤 구비서류 체크리스트 */}
-      {/* ========================================================================= */}
-      {activeTab === 'docs' && (
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 pb-4 mb-5">
-            <div>
-              <h2 className="text-lg font-bold text-slate-900">상황별 맞춤 구비서류 추출기</h2>
-              <p className="text-xs text-slate-500">민원인 조건에 체크하면 가져와야 할 서류를 자동으로 묶어 출력할 수 있습니다.</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setIsBigText(!isBigText)}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold border transition ${
-                  isBigText ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-white text-slate-700 border-slate-300'
-                }`}
-              >
-                <Eye className="w-4 h-4" />
-                {isBigText ? "일반 글씨로 보기" : "어르신용 큰 글씨 모드"}
-              </button>
-              <button
-                onClick={() => window.print()}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-slate-800 text-white hover:bg-slate-900"
-              >
-                <Printer className="w-4 h-4" /> 서류 목록 인쇄
-              </button>
-            </div>
-          </div>
-
-          {/* 조건 선택 바 */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-slate-50 p-4 rounded-xl">
-            <div>
-              <span className="block text-xs font-bold text-slate-700 mb-2">1. 주거 형태</span>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { id: 'rent', label: '전·월세' },
-                  { id: 'free', label: '무상임대(친척 등)' },
-                  { id: 'own', label: '자가(본인소유)' }
-                ].map(item => (
-                  <button
-                    key={item.id}
-                    onClick={() => setHousingType(item.id)}
-                    className={`text-xs px-3 py-1.5 rounded-md border font-medium ${
-                      housingType === item.id ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-700 border-slate-300'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <span className="block text-xs font-bold text-slate-700 mb-2">2. 건강 및 근로</span>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { id: 'chronic', label: '만성질환·근로불가' },
-                  { id: 'work', label: '일용·임금근로' },
-                  { id: 'none', label: '단순 무소득' }
-                ].map(item => (
-                  <button
-                    key={item.id}
-                    onClick={() => setHealthType(item.id)}
-                    className={`text-xs px-3 py-1.5 rounded-md border font-medium ${
-                      healthType === item.id ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-700 border-slate-300'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <span className="block text-xs font-bold text-slate-700 mb-2">3. 특수 가구원</span>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { id: 'singleElder', label: '독거어르신' },
-                  { id: 'disabled', label: '장애인 세대' },
-                  { id: 'general', label: '일반가구' }
-                ].map(item => (
-                  <button
-                    key={item.id}
-                    onClick={() => setHouseholdType(item.id)}
-                    className={`text-xs px-3 py-1.5 rounded-md border font-medium ${
-                      householdType === item.id ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-700 border-slate-300'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* 서류 체크리스트 렌더링 */}
-          <div className="space-y-4">
-            <div>
-              <h3 className={`font-bold text-slate-900 mb-2 ${isBigText ? 'text-lg' : 'text-sm'}`}>
-                [공통 필수 서류]
-              </h3>
-              <div className="grid grid-cols-1 gap-2">
-                {getDocList().common.map((doc, idx) => (
-                  <div key={idx} className="flex items-start gap-3 p-3 bg-white border border-slate-200 rounded-lg">
-                    <input type="checkbox" className="mt-1 w-4 h-4 rounded border-slate-300 text-blue-600" />
-                    <div>
-                      <div className={`font-semibold text-slate-900 ${isBigText ? 'text-lg' : 'text-sm'}`}>
-                        {doc.name}
-                      </div>
-                      <div className={`text-slate-500 ${isBigText ? 'text-sm' : 'text-xs'}`}>
-                        {doc.note}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {getDocList().specific.length > 0 && (
-              <div>
-                <h3 className={`font-bold text-blue-800 mb-2 mt-4 ${isBigText ? 'text-lg' : 'text-sm'}`}>
-                  [선택 조건에 따른 추가 서류]
-                </h3>
-                <div className="grid grid-cols-1 gap-2">
-                  {getDocList().specific.map((doc, idx) => (
-                    <div key={idx} className="flex items-start gap-3 p-3 bg-blue-50/50 border border-blue-200 rounded-lg">
-                      <input type="checkbox" className="mt-1 w-4 h-4 rounded border-slate-300 text-blue-600" />
-                      <div>
-                        <div className={`font-semibold text-slate-900 ${isBigText ? 'text-lg' : 'text-sm'}`}>
-                          {doc.name}
-                        </div>
-                        <div className={`text-slate-600 ${isBigText ? 'text-sm' : 'text-xs'}`}>
-                          {doc.note}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* 탭 3: 복지제도 우선순위 매칭 */}
-      {/* ========================================================================= */}
-      {activeTab === 'schemes' && (
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
+        <!-- 옵션 선택 바 (인쇄 시 숨김) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-50 p-4 rounded-xl no-print text-xs">
           <div>
-            <h2 className="text-lg font-bold text-slate-900">위기 사유 기반 지원제도 사다리</h2>
-            <p className="text-xs text-slate-500">
-              신속한 긴급 구호부터 항구적 기초생활보장까지 최적의 신청 순서를 제시합니다.
-            </p>
+            <span class="font-bold text-slate-700 block mb-1.5">주거 형태</span>
+            <select id="docHousing" onchange="renderDocList()" class="w-full p-2 border rounded-md bg-white">
+              <option value="rent">전·월세 임차</option>
+              <option value="free">무상임대 (친척·지인)</option>
+              <option value="own">자가 소유</option>
+            </select>
           </div>
-
-          <div className="flex flex-wrap gap-4 p-4 bg-slate-50 rounded-xl">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">가구원 수</label>
-              <select
-                value={householdSize}
-                onChange={(e) => setHouseholdSize(Number(e.target.value))}
-                className="text-xs p-2 border border-slate-300 rounded-md bg-white"
-              >
-                <option value={1}>1인 가구</option>
-                <option value={2}>2인 가구</option>
-                <option value={3}>3인 가구</option>
-                <option value={4}>4인 가구 이상</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">핵심 위기 사유</label>
-              <select
-                value={crisisType}
-                onChange={(e) => setCrisisType(e.target.value)}
-                className="text-xs p-2 border border-slate-300 rounded-md bg-white"
-              >
-                <option value="medical">중한 질병·부상 (치료비, 근로중단)</option>
-                <option value="incomeLoss">주소득자 사망·실직·사업실패</option>
-                <option value="debt">월세·공과금 장기체납 및 단전·단수</option>
-              </select>
-            </div>
-          </div>
-
-          {/* 추천 제도 카드 스택 */}
-          <div className="space-y-3">
-            <div className="p-4 rounded-xl border-2 border-rose-300 bg-rose-50/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="bg-rose-600 text-white text-[11px] font-bold px-2 py-0.5 rounded">1순위 즉시개입</span>
-                  <h3 className="font-bold text-slate-900 text-base">긴급복지지원제도 (생계·의료·주거지원)</h3>
-                </div>
-                <p className="text-xs text-slate-600 mt-1">
-                  결정 전 선지원 원칙. 위기 사유 발생 시 신속 심사(7일 이내 지급).
-                </p>
-              </div>
-              <div className="text-right shrink-0">
-                <span className="text-xs font-bold text-rose-700 bg-white px-3 py-1.5 rounded-lg border border-rose-200">
-                  지급 소요일: 3~7일 이내
-                </span>
-              </div>
-            </div>
-
-            <div className="p-4 rounded-xl border border-blue-300 bg-blue-50/40 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="bg-blue-600 text-white text-[11px] font-bold px-2 py-0.5 rounded">2순위 항구보장</span>
-                  <h3 className="font-bold text-slate-900 text-base">국민기초생활보장 맞춤형급여 (생계·의료·주거)</h3>
-                </div>
-                <p className="text-xs text-slate-600 mt-1">
-                  소득인정액 기준 중위소득 충족 시 지속 지원. 행복e음 자산조사 필수.
-                </p>
-              </div>
-              <div className="text-right shrink-0">
-                <span className="text-xs font-bold text-blue-700 bg-white px-3 py-1.5 rounded-lg border border-blue-200">
-                  처리 기간: 30~60일
-                </span>
-              </div>
-            </div>
-
-            <div className="p-4 rounded-xl border border-slate-200 bg-white flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="bg-amber-600 text-white text-[11px] font-bold px-2 py-0.5 rounded">3순위 차하위</span>
-                  <h3 className="font-bold text-slate-900 text-base">차상위계층 확인 및 본인부담경감</h3>
-                </div>
-                <p className="text-xs text-slate-600 mt-1">
-                  기초생활보장 탈락 시 기준 중위소득 50% 이하 가구 보호 및 의료비 감면 연계.
-                </p>
-              </div>
-              <div className="text-right shrink-0">
-                <span className="text-xs font-medium text-slate-600 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
-                  차상위 자격 부여
-                </span>
-              </div>
-            </div>
-
-            <div className="p-4 rounded-xl border border-slate-200 bg-white flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="bg-emerald-600 text-white text-[11px] font-bold px-2 py-0.5 rounded">병행 즉시연계</span>
-                  <h3 className="font-bold text-slate-900 text-base">민간자원 연계 (희망달서/푸드뱅크/사회복지공동모금회)</h3>
-                </div>
-                <p className="text-xs text-slate-600 mt-1">
-                  공적 지원 결정 전 당장 쌀, 부식, 긴급 연료비 필요 시 지역사회보장협의체 특화사업 즉각 집행.
-                </p>
-              </div>
-              <div className="text-right shrink-0">
-                <span className="text-xs font-medium text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
-                  당일 현물 연계 가능
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* 탭 4: 차량 및 재산 간이 컷오프 판정기 */}
-      {/* ========================================================================= */}
-      {activeTab === 'calc' && (
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
           <div>
-            <h2 className="text-lg font-bold text-slate-900">차량·재산 소득환산율 간이 판정기</h2>
-            <p className="text-xs text-slate-500">
-              기초생활보장 탈락 사유 1위인 '배기량 초과 차량'과 기본재산액 공제 한도를 사전에 점검합니다.
+            <span class="font-bold text-slate-700 block mb-1.5">건강 및 소득</span>
+            <select id="docHealth" onchange="renderDocList()" class="w-full p-2 border rounded-md bg-white">
+              <option value="chronic">만성질환·근로불가 (소견 필요)</option>
+              <option value="work">일용·임금근로 중</option>
+              <option value="none">단순 무소득</option>
+            </select>
+          </div>
+          <div>
+            <span class="font-bold text-slate-700 block mb-1.5">특수 가구</span>
+            <select id="docSpecial" onchange="renderDocList()" class="w-full p-2 border rounded-md bg-white">
+              <option value="single">일반 1인 / 단독가구</option>
+              <option value="disabled">등록 장애인 세대</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 결과 목록 영역 -->
+        <div id="docListContainer" class="space-y-4">
+          <!-- JS로 동적 생성 -->
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- 탭 3: 복지제도 우선순위 매칭 -->
+    <!-- =================================================================== -->
+    <section id="tab-schemes" class="tab-content hidden">
+      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-5">
+        <div>
+          <h2 class="text-lg font-bold text-slate-900">위기 사유별 복지지원 사다리</h2>
+          <p class="text-xs text-slate-500">중복 제한을 고려해 골든타임 지원부터 순차적으로 연계하는 추천 경로입니다.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div class="p-4 rounded-xl border-2 border-rose-300 bg-rose-50/60 space-y-2">
+            <span class="text-[11px] font-bold text-white bg-rose-600 px-2 py-0.5 rounded">1순위 선지원</span>
+            <h3 class="font-bold text-slate-900 text-sm">긴급복지지원 (생계·의료)</h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              위기 사유 발생 시 우선 심사 없이 즉시 지급 원칙.
             </p>
+            <div class="text-[11px] font-semibold text-rose-700 pt-2 border-t border-rose-200">
+              ⏱ 지급 소요일: 3~7일 이내
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* 좌측: 입력 컨트롤 */}
-            <div className="space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">지역 구분</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {Object.entries(regionDeductions).map(([key, info]) => (
-                    <button
-                      key={key}
-                      onClick={() => setRegion(key)}
-                      className={`text-xs py-2 rounded-md font-semibold border ${
-                        region === key ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-700 border-slate-300'
-                      }`}
-                    >
-                      {info.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
+          <div class="p-4 rounded-xl border border-blue-300 bg-blue-50/50 space-y-2">
+            <span class="text-[11px] font-bold text-white bg-blue-600 px-2 py-0.5 rounded">2순위 항구보장</span>
+            <h3 class="font-bold text-slate-900 text-sm">기초생활보장 맞춤형급여</h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              생계·의료·주거·교육 급여. 정밀 공적자산 조사 진행.
+            </p>
+            <div class="text-[11px] font-semibold text-blue-700 pt-2 border-t border-blue-200">
+              ⏱ 처리 기간: 30~60일
+            </div>
+          </div>
 
-              <div className="border-t pt-3">
-                <span className="block text-xs font-bold text-slate-800 mb-2">차량 정보</span>
-                <div className="grid grid-cols-2 gap-3 mb-2">
-                  <div>
-                    <label className="block text-[11px] text-slate-500 mb-1">배기량 (cc)</label>
-                    <input
-                      type="number"
-                      value={carCc}
-                      onChange={(e) => setCarCc(Number(e.target.value))}
-                      className="w-full text-xs p-2 border rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] text-slate-500 mb-1">차량 연식 (년식 경과)</label>
-                    <input
-                      type="number"
-                      value={carAge}
-                      onChange={(e) => setCarAge(Number(e.target.value))}
-                      className="w-full text-xs p-2 border rounded-md"
-                    />
-                  </div>
-                </div>
-                <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={carLpgDisability}
-                    onChange={(e) => setCarLpgDisability(e.target.checked)}
-                    className="rounded border-slate-300"
-                  />
-                  장애인 소유 차량 또는 생계활동용 승인 차량
-                </label>
-              </div>
+          <div class="p-4 rounded-xl border border-amber-300 bg-amber-50/40 space-y-2">
+            <span class="text-[11px] font-bold text-white bg-amber-600 px-2 py-0.5 rounded">3순위 차하위</span>
+            <h3 class="font-bold text-slate-900 text-sm">차상위계층 확인/본인부담경감</h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              기초수급 탈락 시 기준중위 50% 이하 가구 보호 및 의료비 감면.
+            </p>
+            <div class="text-[11px] font-semibold text-amber-700 pt-2 border-t border-amber-200">
+              ⏱ 각종 감면·바우처 연계
+            </div>
+          </div>
 
-              <div className="border-t pt-3">
-                <span className="block text-xs font-bold text-slate-800 mb-2">재산 정보 (만원 단위)</span>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[11px] text-slate-500 mb-1">일반·주거재산</label>
-                    <input
-                      type="number"
-                      value={generalAsset}
-                      onChange={(e) => setGeneralAsset(Number(e.target.value))}
-                      className="w-full text-xs p-2 border rounded-md"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] text-slate-500 mb-1">금융재산</label>
-                    <input
-                      type="number"
-                      value={financeAsset}
-                      onChange={(e) => setFinanceAsset(Number(e.target.value))}
-                      className="w-full text-xs p-2 border rounded-md"
-                    />
-                  </div>
-                </div>
+          <div class="p-4 rounded-xl border border-emerald-300 bg-emerald-50/40 space-y-2">
+            <span class="text-[11px] font-bold text-white bg-emerald-600 px-2 py-0.5 rounded">병행 즉각연계</span>
+            <h3 class="font-bold text-slate-900 text-sm">민간자원 & 푸드마켓</h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              공적 결정 전 결식 우려 시 긴급 쌀/부식 및 협의체 특화사업 집행.
+            </p>
+            <div class="text-[11px] font-semibold text-emerald-700 pt-2 border-t border-emerald-200">
+              ⏱ 당일 현물 수령 가능
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- 탭 4: 차량 및 재산 소득환산 간이 판정기 -->
+    <!-- =================================================================== -->
+    <section id="tab-calc" class="tab-content hidden">
+      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
+        <div>
+          <h2 class="text-lg font-bold text-slate-900">차량 & 재산 소득환산율 간이 판정기</h2>
+          <p class="text-xs text-slate-500">기초수급 상담 시 가장 흔한 탈락 원인(배기량 초과 차량, 재산 공제 한도)을 미리 점검합니다.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- 좌측 입력 필드 -->
+          <div class="space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs">
+            <div>
+              <span class="font-bold text-slate-800 block mb-1">지역 구분</span>
+              <div class="grid grid-cols-3 gap-2">
+                <button type="button" onclick="setRegion('metro')" id="reg-metro" class="reg-btn py-2 border rounded-md font-semibold bg-blue-600 text-white border-blue-600">대도시 (9,900만)</button>
+                <button type="button" onclick="setRegion('city')" id="reg-city" class="reg-btn py-2 border rounded-md font-semibold bg-white text-slate-700 border-slate-300">중소도시 (7,700만)</button>
+                <button type="button" onclick="setRegion('rural')" id="reg-rural" class="reg-btn py-2 border rounded-md font-semibold bg-white text-slate-700 border-slate-300">농어촌 (7,200만)</button>
               </div>
             </div>
 
-            {/* 우측: 실시간 판정 결과 */}
-            <div className="space-y-4 flex flex-col justify-between">
-              {/* 차량 판정 박스 */}
-              <div className={`p-4 rounded-xl border ${
-                isCarExemptOrGeneral ? 'bg-emerald-50 border-emerald-300' : 'bg-rose-50 border-rose-300'
-              }`}>
-                <div className="flex items-center gap-2">
-                  {isCarExemptOrGeneral ? (
-                    <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
-                  ) : (
-                    <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0" />
-                  )}
-                  <h4 className="font-bold text-sm text-slate-900">
-                    {isCarExemptOrGeneral ? "차량 기준 충족 (일반재산 환산)" : "⚠️ 차량 100% 소득환산 주의"}
-                  </h4>
+            <div class="border-t pt-3 space-y-2">
+              <span class="font-bold text-slate-800 block">차량 정보 입력</span>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="text-slate-500 block mb-1">배기량 (cc)</label>
+                  <input type="number" id="inputCarCc" value="1500" oninput="runAssetCalculation()" class="w-full p-2 border rounded-md bg-white font-medium" />
                 </div>
-                <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-                  {isCarExemptOrGeneral ? (
-                    "1,600cc 미만이며 10년 이상 경과(또는 장애인/생계형)하여 차량 가액의 월 4.17%만 재산으로 환산됩니다. 수급 신청이 가능합니다."
-                  ) : (
-                    "배기량이 1,600cc 이상이거나 10년 미만 차량입니다. 차량가액 전액(100%)이 매월 소득으로 환산되어 수급자 선정이 사실상 불가능할 수 있습니다. (처분 또는 생계용 소명 필요)"
-                  )}
-                </p>
+                <div>
+                  <label class="text-slate-500 block mb-1">차량 연식 (경과 년수)</label>
+                  <input type="number" id="inputCarAge" value="11" oninput="runAssetCalculation()" class="w-full p-2 border rounded-md bg-white font-medium" />
+                </div>
               </div>
+              <label class="flex items-center gap-2 text-slate-700 pt-1 cursor-pointer">
+                <input type="checkbox" id="checkCarExempt" onchange="runAssetCalculation()" class="rounded border-slate-300 text-blue-600" />
+                장애인 사용 차량 또는 생계활동용 증빙 가능
+              </label>
+            </div>
 
-              {/* 기본재산액 공제 계산 박스 */}
-              <div className="p-4 rounded-xl border border-slate-200 bg-slate-50">
-                <h4 className="font-bold text-xs text-slate-700 mb-3">
-                  {regionDeductions[region].name} 기본재산 공제 현황
-                </h4>
-                <div className="space-y-1.5 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">총 자산 합계:</span>
-                    <span className="font-semibold text-slate-800">{(generalAsset + financeAsset).toLocaleString()} 만원</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500">기본재산 공제 한도:</span>
-                    <span className="font-semibold text-blue-600">-{regionDeductions[region].limit.toLocaleString()} 만원</span>
-                  </div>
-                  <div className="border-t pt-2 flex justify-between font-bold text-slate-900">
-                    <span>공제 후 소득환산 대상액:</span>
-                    <span className={netAsset > 0 ? "text-amber-600" : "text-emerald-600"}>
-                      {netAsset.toLocaleString()} 만원
-                    </span>
-                  </div>
+            <div class="border-t pt-3 space-y-2">
+              <span class="font-bold text-slate-800 block">재산 내역 (만원 단위)</span>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="text-slate-500 block mb-1">주거 및 일반재산</label>
+                  <input type="number" id="inputGenAsset" value="3500" oninput="runAssetCalculation()" class="w-full p-2 border rounded-md bg-white font-medium" />
                 </div>
-                <p className="text-[11px] text-slate-400 mt-3">
-                  * 공제 후 잔여액에 대해서만 월 환산율(주거 1.04%, 일반 4.17%, 금융 6.26%)이 적용됩니다.
-                </p>
+                <div>
+                  <label class="text-slate-500 block mb-1">금융재산</label>
+                  <input type="number" id="inputFinAsset" value="300" oninput="runAssetCalculation()" class="w-full p-2 border rounded-md bg-white font-medium" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 우측 실시간 진단 결과 -->
+          <div class="space-y-4 flex flex-col justify-between">
+            <div id="carResultCard" class="p-4 rounded-xl border bg-emerald-50 border-emerald-300">
+              <div class="flex items-center gap-2 text-emerald-800 font-bold text-sm">
+                <i class="ph-bold ph-check-circle text-lg"></i>
+                <span id="carResultTitle">차량 기준 통과 (일반재산 환산율 4.17%)</span>
+              </div>
+              <p id="carResultDesc" class="text-xs text-slate-700 mt-2 leading-relaxed">
+                1,600cc 미만이고 연식이 10년 이상 경과하여 100% 소득환산 폭탄을 피할 수 있습니다.
+              </p>
+            </div>
+
+            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2 text-xs">
+              <span class="font-bold text-slate-800 block">기본재산 공제 결과</span>
+              <div class="flex justify-between text-slate-600">
+                <span>합산 총 재산:</span>
+                <span id="dispTotalAsset" class="font-semibold text-slate-900">3,800 만원</span>
+              </div>
+              <div class="flex justify-between text-slate-600">
+                <span>지역 기본재산 공제액:</span>
+                <span id="dispDeductLimit" class="font-semibold text-blue-600">-9,900 만원</span>
+              </div>
+              <div class="border-t pt-2 flex justify-between font-bold text-sm text-slate-900">
+                <span>소득환산 대상 잔여액:</span>
+                <span id="dispNetAsset" class="text-emerald-600">0 만원 (전액 공제)</span>
               </div>
             </div>
           </div>
         </div>
-      )}
-    </div>
-  );
-}
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    // 탭 전환 로직
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-blue-600', 'text-white', 'shadow-sm');
+        btn.classList.add('bg-white', 'text-slate-600');
+      });
+      document.getElementById(tabId).classList.remove('hidden');
+      const activeBtn = document.getElementById('btn-' + tabId);
+      activeBtn.classList.remove('bg-white', 'text-slate-600');
+      activeBtn.classList.add('bg-blue-600', 'text-white', 'shadow-sm');
+    }
+
+    // 1번 탭: 상담일지 표준화
+    let lastFormattedText = '';
+    function formatCaseNote() {
+      const raw = document.getElementById('rawNoteInput').value;
+      const lines = raw.split(/[,.\n]/).map(s => s.trim()).filter(Boolean);
+      
+      const summary = lines.slice(0, 2).join(', ') || '내방 민원인 상담';
+      const complaints = lines.filter(l => l.includes('호소') || l.includes('못함') || l.includes('불편') || l.includes('떨어')).join(', ') || '생계 곤란 및 건강 악화';
+      const homeEco = lines.filter(l => l.includes('월세') || l.includes('보증금') || l.includes('밀림') || l.includes('체납') || l.includes('반지하')).join(' / ') || '주거 불안정 및 공과금 체납';
+      const family = lines.filter(l => l.includes('아들') || l.includes('자녀') || l.includes('연락') || l.includes('독거')).join(', ') || '실질적 가족 연락단절 상태 추정';
+
+      const result = 
+`【초기상담 및 복지욕구 사정서 (행복e음 연계용)】
+■ 기본 개황: ${summary}
+■ 주요 호소: ${complaints}
+■ 주거 및 경제 실태: ${homeEco}
+■ 가족 관계망: ${family}
+■ 위기도 평가: 【위기】 만성질환으로 인한 근로능력 상실 및 주거비 체납, 단기 결식 위험
+■ 초동 조치 및 개입 계획:
+  1. 긴급복지지원(생계) 신속 접수 추진
+  2. 맞춤형 기초생활보장(생계·의료·주거) 신청 서류 안내 및 금융정보제공동의서 징구
+  3. 가족관계 해체 소명서 접수 검토 (부양의무자 연락두절 관련)
+  4. 당일 긴급 부식(푸드뱅크) 및 동 협의체 특화사업 즉시 연계`;
+
+      document.getElementById('formattedNoteBox').textContent = result;
+      lastFormattedText = result;
+    }
+
+    function copyFormattedNote() {
+      if (!lastFormattedText) formatCaseNote();
+      navigator.clipboard.writeText(lastFormattedText).then(() => {
+        const btnText = document.getElementById('copyBtnText');
+        btnText.textContent = '복사 완료!';
+        setTimeout(() => btnText.textContent = '행복e음용 복사', 2000);
+      });
+    }
+
+    // 2번 탭: 구비서류 로직
+    let isBigFont = false;
+    function toggleBigFont() {
+      isBigFont = !isBigFont;
+      const btn = document.getElementById('fontToggleBtn');
+      if (isBigFont) {
+        btn.classList.add('bg-amber-100', 'text-amber-900', 'border-amber-300');
+        btn.textContent = '일반 글씨로 보기';
+      } else {
+        btn.classList.remove('bg-amber-100', 'text-amber-900', 'border-amber-300');
+        btn.innerHTML = '<i class="ph-bold ph-text-aa text-sm"></i> 어르신용 큰 글씨';
+      }
+      renderDocList();
+    }
+
+    function renderDocList() {
+      const housing = document.getElementById('docHousing').value;
+      const health = document.getElementById('docHealth').value;
+      const special = document.getElementById('docSpecial').value;
+      const container = document.getElementById('docListContainer');
+
+      const commonDocs = [
+        { name: "사회보장급여 신청서", note: "동 행정복지센터 비치 서식" },
+        { name: "금융정보 등 제공동의서", note: "가구원 전원 서명 필수 (신분증 지참)" },
+        { name: "신분증 (주민등록증 또는 운전면허증)", note: "본인 확인용" },
+        { name: "급여 입금용 통장 사본", note: "민원인 본인 명의" }
+      ];
+
+      const extraDocs = [];
+      if (housing === 'rent') extraDocs.push({ name: "확정일자부 임대차계약서", note: "보증금 및 월세액 확인" });
+      if (housing === 'free') extraDocs.push({ name: "무상임대차 확인서", note: "주택 소유자 인감 또는 서명 확인" });
+      if (health === 'chronic') extraDocs.push({ name: "근로능력평가용 진단서 및 진료기록지", note: "최근 2~3개월간 치료 내역" });
+      if (health === 'work') extraDocs.push({ name: "급여명세서 또는 고용임금확인서", note: "최근 3개월 소득 증빙" });
+      if (special === 'disabled') extraDocs.push({ name: "장애인 증명서 또는 복지카드", note: "장애연금 및 감면 대상 확인" });
+
+      const titleClass = isBigFont ? "text-lg font-bold text-slate-900" : "text-sm font-bold text-slate-900";
+      const itemTitleClass = isBigFont ? "text-lg font-bold text-slate-800" : "text-sm font-semibold text-slate-800";
+      const itemDescClass = isBigFont ? "text-sm text-slate-600" : "text-xs text-slate-500";
+
+      let html = `<div><h3 class="${titleClass} mb-2">[공통 필수 서류]</h3><div class="space-y-2">`;
+      commonDocs.forEach(d => {
+        html += `
+          <label class="flex items-start gap-3 p-3 bg-white border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50">
+            <input type="checkbox" class="mt-1 w-4 h-4 rounded border-slate-300 text-blue-600">
+            <div>
+              <div class="${itemTitleClass}">${d.name}</div>
+              <div class="${itemDescClass}">${d.note}</div>
+            </div>
+          </label>
+        `;
+      });
+      html += `</div></div>`;
+
+      if (extraDocs.length > 0) {
+        html += `<div class="mt-4"><h3 class="${titleClass} text-blue-800 mb-2">[민원인 상황별 추가 서류]</h3><div class="space-y-2">`;
+        extraDocs.forEach(d => {
+          html += `
+            <label class="flex items-start gap-3 p-3 bg-blue-50/40 border border-blue-200 rounded-lg cursor-pointer hover:bg-blue-50/80">
+              <input type="checkbox" class="mt-1 w-4 h-4 rounded border-slate-300 text-blue-600">
+              <div>
+                <div class="${itemTitleClass}">${d.name}</div>
+                <div class="${itemDescClass}">${d.note}</div>
+              </div>
+            </label>
+          `;
+        });
+        html += `</div></div>`;
+      }
+
+      container.innerHTML = html;
+    }
+
+    // 4번 탭: 차량 및 재산 컷오프 계산
+    const regionDeductions = {
+      metro: 9900,
+      city: 7700,
+      rural: 7200
+    };
+    let currentRegion = 'metro';
+
+    function setRegion(reg) {
+      currentRegion = reg;
+      document.querySelectorAll('.reg-btn').forEach(b => {
+        b.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
+        b.classList.add('bg-white', 'text-slate-700', 'border-slate-300');
+      });
+      const active = document.getElementById('reg-' + reg);
+      active.classList.remove('bg-white', 'text-slate-700', 'border-slate-300');
+      active.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
+      runAssetCalculation();
+    }
+
+    function runAssetCalculation() {
+      const cc = Number(document.getElementById('inputCarCc').value) || 0;
+      const age = Number(document.getElementById('inputCarAge').value) || 0;
+      const isExempt = document.getElementById('checkCarExempt').checked;
+      const genAsset = Number(document.getElementById('inputGenAsset').value) || 0;
+      const finAsset = Number(document.getElementById('inputFinAsset').value) || 0;
+
+      // 차량 판정 (1600cc 미만 & 10년 이상 경과 시 일반재산 4.17% 환산)
+      const isCarSafe = isExempt || (cc < 1600 && age >= 10);
+      const carBox = document.getElementById('carResultCard');
+      const carTitle = document.getElementById('carResultTitle');
+      const carDesc = document.getElementById('carResultDesc');
+
+      if (isCarSafe) {
+        carBox.className = "p-4 rounded-xl border bg-emerald-50 border-emerald-300";
+        carTitle.className = "text-emerald-800 font-bold text-sm flex items-center gap-1.5";
+        carTitle.innerHTML = '<i class="ph-bold ph-check-circle text-base"></i> 차량 기준 통과 (일반재산 환산율 4.17%)';
+        carDesc.textContent = "1,600cc 미만이며 10년 이상 경과(또는 생계/장애용)하여 100% 소득환산 대상에서 제외됩니다. 안심하고 신청 접수 가능합니다.";
+      } else {
+        carBox.className = "p-4 rounded-xl border bg-rose-50 border-rose-300";
+        carTitle.className = "text-rose-800 font-bold text-sm flex items-center gap-1.5";
+        carTitle.innerHTML = '<i class="ph-bold ph-warning-circle text-base"></i> 차량 100% 소득환산 주의 (탈락 위험)';
+        carDesc.textContent = "배기량 1,600cc 이상이거나 10년 미만 차량입니다. 차량가액 전액이 매월 '소득'으로 잡혀 수급자 선정이 어려울 수 있으니 사전 소명이 필요합니다.";
+      }
+
+      // 재산 계산
+      const total = genAsset + finAsset;
+      const limit = regionDeductions[currentRegion];
+      const net = Math.max(0, total - limit);
+
+      document.getElementById('dispTotalAsset').textContent = total.toLocaleString() + ' 만원';
+      document.getElementById('dispDeductLimit').textContent = '-' + limit.toLocaleString() + ' 만원';
+      
+      const netEl = document.getElementById('dispNetAsset');
+      if (net === 0) {
+        netEl.className = "text-emerald-600";
+        netEl.textContent = "0 만원 (전액 공제)";
+      } else {
+        netEl.className = "text-amber-600";
+        netEl.textContent = net.toLocaleString() + " 만원 (환산율 적용)";
+      }
+    }
+
+    // 초기 실행
+    window.onload = function() {
+      formatCaseNote();
+      renderDocList();
+      runAssetCalculation();
+    };
+  </script>
+</body>
+</html>
