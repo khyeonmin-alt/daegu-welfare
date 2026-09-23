@@ -4,300 +4,676 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>읍면동 복지상담 원스톱 어시스턴트</title>
-  <!-- Tailwind CSS CDN (무설치 스타일링) -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Phosphor Icons (경량 벡터 아이콘) -->
-  <script src="https://unpkg.com/@phosphor-icons/web"></script>
   
   <style>
-    @media print {
-      body * { visibility: hidden; }
-      #printArea, #printArea * { visibility: visible; }
-      #printArea { position: absolute; left: 0; top: 0; width: 100%; border: none !important; box-shadow: none !important; }
-      .no-print { display: none !important; }
+    /* 리셋 및 기본 테마 설정 (외부 CDN 의존도 0%) */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", "Malgun Gothic", sans-serif;
     }
-    /* 스크롤바 커스텀 */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    
+    body {
+      background-color: #f1f5f9;
+      color: #1e293b;
+      line-height: 1.5;
+      padding: 16px;
+    }
+
+    .container {
+      max-width: 1040px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* 상단 헤더 */
+    .header-card {
+      background: #ffffff;
+      padding: 20px 24px;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-title-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.5px;
+    }
+
+    .header-desc {
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+
+    .badge-secure {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* 탭 메뉴 */
+    .tab-bar {
+      display: flex;
+      gap: 8px;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 6px;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: none;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      background: #ffffff;
+      color: #64748b;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover {
+      background: #f8fafc;
+      color: #1e293b;
+    }
+
+    .tab-btn.active {
+      background: #2563eb;
+      color: #ffffff;
+      box-shadow: 0 2px 4px rgba(37, 99, 235, 0.25);
+    }
+
+    /* 공통 카드 & 레이아웃 */
+    .card {
+      background: #ffffff;
+      padding: 24px;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .section-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+
+    .section-sub {
+      font-size: 12px;
+      color: #64748b;
+      margin-bottom: 16px;
+    }
+
+    /* 폼 요소 */
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.6;
+      resize: vertical;
+      color: #1e293b;
+      outline: none;
+      background: #ffffff;
+    }
+
+    textarea:focus, select:focus, input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 12px;
+      background: #2563eb;
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-primary:hover {
+      background: #1d4ed8;
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 12px;
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+      background: #e2e8f0;
+    }
+
+    /* 서식 출력 박스 */
+    .output-box {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 16px;
+      font-size: 12.5px;
+      line-height: 1.7;
+      color: #1e293b;
+      white-space: pre-wrap;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      min-height: 220px;
+      user-select: all;
+    }
+
+    /* 구비서류 체크리스트 카드 */
+    .filter-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      background: #f8fafc;
+      padding: 14px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .filter-item label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: #475569;
+      margin-bottom: 6px;
+    }
+
+    select, input[type="number"] {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 13px;
+      background: #ffffff;
+      color: #0f172a;
+    }
+
+    .doc-group-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #1e293b;
+      margin: 16px 0 10px 0;
+    }
+
+    .doc-group-title.highlight {
+      color: #1d4ed8;
+    }
+
+    .doc-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 14px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .doc-item.special {
+      background: #f0f7ff;
+      border-color: #bfdbfe;
+    }
+
+    .doc-item:hover {
+      background: #f8fafc;
+    }
+
+    .doc-item input[type="checkbox"] {
+      width: 17px;
+      height: 17px;
+      margin-top: 3px;
+      cursor: pointer;
+      accent-color: #2563eb;
+    }
+
+    .doc-name {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .doc-desc {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
+    /* 큰 글씨 모드 */
+    .big-mode .doc-name { font-size: 17px !important; }
+    .big-mode .doc-desc { font-size: 14px !important; color: #475569; }
+    .big-mode .doc-group-title { font-size: 18px !important; }
+
+    /* 우선순위 사다리 */
+    .ladder-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .ladder-card {
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .ladder-card.rank1 { background: #fff1f2; border-color: #fecdd3; }
+    .ladder-card.rank2 { background: #eff6ff; border-color: #bfdbfe; }
+    .ladder-card.rank3 { background: #fefce8; border-color: #fef08a; }
+    .ladder-card.rank4 { background: #f0fdf4; border-color: #bbf7d0; }
+
+    .rank-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 6px;
+      color: #ffffff;
+      width: fit-content;
+    }
+
+    .rank1 .rank-tag { background: #e11d48; }
+    .rank2 .rank-tag { background: #2563eb; }
+    .rank3 .rank-tag { background: #d97706; }
+    .rank4 .rank-tag { background: #16a34a; }
+
+    .ladder-name {
+      font-size: 14px;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 6px 0 4px 0;
+    }
+
+    .ladder-desc {
+      font-size: 12px;
+      color: #475569;
+      line-height: 1.5;
+    }
+
+    .ladder-time {
+      font-size: 11.5px;
+      font-weight: 700;
+      padding-top: 8px;
+      border-top: 1px dashed rgba(0,0,0,0.1);
+    }
+
+    .rank1 .ladder-time { color: #be123c; }
+    .rank2 .ladder-time { color: #1d4ed8; }
+    .rank3 .ladder-time { color: #b45309; }
+    .rank4 .ladder-time { color: #15803d; }
+
+    /* 차량/재산 판정 탭 */
+    .region-btn-group {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .region-btn {
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      font-size: 12px;
+      font-weight: 700;
+      color: #334155;
+      cursor: pointer;
+    }
+
+    .region-btn.active {
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #2563eb;
+    }
+
+    .result-alert {
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid;
+    }
+
+    .result-alert.safe {
+      background: #ecfdf5;
+      border-color: #a7f3d0;
+      color: #065f46;
+    }
+
+    .result-alert.danger {
+      background: #fff1f2;
+      border-color: #fecdd3;
+      color: #9f1239;
+    }
+
+    .result-alert-title {
+      font-size: 14px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .result-alert-desc {
+      font-size: 12px;
+      color: #334155;
+      margin-top: 6px;
+      line-height: 1.5;
+    }
+
+    /* 프린트 전용 스타일 */
+    @media print {
+      body { background: #ffffff; padding: 0; }
+      .no-print { display: none !important; }
+      #tab-docs { display: block !important; }
+      .card { border: none !important; box-shadow: none !important; padding: 0 !important; }
+    }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen p-3 md:p-6 antialiased">
-  <div class="max-w-5xl mx-auto space-y-4">
-    
+<body>
+
+  <div class="container">
     <!-- 상단 헤더 -->
-    <header class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+    <header class="header-card">
       <div>
-        <div class="flex items-center gap-2">
-          <i class="ph-bold ph-hand-heart text-2xl text-blue-600"></i>
-          <h1 class="text-xl font-bold text-slate-900 tracking-tight">읍면동 복지상담 원스톱 어시스턴트</h1>
+        <div class="header-title-box">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+          </svg>
+          <h1 class="header-title">읍면동 복지상담 원스톱 어시스턴트</h1>
         </div>
-        <p class="text-xs text-slate-500 mt-1">
-          상담일지 구조화 · 구비서류 체크리스트 · 제도 우선순위 사다리 · 차량 및 재산 간이판정
-        </p>
+        <p class="header-desc">상담일지 구조화 · 구비서류 체크리스트 · 제도 우선순위 사다리 · 차량 및 재산 판정</p>
       </div>
-      <div class="flex items-center gap-2">
-        <span class="text-xs bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full border border-emerald-200 font-medium flex items-center gap-1.5">
-          <i class="ph-bold ph-shield-check"></i> 개인식별정보 비저장 로컬 모드
+      <div>
+        <span class="badge-secure">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#047857" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+          개인식별정보 비저장 독립 로컬모드
         </span>
       </div>
     </header>
 
-    <!-- 4대 탭 메뉴 버튼 -->
-    <nav class="flex space-x-2 border-b border-slate-200 pb-2 overflow-x-auto no-print">
-      <button onclick="switchTab('tab-notes')" id="btn-tab-notes" class="tab-btn px-4 py-2.5 rounded-lg text-sm font-semibold transition bg-blue-600 text-white flex items-center gap-2 shadow-sm shrink-0">
-        <i class="ph-bold ph-notepad text-base"></i> 1. 상담일지 변환
+    <!-- 네비게이션 탭 -->
+    <nav class="tab-bar no-print">
+      <button class="tab-btn active" id="btn-tab-notes" onclick="switchTab('tab-notes')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg>
+        1. 상담일지 변환
       </button>
-      <button onclick="switchTab('tab-docs')" id="btn-tab-docs" class="tab-btn px-4 py-2.5 rounded-lg text-sm font-semibold transition bg-white text-slate-600 hover:bg-slate-50 flex items-center gap-2 shrink-0">
-        <i class="ph-bold ph-check-square-offset text-base"></i> 2. 맞춤 구비서류
+      <button class="tab-btn" id="btn-tab-docs" onclick="switchTab('tab-docs')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        2. 맞춤 구비서류
       </button>
-      <button onclick="switchTab('tab-schemes')" id="btn-tab-schemes" class="tab-btn px-4 py-2.5 rounded-lg text-sm font-semibold transition bg-white text-slate-600 hover:bg-slate-50 flex items-center gap-2 shrink-0">
-        <i class="ph-bold ph-ladder text-base"></i> 3. 제도 우선순위
+      <button class="tab-btn" id="btn-tab-schemes" onclick="switchTab('tab-schemes')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+        3. 제도 우선순위
       </button>
-      <button onclick="switchTab('tab-calc')" id="btn-tab-calc" class="tab-btn px-4 py-2.5 rounded-lg text-sm font-semibold transition bg-white text-slate-600 hover:bg-slate-50 flex items-center gap-2 shrink-0">
-        <i class="ph-bold ph-calculator text-base"></i> 4. 차량·재산 판정
+      <button class="tab-btn" id="btn-tab-calc" onclick="switchTab('tab-calc')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>
+        4. 차량·재산 판정
       </button>
     </nav>
 
-    <!-- =================================================================== -->
     <!-- 탭 1: 상담일지 표준화 -->
-    <!-- =================================================================== -->
-    <section id="tab-notes" class="tab-content block">
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- 좌측: 비정형 메모 입력창 -->
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+    <section id="tab-notes" class="card tab-view">
+      <div class="grid-2">
+        <div style="display:flex; flex-direction:column; justify-content:space-between;">
           <div>
-            <div class="flex justify-between items-center mb-1">
-              <label class="block text-sm font-bold text-slate-800">민원인 상담 거친 메모</label>
-              <button onclick="resetNoteSample()" class="text-[11px] text-blue-600 hover:underline">예시 다시 불러오기</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <span class="section-title">민원인 상담 거친 메모</span>
+              <button class="btn-secondary" onclick="resetNoteSample()">예시 다시 채우기</button>
             </div>
-            <p class="text-xs text-slate-400 mb-3">상담 중 받아적은 파편화된 단어를 자유롭게 입력하세요. (개인식별정보 제외)</p>
-            <textarea id="rawNoteInput" rows="10" class="w-full p-3 border border-slate-300 rounded-lg text-xs leading-relaxed focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="예: 67세 독거 남성, 반지하 월세 30 거주, 뇌졸중 후유증으로 거동 불편해서 일 못함, 공과금 4개월 밀림, 쌀 떨어짐 호소, 아들 5년 전 연락두절">67세 남성 1인가구, 반지하 보증금 300/월 30 거주, 뇌졸중 후유증으로 거동 불편하고 일 못함, 공과금 4개월 밀림, 쌀 떨어졌다고 호소, 아들은 5년 전 연락두절</textarea>
+            <p class="section-sub">상담 중 적은 단어를 자유롭게 입력하세요. (주민번호/이름 제외)</p>
+            <textarea id="rawNoteInput" rows="10">67세 남성 1인가구, 반지하 보증금 300/월 30 거주, 뇌졸중 후유증으로 거동 불편하고 일 못함, 공과금 4개월 밀림, 쌀 떨어졌다고 호소, 아들은 5년 전 연락두절</textarea>
           </div>
-          <button onclick="formatCaseNote()" class="mt-4 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg flex items-center justify-center gap-2 text-sm transition shadow-sm">
-            <i class="ph-bold ph-arrows-clockwise text-base"></i> 행복e음 표준 서식으로 정제
+          <button class="btn-primary" onclick="formatCaseNote()" style="margin-top:14px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
+            행복e음 표준 서식으로 정제
           </button>
         </div>
 
-        <!-- 우측: 정제된 행정 서식 출력 및 복사창 -->
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <div style="display:flex; flex-direction:column; justify-content:space-between;">
           <div>
-            <div class="flex justify-between items-center mb-2">
-              <label class="text-sm font-bold text-slate-800">정제된 표준 복지상담일지</label>
-              <button onclick="copyFormattedNote()" class="text-xs flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-md transition">
-                <i class="ph-bold ph-copy"></i> <span id="copyBtnText">행복e음용 복사</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <span class="section-title">정제된 표준 상담일지</span>
+              <button class="btn-secondary" onclick="copyFormattedNote()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                <span id="copyBtnText">행복e음용 복사</span>
               </button>
             </div>
-            <div id="formattedNoteBox" class="bg-slate-50 border border-slate-200 rounded-lg p-4 text-xs font-mono leading-relaxed text-slate-700 min-h-[240px] whitespace-pre-line select-all">
-              좌측 변환 버튼을 누르면 정제된 서식이 생성됩니다.
-            </div>
+            <div id="formattedNoteBox" class="output-box"></div>
           </div>
-          <p class="text-[11px] text-slate-400 mt-2">※ 복사 버튼 클릭 후 행복e음 초기상담 등록창에 Ctrl+V로 붙여넣으세요.</p>
+          <p style="font-size:11px; color:#94a3b8; margin-top:8px;">※ 복사 후 행복e음 초기상담 등록창(상담내용)에 Ctrl+V로 붙여넣으세요.</p>
         </div>
       </div>
     </section>
 
-    <!-- =================================================================== -->
     <!-- 탭 2: 맞춤 구비서류 체크리스트 -->
-    <!-- =================================================================== -->
-    <section id="tab-docs" class="tab-content hidden">
-      <div id="printArea" class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-5">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b pb-4">
-          <div>
-            <h2 class="text-lg font-bold text-slate-900">맞춤형 구비서류 체크리스트</h2>
-            <p class="text-xs text-slate-500">민원인 조건(주거·건강·가구특성)에 필요한 서류만 자동 추출합니다.</p>
-          </div>
-          <div class="flex items-center gap-2 no-print">
-            <button onclick="toggleBigFont()" id="fontToggleBtn" class="text-xs px-3.5 py-2 rounded-lg font-semibold border border-slate-300 hover:bg-slate-50 flex items-center gap-1.5 transition">
-              <i class="ph-bold ph-text-aa text-sm"></i> 어르신용 큰 글씨
-            </button>
-            <button onclick="window.print()" class="text-xs px-3.5 py-2 rounded-lg font-semibold bg-slate-800 hover:bg-slate-900 text-white flex items-center gap-1.5 shadow-sm transition">
-              <i class="ph-bold ph-printer text-sm"></i> 서류 목록 인쇄
-            </button>
-          </div>
+    <section id="tab-docs" class="card tab-view" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-bottom:1px solid #e2e8f0; padding-bottom:14px; margin-bottom:14px;">
+        <div>
+          <h2 class="section-title">맞춤형 구비서류 체크리스트</h2>
+          <p class="section-sub" style="margin-bottom:0;">민원인 조건(주거·건강·가구)에 맞춰 필요한 서류만 자동 추출합니다.</p>
         </div>
-
-        <!-- 옵션 선택 바 (인쇄 시 숨김) -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-50 p-4 rounded-xl no-print text-xs">
-          <div>
-            <span class="font-bold text-slate-700 block mb-1.5">1. 주거 형태</span>
-            <select id="docHousing" onchange="renderDocList()" class="w-full p-2 border border-slate-300 rounded-md bg-white font-medium">
-              <option value="rent">전·월세 임차 거주</option>
-              <option value="free">무상임대 (친척·지인 주택)</option>
-              <option value="own">자가 소유</option>
-            </select>
-          </div>
-          <div>
-            <span class="font-bold text-slate-700 block mb-1.5">2. 건강 및 소득 상태</span>
-            <select id="docHealth" onchange="renderDocList()" class="w-full p-2 border border-slate-300 rounded-md bg-white font-medium">
-              <option value="chronic">만성질환·근로불가 (소견 필요)</option>
-              <option value="work">일용·임금근로 중</option>
-              <option value="none">단순 무소득</option>
-            </select>
-          </div>
-          <div>
-            <span class="font-bold text-slate-700 block mb-1.5">3. 특수 가구원</span>
-            <select id="docSpecial" onchange="renderDocList()" class="w-full p-2 border border-slate-300 rounded-md bg-white font-medium">
-              <option value="single">일반 1인 / 단독가구</option>
-              <option value="disabled">등록 장애인 세대</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- 결과 서류 목록 영역 -->
-        <div id="docListContainer" class="space-y-4">
-          <!-- JS 렌더링 -->
+        <div class="no-print" style="display:flex; gap:8px;">
+          <button class="btn-secondary" id="fontToggleBtn" onclick="toggleBigFont()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
+            어르신용 큰 글씨
+          </button>
+          <button class="btn-secondary" onclick="window.print()" style="background:#0f172a; color:#fff; border:none;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
+            체크리스트 인쇄
+          </button>
         </div>
       </div>
+
+      <!-- 조건 셀렉터 -->
+      <div class="filter-bar no-print">
+        <div class="filter-item">
+          <label>1. 주거 형태</label>
+          <select id="docHousing" onchange="renderDocList()">
+            <option value="rent">전·월세 임차 거주</option>
+            <option value="free">무상임대 (친척·지인 집)</option>
+            <option value="own">자가 소유</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>2. 건강 및 소득 상태</label>
+          <select id="docHealth" onchange="renderDocList()">
+            <option value="chronic">만성질환·근로불가 (소견 필요)</option>
+            <option value="work">일용·임금근로 중</option>
+            <option value="none">단순 무소득</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>3. 특수 가구원</label>
+          <select id="docSpecial" onchange="renderDocList()">
+            <option value="single">일반 1인 / 단독가구</option>
+            <option value="disabled">등록 장애인 세대</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 서류 렌더링 영역 -->
+      <div id="docListContainer"></div>
     </section>
 
-    <!-- =================================================================== -->
     <!-- 탭 3: 복지제도 우선순위 사다리 -->
-    <!-- =================================================================== -->
-    <section id="tab-schemes" class="tab-content hidden">
-      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-5">
-        <div>
-          <h2 class="text-lg font-bold text-slate-900">위기 사유별 복지지원 사다리</h2>
-          <p class="text-xs text-slate-500">중복 제한을 방지하고 골든타임을 확보하는 단계별 지원 추천 경로입니다.</p>
+    <section id="tab-schemes" class="card tab-view" style="display:none;">
+      <h2 class="section-title">위기 사유별 복지지원 사다리</h2>
+      <p class="section-sub">선지원 원칙을 준수하고 골든타임을 확보하는 최적의 접수 프로세스입니다.</p>
+
+      <div class="ladder-grid">
+        <div class="ladder-card rank1">
+          <div>
+            <span class="rank-tag">1순위 즉시선지원</span>
+            <div class="ladder-name">긴급복지지원 (생계·의료)</div>
+            <p class="ladder-desc">질병·실직·체납 등 위기사유 발생 시 선지원 원칙. 사전 전산조사 전 7일 이내 현금 지급.</p>
+          </div>
+          <div class="ladder-time">⏱ 지급 소요일: 3~7일 이내</div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-          <div class="p-4 rounded-xl border-2 border-rose-300 bg-rose-50/70 space-y-2 flex flex-col justify-between">
-            <div class="space-y-2">
-              <span class="text-[11px] font-bold text-white bg-rose-600 px-2 py-0.5 rounded inline-block">1순위 선지원</span>
-              <h3 class="font-bold text-slate-900 text-sm">긴급복지지원 (생계·의료)</h3>
-              <p class="text-xs text-slate-600 leading-relaxed">
-                위기 사유(질병, 실직, 체납) 발생 시 사전 재산조사 전 7일 이내 즉시 현금 지원.
-              </p>
-            </div>
-            <div class="text-[11px] font-semibold text-rose-700 pt-2 border-t border-rose-200">
-              ⏱ 지급 소요일: 3~7일 이내
-            </div>
+        <div class="ladder-card rank2">
+          <div>
+            <span class="rank-tag">2순위 항구보장</span>
+            <div class="ladder-name">국민기초생활보장 (맞춤형급여)</div>
+            <p class="ladder-desc">생계·의료·주거·교육급여. 금융재산 및 공적자산 전산조사 거쳐 매월 20일 급여 지급.</p>
           </div>
+          <div class="ladder-time">⏱ 처리 소요기간: 30~60일</div>
+        </div>
 
-          <div class="p-4 rounded-xl border border-blue-300 bg-blue-50/60 space-y-2 flex flex-col justify-between">
-            <div class="space-y-2">
-              <span class="text-[11px] font-bold text-white bg-blue-600 px-2 py-0.5 rounded inline-block">2순위 항구보장</span>
-              <h3 class="font-bold text-slate-900 text-sm">국민기초생활보장 맞춤형급여</h3>
-              <p class="text-xs text-slate-600 leading-relaxed">
-                생계·의료·주거·교육 급여. 금융재산 및 공적자산 전산조사 진행 후 매월 지급.
-              </p>
-            </div>
-            <div class="text-[11px] font-semibold text-blue-700 pt-2 border-t border-blue-200">
-              ⏱ 처리 기간: 30~60일 소요
-            </div>
+        <div class="ladder-card rank3">
+          <div>
+            <span class="rank-tag">3순위 차하위</span>
+            <div class="ladder-name">차상위계층 확인/본인경감</div>
+            <p class="ladder-desc">기초수급 초과 탈락 시 기준중위 50% 이하 가구 보호, 병원 진료비 감면 및 바우처 연계.</p>
           </div>
+          <div class="ladder-time">⏱ 각종 감면·바우처 자격</div>
+        </div>
 
-          <div class="p-4 rounded-xl border border-amber-300 bg-amber-50/50 space-y-2 flex flex-col justify-between">
-            <div class="space-y-2">
-              <span class="text-[11px] font-bold text-white bg-amber-600 px-2 py-0.5 rounded inline-block">3순위 차하위</span>
-              <h3 class="font-bold text-slate-900 text-sm">차상위계층 확인/본인부담경감</h3>
-              <p class="text-xs text-slate-600 leading-relaxed">
-                기초수급 초과 탈락 시 기준중위 50% 이하 가구 보호, 병원비 감면 및 요금 감면.
-              </p>
-            </div>
-            <div class="text-[11px] font-semibold text-amber-700 pt-2 border-t border-amber-200">
-              ⏱ 감면·바우처 자격 부여
-            </div>
+        <div class="ladder-card rank4">
+          <div>
+            <span class="rank-tag">병행 즉시연계</span>
+            <div class="ladder-name">민간자원 & 푸드마켓</div>
+            <p class="ladder-desc">공적 급여 결정 전 결식 우려 시 쌀·생필품 당일 즉시 지급 및 협의체 특화사업 집행.</p>
           </div>
-
-          <div class="p-4 rounded-xl border border-emerald-300 bg-emerald-50/50 space-y-2 flex flex-col justify-between">
-            <div class="space-y-2">
-              <span class="text-[11px] font-bold text-white bg-emerald-600 px-2 py-0.5 rounded inline-block">병행 즉시연계</span>
-              <h3 class="font-bold text-slate-900 text-sm">민간자원 & 푸드마켓</h3>
-              <p class="text-xs text-slate-600 leading-relaxed">
-                공적 급여 결정 전 결식 우려 시 쌀·생필품 즉시 지급 및 협의체 특화사업 집행.
-              </p>
-            </div>
-            <div class="text-[11px] font-semibold text-emerald-700 pt-2 border-t border-emerald-200">
-              ⏱ 당일 현물 수령 가능
-            </div>
-          </div>
+          <div class="ladder-time">⏱ 당일 현물 수령 가능</div>
         </div>
       </div>
     </section>
 
-    <!-- =================================================================== -->
-    <!-- 탭 4: 차량 및 재산 소득환산 간이 판정기 -->
-    <!-- =================================================================== -->
-    <section id="tab-calc" class="tab-content hidden">
-      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
-        <div>
-          <h2 class="text-lg font-bold text-slate-900">차량 & 재산 소득환산율 간이 판정기</h2>
-          <p class="text-xs text-slate-500">기초수급 상담 시 가장 흔한 탈락 원인(배기량 초과 차량, 기본재산 공제 한도)을 즉시 점검합니다.</p>
-        </div>
+    <!-- 탭 4: 차량 및 재산 판정기 -->
+    <section id="tab-calc" class="card tab-view" style="display:none;">
+      <h2 class="section-title">차량 & 재산 소득환산율 간이 판정기</h2>
+      <p class="section-sub">기초수급 상담 시 가장 흔한 탈락 사유(배기량 초과 차량, 기본재산 공제 한도)를 즉시 점검합니다.</p>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- 좌측 입력 필드 -->
-          <div class="space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs">
-            <div>
-              <span class="font-bold text-slate-800 block mb-1">지역 구분</span>
-              <div class="grid grid-cols-3 gap-2">
-                <button type="button" onclick="setRegion('metro')" id="reg-metro" class="reg-btn py-2 border rounded-md font-semibold bg-blue-600 text-white border-blue-600">대도시 (9,900만)</button>
-                <button type="button" onclick="setRegion('city')" id="reg-city" class="reg-btn py-2 border rounded-md font-semibold bg-white text-slate-700 border-slate-300">중소도시 (7,700만)</button>
-                <button type="button" onclick="setRegion('rural')" id="reg-rural" class="reg-btn py-2 border rounded-md font-semibold bg-white text-slate-700 border-slate-300">농어촌 (7,200만)</button>
-              </div>
-            </div>
-
-            <div class="border-t pt-3 space-y-2">
-              <span class="font-bold text-slate-800 block">차량 정보 입력</span>
-              <div class="grid grid-cols-2 gap-2">
-                <div>
-                  <label class="text-slate-500 block mb-1">배기량 (cc)</label>
-                  <input type="number" id="inputCarCc" value="1500" oninput="runAssetCalculation()" class="w-full p-2 border border-slate-300 rounded-md bg-white font-medium" />
-                </div>
-                <div>
-                  <label class="text-slate-500 block mb-1">차량 연식 (경과 년수)</label>
-                  <input type="number" id="inputCarAge" value="11" oninput="runAssetCalculation()" class="w-full p-2 border border-slate-300 rounded-md bg-white font-medium" />
-                </div>
-              </div>
-              <label class="flex items-center gap-2 text-slate-700 pt-1 cursor-pointer">
-                <input type="checkbox" id="checkCarExempt" onchange="runAssetCalculation()" class="rounded border-slate-300 text-blue-600" />
-                장애인 사용 차량 또는 생계활동용 증빙 가능
-              </label>
-            </div>
-
-            <div class="border-t pt-3 space-y-2">
-              <span class="font-bold text-slate-800 block">재산 내역 (만원 단위)</span>
-              <div class="grid grid-cols-2 gap-2">
-                <div>
-                  <label class="text-slate-500 block mb-1">주거 및 일반재산</label>
-                  <input type="number" id="inputGenAsset" value="3500" oninput="runAssetCalculation()" class="w-full p-2 border border-slate-300 rounded-md bg-white font-medium" />
-                </div>
-                <div>
-                  <label class="text-slate-500 block mb-1">금융재산</label>
-                  <input type="number" id="inputFinAsset" value="300" oninput="runAssetCalculation()" class="w-full p-2 border border-slate-300 rounded-md bg-white font-medium" />
-                </div>
-              </div>
+      <div class="grid-2">
+        <div style="background:#f8fafc; padding:18px; border-radius:12px; border:1px solid #e2e8f0; display:flex; flex-direction:column; gap:14px;">
+          <div>
+            <span style="font-size:12px; font-weight:700; color:#334155; display:block; margin-bottom:6px;">지역 구분 선택</span>
+            <div class="region-btn-group">
+              <button class="region-btn active" id="reg-metro" onclick="setRegion('metro')">대도시(9,900만)</button>
+              <button class="region-btn" id="reg-city" onclick="setRegion('city')">중소도시(7,700만)</button>
+              <button class="region-btn" id="reg-rural" onclick="setRegion('rural')">농어촌(7,200만)</button>
             </div>
           </div>
 
-          <!-- 우측 판정 결과 카드 -->
-          <div class="space-y-4 flex flex-col justify-between">
-            <div id="carResultCard" class="p-4 rounded-xl border bg-emerald-50 border-emerald-300">
-              <div class="flex items-center gap-2 text-emerald-800 font-bold text-sm">
-                <i class="ph-bold ph-check-circle text-lg"></i>
-                <span id="carResultTitle">차량 기준 통과 (일반재산 환산율 4.17%)</span>
+          <div style="border-top:1px solid #e2e8f0; padding-top:12px;">
+            <span style="font-size:12px; font-weight:700; color:#334155; display:block; margin-bottom:8px;">차량 정보</span>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+              <div>
+                <label style="font-size:11px; color:#64748b; display:block; margin-bottom:3px;">배기량 (cc)</label>
+                <input type="number" id="inputCarCc" value="1500" oninput="runAssetCalculation()">
               </div>
-              <p id="carResultDesc" class="text-xs text-slate-700 mt-2 leading-relaxed">
-                1,600cc 미만이고 연식이 10년 이상 경과하여 100% 소득환산 대상에서 제외됩니다.
-              </p>
+              <div>
+                <label style="font-size:11px; color:#64748b; display:block; margin-bottom:3px;">차량 연식 (경과 년수)</label>
+                <input type="number" id="inputCarAge" value="11" oninput="runAssetCalculation()">
+              </div>
             </div>
+            <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:#334155; margin-top:8px; cursor:pointer;">
+              <input type="checkbox" id="checkCarExempt" onchange="runAssetCalculation()" style="accent-color:#2563eb;">
+              장애인 사용 차량 또는 생계활동용 증빙 가능
+            </label>
+          </div>
 
-            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2 text-xs">
-              <span class="font-bold text-slate-800 block">기본재산 공제 결과</span>
-              <div class="flex justify-between text-slate-600">
-                <span>합산 총 재산:</span>
-                <span id="dispTotalAsset" class="font-semibold text-slate-900">3,800 만원</span>
+          <div style="border-top:1px solid #e2e8f0; padding-top:12px;">
+            <span style="font-size:12px; font-weight:700; color:#334155; display:block; margin-bottom:8px;">재산 내역 (만원 단위)</span>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+              <div>
+                <label style="font-size:11px; color:#64748b; display:block; margin-bottom:3px;">주거 및 일반재산</label>
+                <input type="number" id="inputGenAsset" value="3500" oninput="runAssetCalculation()">
               </div>
-              <div class="flex justify-between text-slate-600">
-                <span>지역 기본재산 공제액:</span>
-                <span id="dispDeductLimit" class="font-semibold text-blue-600">-9,900 만원</span>
+              <div>
+                <label style="font-size:11px; color:#64748b; display:block; margin-bottom:3px;">금융재산</label>
+                <input type="number" id="inputFinAsset" value="300" oninput="runAssetCalculation()">
               </div>
-              <div class="border-t pt-2 flex justify-between font-bold text-sm text-slate-900">
-                <span>소득환산 대상 잔여액:</span>
-                <span id="dispNetAsset" class="text-emerald-600">0 만원 (전액 공제)</span>
-              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; justify-content:space-between; gap:12px;">
+          <div id="carResultCard" class="result-alert safe">
+            <div class="result-alert-title" id="carResultTitle">
+              차량 기준 충족 (일반재산 환산율 4.17%)
+            </div>
+            <p class="result-alert-desc" id="carResultDesc">
+              1,600cc 미만이며 10년 이상 경과하여 차량가액 100% 소득환산 대상에서 제외됩니다.
+            </p>
+          </div>
+
+          <div style="background:#f8fafc; padding:18px; border-radius:12px; border:1px solid #e2e8f0; font-size:13px; display:flex; flex-direction:column; gap:8px;">
+            <span style="font-weight:800; color:#0f172a; margin-bottom:4px;">기본재산 공제 결과</span>
+            <div style="display:flex; justify-content:space-between; color:#64748b;">
+              <span>합산 총 자산:</span>
+              <span id="dispTotalAsset" style="font-weight:700; color:#0f172a;">3,800 만원</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; color:#64748b;">
+              <span>기본재산 공제 한도액:</span>
+              <span id="dispDeductLimit" style="font-weight:700; color:#2563eb;">-9,900 만원</span>
+            </div>
+            <div style="border-top:1px solid #cbd5e1; padding-top:8px; display:flex; justify-content:space-between; font-weight:800;">
+              <span>소득환산 대상 잔여액:</span>
+              <span id="dispNetAsset" style="color:#059669;">0 만원 (전액 공제)</span>
             </div>
           </div>
         </div>
@@ -309,20 +685,17 @@
   <script>
     // 탭 전환 핸들러
     function switchTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('bg-blue-600', 'text-white', 'shadow-sm');
-        btn.classList.add('bg-white', 'text-slate-600');
-      });
-      document.getElementById(tabId).classList.remove('hidden');
+      document.querySelectorAll('.tab-view').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      
+      const target = document.getElementById(tabId);
+      if (target) target.style.display = 'block';
+
       const activeBtn = document.getElementById('btn-' + tabId);
-      if (activeBtn) {
-        activeBtn.classList.remove('bg-white', 'text-slate-600');
-        activeBtn.classList.add('bg-blue-600', 'text-white', 'shadow-sm');
-      }
+      if (activeBtn) activeBtn.classList.add('active');
     }
 
-    // 1번 탭: 상담일지 표준 서식 변환
+    // 1번 탭: 상담일지 표준화
     let lastFormattedText = '';
 
     function resetNoteSample() {
@@ -359,40 +732,38 @@
     function copyFormattedNote() {
       if (!lastFormattedText) formatCaseNote();
       
-      // Fallback 호환 복사 로직
-      if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(lastFormattedText).then(onCopySuccess);
-      } else {
-        const temp = document.createElement('textarea');
-        temp.value = lastFormattedText;
-        document.body.appendChild(temp);
-        temp.select();
-        document.execCommand('copy');
-        document.body.removeChild(temp);
-        onCopySuccess();
-      }
-    }
+      // 구형 iFrame 및 공공 PC 완벽 호환 클립보드 복사
+      const temp = document.createElement('textarea');
+      temp.value = lastFormattedText;
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand('copy');
+      document.body.removeChild(temp);
 
-    function onCopySuccess() {
       const btnText = document.getElementById('copyBtnText');
       btnText.textContent = '복사 완료!';
       setTimeout(() => btnText.textContent = '행복e음용 복사', 2000);
     }
 
-    // 2번 탭: 구비서류 체크리스트 로직
+    // 2번 탭: 구비서류 체크리스트
     let isBigFont = false;
 
     function toggleBigFont() {
       isBigFont = !isBigFont;
+      const container = document.getElementById('docListContainer');
       const btn = document.getElementById('fontToggleBtn');
+
       if (isBigFont) {
-        btn.classList.add('bg-amber-100', 'text-amber-900', 'border-amber-300');
-        btn.innerHTML = '<i class="ph-bold ph-text-aa text-sm"></i> 일반 글씨로 보기';
+        container.classList.add('big-mode');
+        btn.innerHTML = '일반 글씨로 보기';
+        btn.style.background = '#fef08a';
+        btn.style.borderColor = '#eab308';
       } else {
-        btn.classList.remove('bg-amber-100', 'text-amber-900', 'border-amber-300');
-        btn.innerHTML = '<i class="ph-bold ph-text-aa text-sm"></i> 어르신용 큰 글씨';
+        container.classList.remove('big-mode');
+        btn.innerHTML = '어르신용 큰 글씨';
+        btn.style.background = '#f1f5f9';
+        btn.style.borderColor = '#cbd5e1';
       }
-      renderDocList();
     }
 
     function renderDocList() {
@@ -415,45 +786,39 @@
       if (health === 'work') extraDocs.push({ name: "급여명세서 또는 고용임금확인서", note: "최근 3개월 소득 증빙" });
       if (special === 'disabled') extraDocs.push({ name: "장애인 증명서 또는 복지카드", note: "장애연금 및 공과금 감면 대상 확인" });
 
-      const titleClass = isBigFont ? "text-lg font-bold text-slate-900" : "text-sm font-bold text-slate-900";
-      const itemTitleClass = isBigFont ? "text-lg font-bold text-slate-900" : "text-sm font-semibold text-slate-800";
-      const itemDescClass = isBigFont ? "text-base text-slate-600 mt-0.5" : "text-xs text-slate-500 mt-0.5";
-
-      let html = `<div><h3 class="${titleClass} mb-2">[공통 필수 서류]</h3><div class="space-y-2">`;
+      let html = `<div class="doc-group-title">[공통 필수 서류]</div>`;
       commonDocs.forEach(d => {
         html += `
-          <label class="flex items-start gap-3 p-3.5 bg-white border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition">
-            <input type="checkbox" class="mt-1 w-4 h-4 rounded border-slate-300 text-blue-600">
+          <label class="doc-item">
+            <input type="checkbox">
             <div>
-              <div class="${itemTitleClass}">${d.name}</div>
-              <div class="${itemDescClass}">${d.note}</div>
+              <div class="doc-name">${d.name}</div>
+              <div class="doc-desc">${d.note}</div>
             </div>
           </label>
         `;
       });
-      html += `</div></div>`;
 
       if (extraDocs.length > 0) {
-        html += `<div class="mt-5"><h3 class="${titleClass} text-blue-800 mb-2">[민원인 상황별 추가 서류]</h3><div class="space-y-2">`;
+        html += `<div class="doc-group-title highlight">[민원인 조건별 추가 서류]</div>`;
         extraDocs.forEach(d => {
           html += `
-            <label class="flex items-start gap-3 p-3.5 bg-blue-50/50 border border-blue-200 rounded-lg cursor-pointer hover:bg-blue-50/80 transition">
-              <input type="checkbox" class="mt-1 w-4 h-4 rounded border-slate-300 text-blue-600">
+            <label class="doc-item special">
+              <input type="checkbox">
               <div>
-                <div class="${itemTitleClass}">${d.name}</div>
-                <div class="${itemDescClass}">${d.note}</div>
+                <div class="doc-name">${d.name}</div>
+                <div class="doc-desc">${d.note}</div>
               </div>
             </label>
           `;
         });
-        html += `</div></div>`;
       }
 
       container.innerHTML = html;
     }
 
-    // 4번 탭: 차량 및 재산 컷오프 계산
-    const regionDeductions = {
+    // 4번 탭: 차량 및 재산 판정기
+    const regionLimits = {
       metro: 9900,
       city: 7700,
       rural: 7200
@@ -462,15 +827,9 @@
 
     function setRegion(reg) {
       currentRegion = reg;
-      document.querySelectorAll('.reg-btn').forEach(b => {
-        b.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
-        b.classList.add('bg-white', 'text-slate-700', 'border-slate-300');
-      });
-      const active = document.getElementById('reg-' + reg);
-      if (active) {
-        active.classList.remove('bg-white', 'text-slate-700', 'border-slate-300');
-        active.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
-      }
+      document.querySelectorAll('.region-btn').forEach(b => b.classList.remove('active'));
+      const target = document.getElementById('reg-' + reg);
+      if (target) target.classList.add('active');
       runAssetCalculation();
     }
 
@@ -481,27 +840,25 @@
       const genAsset = Number(document.getElementById('inputGenAsset').value) || 0;
       const finAsset = Number(document.getElementById('inputFinAsset').value) || 0;
 
-      // 차량 판정: 1600cc 미만 & 10년 이상 경과 시 일반재산 4.17% 환산
-      const isCarSafe = isExempt || (cc < 1600 && age >= 10);
-      const carBox = document.getElementById('carResultCard');
-      const carTitle = document.getElementById('carResultTitle');
-      const carDesc = document.getElementById('carResultDesc');
+      // 차량 판정: 1600cc 미만 & 10년 이상이거나 예외 차량일 때 통과
+      const isSafe = isExempt || (cc < 1600 && age >= 10);
+      const card = document.getElementById('carResultCard');
+      const title = document.getElementById('carResultTitle');
+      const desc = document.getElementById('carResultDesc');
 
-      if (isCarSafe) {
-        carBox.className = "p-4 rounded-xl border bg-emerald-50 border-emerald-300";
-        carTitle.className = "text-emerald-800 font-bold text-sm flex items-center gap-1.5";
-        carTitle.innerHTML = '<i class="ph-bold ph-check-circle text-base"></i> 차량 기준 통과 (일반재산 환산율 4.17%)';
-        carDesc.textContent = "1,600cc 미만이며 10년 이상 경과(또는 생계/장애용)하여 100% 소득환산 대상에서 제외됩니다. 안심하고 신청 접수 가능합니다.";
+      if (isSafe) {
+        card.className = "result-alert safe";
+        title.innerHTML = "차량 기준 충족 (일반재산 환산율 4.17%)";
+        desc.textContent = "1,600cc 미만이며 10년 이상 경과(또는 생계/장애용)하여 100% 소득환산 대상에서 제외됩니다. 안심하고 신청 접수 가능합니다.";
       } else {
-        carBox.className = "p-4 rounded-xl border bg-rose-50 border-rose-300";
-        carTitle.className = "text-rose-800 font-bold text-sm flex items-center gap-1.5";
-        carTitle.innerHTML = '<i class="ph-bold ph-warning-circle text-base"></i> 차량 100% 소득환산 주의 (탈락 위험)';
-        carDesc.textContent = "배기량 1,600cc 이상이거나 10년 미만 차량입니다. 차량가액 전액이 매월 '소득'으로 잡혀 수급자 선정이 어려울 수 있으니 사전 소명이 필요합니다.";
+        card.className = "result-alert danger";
+        title.innerHTML = "⚠️ 차량 100% 소득환산 주의 (탈락 위험)";
+        desc.textContent = "배기량 1,600cc 이상이거나 10년 미만 차량입니다. 차량가액 전액이 매월 '소득'으로 환산되어 수급자 선정이 어려울 수 있으니 사전 소명이 필요합니다.";
       }
 
       // 재산 계산
       const total = genAsset + finAsset;
-      const limit = regionDeductions[currentRegion];
+      const limit = regionLimits[currentRegion];
       const net = Math.max(0, total - limit);
 
       document.getElementById('dispTotalAsset').textContent = total.toLocaleString() + ' 만원';
@@ -509,15 +866,15 @@
       
       const netEl = document.getElementById('dispNetAsset');
       if (net === 0) {
-        netEl.className = "text-emerald-600 font-semibold";
+        netEl.style.color = "#059669";
         netEl.textContent = "0 만원 (전액 공제)";
       } else {
-        netEl.className = "text-amber-600 font-semibold";
+        netEl.style.color = "#d97706";
         netEl.textContent = net.toLocaleString() + " 만원 (환산율 적용)";
       }
     }
 
-    // 윈도우 로드 시 자동 초기화
+    // 실행 시 초기 로드
     window.onload = function() {
       formatCaseNote();
       renderDocList();
