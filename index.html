@@ -299,17 +299,17 @@
     .big-mode .doc-desc { font-size: 14px !important; color: #475569; }
     .big-mode .doc-group-title { font-size: 18px !important; }
 
-    /* 우선순위 사다리 */
+    /* 우선순위 사다리 및 제도별 소득인정액 카드 */
     .ladder-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 14px;
       margin-top: 14px;
     }
 
     .ladder-card {
-      padding: 16px;
-      border-radius: 12px;
+      padding: 18px;
+      border-radius: 14px;
       border: 1px solid;
       display: flex;
       flex-direction: column;
@@ -320,7 +320,6 @@
     .ladder-card.rank1 { background: #fff1f2; border-color: #fecdd3; }
     .ladder-card.rank2 { background: #eff6ff; border-color: #bfdbfe; }
     .ladder-card.rank3 { background: #fefce8; border-color: #fef08a; }
-    .ladder-card.rank4 { background: #f0fdf4; border-color: #bbf7d0; }
 
     .rank-tag {
       display: inline-block;
@@ -335,13 +334,12 @@
     .rank1 .rank-tag { background: #e11d48; }
     .rank2 .rank-tag { background: #2563eb; }
     .rank3 .rank-tag { background: #d97706; }
-    .rank4 .rank-tag { background: #16a34a; }
 
     .ladder-name {
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 800;
       color: #0f172a;
-      margin: 6px 0 4px 0;
+      margin: 8px 0 4px 0;
     }
 
     .ladder-desc {
@@ -350,17 +348,64 @@
       line-height: 1.5;
     }
 
-    .ladder-time {
-      font-size: 11.5px;
-      font-weight: 700;
-      padding-top: 8px;
-      border-top: 1px dashed rgba(0,0,0,0.1);
+    .income-box {
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 12px;
+      border: 1px solid rgba(0,0,0,0.08);
+      margin-top: 8px;
     }
 
-    .rank1 .ladder-time { color: #be123c; }
-    .rank2 .ladder-time { color: #1d4ed8; }
-    .rank3 .ladder-time { color: #b45309; }
-    .rank4 .ladder-time { color: #15803d; }
+    .income-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #64748b;
+      margin-bottom: 2px;
+    }
+
+    .income-amount {
+      font-size: 18px;
+      font-weight: 800;
+      color: #0f172a;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+
+    .income-breakdown {
+      font-size: 11.5px;
+      color: #475569;
+      margin-top: 4px;
+      line-height: 1.4;
+      border-top: 1px dashed #e2e8f0;
+      padding-top: 6px;
+    }
+
+    .scheme-badge-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .badge-status {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 7px;
+      border-radius: 6px;
+    }
+
+    .badge-status.pass { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+    .badge-status.fail { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+    .badge-status.info { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+
+    .formula-tag {
+      font-size: 11px;
+      color: #64748b;
+      background: rgba(255,255,255,0.7);
+      padding: 6px 8px;
+      border-radius: 6px;
+      margin-top: 8px;
+      line-height: 1.4;
+    }
 
     /* 차량/재산 판정 탭 */
     .region-btn-group {
@@ -466,7 +511,7 @@
       </button>
       <button class="tab-btn" id="btn-tab-schemes" onclick="switchTab('tab-schemes')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
-        3. 제도 우선순위
+        3. 제도별 소득인정액
       </button>
       <button class="tab-btn" id="btn-tab-calc" onclick="switchTab('tab-calc')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>
@@ -558,46 +603,132 @@
       <div id="docListContainer"></div>
     </section>
 
-    <!-- 탭 3: 복지제도 우선순위 사다리 -->
+    <!-- 탭 3: 복지제도 우선순위 및 제도별 소득인정액 -->
     <section id="tab-schemes" class="card tab-view" style="display:none;">
-      <h2 class="section-title">위기 사유별 복지지원 사다리</h2>
-      <p class="section-sub">선지원 원칙을 준수하고 골든타임을 확보하는 최적의 접수 프로세스입니다.</p>
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+        <div>
+          <h2 class="section-title">제도별 예상 소득인정액 및 지원 사다리</h2>
+          <p class="section-sub" style="margin-bottom:0;">
+            각 제도마다 법정 산정 방식(실소득 독립 심사 vs 소득평가액+재산환산액)이 상이하므로 사업별로 각각 산정합니다.
+          </p>
+        </div>
+      </div>
 
+      <!-- 모의 사정용 간이 입력 바 -->
+      <div class="filter-bar no-print" style="margin-bottom:14px;">
+        <div class="filter-item">
+          <label>1. 가구원 수</label>
+          <select id="schemePersons" onchange="runSchemeCalculations()">
+            <option value="1">1인 가구</option>
+            <option value="2">2인 가구</option>
+            <option value="3">3인 가구</option>
+            <option value="4">4인 가구</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>2. 거주 지역</label>
+          <select id="schemeRegion" onchange="runSchemeCalculations()">
+            <option value="metro">대도시 (기본공제 9,900만)</option>
+            <option value="city">중소도시 (기본공제 7,700만)</option>
+            <option value="rural">농어촌 (기본공제 7,200만)</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>3. 월 근로·사업소득 (만원)</label>
+          <input type="number" id="schemeEarnedIncome" value="80" oninput="runSchemeCalculations()" placeholder="예: 80">
+        </div>
+        <div class="filter-item">
+          <label>4. 월 기타소득 (연금/이전 등, 만원)</label>
+          <input type="number" id="schemeOtherIncome" value="0" oninput="runSchemeCalculations()" placeholder="예: 0">
+        </div>
+        <div class="filter-item">
+          <label>5. 일반·주거재산 (만원)</label>
+          <input type="number" id="schemeGenAsset" value="3500" oninput="runSchemeCalculations()" placeholder="예: 3500">
+        </div>
+        <div class="filter-item">
+          <label>6. 금융재산 (만원)</label>
+          <input type="number" id="schemeFinAsset" value="300" oninput="runSchemeCalculations()" placeholder="예: 300">
+        </div>
+      </div>
+
+      <!-- 3대 공적 제도 카드 (민간자원 & 푸드마켓 제외) -->
       <div class="ladder-grid">
+        <!-- 1순위: 긴급복지지원 -->
         <div class="ladder-card rank1">
           <div>
             <span class="rank-tag">1순위 즉시선지원</span>
             <div class="ladder-name">긴급복지지원 (생계·의료)</div>
-            <p class="ladder-desc">질병·실직·체납 등 위기사유 발생 시 선지원 원칙. 사전 전산조사 전 7일 이내 현금 지급.</p>
+            <p class="ladder-desc">질병·실직·단전 등 위기 사유 발생 시 선지원 원칙. 전산조사 전 신속 지급.</p>
+
+            <div class="income-box">
+              <div class="income-title">예상 월 실소득액 (재산 소득환산 미적용)</div>
+              <div class="income-amount" id="dispEmerIncome">800,000 원</div>
+              <div class="income-breakdown" id="dispEmerBreakdown">
+                실소득 합계 (근로공제 미적용) | 기준(중위 75%): 1,671,334원 이하
+              </div>
+            </div>
+
+            <div class="scheme-badge-group" id="dispEmerBadges">
+              <span class="badge-status pass">소득요건 충족</span>
+              <span class="badge-status pass">금융재산 충족</span>
+            </div>
           </div>
-          <div class="ladder-time">⏱ 지급 소요일: 3~7일 이내</div>
+
+          <div class="formula-tag">
+            <strong>💡 산정 원칙:</strong> 재산을 매월 소득으로 환산하여 합산하지 않으며, 실소득과 재산·금융재산을 각각 독립 심사합니다.
+          </div>
         </div>
 
+        <!-- 2순위: 국민기초생활보장 -->
         <div class="ladder-card rank2">
           <div>
             <span class="rank-tag">2순위 항구보장</span>
             <div class="ladder-name">국민기초생활보장 (맞춤형급여)</div>
-            <p class="ladder-desc">생계·의료·주거·교육급여. 금융재산 및 공적자산 전산조사 거쳐 매월 20일 급여 지급.</p>
+            <p class="ladder-desc">생계·의료·주거급여. 소득평가액과 재산의 소득환산액을 합산하여 매월 정기 지급.</p>
+
+            <div class="income-box">
+              <div class="income-title">예상 소득인정액 (월)</div>
+              <div class="income-amount" id="dispBasicIncome">560,000 원</div>
+              <div class="income-breakdown" id="dispBasicBreakdown">
+                소득평가액 56만 원 (근로 30% 공제) + 재산환산액 0만 원 (기본공제 전액 차감)
+              </div>
+            </div>
+
+            <div class="scheme-badge-group" id="dispBasicBadges">
+              <span class="badge-status pass">생계(32%) 가능</span>
+              <span class="badge-status pass">의료(40%) 가능</span>
+              <span class="badge-status pass">주거(48%) 가능</span>
+            </div>
           </div>
-          <div class="ladder-time">⏱ 처리 소요기간: 30~60일</div>
+
+          <div class="formula-tag">
+            <strong>💡 산정 공식:</strong> 소득평가액(근로소득 30% 공제 + 기타소득) + [ (총재산 - 기본재산공제액) × 4.17% ]
+          </div>
         </div>
 
+        <!-- 3순위: 차상위계층 -->
         <div class="ladder-card rank3">
           <div>
             <span class="rank-tag">3순위 차하위</span>
-            <div class="ladder-name">차상위계층 확인/본인경감</div>
-            <p class="ladder-desc">기초수급 초과 탈락 시 기준중위 50% 이하 가구 보호, 병원 진료비 감면 및 바우처 연계.</p>
-          </div>
-          <div class="ladder-time">⏱ 각종 감면·바우처 자격</div>
-        </div>
+            <div class="ladder-name">차상위계층 확인 / 본인부담경감</div>
+            <p class="ladder-desc">기초수급 초과 탈락 시 기준중위 50% 이하 가구 보호, 병원 진료비 감면 및 바우처 지원.</p>
 
-        <div class="ladder-card rank4">
-          <div>
-            <span class="rank-tag">병행 즉시연계</span>
-            <div class="ladder-name">민간자원 & 푸드마켓</div>
-            <p class="ladder-desc">공적 급여 결정 전 결식 우려 시 쌀·생필품 당일 즉시 지급 및 협의체 특화사업 집행.</p>
+            <div class="income-box">
+              <div class="income-title">예상 소득인정액 (기초수급 산식 동일)</div>
+              <div class="income-amount" id="dispNearIncome">560,000 원</div>
+              <div class="income-breakdown" id="dispNearBreakdown">
+                기준 중위소득 50%: 1,114,223원 이하 가구
+              </div>
+            </div>
+
+            <div class="scheme-badge-group" id="dispNearBadges">
+              <span class="badge-status pass">차상위(50%) 선정 가능</span>
+            </div>
           </div>
-          <div class="ladder-time">⏱ 당일 현물 수령 가능</div>
+
+          <div class="formula-tag">
+            <strong>💡 산정 원칙:</strong> 기초생활보장과 동일한 소득인정액 산식을 사용하며, 중위소득 50% 이하 가구에 해당합니다.
+          </div>
         </div>
       </div>
     </section>
@@ -817,6 +948,120 @@
       container.innerHTML = html;
     }
 
+    // 3번 탭: 제도별 소득인정액 산정 데이터 및 로직
+    const medianTable = {
+      1: { total: 2228445, livelihood: 713102, medical: 891378, housing: 1069654, nearPoverty: 1114223, emergency: 1671334 },
+      2: { total: 3682609, livelihood: 1178435, medical: 1473044, housing: 1767652, nearPoverty: 1841305, emergency: 2761957 },
+      3: { total: 4714657, livelihood: 1508690, medical: 1885863, housing: 2263035, nearPoverty: 2357329, emergency: 3535993 },
+      4: { total: 5729913, livelihood: 1833572, medical: 2291965, housing: 2750358, nearPoverty: 2864957, emergency: 4297435 }
+    };
+
+    const emergencyAssetLimits = {
+      metro: 24100,
+      city: 15200,
+      rural: 13000
+    };
+
+    const emergencyFinLimits = {
+      1: 822,
+      2: 965,
+      3: 1098,
+      4: 1212
+    };
+
+    function runSchemeCalculations() {
+      const persons = Number(document.getElementById('schemePersons').value) || 1;
+      const reg = document.getElementById('schemeRegion').value || 'metro';
+      const earned = Number(document.getElementById('schemeEarnedIncome').value) || 0;
+      const other = Number(document.getElementById('schemeOtherIncome').value) || 0;
+      const genAsset = Number(document.getElementById('schemeGenAsset').value) || 0;
+      const finAsset = Number(document.getElementById('schemeFinAsset').value) || 0;
+
+      const med = medianTable[persons] || medianTable[1];
+
+      // 1. 긴급복지지원 산정 (실소득 독립 심사 방식)
+      const emerIncomeWon = Math.round((earned + other) * 10000);
+      const emerLimitWon = med.emergency;
+      const isEmerIncomePass = emerIncomeWon <= emerLimitWon;
+      const isEmerAssetPass = (genAsset + finAsset) <= emergencyAssetLimits[reg];
+      const isEmerFinPass = finAsset <= (emergencyFinLimits[persons] || 822);
+
+      document.getElementById('dispEmerIncome').textContent = emerIncomeWon.toLocaleString() + ' 원';
+      document.getElementById('dispEmerBreakdown').textContent = 
+        `실소득 합계 (근로 ${earned}만 + 기타 ${other}만) | 기준(중위 75%): ${emerLimitWon.toLocaleString()}원 이하`;
+
+      let emerBadgesHtml = '';
+      if (isEmerIncomePass) {
+        emerBadgesHtml += `<span class="badge-status pass">소득요건 충족</span>`;
+      } else {
+        emerBadgesHtml += `<span class="badge-status fail">소득 초과 (+${(emerIncomeWon - emerLimitWon).toLocaleString()}원)</span>`;
+      }
+      if (isEmerFinPass) {
+        emerBadgesHtml += `<span class="badge-status pass">금융(${finAsset}만) 충족</span>`;
+      } else {
+        emerBadgesHtml += `<span class="badge-status fail">금융(${finAsset}만) 초과</span>`;
+      }
+      if (isEmerAssetPass) {
+        emerBadgesHtml += `<span class="badge-status pass">총재산 충족</span>`;
+      } else {
+        emerBadgesHtml += `<span class="badge-status fail">총재산 초과</span>`;
+      }
+      document.getElementById('dispEmerBadges').innerHTML = emerBadgesHtml;
+
+      // 2. 국민기초생활보장 & 차상위 산정 (소득평가액 + 재산환산액 방식)
+      // 근로소득 30% 공제 적용
+      const earnedDeducted = earned * 0.7;
+      const evalIncomeMan = earnedDeducted + other; // 소득평가액 (만원)
+      
+      const deductLimit = regionLimits[reg] || 9900;
+      const totalAsset = genAsset + finAsset;
+      const excessAsset = Math.max(0, totalAsset - deductLimit);
+      const assetConvertedMan = excessAsset * 0.0417; // 일반재산 환산율 월 4.17%
+
+      const recognizedIncomeWon = Math.round((evalIncomeMan + assetConvertedMan) * 10000);
+
+      document.getElementById('dispBasicIncome').textContent = recognizedIncomeWon.toLocaleString() + ' 원';
+      document.getElementById('dispBasicBreakdown').textContent = 
+        `소득평가액 ${Math.round(evalIncomeMan)}만 원 (근로 30% 공제) + 재산환산액 ${Math.round(assetConvertedMan)}만 원 (공제 ${deductLimit}만 차감)`;
+
+      // 기초생활보장 급여별 충족 여부
+      const isLivelihood = recognizedIncomeWon <= med.livelihood;
+      const isMedical = recognizedIncomeWon <= med.medical;
+      const isHousing = recognizedIncomeWon <= med.housing;
+
+      let basicBadgesHtml = '';
+      basicBadgesHtml += isLivelihood ? 
+        `<span class="badge-status pass">생계(32%, ${med.livelihood.toLocaleString()}원) 가능</span>` : 
+        `<span class="badge-status fail">생계(32%) 초과</span>`;
+
+      basicBadgesHtml += isMedical ? 
+        `<span class="badge-status pass">의료(40%, ${med.medical.toLocaleString()}원) 가능</span>` : 
+        `<span class="badge-status fail">의료(40%) 초과</span>`;
+
+      basicBadgesHtml += isHousing ? 
+        `<span class="badge-status pass">주거(48%, ${med.housing.toLocaleString()}원) 가능</span>` : 
+        `<span class="badge-status fail">주거(48%) 초과</span>`;
+
+      document.getElementById('dispBasicBadges').innerHTML = basicBadgesHtml;
+
+      // 3. 차상위계층 (기초와 동일 산식, 중위 50% 이하)
+      const isNearPoverty = recognizedIncomeWon <= med.nearPoverty;
+      document.getElementById('dispNearIncome').textContent = recognizedIncomeWon.toLocaleString() + ' 원';
+      document.getElementById('dispNearBreakdown').textContent = 
+        `소득인정액 ${recognizedIncomeWon.toLocaleString()}원 | 기준 중위 50%: ${med.nearPoverty.toLocaleString()}원 이하`;
+
+      let nearBadgesHtml = '';
+      if (isNearPoverty) {
+        nearBadgesHtml += `<span class="badge-status pass">차상위(50%) 선정 가능</span>`;
+        if (!isLivelihood && !isMedical) {
+          nearBadgesHtml += `<span class="badge-status info">기초수급 초과 시 최우선 연계</span>`;
+        }
+      } else {
+        nearBadgesHtml += `<span class="badge-status fail">차상위(50%) 초과</span>`;
+      }
+      document.getElementById('dispNearBadges').innerHTML = nearBadgesHtml;
+    }
+
     // 4번 탭: 차량 및 재산 판정기
     const regionLimits = {
       metro: 9900,
@@ -825,11 +1070,125 @@
     };
     let currentRegion = 'metro';
 
+    // 기준 중위소득 및 급여별 기준표 (2025년 보건복지부 고시 기준, 원 단위)
+    const welfareCriteria = {
+      1: {
+        median: 2392013,
+        livelihood: 765444,   // 생계 32%
+        medical: 956805,      // 의료 40%
+        housing: 1148166,     // 주거 48%
+        education: 1196007,   // 차상위·교육 50%
+        emergency: 1794010,   // 긴급복지 75%
+        emergencyFin: 8392000 // 긴급복지 금융재산 한도(생활준비금 가산)
+      },
+      2: {
+        median: 3932658,
+        livelihood: 1258451,
+        medical: 1573063,
+        housing: 1887676,
+        education: 1966329,
+        emergency: 2949494,
+        emergencyFin: 9932000
+      },
+      3: {
+        median: 5025353,
+        livelihood: 1608113,
+        medical: 2010141,
+        housing: 2412169,
+        education: 2512677,
+        emergency: 3769015,
+        emergencyFin: 11025000
+      },
+      4: {
+        median: 6097773,
+        livelihood: 1951287,
+        medical: 2439109,
+        housing: 2926931,
+        education: 3048887,
+        emergency: 4573330,
+        emergencyFin: 12097000
+      }
+    };
+
     function setRegion(reg) {
       currentRegion = reg;
       document.querySelectorAll('.region-btn').forEach(b => b.classList.remove('active'));
       const target = document.getElementById('reg-' + reg);
       if (target) target.classList.add('active');
+      runAllCalculations();
+    }
+
+    // 사업별 소득인정액 계산 엔진
+    function calculateSchemeIncomes() {
+      const familyCount = Number(document.getElementById('schFamilyCount').value) || 1;
+      const workInc = Number(document.getElementById('schWorkIncome').value) || 0;
+      const otherInc = Number(document.getElementById('schOtherIncome').value) || 0;
+      const genAsset = Number(document.getElementById('schGenAsset').value) || 0;
+      const finAsset = Number(document.getElementById('schFinAsset').value) || 0;
+
+      const criteria = welfareCriteria[familyCount];
+      const limit = regionLimits[currentRegion];
+
+      // 1. 긴급복지지원 계산: 실소득 기준 (소득환산 미적용, 독립심사)
+      const emergencyRawIncome = workInc + otherInc; // 만원
+      const emergencyIncomeWon = emergencyRawIncome * 10000;
+      const isEmergencyIncomePass = emergencyIncomeWon <= criteria.emergency;
+      const isEmergencyFinPass = (finAsset * 10000) <= criteria.emergencyFin;
+
+      document.getElementById('dispEmergencyIncome').textContent = `월 ${emergencyRawIncome.toFixed(1)} 만원`;
+      document.getElementById('dispEmergencyLimit').textContent = (criteria.emergency / 10000).toFixed(1);
+
+      const emBadges = document.getElementById('dispEmergencyBadges');
+      emBadges.innerHTML = `
+        <span class="calc-tag ${isEmergencyIncomePass ? 'pass' : 'fail'}">소득 ${isEmergencyIncomePass ? '적합' : '초과'}</span>
+        <span class="calc-tag ${isEmergencyFinPass ? 'pass' : 'fail'}">금융재산 ${isEmergencyFinPass ? '적합' : '초과'}</span>
+      `;
+
+      // 2. 국민기초생활보장 계산:
+      // 소득평가액 = 근로소득 30% 공제(70% 반영) + 기타소득
+      const evalIncome = (workInc * 0.7) + otherInc;
+      
+      // 재산 소득환산액 = (일반재산 + max(0, 금융재산 - 500만원 생활준비금) - 기본재산공제) * 4.17%
+      const netFin = Math.max(0, finAsset - 500);
+      const totalAssetForCalc = genAsset + netFin;
+      const assetOverLimit = Math.max(0, totalAssetForCalc - limit);
+      const assetConvertedIncome = assetOverLimit * 0.0417; // 일반재산 환산율 4.17%
+
+      const basicTotalIncome = evalIncome + assetConvertedIncome;
+      const basicTotalWon = basicTotalIncome * 10000;
+
+      document.getElementById('dispBasicIncome').textContent = `월 ${basicTotalIncome.toFixed(1)} 만원`;
+      document.getElementById('dispEvalIncome').textContent = `${evalIncome.toFixed(1)}만`;
+      document.getElementById('dispAssetIncome').textContent = `${assetConvertedIncome.toFixed(1)}만`;
+
+      const passLive = basicTotalWon <= criteria.livelihood;
+      const passMed = basicTotalWon <= criteria.medical;
+      const passHouse = basicTotalWon <= criteria.housing;
+
+      const basicBadges = document.getElementById('dispBasicBadges');
+      basicBadges.innerHTML = `
+        <span class="calc-tag ${passLive ? 'pass' : 'fail'}">생계급여 ${passLive ? '가능' : '초과'}</span>
+        <span class="calc-tag ${passMed ? 'pass' : 'fail'}">의료급여 ${passMed ? '가능' : '초과'}</span>
+        <span class="calc-tag ${passHouse ? 'pass' : 'fail'}">주거급여 ${passHouse ? '가능' : '초과'}</span>
+      `;
+
+      // 3. 차상위계층: 기초수급 소득인정액 준용, 중위 50% 이하
+      document.getElementById('dispChasangwiIncome').textContent = `월 ${basicTotalIncome.toFixed(1)} 만원`;
+      document.getElementById('dispChasangwiLimit').textContent = (criteria.education / 10000).toFixed(1);
+
+      const passChasangwi = basicTotalWon <= criteria.education;
+      const chBadges = document.getElementById('dispChasangwiBadges');
+      chBadges.innerHTML = `
+        <span class="calc-tag ${passChasangwi ? 'pass' : 'fail'}">차상위 50% ${passChasangwi ? '적합' : '초과'}</span>
+      `;
+
+      // 4번 탭의 재산 입력 필드도 동기화
+      document.getElementById('inputGenAsset').value = genAsset;
+      document.getElementById('inputFinAsset').value = finAsset;
+    }
+
+    function runAllCalculations() {
+      calculateSchemeIncomes();
       runAssetCalculation();
     }
 
@@ -878,6 +1237,7 @@
     window.onload = function() {
       formatCaseNote();
       renderDocList();
+      runSchemeCalculations();
       runAssetCalculation();
     };
   </script>
