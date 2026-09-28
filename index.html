@@ -946,7 +946,7 @@
       <div style="margin-bottom:16px;">
         <h2 class="section-title">차량 모델명 기준 & 기본재산액 간이 판정기</h2>
         <p class="section-sub">
-          배기량(cc)을 몰라도 <strong>차량 이름(아반떼, 쏘나타, 포터 등)</strong>만 선택하면 배기량이 자동 입력되어 100% 소득환산 여부를 즉시 판정합니다.
+          같은 차종이라도 배기량이 다를 수 있으므로 <strong>세부 트림(1.6 터보/하이브리드 vs 2.0/2.5)</strong>을 선택하면 배기량이 자동 입력됩니다.
         </p>
       </div>
 
@@ -963,12 +963,15 @@
           </div>
 
           <div style="border-top:1px solid #e2e8f0; padding-top:12px;">
-            <label style="font-size:12px; font-weight:700; color:#334155; display:block; margin-bottom:6px;">
-              2. 보유 차량 모델명 선택 (또는 직접 입력)
-            </label>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <label style="font-size:12px; font-weight:700; color:#334155;">
+                2. 보유 차량 모델 및 엔진 트림 선택
+              </label>
+              <span style="font-size:11px; color:#2563eb; font-weight:700;">※ 등록증 [⑤ 배기량] 확인</span>
+            </div>
             
             <select id="carModelSelect" onchange="onCarModelSelect(this.value)" style="margin-bottom:8px;">
-              <option value="">-- 자주 타는 차량 선택 (자동 cc 입력) --</option>
+              <option value="">-- 자주 타는 차량 및 트림 선택 (자동 cc 입력) --</option>
               <optgroup label="경형 (1,000cc 미만 - 일반재산 또는 감면)">
                 <option value="morning">기아 모닝 (998cc)</option>
                 <option value="spark">쉐보레 스파크 / 마티즈 (999cc)</option>
@@ -976,44 +979,57 @@
                 <option value="casper">현대 캐스퍼 (998cc)</option>
                 <option value="damas">다마스 / 라보 (796cc)</option>
               </optgroup>
-              <optgroup label="준중형/소형 (1,600cc 이하 - 10년 이상 시 충족)">
-                <option value="avante" selected>현대 아반떼 (1,598cc)</option>
-                <option value="k3">기아 K3 / 포르테 (1,598cc)</option>
-                <option value="sm3">르노 SM3 (1,598cc)</option>
-                <option value="accent">엑센트 / 프라이드 (1,399cc)</option>
-                <option value="seltos">셀토스 / 코나 / 베뉴 (1,598cc)</option>
-                <option value="tivoli">티볼리 / 트랙스 (1,598cc)</option>
+              <optgroup label="준중형/소형 (1,600cc 이하 트림)">
+                <option value="avante_16" selected>현대 아반떼 1.6 가솔린/LPG (1,598cc - 충족)</option>
+                <option value="avante_20">현대 아반떼 N / 2.0 (1,998cc - 1600cc 초과)</option>
+                <option value="k3_16">기아 K3 / 포르테 1.6 (1,598cc - 충족)</option>
+                <option value="sm3_16">르노 SM3 1.6 (1,598cc - 충족)</option>
+                <option value="seltos_16">셀토스 / 코나 / 베뉴 1.6 터보 (1,598cc - 충족)</option>
+                <option value="tivoli_15">티볼리 / 트랙스 크로스오버 (1,199~1,498cc - 충족)</option>
               </optgroup>
-              <optgroup label="중형 (1,600cc 초과 - 100% 소득환산 주의)">
-                <option value="sonata">현대 쏘나타 (1,999cc)</option>
-                <option value="k5">기아 K5 (1,999cc)</option>
-                <option value="sm5">르노 SM5 / SM6 (1,997cc)</option>
-                <option value="malibu">쉐보레 말리부 (1,998cc)</option>
-                <option value="tucson">현대 투싼 (1,995cc)</option>
-                <option value="sportage">기아 스포티지 (1,998cc)</option>
+              <optgroup label="중형 승용 (★배기량 분기점 주의 차종)">
+                <option value="sonata_16">현대 쏘나타 [1.6 터보] (1,598cc - ★1600cc 이하 충족!)</option>
+                <option value="sonata_20">현대 쏘나타 [2.0 가솔린/LPG] (1,999cc - 1600cc 초과)</option>
+                <option value="k5_16">기아 K5 [1.6 터보] (1,598cc - ★1600cc 이하 충족!)</option>
+                <option value="k5_20">기아 K5 [2.0 가솔린/LPG] (1,999cc - 1600cc 초과)</option>
+                <option value="sm5_20">르노 SM5 / SM6 2.0 (1,997cc - 1600cc 초과)</option>
+                <option value="malibu_135">쉐보레 말리부 1.35 E-터보 (1,341cc - 충족)</option>
               </optgroup>
-              <optgroup label="대형 / RV / 승합 (배기량 초과)">
-                <option value="grandeur">현대 그랜저 (2,497cc)</option>
-                <option value="k7">기아 K7 / K8 (2,497cc)</option>
-                <option value="genesis">제네시스 G80 (2,497cc)</option>
-                <option value="santafe">싼타페 / 쏘렌토 (2,151cc)</option>
-                <option value="carnival">기아 카니발 (2,151cc)</option>
-                <option value="starex">스타렉스 / 스타리아 (2,497cc)</option>
+              <optgroup label="SUV / RV (★1.6 하이브리드 vs 2.0 디젤)">
+                <option value="tucson_16">투싼 / 스포티지 [1.6 터보·하이브리드] (1,598cc - ★충족!)</option>
+                <option value="tucson_20">투싼 / 스포티지 [2.0 가솔린·디젤] (1,995cc - 1600cc 초과)</option>
+                <option value="santafe_16">싼타페 / 쏘렌토 [1.6 터보 하이브리드] (1,598cc - ★충족!)</option>
+                <option value="santafe_22">싼타페 / 쏘렌토 [2.2 디젤 / 2.5 가솔린] (2,151cc - 초과)</option>
+                <option value="carnival_16">기아 카니발 [1.6 터보 하이브리드] (1,598cc - ★충족!)</option>
+                <option value="carnival_22">기아 카니발 [2.2 디젤 / 3.5 가솔린] (2,151cc - 초과)</option>
+              </optgroup>
+              <optgroup label="준대형 / 대형 (배기량 초과 유의)">
+                <option value="grandeur_16">현대 그랜저 / K8 [1.6 터보 하이브리드] (1,598cc - ★충족!)</option>
+                <option value="grandeur_25">현대 그랜저 / K8 [2.5 / 3.5 가솔린] (2,497cc - 초과)</option>
+                <option value="genesis">제네시스 G80 (2,497cc - 초과)</option>
+                <option value="starex">스타렉스 / 스타리아 (2,199~2,497cc - 초과)</option>
               </optgroup>
               <optgroup label="생계형 화물 (예외 인정 가능)">
-                <option value="porter">현대 포터 2 (1톤 화물 2,497cc)</option>
-                <option value="bongo">기아 봉고 3 (1톤 화물 2,497cc)</option>
+                <option value="porter">현대 포터 2 (1톤 화물 2,497cc - 생계형)</option>
+                <option value="bongo">기아 봉고 3 (1톤 화물 2,497cc - 생계형)</option>
               </optgroup>
             </select>
 
             <!-- 빠른 선택 버튼 -->
             <div class="car-preset-tags">
-              <span style="font-size:11px; color:#64748b; line-height:24px;">원클릭:</span>
-              <button type="button" class="car-tag-btn" onclick="quickSetCar('morning')">모닝</button>
-              <button type="button" class="car-tag-btn" onclick="quickSetCar('avante')">아반떼</button>
-              <button type="button" class="car-tag-btn" onclick="quickSetCar('sonata')">쏘나타</button>
-              <button type="button" class="car-tag-btn" onclick="quickSetCar('grandeur')">그랜저</button>
+              <span style="font-size:11px; color:#64748b; line-height:24px;">빠른선택:</span>
+              <button type="button" class="car-tag-btn" onclick="quickSetCar('morning')">모닝(998cc)</button>
+              <button type="button" class="car-tag-btn" onclick="quickSetCar('avante_16')">아반떼(1.6L)</button>
+              <button type="button" class="car-tag-btn" onclick="quickSetCar('sonata_16')">쏘나타[1.6T충족]</button>
+              <button type="button" class="car-tag-btn" onclick="quickSetCar('sonata_20')">쏘나타[2.0초과]</button>
+              <button type="button" class="car-tag-btn" onclick="quickSetCar('tucson_16')">스포티지/투싼[1.6HEV]</button>
+              <button type="button" class="car-tag-btn" onclick="quickSetCar('grandeur_16')">그랜저[1.6HEV]</button>
               <button type="button" class="car-tag-btn" onclick="quickSetCar('porter')">포터(화물)</button>
+            </div>
+
+            <!-- 실무 팁 안내 배너 -->
+            <div style="margin-top:8px; padding:7px 10px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; font-size:11.5px; color:#1e40af; line-height:1.4;">
+              💡 <strong>창구 실무 팁:</strong> 최근 쏘나타·투싼뿐만 아니라 싼타페·그랜저·카니발도 <strong>1.6 하이브리드/터보 엔진은 1,598cc</strong>로 등록되어 10년 경과 시 100% 환산에서 제외될 수 있습니다. 반드시 <strong>자동차등록증 ⑤번 항목의 정확한 숫자</strong>를 입력하세요.
             </div>
 
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; margin-bottom:8px;">
@@ -1179,31 +1195,35 @@
   </div>
 
   <script>
-    // 차량 모델 데이터베이스 (차종명 -> 배기량cc 및 생계형 플래그)
+    // 차량 모델 데이터베이스 (동일 차종 배기량 분기점 반영)
     const carDatabase = {
       morning: { name: "기아 모닝", cc: 998, exempt: false },
       spark: { name: "스파크/마티즈", cc: 999, exempt: false },
       ray: { name: "기아 레이", cc: 998, exempt: false },
       casper: { name: "현대 캐스퍼", cc: 998, exempt: false },
       damas: { name: "다마스/라보", cc: 796, exempt: false },
-      avante: { name: "현대 아반떼", cc: 1598, exempt: false },
-      k3: { name: "기아 K3", cc: 1598, exempt: false },
-      sm3: { name: "르노 SM3", cc: 1598, exempt: false },
-      accent: { name: "현대 엑센트", cc: 1399, exempt: false },
-      seltos: { name: "셀토스/코나", cc: 1598, exempt: false },
-      tivoli: { name: "티볼리/트랙스", cc: 1598, exempt: false },
-      sonata: { name: "현대 쏘나타", cc: 1999, exempt: false },
-      k5: { name: "기아 K5", cc: 1999, exempt: false },
-      sm5: { name: "르노 SM5", cc: 1997, exempt: false },
-      malibu: { name: "말리부", cc: 1998, exempt: false },
-      tucson: { name: "현대 투싼", cc: 1995, exempt: false },
-      sportage: { name: "기아 스포티지", cc: 1998, exempt: false },
-      grandeur: { name: "현대 그랜저", cc: 2497, exempt: false },
-      k7: { name: "기아 K7/K8", cc: 2497, exempt: false },
+      avante_16: { name: "현대 아반떼 1.6", cc: 1598, exempt: false },
+      avante_20: { name: "현대 아반떼 N/2.0", cc: 1998, exempt: false },
+      k3_16: { name: "기아 K3 1.6", cc: 1598, exempt: false },
+      sm3_16: { name: "르노 SM3 1.6", cc: 1598, exempt: false },
+      seltos_16: { name: "셀토스/코나 1.6T", cc: 1598, exempt: false },
+      tivoli_15: { name: "티볼리/트랙스", cc: 1341, exempt: false },
+      sonata_16: { name: "현대 쏘나타 1.6 터보", cc: 1598, exempt: false },
+      sonata_20: { name: "현대 쏘나타 2.0", cc: 1999, exempt: false },
+      k5_16: { name: "기아 K5 1.6 터보", cc: 1598, exempt: false },
+      k5_20: { name: "기아 K5 2.0", cc: 1999, exempt: false },
+      sm5_20: { name: "르노 SM5/SM6 2.0", cc: 1997, exempt: false },
+      malibu_135: { name: "쉐보레 말리부 1.35T", cc: 1341, exempt: false },
+      tucson_16: { name: "투싼/스포티지 1.6T/HEV", cc: 1598, exempt: false },
+      tucson_20: { name: "투싼/스포티지 2.0", cc: 1995, exempt: false },
+      santafe_16: { name: "싼타페/쏘렌토 1.6 HEV", cc: 1598, exempt: false },
+      santafe_22: { name: "싼타페/쏘렌토 2.2D/2.5", cc: 2151, exempt: false },
+      carnival_16: { name: "기아 카니발 1.6 HEV", cc: 1598, exempt: false },
+      carnival_22: { name: "기아 카니발 2.2D/3.5", cc: 2151, exempt: false },
+      grandeur_16: { name: "그랜저/K8 1.6 HEV", cc: 1598, exempt: false },
+      grandeur_25: { name: "그랜저/K8 2.5/3.5", cc: 2497, exempt: false },
       genesis: { name: "제네시스 G80", cc: 2497, exempt: false },
-      santafe: { name: "싼타페/쏘렌토", cc: 2151, exempt: false },
-      carnival: { name: "기아 카니발", cc: 2151, exempt: false },
-      starex: { name: "스타렉스/스타리아", cc: 2497, exempt: false },
+      starex: { name: "스타렉스/스타리아", cc: 2199, exempt: false },
       porter: { name: "현대 포터2 (화물)", cc: 2497, exempt: true },
       bongo: { name: "기아 봉고3 (화물)", cc: 2497, exempt: true }
     };
