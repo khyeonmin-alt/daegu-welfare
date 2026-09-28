@@ -448,8 +448,8 @@
                 상담 메모 및 표준 서식 입력
               </span>
               <div style="display:flex; gap:6px;">
-                <button class="btn btn-accent" onclick="loadBlankTemplate()" title="조사 항목 누락을 방지하는 표준 빈 양식">
-                  📋 누락방지 빈 서식
+                <button class="btn btn-accent" onclick="loadBlankTemplate()" title="표준 상담 양식 불러오기">
+                  📋 상담 양식
                 </button>
                 <button class="btn btn-secondary" onclick="loadSampleTemplate()" title="실무 예시 데이터 불러오기">
                   📝 작성 예시
@@ -460,18 +460,10 @@
               </div>
             </div>
             <p class="section-desc">
-              메모를 입력하거나 누락방지 빈 서식을 채운 뒤 정제 버튼을 누르면 행복e음 서식으로 변환되고 하단 소득인정액이 자동 연계됩니다.
+              메모를 입력하거나 상담 양식을 채운 뒤 정제 버튼을 누르면 행복e음 서식으로 변환되고 하단 소득인정액이 자동 연계됩니다.
             </p>
 
-            <!-- 필수 점검 체크 배너 -->
-            <div class="banner-alert">
-              <strong>⚡ 창구 필수 점검:</strong>
-              <span>① 최근 2년 재산처분</span>
-              <span>② 직역연금 수급여부</span>
-              <span>③ 금융동의서 징구</span>
-            </div>
-
-            <textarea id="rawNoteInput" rows="13" placeholder="자유 메모를 입력하거나 상단의 [누락방지 빈 서식] 버튼을 눌러 주요 항목을 작성하세요."></textarea>
+            <textarea id="rawNoteInput" rows="13" placeholder="자유 메모를 입력하거나 상단의 [상담 양식] 버튼을 눌러 주요 항목을 작성하세요."></textarea>
 
             <button class="btn btn-primary" onclick="formatCaseNote()" style="width:100%; margin-top:10px; padding:10px; font-size:13.5px;">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
@@ -769,8 +761,8 @@
 - 연락처 / 실거주지: 010-    -     / 
 
 ■ 주거실태
-- 거주형태: 월세 (보증금    만 원 / 월    만 원) / 전세 / 자가 / 무상임대
-- 임대차계약서 및 실제 통장 계좌이체 내역 징구 완료
+- 거주형태: 보증부월세 (보증금    만 원 / 월    만 원) / 월세 / 전세 / 자가 / 무상임대
+- 임대차계약서 징구 완료
 
 ■ 가구원 및 부양의무자 (가족관계)
 - 가구원: 단독 / 동거가구원: 
@@ -799,8 +791,8 @@
 - 연락처 / 실거주지: 010-XXXX-XXXX
 
 ■ 주거실태
-- 거주형태: 월세 (보증금 500 / 월 30만 원)
-- 임대차계약서 징구 완료 (실제 통장 계좌이체 확인)
+- 거주형태: 보증부월세 (보증금 500 / 월 30만 원)
+- 임대차계약서 징구 완료
 
 ■ 가구원 및 부양의무자 (가족관계)
 - 가구원: 단독
@@ -840,7 +832,7 @@
     // 템플릿 로더 함수들
     function loadBlankTemplate() {
       document.getElementById('rawNoteInput').value = BLANK_TEMPLATE;
-      showToast('누락방지 빈 서식이 입력창에 채워졌습니다.');
+      showToast('상담 양식이 입력창에 채워졌습니다.');
     }
 
     function loadSampleTemplate() {
@@ -896,7 +888,7 @@
       let result = '';
       // 이미 6대 표준 섹션으로 작성된 경우 정제 타이틀 부착
       if (raw.includes('■ 기본사항') || raw.includes('■ 주거실태')) {
-        result = `【초기상담 및 복지욕구 사정서 (행복e음 등록용)】\n` + raw;
+        result = `【초기상담 및 복지욕구 사정서】\n` + raw;
       } else {
         // 단문/자유 메모인 경우 6대 항목으로 자동 구조화
         const lines = raw.split(/[,.\n]/).map(s => s.trim()).filter(Boolean);
@@ -912,7 +904,7 @@
         const summary = summaryParts.length > 0 ? summaryParts.join(' / ') : '내방 민원인 상담';
 
         // 주거
-        const ecoKeywords = ['월세', '보증금', '전세', '자가', '반지하', '옥탑', '거주', '체납'];
+        const ecoKeywords = ['보증부월세', '월세', '보증금', '전세', '자가', '무상임대', '무상', '반지하', '옥탑', '거주', '체납'];
         const ecoLines = lines.filter(l => ecoKeywords.some(kw => l.includes(kw)));
         const home = ecoLines.length > 0 ? ecoLines.join(' / ') : '임대차계약서 및 실거주 확인 요망';
 
@@ -947,13 +939,13 @@
         if (notes.length === 0) notes.push('- 신청인 진술 기반 공적자료 전산 조회 및 자격 심사 요망');
 
         result = 
-`【초기상담 및 복지욕구 사정서 (행복e음 등록용)】
+`【초기상담 및 복지욕구 사정서】
 ■ 기본사항 및 신청급여
 - 인적사항: ${summary}
 - 신청급여: 맞춤형 기초생활보장급여 / 긴급복지지원 / 기초연금 검토
 
 ■ 주거실태
-- 거주형태: ${home} (임대차계약서 징구 및 계좌이체 확인)
+- 거주형태: ${home} (임대차계약서 징구 완료)
 
 ■ 가구원 및 부양의무자 (가족관계)
 - 가족 및 부양상태: ${family}
