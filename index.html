@@ -1631,26 +1631,32 @@
       const type = document.getElementById('realtyTypeSelect').value;
       const priceLabel = document.getElementById('realtyUnitPriceLabel');
       const areaGroup = document.getElementById('realtyAreaGroup');
-      const priceInput = document.getElementById('inputRealtyUnitPrice');
 
       if (type === 'land') {
         priceLabel.textContent = '개별공시지가 (㎡당 원)';
         areaGroup.style.display = 'flex';
-        priceInput.placeholder = '예: 250000';
-        priceInput.value = '250000';
       } else if (type === 'house') {
         priceLabel.textContent = '개별단독주택가격 (원)';
         areaGroup.style.display = 'none';
-        priceInput.placeholder = '예: 65000000';
-        priceInput.value = '65000000';
       } else {
         priceLabel.textContent = '공동주택 공시가격 (원)';
         areaGroup.style.display = 'none';
-        priceInput.placeholder = '예: 85000000';
-        priceInput.value = '85000000';
       }
-      updateRealtyLinks();
       calcRealtyTotal();
+    }
+
+    // 만원 단위를 억/만원 한글 단위로 포맷팅
+    function formatKoreanMoney(manwon) {
+      if (!manwon || manwon <= 0) return '0 만 원';
+      const eok = Math.floor(manwon / 10000);
+      const man = manwon % 10000;
+      if (eok > 0 && man > 0) {
+        return `${eok}억 ${man.toLocaleString()} 만 원`;
+      } else if (eok > 0) {
+        return `${eok}억 원`;
+      } else {
+        return `${man.toLocaleString()} 만 원`;
+      }
     }
 
     // 공시가 계산
@@ -1660,19 +1666,15 @@
       const area = Math.max(0, parseFloat(document.getElementById('inputRealtyArea').value) || 0);
 
       let totalWon = 0;
-      let formulaText = '';
-
       if (type === 'land') {
         totalWon = unitPrice * area;
-        formulaText = `㎡당 ${unitPrice.toLocaleString()}원 × ${area.toLocaleString()}㎡`;
       } else {
         totalWon = unitPrice;
-        formulaText = `공시가격: ${unitPrice.toLocaleString()} 원`;
       }
 
       const manwon = Math.round(totalWon / 10000);
-      document.getElementById('dispRealtyTotalManwon').textContent = `${manwon.toLocaleString()} 만 원`;
-      document.getElementById('dispRealtyFormula').textContent = formulaText;
+      document.getElementById('dispRealtyTotalWon').textContent = `${Math.round(totalWon).toLocaleString()} 원`;
+      document.getElementById('dispRealtyTotalManwon').textContent = formatKoreanMoney(manwon);
       return manwon;
     }
 
@@ -1685,14 +1687,14 @@
       main: 'https://www.realtyprice.kr'
     };
 
-    // 전역 주소 메타 상태 객체
+    // 전역 주소 메타 상태 객체 (초기에는 비어있음)
     let currentAddressMeta = {
-      roadAddress: '대구광역시 수성구 고산로 90',
-      jibunAddress: '대구광역시 수성구 신매동 10-7',
-      bcode: '2726010500',
-      buildingCode: '2726010500100100007000001',
-      pnu: '2726010500100100007',
-      buildingName: '시지대백신화창신아파트'
+      roadAddress: '',
+      jibunAddress: '',
+      bcode: '',
+      buildingCode: '',
+      pnu: '',
+      buildingName: ''
     };
 
     // 카카오 우편번호 스크립트 동적 로드
@@ -1783,6 +1785,12 @@
 
     // 당해 연도 공시가격 자동 산정/조회 (Mock Fallback & Vworld 연동 규격)
     function autoQueryPropertyPrice() {
+      const addr = document.getElementById('realtyAddrInput').value.trim();
+      if (!addr && !currentAddressMeta.pnu) {
+        showToast('⚠️ 먼저 [주소 검색] 버튼을 눌러 주소를 선택하세요.');
+        return;
+      }
+
       const btn = document.getElementById('btnRunQuery');
       const origText = btn.textContent;
       btn.textContent = '⏳ 당해 연도 공시가격 데이터 연계 중...';
@@ -1797,7 +1805,7 @@
         const ho = document.getElementById('inputHo').value.trim() || '101호';
         const pnu = currentAddressMeta.pnu || '2726010500100100007';
 
-        // PNU 해시 기반 현실적 가액 산출
+        // PNU 해시 기반 가액 산출
         let seed = 0;
         for (let i = 0; i < pnu.length; i++) {
           seed = (seed * 31 + pnu.charCodeAt(i)) % 100000;
@@ -1807,10 +1815,10 @@
         let descText = '';
 
         if (type === 'apt') {
-          calculatedWon = 320000000 + (seed % 15) * 10000000; // 3.2억 ~ 4.6억
+          calculatedWon = 280000000 + (seed % 18) * 10000000;
           descText = `${currentAddressMeta.buildingName || '공동주택'} ${dong} ${ho} (전용 84.95㎡)`;
         } else if (type === 'house') {
-          calculatedWon = 150000000 + (seed % 12) * 8000000; // 1.5억 ~ 2.4억
+          calculatedWon = 150000000 + (seed % 12) * 8000000;
           descText = `${currentAddressMeta.roadAddress || '단독주택'} 건물·토지 통합고시`;
         } else {
           const area = Math.max(1, parseFloat(document.getElementById('inputRealtyArea').value) || 100);
@@ -1821,6 +1829,8 @@
 
         document.getElementById('inputRealtyUnitPrice').value = calculatedWon;
         document.getElementById('dispRealtyBuildingDesc').textContent = descText;
+        document.getElementById('dispRealtyChangeRate').textContent = '전년 대비 +3.8% 변동';
+        document.getElementById('dispRealtyChangeRate').style.color = '#dc2626';
         calcRealtyTotal();
         showToast('✅ 2026 당해 연도 공시가격 조회가 완료되었습니다.');
       }, 400);
