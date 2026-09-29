@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>읍면동 스마트 복지상담 &amp; 소득인정액 모의판정 시스템</title>
+  <title>읍면동 스마트 복지상담 &amp; 생활실태·부양해체 사정 시스템</title>
   <!-- Daum 우편번호 서비스 CDN -->
   <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
   <style>
@@ -12,20 +12,21 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", "Segoe UI", Roboto, sans-serif;
     }
     body {
       background-color: #f8fafc;
       color: #0f172a;
-      font-size: 14px;
+      font-size: 13.5px;
       line-height: 1.5;
       padding-bottom: 60px;
     }
 
+    /* 상단 네비게이션 헤더 */
     header {
       background-color: #ffffff;
       border-bottom: 1px solid #cbd5e1;
-      padding: 14px 24px;
+      padding: 12px 24px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -47,11 +48,13 @@
       padding: 3px 8px;
       border-radius: 9999px;
       border: 1px solid #bfdbfe;
+      letter-spacing: -0.3px;
     }
     .header-title h1 {
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 700;
       color: #0f172a;
+      letter-spacing: -0.5px;
     }
     .header-desc {
       font-size: 12px;
@@ -83,8 +86,8 @@
     }
 
     .main-container {
-      max-width: 1440px;
-      margin: 20px auto;
+      max-width: 1480px;
+      margin: 18px auto;
       padding: 0 20px;
     }
     .tab-content {
@@ -96,36 +99,35 @@
 
     .grid-2col {
       display: flex;
-      gap: 20px;
+      gap: 18px;
     }
     .grid-2col > div {
       flex: 1;
       min-width: 0;
     }
-    @media (max-width: 900px) {
+    @media (max-width: 980px) {
       .grid-2col {
         flex-direction: column;
       }
     }
-
     .card {
       background-color: #ffffff;
       border: 1px solid #cbd5e1;
       border-radius: 10px;
-      padding: 20px;
+      padding: 18px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
     .card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       border-bottom: 1px solid #e2e8f0;
-      padding-bottom: 12px;
+      padding-bottom: 10px;
     }
     .card-title {
-      font-size: 15px;
+      font-size: 14.5px;
       font-weight: 700;
       color: #1e293b;
       display: flex;
@@ -137,9 +139,9 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      padding: 8px 14px;
-      font-size: 13px;
+      gap: 5px;
+      padding: 7px 13px;
+      font-size: 12.5px;
       font-weight: 600;
       border-radius: 6px;
       cursor: pointer;
@@ -148,8 +150,8 @@
       text-decoration: none;
     }
     .btn-sm {
-      padding: 5px 10px;
-      font-size: 12px;
+      padding: 5px 9px;
+      font-size: 11.5px;
     }
     .btn-primary {
       background-color: #1d4ed8;
@@ -183,18 +185,17 @@
     .btn-danger:hover {
       background-color: #fecaca;
     }
-
     label {
       display: block;
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 600;
       color: #475569;
       margin-bottom: 4px;
     }
     input[type="text"], input[type="number"], select, textarea {
       width: 100%;
-      padding: 8px 12px;
-      font-size: 13px;
+      padding: 7px 11px;
+      font-size: 12.5px;
       border: 1px solid #cbd5e1;
       border-radius: 6px;
       outline: none;
@@ -206,11 +207,44 @@
       box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
     }
 
+    .quick-snippet-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+      padding: 8px 10px;
+      background-color: #f1f5f9;
+      border-radius: 6px;
+      border: 1px dashed #cbd5e1;
+    }
+    .snippet-tag {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #1e40af;
+      background-color: #dbeafe;
+      padding: 4px 9px;
+      border-radius: 4px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.12s;
+    }
+    .snippet-tag:hover {
+      background-color: #bfdbfe;
+      color: #1e3a8a;
+    }
+    .snippet-tag.danger {
+      color: #991b1b;
+      background-color: #fee2e2;
+    }
+    .snippet-tag.danger:hover {
+      background-color: #fecaca;
+    }
+
     .counsel-textarea {
-      height: 330px;
+      height: 440px;
       resize: vertical;
-      line-height: 1.6;
-      font-size: 13px;
+      line-height: 1.65;
+      font-size: 12.5px;
     }
     .result-box {
       background-color: #f8fafc;
@@ -218,11 +252,27 @@
       border-radius: 8px;
       padding: 16px;
       white-space: pre-wrap;
-      font-size: 13px;
+      font-size: 12.5px;
       line-height: 1.7;
-      min-height: 330px;
-      max-height: 550px;
+      min-height: 440px;
+      max-height: 600px;
       overflow-y: auto;
+    }
+    .split-copy-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin-top: 10px;
+    }
+    @media (max-width: 1024px) {
+      .split-copy-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    @media (max-width: 640px) {
+      .split-copy-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
     }
 
     .matrix-grid {
@@ -234,7 +284,7 @@
       flex: 1;
       min-width: 0;
     }
-    @media (max-width: 800px) {
+    @media (max-width: 860px) {
       .matrix-grid {
         flex-direction: column;
       }
@@ -294,9 +344,9 @@
       display: inline-flex;
       align-items: center;
       background-color: #f1f5f9;
-      padding: 4px 10px;
+      padding: 3px 9px;
       border-radius: 6px;
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 600;
       color: #334155;
       border: 1px solid #e2e8f0;
@@ -324,6 +374,20 @@
       margin-top: 6px;
     }
 
+    .btn-chip {
+      background-color: #ffffff;
+      border: 1px solid #cbd5e1;
+      padding: 4px 8px;
+      font-size: 11px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      color: #334155;
+    }
+    .btn-chip:hover {
+      background-color: #e2e8f0;
+    }
+
     .table-alimi {
       width: 100%;
       border-collapse: collapse;
@@ -333,7 +397,7 @@
     }
     .table-alimi th, .table-alimi td {
       border: 1px solid #cbd5e1;
-      padding: 7px 10px;
+      padding: 6px 9px;
       text-align: center;
     }
     .table-alimi th {
@@ -342,6 +406,7 @@
       font-weight: 700;
     }
 
+    /* 모달 윈도우 스타일 */
     .modal-backdrop {
       position: fixed;
       top: 0;
@@ -359,14 +424,14 @@
     }
     .modal-card {
       background-color: #ffffff;
-      width: 550px;
+      width: 650px;
       max-width: 95%;
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 10px 25px rgba(0,0,0,0.2);
     }
     .modal-header {
-      padding: 14px 18px;
+      padding: 12px 18px;
       background-color: #f8fafc;
       border-bottom: 1px solid #cbd5e1;
       display: flex;
@@ -376,6 +441,8 @@
     }
     .modal-body {
       padding: 16px;
+      max-height: 80vh;
+      overflow-y: auto;
     }
 
     #toast {
@@ -385,9 +452,9 @@
       transform: translateX(-50%);
       background-color: #1e293b;
       color: #ffffff;
-      padding: 10px 20px;
+      padding: 9px 18px;
       border-radius: 8px;
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 600;
       opacity: 0;
       pointer-events: none;
@@ -401,13 +468,13 @@
 
     @media print {
       body { background-color: #ffffff; padding-bottom: 0; font-size: 11pt; color: #000000; }
-      header, .nav-tabs, .btn, #counselInput, .card-header button, #tab-vehicle, .field-row, #toast, .modal-backdrop, .calculation-breakdown { display: none !important; }
+      header, .nav-tabs, .btn, #counselInput, .card-header button, #tab-vehicle, .field-row, #toast, .modal-backdrop, .calculation-breakdown, .split-copy-grid { display: none !important; }
       .main-container { max-width: 100%; margin: 0; padding: 0; }
       .grid-2col { display: block; }
       .card { border: none; box-shadow: none; padding: 0; margin-bottom: 20px; page-break-inside: avoid; }
-      .result-box { border: 1px solid #000; background-color: #ffffff; min-height: auto; max-height: none; overflow: visible; font-size: 11pt; }
+      .result-box { border: 1.5px solid #000; background-color: #ffffff; min-height: auto; max-height: none; overflow: visible; font-size: 10.5pt; line-height: 1.65; color: #000; }
       .matrix-grid { display: flex; gap: 10px; }
-      .benefit-card { border: 1px solid #999; background-color: #ffffff !important; }
+      .benefit-card { border: 1px solid #888; background-color: #ffffff !important; }
     }
   </style>
 </head>
@@ -415,57 +482,71 @@
 
   <header>
     <div class="header-title">
-      <span class="header-badge">행정망 무결점 v3.4</span>
-      <h1>읍면동 스마트 복지상담 &amp; 소득인정액 판정기</h1>
-      <span class="header-desc">2026 보건복지부 복지사업안내 &amp; 국토교통부 실공시가 100% 매칭 시스템</span>
+      <span class="header-badge">행정망 무결점 v4.1</span>
+      <h1>읍면동 스마트 복지상담 &amp; 생활실태·부양해체 사정기</h1>
+      <span class="header-desc">생활실태(과거/현재/위기경위) · 부양의무 해체(언제/어떻게/사유) + 2026 복지기준 대조</span>
     </div>
     <div class="nav-tabs">
-      <button class="nav-tab active" onclick="switchTab('tab-counsel')">1. 복지상담 &amp; 4대 사업 모의판정</button>
+      <button class="nav-tab active" onclick="switchTab('tab-counsel')">1. 복지상담 &amp; 생활실태·부양해체 사정</button>
       <button class="nav-tab" onclick="switchTab('tab-vehicle')">2. 차량 컷오프 &amp; 부동산 공시가</button>
     </div>
   </header>
 
   <div class="main-container">
 
-    <!-- ==================== TAB 1: 복지상담 & 소득인정액 ==================== -->
+    <!-- ==================== TAB 1: 복지상담 & 생활실태 & 부양해체 & 소득인정액 ==================== -->
     <div id="tab-counsel" class="tab-content active">
       <div class="grid-2col">
+        
+        <!-- 좌측: 상담 메모 & 사실조사 입력 -->
         <div class="card">
           <div class="card-header">
-            <div class="card-title">📝 상담 메모 &amp; 사실조사 입력</div>
-            <div style="display: flex; gap: 6px;">
+            <div class="card-title">📝 초기상담 메모 &amp; 사실조사 입력</div>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
               <button class="btn btn-outline btn-sm" onclick="loadBlankTemplate()">📋 표준 서식</button>
-              <button class="btn btn-outline btn-sm" onclick="loadSampleTemplate()">📝 작성 예시</button>
+              <button class="btn btn-outline btn-sm" onclick="loadSampleTemplate()">📝 실무 예시</button>
               <button class="btn btn-danger btn-sm" onclick="clearCounselInput()">🧹 비우기</button>
             </div>
           </div>
           
-          <textarea id="counselInput" class="counsel-textarea" placeholder="여기에 내방/방문 상담 메모를 자유롭게 입력하세요. 입력 내용은 브라우저에 자동 보존됩니다..."></textarea>
+          <textarea id="counselInput" class="counsel-textarea" placeholder="상담 메모를 입력하세요. [📋 표준 서식]을 누르면 빈 통합 양식이 로드되며, [📝 실무 예시]를 누르면 상세 작성 사례를 확인하실 수 있습니다..."></textarea>
           
-          <div style="margin-top: 14px;">
-            <button class="btn btn-primary" style="width: 100%; font-size: 14px; padding: 10px;" onclick="processCounseling()">
-              ⚡ 일지 생성 및 핵심 항목 자동 추출
+          <div style="margin-top: 12px;">
+            <button class="btn btn-primary" style="width: 100%; font-size: 14px; padding: 11px; font-weight: 700;" onclick="processCounseling()">
+              ⚡ 복지사정서 생성 및 핵심 항목 자동 추출
             </button>
           </div>
         </div>
 
+        <!-- 우측: 정제된 복지상담 사정서 -->
         <div class="card">
           <div class="card-header">
-            <div class="card-title">📋 정제된 복지상담 사정서</div>
+            <div class="card-title">📋 정제된 복지상담 사정서 (행복e음 연계 표준)</div>
             <div style="display: flex; gap: 6px;">
-              <button class="btn btn-outline btn-sm" onclick="copyResultText()">📄 본문 복사</button>
+              <button class="btn btn-outline btn-sm" onclick="copyResultText()">📄 전체 복사</button>
               <button class="btn btn-outline btn-sm" onclick="window.print()">🖨️ A4 사정서 인쇄</button>
             </div>
           </div>
-          <div id="counselOutput" class="result-box">상담 내용을 입력하고 [일지 생성 및 핵심 항목 자동 추출] 버튼을 누르시면 표준 양식으로 정제됩니다.</div>
+
+          <div id="counselOutput" class="result-box">상담 내용을 입력하고 [복지사정서 생성 및 핵심 항목 자동 추출] 버튼을 누르시면 행복e음 포맷 표준 사정서가 생성됩니다.</div>
+
+          <!-- 행복e음 입력 포맷 분할 복사 그리드 -->
+          <div class="split-copy-grid">
+            <button class="btn btn-outline btn-sm" onclick="copySection('기본 인적사항')">📋 [인적사항] 복사</button>
+            <button class="btn btn-outline btn-sm" onclick="copySection('생활실태 및 생계위기')">📋 [생활실태] 복사</button>
+            <button class="btn btn-outline btn-sm" onclick="copySection('소득재산 및 건강')">📋 [소득재산] 복사</button>
+            <button class="btn btn-outline btn-sm" onclick="copySection('가족관계 해체(단절) 사유')">📋 [부양해체] 복사</button>
+            <button class="btn btn-outline btn-sm" onclick="copySection('신청 급여')">📋 [신청급여] 복사</button>
+          </div>
         </div>
       </div>
 
+      <!-- 하단: 4대 급여 모의판정 엔진 -->
       <div class="card">
         <div class="card-header">
-          <div class="card-title">📊 법정 기준에 따른 사업별 소득인정액 및 지원 모의판정</div>
-          <div style="font-size: 12px; color: #475569;">
-            * 상담 입력 내용에 따라 소득·재산·근로능력·부양의무 상태가 자동 반영되며 직접 수정도 가능합니다.
+          <div class="card-title">📊 2026년 기준선 기반 4대 복지사업 모의판정</div>
+          <div style="font-size: 11.5px; color: #475569;">
+            * 좌측 상담 메모 입력 시 가구원·소득·재산·근로능력·부양상태가 자동 세팅되며 직접 조정도 가능합니다.
           </div>
         </div>
 
@@ -490,24 +571,26 @@
             </select>
           </div>
           <div>
-            <label>근로능력 여부</label>
+            <label>근로능력 판정</label>
             <select id="simWorkAbility" onchange="runSimulation()">
               <option value="none">만 65세 이상 (법정 무능력)</option>
               <option value="illness">질병·부상·장애 (진단서 징구)</option>
+              <option value="care">간병·양육 (조건부과 유예)</option>
               <option value="able">근로능력 있음 (조건부 수급/자활)</option>
             </select>
           </div>
           <div>
             <label>부양의무 상태 (의료급여 기준)</label>
             <select id="simSupportObligor" onchange="runSimulation()">
-              <option value="severed">가족관계 해체 (지생보 심의 대상)</option>
+              <option value="severed">가족관계 해체 (지생보 심의 상정 필수)</option>
               <option value="none">부양의무자 없음 (사망·단독)</option>
               <option value="normal">부양의무자 있음 (일반 소득·재산조사)</option>
-              <option value="high_income">부양의무자 고소득/고재산 (탈락위험)</option>
+              <option value="high_income">부양의무자 고소득/고재산 (탈락 위험)</option>
             </select>
           </div>
         </div>
 
+        <!-- 소득 재산 입력 행 -->
         <div class="field-row" style="background-color: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1;">
           <div>
             <label>월 근로소득 (만원)</label>
@@ -539,20 +622,22 @@
           </div>
         </div>
 
+        <!-- 사업별 판정 매트릭스 -->
         <div class="matrix-grid">
           <div class="benefit-card" id="cardBasicLife">
             <span class="benefit-badge badge-fail" id="badgeBasicLife">판정 대기</span>
-            <div style="font-weight: 700; font-size: 14px; margin-bottom: 4px;">기초생활보장</div>
-            <div style="font-size: 12px; color: #475569;" id="descBasicLife">생계·의료·주거 맞춤형 급여</div>
+            <div style="font-weight: 700; font-size: 13.5px; margin-bottom: 4px;">기초생활보장</div>
+            <div style="font-size: 11.5px; color: #475569;" id="descBasicLife">생계·의료·주거 맞춤형 급여</div>
             <hr style="margin: 8px 0; border: none; border-top: 1px dashed #cbd5e1;">
             <div style="font-size: 12px;"><strong>예상 소득인정액:</strong> <span id="valBasicLife">0</span> 만원</div>
+            <div style="font-size: 11.5px; color: #1e40af; font-weight: 600; margin-top: 3px;" id="estPayoutBasicLife">예상 생계비: -</div>
             <div style="font-size: 11px; color: #475569; margin-top: 4px;" id="detailBasicLife">-</div>
           </div>
 
           <div class="benefit-card" id="cardEmergency">
             <span class="benefit-badge badge-fail" id="badgeEmergency">판정 대기</span>
-            <div style="font-weight: 700; font-size: 14px; margin-bottom: 4px;">긴급복지지원</div>
-            <div style="font-size: 12px; color: #475569;">실소득 &amp; 순재산 독립 심사</div>
+            <div style="font-weight: 700; font-size: 13.5px; margin-bottom: 4px;">긴급복지지원</div>
+            <div style="font-size: 11.5px; color: #475569;">실소득 &amp; 순재산 독립 심사</div>
             <hr style="margin: 8px 0; border: none; border-top: 1px dashed #cbd5e1;">
             <div style="font-size: 12px;"><strong>월 총실소득:</strong> <span id="valEmergIncome">0</span> 만원</div>
             <div style="font-size: 11px; color: #475569; margin-top: 4px;" id="detailEmergency">-</div>
@@ -560,8 +645,8 @@
 
           <div class="benefit-card" id="cardNearPoverty">
             <span class="benefit-badge badge-fail" id="badgeNearPoverty">판정 대기</span>
-            <div style="font-weight: 700; font-size: 14px; margin-bottom: 4px;">차상위계층</div>
-            <div style="font-size: 12px; color: #475569;">중위소득 50% 이하</div>
+            <div style="font-weight: 700; font-size: 13.5px; margin-bottom: 4px;">차상위계층</div>
+            <div style="font-size: 11.5px; color: #475569;">중위소득 50% 이하</div>
             <hr style="margin: 8px 0; border: none; border-top: 1px dashed #cbd5e1;">
             <div style="font-size: 12px;"><strong>소득인정액:</strong> <span id="valNearPoverty">0</span> 만원</div>
             <div style="font-size: 11px; color: #475569; margin-top: 4px;" id="detailNearPoverty">-</div>
@@ -569,8 +654,8 @@
 
           <div class="benefit-card" id="cardBasicPension">
             <span class="benefit-badge badge-fail" id="badgeBasicPension">판정 대기</span>
-            <div style="font-weight: 700; font-size: 14px; margin-bottom: 4px;">기초연금</div>
-            <div style="font-size: 12px; color: #475569;">만 65세 이상 노인가구</div>
+            <div style="font-weight: 700; font-size: 13.5px; margin-bottom: 4px;">기초연금</div>
+            <div style="font-size: 11.5px; color: #475569;">만 65세 이상 노인가구</div>
             <hr style="margin: 8px 0; border: none; border-top: 1px dashed #cbd5e1;">
             <div style="font-size: 12px;"><strong>연금 소득인정액:</strong> <span id="valBasicPension">0</span> 만원</div>
             <div style="font-size: 11px; color: #475569; margin-top: 4px;" id="detailBasicPension">-</div>
@@ -591,7 +676,7 @@
       <div class="card">
         <div class="card-header">
           <div class="card-title">🚗 차량 컷오프(100% 월소득 환산 vs 일반재산 4.17%) 사전 판정기</div>
-          <span style="font-size: 12px; color: #475569;">2026년 기준 1,600cc 미만 &amp; 10년 이상 또는 200만원 미만 시 일반재산</span>
+          <span style="font-size: 11.5px; color: #475569;">2026년 기준: 1,600cc 미만 &amp; 10년 이상 또는 200만원 미만 시 일반재산</span>
         </div>
 
         <div class="field-row">
@@ -602,7 +687,7 @@
               <option value="spark">쉐보레 스파크 (999cc 경차)</option>
               <option value="morning">기아 모닝 (998cc 경차)</option>
               <option value="avante">현대 아반떼 1.6 (1,598cc)</option>
-              <option value="sonata16">현대 쏘나타 1.6 터보 (1,591cc ➔ 1600cc 미만)</option>
+              <option value="sonata16">현대 쏘나타 1.6 터보 (1,591cc ➔ 1,600cc 미만)</option>
               <option value="sonata20">현대 쏘나타 2.0 자연흡기 (1,999cc ➔ 100% 컷오프 주의)</option>
               <option value="tucson16">현대 투싼 1.6 터보 (1,598cc)</option>
               <option value="porter">현대 포터 II / 봉고 III (생계형 화물차)</option>
@@ -635,8 +720,8 @@
         </div>
 
         <div id="carResultBox" style="margin-top: 14px; display: none; padding: 14px; border-radius: 8px; border: 1px solid #cbd5e1;">
-          <div id="carResultTitle" style="font-weight: 700; font-size: 14px; margin-bottom: 4px;"></div>
-          <div id="carResultDesc" style="font-size: 13px; color: #475569; margin-bottom: 10px;"></div>
+          <div id="carResultTitle" style="font-weight: 700; font-size: 13.5px; margin-bottom: 4px;"></div>
+          <div id="carResultDesc" style="font-size: 12.5px; color: #475569; margin-bottom: 10px;"></div>
           <button class="btn btn-outline btn-sm" id="btnApplyCar" onclick="applyCarToSimulation()">
             📥 판정 결과를 1번 탭 모의계산기에 자동 반영
           </button>
@@ -647,13 +732,13 @@
       <div class="card">
         <div class="card-header">
           <div class="card-title">🏠 부동산 공시가격 확인 및 재산가액 산정</div>
-          <span style="font-size: 12px; color: #475569;">공동주택 실존 여부 건축물대장 100% 검증 &amp; 없는 주소 원천 차단</span>
+          <span style="font-size: 11.5px; color: #475569;">공동주택 실존 여부 대장 검증 &amp; 없는 주소 원천 차단</span>
         </div>
 
         <div class="grid-2col">
           <div>
             <div style="margin-bottom: 12px;">
-              <label>1. 도로명 주소 검색 (필수: 카카오 우편번호 서비스를 통해 정규 주소를 선택하세요)</label>
+              <label>1. 도로명 주소 검색 (필수: 우편번호 서비스를 통해 정규 주소를 선택하세요)</label>
               <div style="display: flex; gap: 8px;">
                 <input type="text" id="propAddressInput" placeholder="[🔍 주소 검색] 버튼을 눌러 정규 도로명 주소를 선택하세요" style="font-weight: 600; background-color: #f8fafc;" readonly>
                 <button class="btn btn-primary" onclick="openDaumPostcode()" style="white-space: nowrap;">🔍 주소 검색</button>
@@ -661,7 +746,7 @@
               </div>
             </div>
 
-            <div style="display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap;">
+            <div style="display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap;">
               <span class="pill-info">PNU: <span id="propPnu">-</span></span>
               <span class="pill-info">법정동: <span id="propBcode">-</span></span>
               <span class="pill-info">건물번호: <span id="propBdMgtSn">-</span></span>
@@ -678,7 +763,7 @@
               </div>
               <div id="complexNameBadgeWrap" style="display: flex; flex-direction: column; justify-content: flex-end;">
                 <label>확인된 단지/건물명</label>
-                <div id="propBuildingNameDisplay" style="padding: 8px 12px; background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; color: #1e293b; min-height: 38px; display: flex; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                <div id="propBuildingNameDisplay" style="padding: 7px 11px; background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12.5px; font-weight: 600; color: #1e293b; min-height: 36px; display: flex; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                   주소 검색 시 자동 반영
                 </div>
               </div>
@@ -696,7 +781,7 @@
             </div>
 
             <div>
-              <button class="btn btn-primary" style="width: 100%; font-size: 14px; padding: 11px; font-weight: 700;" onclick="lookupOfficialPriceDirect()">
+              <button class="btn btn-primary" style="width: 100%; font-size: 13.5px; padding: 10px; font-weight: 700;" onclick="lookupOfficialPriceDirect()">
                 ⚡ 2026 공시가격 정밀 검증 및 조회
               </button>
               <div style="display: flex; justify-content: flex-end; margin-top: 4px;">
@@ -706,15 +791,15 @@
               </div>
             </div>
 
-            <!-- 상태 안내 박스 (오류 및 정상 안내) -->
-            <div id="propStatusNotice" style="margin-top: 12px; display: none; padding: 14px; border-radius: 8px; font-size: 13px; line-height: 1.6;"></div>
+            <!-- 상태 안내 박스 -->
+            <div id="propStatusNotice" style="margin-top: 12px; display: none; padding: 12px; border-radius: 8px; font-size: 12.5px; line-height: 1.6;"></div>
 
             <!-- 공시가격 미세 수정 및 입력 -->
-            <div style="margin-top: 14px; padding: 14px; background-color: #f8fafc; border-radius: 8px; border: 1px solid #cbd5e1;">
+            <div style="margin-top: 14px; padding: 12px; background-color: #f8fafc; border-radius: 8px; border: 1px solid #cbd5e1;">
               <label style="font-weight: 700; color: #1e293b;">공시가격 직접 수정 / 미세 조정 (만 원 단위)</label>
               <div style="display: flex; gap: 8px; margin-bottom: 8px;">
                 <input type="number" id="propManualPriceMan" placeholder="예: 23400 (2억 3,400만원)" oninput="handleManualPriceManInput()">
-                <span style="display: flex; align-items: center; font-weight: 700; font-size: 13px; color: #475569; white-space: nowrap;">만 원</span>
+                <span style="display: flex; align-items: center; font-weight: 700; font-size: 12.5px; color: #475569; white-space: nowrap;">만 원</span>
               </div>
               <div style="display: flex; gap: 4px; flex-wrap: wrap;">
                 <button class="btn-chip" onclick="addPriceMan(10000)">+1억</button>
@@ -727,30 +812,30 @@
 
           </div>
 
-          <!-- 결과 카드 -->
+          <!-- 우측: 결과 카드 -->
           <div>
-            <div class="benefit-card" style="border: 2px solid #bfdbfe; background-color: #f8fafc; padding: 18px; margin-bottom: 14px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div class="benefit-card" style="border: 2px solid #bfdbfe; background-color: #f8fafc; padding: 16px; margin-bottom: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                 <span class="benefit-badge badge-pass" id="propYearBadge">2026년 기준</span>
-                <span style="font-size: 12px; color: #475569;">국토교통부 대조 카드</span>
+                <span style="font-size: 11.5px; color: #475569;">국토교통부 대조 카드</span>
               </div>
               
-              <div style="margin-bottom: 12px;">
+              <div style="margin-bottom: 10px;">
                 <div style="font-size: 11px; color: #475569;">공시가격 (원 단위)</div>
-                <div id="propPriceWon" style="font-size: 24px; font-weight: 800; color: #1e3a8a;">- 원</div>
+                <div id="propPriceWon" style="font-size: 22px; font-weight: 800; color: #1e3a8a;">- 원</div>
               </div>
 
-              <div style="margin-bottom: 12px; padding: 10px; background-color: #ffffff; border-radius: 6px; border: 1px solid #cbd5e1;">
+              <div style="margin-bottom: 10px; padding: 8px 12px; background-color: #ffffff; border-radius: 6px; border: 1px solid #cbd5e1;">
                 <div style="font-size: 11px; color: #475569;">한글 환산 금액 (복지모의계산 단위)</div>
-                <div id="propPriceKorean" style="font-size: 16px; font-weight: 700; color: #15803d;">-</div>
+                <div id="propPriceKorean" style="font-size: 15px; font-weight: 700; color: #15803d;">-</div>
               </div>
 
-              <div id="propDetailInfo" style="font-size: 12px; color: #475569; line-height: 1.6; margin-bottom: 12px;">
+              <div id="propDetailInfo" style="font-size: 11.5px; color: #475569; line-height: 1.5; margin-bottom: 10px;">
                 [🔍 주소 검색]을 통해 정규 도로명 주소를 선택한 후 조회해 주세요.
               </div>
 
               <!-- 국토교통부 알리미 공식 열람 표 -->
-              <div id="officialAlimiTableWrap" style="display: none; margin-top: 8px;">
+              <div id="officialAlimiTableWrap" style="display: none; margin-top: 6px;">
                 <div style="font-size: 11px; font-weight: 700; color: #334155; margin-bottom: 4px;">📋 국토교통부 알리미 공식 열람 형식</div>
                 <table class="table-alimi">
                   <thead>
@@ -781,8 +866,8 @@
               </button>
             </div>
 
-            <div style="margin-top: 20px; padding: 14px; background-color: #f1f5f9; border-radius: 8px; border: 1px solid #e2e8f0;">
-              <div style="font-weight: 700; font-size: 12px; color: #334155; margin-bottom: 8px;">🏛️ 국토교통부 공식 열람 시스템 바로가기</div>
+            <div style="margin-top: 16px; padding: 12px; background-color: #f1f5f9; border-radius: 8px; border: 1px solid #e2e8f0;">
+              <div style="font-weight: 700; font-size: 11.5px; color: #334155; margin-bottom: 6px;">🏛️ 국토교통부 공식 열람 시스템 바로가기</div>
               <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                 <a class="btn btn-outline btn-sm" href="https://www.realtyprice.kr/notice/town/nfSiteLink.htm" target="_blank" rel="noopener">공동주택가격 알리미</a>
                 <a class="btn btn-outline btn-sm" href="https://www.realtyprice.kr/notice/hpindividual/siteLink.htm" target="_blank" rel="noopener">개별단독주택가격 열람</a>
@@ -796,14 +881,14 @@
     </div>
   </div>
 
-  <!-- 우편번호 모달 -->
+  <!-- 도로명 주소 우편번호 모달 -->
   <div id="postcodeModal" class="modal-backdrop">
     <div class="modal-card">
       <div class="modal-header">
         <span>도로명 주소 검색</span>
         <button class="btn btn-outline btn-sm" onclick="closeDaumPostcode()">✕ 닫기</button>
       </div>
-      <div class="modal-body" id="postcodeLayer" style="height: 450px;"></div>
+      <div class="modal-body" id="postcodeLayer" style="height: 440px;"></div>
     </div>
   </div>
 
@@ -828,12 +913,12 @@
     var currentCalculatedPriceMan = 0;
     var lastEvaluatedCar = { isCutoff: false, price: 0 };
     var lastPostalData = null;
+    var parsedSectionsMap = {}; // 행복e음 분할 복사용 맵
 
     // ==========================================
     // 2. 대표 실측 검증 단지 데이터베이스
     // ==========================================
     var REGISTERED_ACCURATE_DB = {
-      // 1) 상인화성파크드림2단지 (대구 달서구 송현로7길 9) [사진 5 실측 일치]
       "sangin_hwaseong_2": {
         matchPatterns: ["송현로7길 9", "상인화성파크드림2단지", "상인동 1596"],
         complexName: "상인화성파크드림2단지",
@@ -843,7 +928,6 @@
           var floor = Math.floor(hoNum / 100);
           var room = hoNum % 100;
 
-          // 단지 실제 동: 2101동 ~ 2108동 (최고 25층)
           if (dongNum < 2101 || dongNum > 2108) {
             return { valid: false, error: "상인화성파크드림2단지는 2101동~2108동으로 구성되어 있어 [" + dong + "]은(는) 존재하지 않는 동입니다." };
           }
@@ -859,7 +943,7 @@
 
           if (dongNum === 2101 && hoNum === 2002) {
             area = 77.44;
-            priceMan = 23400; // 2억 3,400만 원 (국토부 알리미와 100% 동일)
+            priceMan = 23400; // 2억 3,400만 원 (국토부 알리미 100% 실측)
           } else {
             if (room === 1 || room === 2) {
               area = 77.44;
@@ -882,7 +966,6 @@
         }
       },
 
-      // 2) 시지대백·신화·창신맨션 (대구 수성구 고산로 90) [사진 1 실측 일치]
       "siji_daebaek": {
         matchPatterns: ["고산로 90", "신매동 569", "시지대백"],
         complexName: "시지대백.신화.창신맨션(시지대백신화창신맨션)",
@@ -907,7 +990,7 @@
 
           if (dongNum === 205 && hoNum === 912) {
             area = 59.88;
-            priceMan = 12000; // 1억 2,000만 원 (국토부 알리미와 100% 동일)
+            priceMan = 12000; // 1억 2,000만 원 (국토부 알리미 100% 실측)
           } else {
             if (room === 11 || room === 12 || room === 1 || room === 2) {
               area = 59.88;
@@ -935,7 +1018,7 @@
     };
 
     // ==========================================
-    // UI 컨트롤
+    // 3. UI 유틸리티 및 탭 전환
     // ==========================================
     function switchTab(tabId) {
       var contents = document.querySelectorAll('.tab-content');
@@ -952,7 +1035,7 @@
       var t = document.getElementById('toast');
       t.innerText = msg;
       t.classList.add('show');
-      setTimeout(function() { t.classList.remove('show'); }, 2300);
+      setTimeout(function() { t.classList.remove('show'); }, 2400);
     }
 
     function formatKoreanMoneyFromMan(manWon) {
@@ -966,7 +1049,53 @@
     }
 
     // ==========================================
-    // TAB 1 모의판정 산출 엔진
+    // 4. 통합 표준 서식 및 실무 작성 예시 로드
+    // ==========================================
+    function loadBlankTemplate() {
+      document.getElementById('counselInput').value = 
+"■ 기본 인적사항\n" +
+"- 성명: \n" +
+"- 생년월일(연령): \n" +
+"- 가구원수: 1인 가구\n" +
+"- 연락처: \n\n" +
+"■ 생활실태 및 위기상황\n" +
+"- 과거 경제활동 이력 (직종, 근로중단 시점 및 배경): \n" +
+"- 현재 생계유지 실태 (생활비 조달 경로, 체납 현황): \n" +
+"- 생계위기 발생 경위 (주소득원 상실 및 위기 촉발 원인): \n" +
+"- 건강상태 및 일상생활 곤란도 (주 질환명, 거동·가사 곤란 실태): \n\n" +
+"■ 주거 및 소득·재산\n" +
+"- 주거형태: 보증금     만 원 / 월세     만 원\n" +
+"- 월 소득: 근로소득     만 원 / 기타소득     만 원\n" +
+"- 재산현황 (※ 확인되지 않는 재산 항목은 기재하지 마세요): 금융재산     만 원 / 금융부채     만 원 / 차량 유무: \n\n" +
+"■ 부양의무자 및 가족관계 해체 (해당 시 작성, 해당 없으면 삭제)\n" +
+"- 대상 부양의무자: \n" +
+"- 1. 언제 (단절 시기): \n" +
+"- 2. 어떻게 (단절 경위 및 계기): \n" +
+"- 3. 무엇 때문에 (단절 원인): \n" +
+"- 4. 부양 거부·기피 실태: \n\n" +
+"■ 신청 급여\n" +
+"- 신청 급여: ";
+      showToast("표준 서식을 불러왔습니다.");
+      saveToLocalStorage();
+    }
+
+    function loadSampleTemplate() {
+      document.getElementById('counselInput').value = 
+"■ 기본 인적사항\n- 성명: 김영숙 (1960년생 / 만 66세 / 단독가구)\n- 생년월일(연령): 1960년생 (만 66세)\n- 가구원수: 1인 가구\n- 연락처: 010-4567-8901\n\n■ 생활실태 및 위기상황\n- 과거 경제활동 이력 (직종, 근로중단 시점 및 배경): 20대 후반부터 약 25년간 시장 및 영세 식당에서 조리보조 및 설거지 단순노무로 일해 옴. 2024년 초 심한 무릎 관절염과 허리 디스크 파열로 장시간 보행·기립이 불가능해져 권고사직되어 경제활동이 완전 중단됨\n- 현재 생계유지 실태 (생활비 조달 경로, 체납 현황): 근로 중단 후 저축액 400만 원과 지인 차용으로 연명하였으나 현재 모두 소진됨. 가스비 연체로 보일러를 켜지 못하고 있으며, 건강보험료 5개월 체납(35만 원), 월세 3개월분(75만 원) 연체로 임대인으로부터 퇴거 독촉을 받음\n- 생계위기 발생 경위 (주소득원 상실 및 위기 촉발 원인): 주소득원 상실과 만성 질환 치료비 지출이 겹치면서 저축액이 완전히 고갈되었고, 추가 금융조달이 전혀 불가능하여 주거 및 생계 전반이 붕괴됨\n- 건강상태 및 일상생활 곤란도 (주 질환명, 거동·가사 곤란 실태): 요추 추간판탈출증, 양측 무릎 인공관절 수술 권고 상태, 당뇨병 합병증. 지팡이를 짚지 않으면 보행이 어렵고 쪼그려 앉거나 무거운 물건을 드는 가사노동이 불가함 (만 66세 법정 근로무능력자)\n\n■ 주거 및 소득·재산\n- 주거형태: 다가구 반지하방 (보증금 300만 원 / 월 25만 원)\n- 월 소득: 근로소득 0만 원 / 기타소득 0만 원\n- 재산현황 (※ 확인되지 않는 재산 항목은 기재하지 마세요): 금융재산 18만 원 / 차량 유무: 없음\n\n■ 부양의무자 및 가족관계 해체 (해당 시 작성, 해당 없으면 삭제)\n- 대상 부양의무자: 장남 1명 (만 41세)\n- 1. 언제 (단절 시기): 2012년경(약 14년 전) 부친 사망 직후부터 현재까지 14년간 왕래 단절\n- 2. 어떻게 (단절 경위 및 계기): 부친 사업 부도로 남겨진 사채 채무를 두고 가족 간 극심한 고성과 불화 발생 후 장남이 가출하여 연락을 차단함\n- 3. 무엇 때문에 (단절 원인): 빚보증 문제 및 채권자 독촉으로 가족 유대 파탄. 장남이 주민등록 이전 및 전화번호를 수차례 변경하여 생사조차 알 수 없음\n- 4. 부양 거부·기피 실태: 14년간 모친의 병원비 지원이나 명절 방문은 물론 전화 한 통 없었음. 실질적으로 모친에 대한 부양을 전면 거부·기피하여 가족관계가 해체된 상태임\n\n■ 신청 급여\n- 신청 급여: 맞춤형 기초생활보장(생계·의료·주거급여), 기초연금, 긴급생계비";
+      showToast("실무 예시를 불러왔습니다.");
+      saveToLocalStorage();
+    }
+
+    function clearCounselInput() {
+      document.getElementById('counselInput').value = "";
+      document.getElementById('counselOutput').innerText = "상담 내용을 입력하고 [복지사정서 생성 및 핵심 항목 자동 추출] 버튼을 누르시면 표준 양식으로 정제됩니다.";
+      parsedSectionsMap = {};
+      localStorage.removeItem('welfare_counsel_memo_v40');
+      showToast("입력창을 비웠습니다.");
+    }
+
+    // ==========================================
+    // 5. 텍스트 파싱 및 표준 사정서 추출 엔진
     // ==========================================
     function parseAmountByPatterns(text, keywords) {
       for (var i = 0; i < keywords.length; i++) {
@@ -980,12 +1109,36 @@
       return null;
     }
 
+    function extractSectionText(text, headerRegex) {
+      var lines = text.split('\n');
+      var capturing = false;
+      var buffer = [];
+      for (var i = 0; i < lines.length; i++) {
+        var line = lines[i];
+        if (headerRegex.test(line)) {
+          capturing = true;
+          buffer.push(line);
+          continue;
+        }
+        if (capturing) {
+          if (/^■|^【|^\s*#{1,3}/.test(line) && !headerRegex.test(line)) {
+            break;
+          }
+          buffer.push(line);
+        }
+      }
+      return buffer.join('\n').trim();
+    }
+
     function parseCounselText(text) {
       var result = {};
+
+      // 1. 가구원수
       var memberMatch = text.match(/([1-6])\s*인\s*가구/);
       if (memberMatch) result.members = parseInt(memberMatch[1], 10);
       else if (text.indexOf("단독가구") !== -1 || text.indexOf("독거") !== -1 || text.indexOf("단독") !== -1) result.members = 1;
 
+      // 2. 연령 및 근로능력
       var ageMatch = text.match(/만\s*([0-9]{1,2})\s*세/) || text.match(/([0-9]{2})\s*년생/);
       var calcAge = null;
       if (ageMatch) {
@@ -999,12 +1152,18 @@
 
       if (calcAge !== null && calcAge >= 65) result.workAbility = "none";
       else if (text.indexOf("법정 무능력") !== -1 || text.indexOf("65세 이상") !== -1) result.workAbility = "none";
-      else if (text.indexOf("진단서") !== -1 || text.indexOf("협착증") !== -1 || text.indexOf("질환") !== -1 || text.indexOf("근로 불가") !== -1 || text.indexOf("장애") !== -1) result.workAbility = "illness";
+      else if (text.indexOf("간병") !== -1 || text.indexOf("양육") !== -1 || text.indexOf("유예") !== -1) result.workAbility = "care";
+      else if (text.indexOf("진단서") !== -1 || text.indexOf("협착증") !== -1 || text.indexOf("질환") !== -1 || text.indexOf("근로 불가") !== -1 || text.indexOf("장애") !== -1 || text.indexOf("관절염") !== -1) result.workAbility = "illness";
       else if (text.indexOf("근로능력 있음") !== -1 || text.indexOf("자활") !== -1) result.workAbility = "able";
 
-      if (text.indexOf("해체") !== -1 || text.indexOf("연락두절") !== -1 || text.indexOf("왕래두절") !== -1 || text.indexOf("단절") !== -1) result.support = "severed";
-      else if (text.indexOf("부양의무자 없음") !== -1 || text.indexOf("가족 없음") !== -1) result.support = "none";
+      // 3. 부양의무 상태
+      if (text.indexOf("해체") !== -1 || text.indexOf("연락두절") !== -1 || text.indexOf("왕래두절") !== -1 || text.indexOf("단절") !== -1 || text.indexOf("가출") !== -1 || text.indexOf("행방불명") !== -1) {
+        result.support = "severed";
+      } else if (text.indexOf("부양의무자 없음") !== -1 || text.indexOf("가족 없음") !== -1 || text.indexOf("부양의무자 무") !== -1) {
+        result.support = "none";
+      }
 
+      // 4. 소득 및 재산 파싱
       var resVal = parseAmountByPatterns(text, ["주거용재산", "보증금", "임차보증금", "전세금"]);
       if (resVal !== null) result.resProp = resVal;
       var genVal = parseAmountByPatterns(text, ["일반재산", "토지", "상가"]);
@@ -1021,41 +1180,31 @@
       return result;
     }
 
-    function loadBlankTemplate() {
-      document.getElementById('counselInput').value = 
-"■ 인적사항\n- 성명: \n- 가구원수: 1인 가구\n- 생년월일: 1958년생 (만 68세)\n- 연락처: \n\n■ 주거실태\n- 주거구분: 보증부월세 (보증금 1,000만 원 / 월 35만 원)\n- 임대차계약서 징구: 확인 완료\n\n■ 가구원 및 부양의무자\n- 가구원: 단독가구\n- 부양의무자: 자녀 1명 (10년 전 연락두절로 관계 해체 진술)\n\n■ 근로능력 및 소득·재산\n- 근로능력: 만 68세(법정 무능력), 만성질환으로 근로 불가\n- 월 소득: 근로소득 0만 원 / 기타소득 0만 원\n- 재산상황: 임차보증금 1,000만 원 / 통장잔액 120만 원 / 부채 없음\n- 보유차량: 없음\n\n■ 안내 및 특이사항\n- 신청희망: 기초생활보장(생계·주거·의료), 기초연금\n- 금융정보제공동의서 징구: 접수 완료";
-      showToast("표준 서식을 불러왔습니다.");
-      saveToLocalStorage();
-    }
-
-    function loadSampleTemplate() {
-      document.getElementById('counselInput').value = 
-"■ 인적사항\n- 성명: 이영희 (1960년생 / 만 66세 / 단독가구)\n- 연락처: 010-9876-5432\n\n■ 주거실태\n- 주거구분: 보증부월세 (보증금 500만 원 / 월 30만 원)\n- 주소지: 관내 일반 주택\n\n■ 가구원 및 부양의무자\n- 가구원: 1인 가구\n- 부양의무자: 아들 1명 (기혼/분가, 실질적 부양 거부 및 관계 단절)\n\n■ 근로능력 및 소득·재산\n- 근로능력: 만 66세 (법정 무능력 해당)\n- 월 소득: 소득 없음 (근로소득 0원, 사업소득 0원)\n- 재산상황: 주거보증금 500만 원, 금융재산 80만 원, 부채 없음\n- 보유차량: 없음\n\n■ 안내 및 특이사항\n- 신청희망사업: 국민기초생활보장(생계·의료·주거), 기초연금\n- 의료급여 부양의무자 기준: 지방생활보장위원회 가족관계 단절 심의 추진 요망\n- 금융정보제공동의서 징구 완료";
-      showToast("작성 예시를 불러왔습니다.");
-      saveToLocalStorage();
-    }
-
-    function clearCounselInput() {
-      document.getElementById('counselInput').value = "";
-      document.getElementById('counselOutput').innerText = "상담 내용을 입력하고 [일지 생성 및 핵심 항목 자동 추출] 버튼을 누르시면 표준 양식으로 정제됩니다.";
-      localStorage.removeItem('welfare_counsel_memo');
-      showToast("입력창을 비웠습니다.");
-    }
-
     function processCounseling() {
-      var text = document.getElementById('counselInput').value;
-      if (!text.trim()) {
+      var raw = document.getElementById('counselInput').value;
+      if (!raw.trim()) {
         showToast("상담 메모를 먼저 입력해주세요.");
         return;
       }
-      var formatted = 
-"【초기상담 및 복지욕구 사정서 (행정망 표준)】\n" +
-"작성일시: " + new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }) + "\n" +
-"접수창구: 주민센터 복지민원창구 내방상담\n\n" + text.trim();
 
-      document.getElementById('counselOutput').innerText = formatted;
-      var extracted = parseCounselText(text);
+      // 섹션별 텍스트 추출
+      var secBasic = extractSectionText(raw, /기본|인적/i) || "- 기본 인적사항 메모 참조";
+      secBasic = secBasic.replace(/^[-\s]*주호소.*(?:\r?\n|$)/gm, '').trim();
 
+      var secLife = extractSectionText(raw, /생활실태|위기상황|과거|현재|조달|체납|위기경위/i) || "- 생활실태 및 위기상황 사실조사 내역 확인";
+      var secProperty = extractSectionText(raw, /주거|소득|재산|건강/i) || "- 주거형태, 소득·재산 및 건강상태 확인";
+      var secSupport = extractSectionText(raw, /부양의무자|가족관계\s*해체|관계\s*단절|단절/i);
+      var secPlan = extractSectionText(raw, /신청\s*급여|신청\s*내용|신청/i) || "- 맞춤형 기초생활보장 등 복지급여 신청 접수";
+      secPlan = secPlan.replace(/^[-\s]*신청\s*사유.*(?:\r?\n|$)/gm, '').trim();
+
+      parsedSectionsMap['기본 인적사항'] = secBasic;
+      parsedSectionsMap['생활실태 및 생계위기'] = secLife;
+      parsedSectionsMap['소득재산 및 건강'] = secProperty;
+      parsedSectionsMap['가족관계 해체(단절) 사유'] = secSupport || "- 부양의무자 관계 해체 사유 없음 (일반 가구)";
+      parsedSectionsMap['신청 급여'] = secPlan;
+
+      // 파싱된 수치 모의계산 폼에 반영
+      var extracted = parseCounselText(raw);
       if (extracted.members) document.getElementById('simMembers').value = extracted.members;
       if (extracted.workAbility) document.getElementById('simWorkAbility').value = extracted.workAbility;
       if (extracted.support) document.getElementById('simSupportObligor').value = extracted.support;
@@ -1067,17 +1216,55 @@
       if (extracted.other !== undefined) document.getElementById('simOtherIncome').value = extracted.other;
 
       runSimulation();
+
+      var todayStr = new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
+      var report = 
+"========================================================\n" +
+"【초기상담 및 복지욕구 사정서 (행복e음 연계 표준양식)】\n" +
+"작성일자: " + todayStr + "  |  접수구분: 복지민원창구 내방·방문 사실조사\n" +
+"========================================================\n\n" +
+"1. 가구 기본 인적사항\n" +
+secBasic + "\n\n" +
+"2. 생활실태 및 생계위기 사실조사\n" +
+secLife + "\n\n" +
+"3. 주거실태 및 소득·재산·건강상황\n" +
+secProperty + "\n\n" +
+(secSupport ? ("4. 가족관계 해체(단절) 사유 조사\n" + secSupport + "\n\n") : "") +
+(secSupport ? "5. 공적 지원 모의판정 결과 요약 (2026 복지기준선 대조)\n" : "4. 공적 지원 모의판정 결과 요약 (2026 복지기준선 대조)\n") +
+"- 가구형태: " + document.getElementById('simMembers').value + "인 가구 (" + document.getElementById('simRegion').options[document.getElementById('simRegion').selectedIndex].text.split(' ')[0] + ")\n" +
+"- 예상 소득인정액: 월 " + document.getElementById('valBasicLife').innerText + "만 원\n" +
+"- 기초생보 판정: " + document.getElementById('badgeBasicLife').innerText + " (" + document.getElementById('detailBasicLife').innerText + ")\n" +
+"- 긴급복지 판정: " + document.getElementById('badgeEmergency').innerText + " (" + document.getElementById('detailEmergency').innerText + ")\n\n" +
+(secSupport ? "6. 신청 급여\n" : "5. 신청 급여\n") +
+secPlan + "\n\n" +
+"담당 상담공무원: 행정복지센터 맞춤형복지팀 (인)";
+
+      document.getElementById('counselOutput').innerText = report;
       saveToLocalStorage();
-      showToast("사정서 정제 및 핵심 항목이 자동 반영되었습니다!");
+      showToast("복지사정서가 정제되었습니다!");
     }
 
     function copyResultText() {
       var text = document.getElementById('counselOutput').innerText;
       navigator.clipboard.writeText(text).then(function() {
-        showToast("사정서 본문이 클립보드에 복사되었습니다.");
+        showToast("사정서 전체 본문이 클립보드에 복사되었습니다.");
       });
     }
 
+    function copySection(secKey) {
+      var content = parsedSectionsMap[secKey];
+      if (!content) {
+        showToast("먼저 [복지사정서 생성] 버튼을 눌러 항목을 정제해 주세요.");
+        return;
+      }
+      navigator.clipboard.writeText(content).then(function() {
+        showToast("[" + secKey + "] 내용이 복사되었습니다. 행복e음에 붙여넣으세요.");
+      });
+    }
+
+    // ==========================================
+    // 6. TAB 1 모의판정 산출 엔진 (2026 복지기준선)
+    // ==========================================
     function runSimulation() {
       var members = parseInt(document.getElementById('simMembers').value, 10) || 1;
       var region = document.getElementById('simRegion').value;
@@ -1137,9 +1324,9 @@
 
       document.getElementById('breakdownContent').innerHTML = 
         "<ul>" +
-          "<li><strong>기준중위소득:</strong> " + members + "인 가구 " + median + "만 원 (공제: " + baseDeduct + "만 원, 주거한도: " + resLimit + "만 원)</li>" +
-          "<li><strong>소득평가액:</strong> 근로소득(30% 공제 후) " + earnedDeducted + "만 + 기타 " + other + "만 = <strong>" + evalIncome + "만 원</strong></li>" +
-          "<li><strong>재산공제 순서:</strong> 주거용 " + actualRes + "만 ➔ 일반 " + actualGen + "만 ➔ 금융(생활공제 후) " + actualFin + "만 원</li>" +
+          "<li><strong>기준중위소득:</strong> " + members + "인 가구 " + median + "만 원 (공제액: " + baseDeduct + "만 원, 주거한도: " + resLimit + "만 원)</li>" +
+          "<li><strong>소득평가액:</strong> 근로소득(30% 공제 후) " + earnedDeducted + "만 + 기타소득 " + other + "만 = <strong>" + evalIncome + "만 원</strong></li>" +
+          "<li><strong>재산공제 순서:</strong> 주거용 " + actualRes + "만 ➔ 일반 " + actualGen + "만 ➔ 금융(500만 생활공제 후) " + actualFin + "만 원</li>" +
           "<li><strong>재산환산액:</strong> 주거용 " + propIncomeResidential + "만 + 일반 " + propIncomeGeneral + "만 + 금융 " + propIncomeFinancial + "만 + 차량100% " + propIncomeCar + "만 = <strong>월 " + totalPropIncome + "만 원</strong></li>" +
           "<li><strong>최종 소득인정액:</strong> 소득평가액(" + evalIncome + "만) + 재산환산액(" + totalPropIncome + "만) = <span style='color: #1d4ed8; font-weight:700;'>" + recognizedIncome + "만 원</span></li>" +
         "</ul>";
@@ -1152,28 +1339,34 @@
       var badgeBL = document.getElementById('badgeBasicLife');
       var cardBL = document.getElementById('cardBasicLife');
       var detailBL = document.getElementById('detailBasicLife');
+      var payoutBL = document.getElementById('estPayoutBasicLife');
 
       cardBL.className = "benefit-card";
       if (recognizedIncome <= liveStandard) {
         cardBL.classList.add("pass");
         badgeBL.className = "benefit-badge badge-pass";
         badgeBL.innerText = "생계·의료·주거 가능";
-        detailBL.innerText = "생계기준(" + liveStandard + "만) 충족. " + (workAbility === 'none' ? '근로무능력 충족' : '조건부 수급 대상');
+        var estPayout = Math.max(0, liveStandard - recognizedIncome);
+        payoutBL.innerText = "예상 생계비: 월 약 " + estPayout.toLocaleString() + "만 원 지급";
+        detailBL.innerText = "생계기준(" + liveStandard + "만) 충족. " + (workAbility === 'none' ? '근로무능력 충족' : (workAbility === 'care' ? '간병·양육 유예' : '조건부 수급 대상'));
       } else if (recognizedIncome <= medStandard) {
         cardBL.classList.add("conditional");
         badgeBL.className = "benefit-badge badge-conditional";
         badgeBL.innerText = "의료·주거 가능";
-        detailBL.innerText = "의료기준(" + medStandard + "만) 충족. " + (support === 'severed' ? '부양의무 해체심의 요망' : '부양조사진행');
+        payoutBL.innerText = "생계비 지급 없음 (소득기준 초과)";
+        detailBL.innerText = "의료기준(" + medStandard + "만) 충족. " + (support === 'severed' ? '★지생보 가족관계해체 심의 필수' : '부양의무자 조사 진행');
       } else if (recognizedIncome <= houseStandard) {
         cardBL.classList.add("conditional");
         badgeBL.className = "benefit-badge badge-conditional";
         badgeBL.innerText = "주거급여 가능";
-        detailBL.innerText = "주거기준(" + houseStandard + "만) 충족 (부양의무자 미적용)";
+        payoutBL.innerText = "주거급여(기준임대료 내) 지급 대상";
+        detailBL.innerText = "주거기준(" + houseStandard + "만) 충족 (부양의무자 기준 미적용)";
       } else {
         cardBL.classList.add("fail");
         badgeBL.className = "benefit-badge badge-fail";
         badgeBL.innerText = "기준 초과";
-        detailBL.innerText = "주거기준(" + houseStandard + "만) 초과로 선정 제외 예상";
+        payoutBL.innerText = "지급액 없음";
+        detailBL.innerText = "주거기준(" + houseStandard + "만) 초과로 기초생활보장 제외 예상";
       }
 
       var emergStandard = Math.round(median * POLICY_2026.standards.emergency);
@@ -1191,7 +1384,7 @@
         cardEm.classList.add("pass");
         badgeEm.className = "benefit-badge badge-pass";
         badgeEm.innerText = "긴급지원 충족";
-        detailEm.innerText = "실소득 " + totalRealIncome + "만(기준 " + emergStandard + "만) 및 순재산 요건 충족";
+        detailEm.innerText = "실소득 " + totalRealIncome + "만(기준 " + emergStandard + "만) & 순재산 요건 충족 (위기사유 동반 시 즉시 지원)";
       } else {
         cardEm.classList.add("fail");
         badgeEm.className = "benefit-badge badge-fail";
@@ -1210,7 +1403,7 @@
         cardNP.classList.add("pass");
         badgeNP.className = "benefit-badge badge-pass";
         badgeNP.innerText = "차상위 충족";
-        detailNP.innerText = "중위 50%(" + nearStandard + "만) 이하 충족";
+        detailNP.innerText = "중위 50%(" + nearStandard + "만) 이하 충족 (양곡할인·자활·의료경감 대상)";
       } else {
         cardNP.classList.add("fail");
         badgeNP.className = "benefit-badge badge-fail";
@@ -1236,7 +1429,7 @@
           cardBP.classList.add("pass");
           badgeBP.className = "benefit-badge badge-pass";
           badgeBP.innerText = "기초연금 수급가능";
-          detailBP.innerText = "소득인정액 " + bpTotal + "만 (선정기준 " + bpLimit + "만 이하)";
+          detailBP.innerText = "소득인정액 " + bpTotal + "만 (선정기준 " + bpLimit + "만 이하 충족)";
         } else {
           cardBP.classList.add("fail");
           badgeBP.className = "benefit-badge badge-fail";
@@ -1252,7 +1445,7 @@
     }
 
     // ==========================================
-    // TAB 2 차량 판정
+    // 8. TAB 2 차량 판정기
     // ==========================================
     function handleCarSelect() {
       var model = document.getElementById('carModelSelect').value;
@@ -1305,7 +1498,7 @@
         resBox.style.borderColor = '#86efac';
         resTitle.innerText = "✅ 감면 / 일반재산 환산율 (4.17%) 적용 가능";
         resTitle.style.color = '#15803d';
-        resDesc.innerText = "장애인용 차량 또는 생업용 화물차량 기준에 해당하여 100% 월소득 환산에서 전액 제외됩니다.";
+        resDesc.innerText = "장애인 직접운전/동승용 또는 생업용 화물차 기준에 해당하여 100% 월소득 환산에서 전액 제외됩니다.";
         lastEvaluatedCar = { isCutoff: false, price: price };
         return;
       }
@@ -1326,7 +1519,7 @@
         resBox.style.borderColor = '#fca5a5';
         resTitle.innerText = "⚠️ 100% 월소득 환산 대상 (수급 탈락 위험!)";
         resTitle.style.color = '#b91c1c';
-        resDesc.innerText = "배기량 " + cc + "cc, 차령 " + age + "년, 가액 " + price + "만 원으로 일반재산 환산 요건을 충족하지 못해 차량가액 전액(" + price + "만 원)이 매월 소득으로 100% 반영됩니다.";
+        resDesc.innerText = "배기량 " + cc + "cc, 차령 " + age + "년, 가액 " + price + "만 원으로 일반재산 요건을 충족하지 못해 차량가액 전액(" + price + "만 원)이 매월 소득으로 100% 반영됩니다.";
         lastEvaluatedCar = { isCutoff: true, price: price };
       }
     }
@@ -1350,7 +1543,7 @@
     }
 
     // ==========================================
-    // 3. 부동산 공시가격 검증 엔진 (없는 주소 엄격 차단)
+    // 9. TAB 2 부동산 공시가격 검증 엔진
     // ==========================================
     function ensureDaumScriptLoaded() {
       return new Promise(function(resolve, reject) {
@@ -1404,7 +1597,7 @@
             togglePropTypeUI();
 
             closeDaumPostcode();
-            showToast("주소가 정상 확인되었습니다. 동과 호수를 입력해 주세요.");
+            showToast("주소가 확인되었습니다. 동과 호수를 입력해 주세요.");
           },
           width: '100%',
           height: '100%'
@@ -1438,7 +1631,6 @@
       document.getElementById('officialAlimiTableWrap').style.display = 'none';
     }
 
-    // 핵심: 없는 주소 및 비공동주택 엄격 차단 검증 함수
     function lookupOfficialPriceDirect() {
       var addr = document.getElementById('propAddressInput').value.trim();
       var type = document.getElementById('propTypeSelect').value;
@@ -1449,7 +1641,6 @@
       var tableWrap = document.getElementById('officialAlimiTableWrap');
       var tableBody = document.getElementById('alimiTableBody');
 
-      // 1. 기본 입력 확인
       if (!addr) {
         showToast("먼저 [주소 검색]을 통해 주소를 입력해주세요.");
         return;
@@ -1459,7 +1650,7 @@
         return;
       }
 
-      // 2. 가짜 주소 / 비공동주택 엄격 검증 가드 (대구 남구 명덕로 200 등 차단)
+      // 비공동주택 차단 검증
       var isApartmentAddress = false;
       var buildingName = "";
 
@@ -1467,12 +1658,10 @@
         buildingName = lastPostalData.buildingName || "";
         isApartmentAddress = (lastPostalData.apartment === 'Y') || /아파트|맨션|타운|빌라|하이츠|파크드림|자이|푸르지오|래미안|힐스|더샵/i.test(buildingName);
       } else {
-        // 주소 텍스트 기반 2차 검증
         buildingName = document.getElementById('propBuildingNameDisplay').innerText;
         isApartmentAddress = /아파트|맨션|타운|빌라|하이츠|파크드림|자이|푸르지오|래미안|힐스|더샵/i.test(addr) || /아파트|맨션|타운|빌라/i.test(buildingName);
       }
 
-      // '대구 남구 명덕로 200'과 같이 건축물대장상 공동주택이 아닌 경우 즉시 차단
       if (type === 'apt' && !isApartmentAddress) {
         currentCalculatedPriceMan = 0;
         document.getElementById('propManualPriceMan').value = "";
@@ -1485,20 +1674,20 @@
         noticeBox.style.color = '#991b1b';
 
         noticeBox.innerHTML = 
-          "<div style='font-weight: 800; font-size: 14px; margin-bottom: 6px;'>❌ 조회 불가: 건축물대장상 공동주택(아파트)이 아닌 주소</div>" +
-          "<div style='font-size: 13px; line-height: 1.6; margin-bottom: 8px;'>" +
+          "<div style='font-weight: 800; font-size: 13.5px; margin-bottom: 6px;'>❌ 조회 불가: 건축물대장상 공동주택(아파트)이 아닌 주소</div>" +
+          "<div style='font-size: 12.5px; line-height: 1.6; margin-bottom: 8px;'>" +
             "<strong>입력 주소:</strong> " + addr + " (" + dong + " " + ho + ")<br>" +
             "<strong>사유:</strong> 해당 주소는 건축물대장에 아파트·연립·다세대로 등록되지 않은 단독/상가/기관 부지이므로 동·호수 공시가격을 조회할 수 없습니다." +
           "</div>" +
-          "<div style='font-size: 12px; background-color: #ffffff; padding: 8px 12px; border-radius: 6px; border: 1px solid #fecaca; color: #b91c1c;'>" +
+          "<div style='font-size: 11.5px; background-color: #ffffff; padding: 8px 12px; border-radius: 6px; border: 1px solid #fecaca; color: #b91c1c;'>" +
             "💡 <strong>안내:</strong> 상단 [🔍 주소 검색] 버튼을 눌러 실제 아파트 명칭이 포함된 정규 도로명 주소를 선택해 주세요." +
           "</div>";
 
-        showToast("공동주택으로 등록되지 않은 주소입니다. 다시 확인해 주세요.");
+        showToast("공동주택으로 등록되지 않은 주소입니다.");
         return;
       }
 
-      // 3. 등록된 실측 검증 단지(상인화성, 시지대백 등) 매칭
+      // 대표 실측 검증 단지 대조
       var matchedKey = null;
       for (var k in REGISTERED_ACCURATE_DB) {
         var complex = REGISTERED_ACCURATE_DB[k];
@@ -1514,7 +1703,6 @@
       if (matchedKey) {
         var resolved = REGISTERED_ACCURATE_DB[matchedKey].validateAndResolve(dong, ho);
 
-        // 없는 동·호수일 때: 절대 가짜 가격을 계산하지 않고 차단
         if (!resolved.valid) {
           currentCalculatedPriceMan = 0;
           document.getElementById('propManualPriceMan').value = "";
@@ -1527,19 +1715,15 @@
           noticeBox.style.color = '#991b1b';
 
           noticeBox.innerHTML = 
-            "<div style='font-weight: 800; font-size: 14px; margin-bottom: 6px;'>❌ 실제 건축물대장에 존재하지 않는 세대 (조회 불가)</div>" +
-            "<div style='font-size: 13px; line-height: 1.6; margin-bottom: 8px;'>" +
+            "<div style='font-weight: 800; font-size: 13.5px; margin-bottom: 6px;'>❌ 실제 건축물대장에 존재하지 않는 세대 (조회 불가)</div>" +
+            "<div style='font-size: 12.5px; line-height: 1.6; margin-bottom: 8px;'>" +
               "<strong>입력 세대:</strong> " + addr + " " + dong + " " + ho + "<br>" +
               "<strong>차단 사유:</strong> " + resolved.error +
-            "</div>" +
-            "<div style='font-size: 12px; background-color: #ffffff; padding: 8px 12px; border-radius: 6px; border: 1px solid #fecaca; color: #b91c1c;'>" +
-              "💡 <strong>안내:</strong> 해당 단지의 실제 거주 동·호수를 건축물대장 또는 등본에서 재확인해 주세요." +
             "</div>";
           showToast("해당 단지에 존재하지 않는 동·호수입니다.");
           return;
         }
 
-        // 실존 세대 검증 완료: 실측 100% 매칭 표출
         var priceMan = resolved.priceMan;
         var area = resolved.area;
         document.getElementById('propBuildingNameDisplay').innerText = resolved.complexName;
@@ -1565,16 +1749,16 @@
 
         noticeBox.innerHTML = 
           "<div style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;'>" +
-            "<span style='font-weight: 800; font-size: 14px; color: #15803d;'>✅ 국토교통부 공시가격 100% 실측 일치 확인</span>" +
+            "<span style='font-weight: 800; font-size: 13.5px; color: #15803d;'>✅ 국토교통부 공시가격 100% 실측 일치 확인</span>" +
             "<span style='font-size: 11px; background-color: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 4px; font-weight: 700;'>" + resolved.tag + "</span>" +
           "</div>" +
           "<div style='font-size: 12px; margin-bottom: 6px; color: #374151;'>" +
             "<strong>확인 세대:</strong> [" + resolved.complexName + "] " + addr + " " + resolved.dong + "동 " + resolved.ho + "호 (전용 " + area.toFixed(2) + "㎡)" +
           "</div>" +
-          "<div style='display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; padding: 8px 12px; background-color: #ffffff; border-radius: 6px; border: 1px solid #bbf7d0;'>" +
+          "<div style='display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; padding: 7px 11px; background-color: #ffffff; border-radius: 6px; border: 1px solid #bbf7d0;'>" +
             "<span style='font-size: 12px; color: #4b5563;'>결정 공시가격:</span>" +
-            "<strong style='font-size: 18px; color: #1d4ed8;'>" + priceMan.toLocaleString() + "만 원</strong>" +
-            "<span style='font-size: 13px; color: #059669; font-weight: 700;'>(" + formatKoreanMoneyFromMan(priceMan) + ")</span>" +
+            "<strong style='font-size: 17px; color: #1d4ed8;'>" + priceMan.toLocaleString() + "만 원</strong>" +
+            "<span style='font-size: 12.5px; color: #059669; font-weight: 700;'>(" + formatKoreanMoneyFromMan(priceMan) + ")</span>" +
           "</div>" +
           "<div style='display: flex; gap: 8px;'>" +
             "<button class='btn btn-success btn-sm' style='flex: 1; padding: 8px; font-weight: 700;' onclick=\"applyToTab1('res')\">" +
@@ -1589,7 +1773,7 @@
         return;
       }
 
-      // 4. 내장 DB 외 전국 일반 아파트: 가짜 추정식을 일절 계산하지 않고 안전한 국토부 공식 열람 모드로 제공
+      // 전국 일반 아파트 열람 모드
       currentCalculatedPriceMan = 0;
       updateCalculatedPrice(0);
       tableWrap.style.display = 'none';
@@ -1600,10 +1784,10 @@
       noticeBox.style.color = '#1e3a8a';
 
       noticeBox.innerHTML = 
-        "<div style='font-weight: 800; font-size: 14px; margin-bottom: 6px;'>🏛️ 국토교통부 공동주택가격 알리미 공식 열람 안내</div>" +
-        "<div style='font-size: 13px; line-height: 1.6; margin-bottom: 10px;'>" +
+        "<div style='font-weight: 800; font-size: 13.5px; margin-bottom: 6px;'>🏛️ 국토교통부 공동주택가격 알리미 공식 열람 안내</div>" +
+        "<div style='font-size: 12.5px; line-height: 1.6; margin-bottom: 10px;'>" +
           "확인된 아파트: <strong>" + (buildingName || addr) + " " + dong + " " + ho + "</strong><br>" +
-          "행정망 안전 지침에 따라 가짜 추정 가격을 계산하지 않습니다. 하단 <strong>[공식 열람창 열기]</strong>를 누르시면 주소가 자동 복사되어 1초 만에 정부 결정 공시가격을 확인하실 수 있습니다.<br>" +
+          "행정망 안전 지침에 따라 가짜 추정 가격을 계산하지 않습니다. 하단 <strong>[공식 열람창 열기]</strong>를 누르시면 주소가 자동 복사되어 정부 결정 공시가격을 즉시 확인하실 수 있습니다.<br>" +
           "확인하신 금액을 아래 [공시가격 직접 수정] 칸에 넣으시면 1번 탭 복지 모의판정기에 즉시 반영됩니다." +
         "</div>" +
         "<div style='display: flex; gap: 8px;'>" +
@@ -1612,7 +1796,7 @@
           "</button>" +
         "</div>";
 
-      showToast("정확한 판정을 위해 국토부 알리미 공식 열람을 진행해 주세요.");
+      showToast("국토부 알리미 공식 열람을 진행해 주세요.");
     }
 
     function updateCalculatedPrice(manVal) {
@@ -1687,10 +1871,12 @@
       showToast("주소 복사 완료 후 국토교통부 열람창을 열었습니다.");
     }
 
-    // LocalStorage 보존
+    // ==========================================
+    // 10. LocalStorage 영구 보존 및 초기화
+    // ==========================================
     function saveToLocalStorage() {
       var text = document.getElementById('counselInput').value;
-      localStorage.setItem('welfare_counsel_memo', text);
+      localStorage.setItem('welfare_counsel_memo_v40', text);
     }
 
     document.getElementById('counselInput').addEventListener('input', function() {
@@ -1698,8 +1884,13 @@
     });
 
     window.addEventListener('DOMContentLoaded', function() {
-      var savedMemo = localStorage.getItem('welfare_counsel_memo');
-      if (savedMemo) document.getElementById('counselInput').value = savedMemo;
+      var savedMemo = localStorage.getItem('welfare_counsel_memo_v40');
+      if (savedMemo) {
+        savedMemo = savedMemo.replace(/^[-\s]*신청\s*사유.*(?:\r?\n|$)/gm, '').trim();
+        document.getElementById('counselInput').value = savedMemo;
+      } else {
+        loadBlankTemplate();
+      }
       runSimulation();
     });
   </script>
