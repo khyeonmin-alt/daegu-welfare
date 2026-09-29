@@ -57,7 +57,6 @@
       letter-spacing: -0.2px;
     }
 
-    /* 시인성 극대화 상단 네비게이션 탭 */
     .nav-tabs {
       display: flex;
       gap: 10px;
@@ -509,8 +508,8 @@
           <div>
             <label>거주 지역 (법정 기본재산공제/주거한도)</label>
             <select id="simRegion" onchange="runSimulation()">
-              <option value="daegu" selected>대구광역시 구 지역 (공제 7,700만원 / 주거한도 1.46억)</option>
-              <option value="gunwi">대구광역시 군위군 (군지역 공제 5,300만원 / 주거한도 1.12억)</option>
+              <option value="daegu" selected>대구광역시 구(區) 지역 (공제 7,700만원 / 주거한도 1.46억)</option>
+              <option value="gunwi">대구광역시 군위군·달성군 (군지역 공제 5,300만원 / 주거한도 1.12억)</option>
               <option value="seoul">서울특별시 (공제 9,900만원 / 주거한도 1.72억)</option>
               <option value="gyeonggi">경기도 (공제 8,000만원 / 주거한도 1.51억)</option>
             </select>
@@ -658,7 +657,6 @@
     <!-- ==================== TAB 2: 차량 소득인정액 & 부동산 공시가 ==================== -->
     <div id="tab-vehicle" class="tab-content">
       
-      <!-- 차량 소득인정액 원스톱 판정기 -->
       <div class="card">
         <div class="card-header">
           <div class="card-title">🚗 차량 소득인정액 원스톱 판정기 (2026 복지부 법정 기준)</div>
@@ -672,7 +670,6 @@
           </div>
         </div>
 
-        <!-- 모델 프리셋 및 제원 입력 폼 -->
         <div class="field-row">
           <div style="flex: 1.4;">
             <label style="color: #1d4ed8; font-weight: 700;">차명 / 모델 프리셋 (선택 시 제원·가액 자동 산출)</label>
@@ -699,7 +696,6 @@
           <div>
             <label>등록연도 (연식) <span style="color:#ef4444; font-weight:700;">*10년 기준</span></label>
             <select id="carYear" onchange="handleYearChange()" style="font-weight: 700; border-color: #3b82f6; height: 38px;">
-              <!-- 2026 ~ 2000 자동 생성 -->
             </select>
           </div>
           <div>
@@ -708,7 +704,6 @@
           </div>
         </div>
 
-        <!-- 가액 단독 입력 영역 (자동 산정 및 직접 수정 지원) -->
         <div class="field-row" style="background-color: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid #cbd5e1;">
           <div style="width: 100%;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
@@ -721,7 +716,6 @@
           </div>
         </div>
 
-        <!-- 법정 판정 3대 핵심 조건 -->
         <div class="field-row" style="background-color: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; margin-top: 10px;">
           <div>
             <label style="color: #1e3a8a;">① 차종 구분</label>
@@ -760,7 +754,6 @@
           </button>
         </div>
 
-        <!-- 판정 결과 카드 -->
         <div id="carResultBox" style="margin-top: 16px; display: none; padding: 18px; border-radius: 8px; border: 1px solid #cbd5e1;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <div id="carResultTitle" style="font-weight: 800; font-size: 16px;"></div>
@@ -788,7 +781,6 @@
         </div>
       </div>
 
-      <!-- 부동산 공시가격 검증기 -->
       <div class="card">
         <div class="card-header">
           <div class="card-title">🏠 부동산 공시가격 확인 및 재산가액 산정</div>
@@ -851,10 +843,8 @@
               </div>
             </div>
 
-            <!-- 상태 안내 박스 -->
             <div id="propStatusNotice" style="margin-top: 12px; display: none; padding: 14px; border-radius: 8px; font-size: 13px; line-height: 1.6;"></div>
 
-            <!-- 공시가격 미세 수정 및 입력 -->
             <div style="margin-top: 14px; padding: 14px; background-color: #f8fafc; border-radius: 8px; border: 1px solid #cbd5e1;">
               <label style="font-weight: 700; color: #1e293b;">공시가격 직접 수정 / 미세 조정 (만 원 단위)</label>
               <div style="display: flex; gap: 8px; margin-bottom: 8px;">
@@ -872,7 +862,6 @@
 
           </div>
 
-          <!-- 결과 카드 -->
           <div>
             <div class="benefit-card" style="border: 2px solid #bfdbfe; background-color: #f8fafc; padding: 18px; margin-bottom: 14px;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -894,7 +883,6 @@
                 [🔍 주소 검색]을 통해 정규 도로명 주소를 선택한 후 조회해 주세요.
               </div>
 
-              <!-- 국토교통부 알리미 공식 열람 표 -->
               <div id="officialAlimiTableWrap" style="display: none; margin-top: 8px;">
                 <div style="font-size: 11px; font-weight: 700; color: #334155; margin-bottom: 4px;">📋 국토교통부 알리미 공식 열람 형식</div>
                 <table class="table-alimi">
@@ -941,7 +929,6 @@
     </div>
   </div>
 
-  <!-- 우편번호 모달 -->
   <div id="postcodeModal" class="modal-backdrop">
     <div class="modal-card">
       <div class="modal-header">
@@ -956,21 +943,21 @@
 
   <script>
     // ==========================================
-    // 1. 2026년 법정 기준 상수 (대구광역시 중심 정밀 보정)
+    // 1. 2026년 법정 기준 상수 (대구 구 지역 vs 군위군·달성군 군 지역 명확화)
     // ==========================================
     var POLICY_2026 = {
       medianIncome: { 1: 256.4, 2: 419.9, 3: 535.9, 4: 649.5, 5: 755.7, 6: 855.6, 7: 951.5 },
-      // 대구(광역시) 7,700만 / 군위군(군지역) 5,300만 / 서울 9,900만 / 경기 8,000만
+      // 대구 구 지역 7,700만 / 군위군·달성군(농어촌·군지역) 5,300만 / 서울 9,900만 / 경기 8,000만
       baseDeduction: { daegu: 7700, gunwi: 5300, seoul: 9900, gyeonggi: 8000 },
-      // 주거용재산 한도: 대구 1억 4,600만 / 군위군 1억 1,200만 / 서울 1억 7,200만 / 경기 1억 5,100만
+      // 주거용재산 한도: 대구 구 지역 1억 4,600만 / 군위군·달성군 1억 1,200만 / 서울 1억 7,200만 / 경기 1억 5,100만
       residentialLimit: { daegu: 14600, gunwi: 11200, seoul: 17200, gyeonggi: 15100 },
       rates: { residential: 0.0104, general: 0.0417, financial: 0.0626, car: 1.0 },
       financialDeduction: 500,
       standards: { livelihood: 0.32, medical: 0.40, housing: 0.48, nearPoverty: 0.50, emergency: 0.75 },
-      // 긴급지원 재산한도: 대구 2억 4,100만 / 군위군 1억 6,500만 / 서울 3억 1,000만
+      // 긴급지원 재산한도: 대구 구 지역 2억 4,100만 / 군위군·달성군 1억 6,500만 / 서울 3억 1,000만
       emergencyAssetLimit: { daegu: 24100, gunwi: 16500, seoul: 31000, gyeonggi: 24100 },
       basicPensionLimit: { single: 213, couple: 340.8 },
-      // 기초연금 기본재산공제: 대구(대도시) 1억 3,500만 / 군위군 7,250만
+      // 기초연금 기본재산공제: 대구 구 지역(대도시) 1억 3,500만 / 군위군·달성군(농어촌) 7,250만
       basicPensionBaseDeduct: { daegu: 13500, gunwi: 7250, seoul: 13500, gyeonggi: 13500 },
       basicPensionEarnedDeduct: 116,
       dalgubeol: {
@@ -980,7 +967,6 @@
       }
     };
 
-    // 실무 다빈도 차종 사전 (대표 출고가 기준)
     var POPULAR_CARS_DB = {
       "morning": { name: "모닝 / 레이 (경차)", cc: 998, newPrice: 1350, type: "sedan" },
       "spark":   { name: "스파크 (경차)", cc: 999, newPrice: 1250, type: "sedan" },
@@ -996,7 +982,6 @@
       "starex":  { name: "스타리아 / 스타렉스 (승합)", cc: 2199, newPrice: 3100, type: "van_small" }
     };
 
-    // 2026 복지부·행안부 감가상각 잔가율 (차령 0년 ~ 15년 이상)
     var RESIDUAL_RATES_2026 = {
       0: 0.82, 1: 0.70, 2: 0.58, 3: 0.48, 4: 0.40,
       5: 0.32, 6: 0.25, 7: 0.20, 8: 0.16, 9: 0.13,
@@ -1085,9 +1070,6 @@
       showToast("차량 입력창이 초기화되었습니다.");
     }
 
-    // ==========================================
-    // 2. 차량 법정 기준 판정 및 월 소득인정액 산출
-    // ==========================================
     function calculateCarWelfare() {
       var cc = parseInt(document.getElementById('carDisplacement').value, 10) || 0;
       var year = parseInt(document.getElementById('carYear').value, 10) || 2026;
@@ -1116,7 +1098,6 @@
       resBox.style.display = 'block';
       totalValDiv.innerText = price.toLocaleString() + " 만 원";
 
-      // 1. 등록 장애인 가구 특례 (전액 재산 제외)
       if (household === 'disabled') {
         var isUnderDisLimit = (category === 'sedan' && cc < 2000) ||
                               (category === 'sedan7' && cc <= 2500) ||
@@ -1133,12 +1114,11 @@
           resBadge.innerText = "소득인정액 0원 산입";
           monthlyValDiv.innerText = "0 만 원 / 월 (전액 제외)";
           monthlyValDiv.style.color = '#15803d';
-          resDesc.innerHTML = "• <strong>법정 근거:</strong> 등록 장애인 본인 또는 주민등록표상 생계를 같이하는 세대원이 소유한 차량 1대(2,000cc 미만 승용, 15인승 이하 승합, 1톤 이하 화물 등) 기준을 충족합니다.<br>• <strong>판정 결과:</strong> 사회보장 차량가액 전액이 재산 산정에서 제외되어 <strong>월 소득인정액에 0원(미반영)</strong> 처리됩니다.";
+          resDesc.innerHTML = "• <strong>법정 근거:</strong> 등록 장애인 본인 또는 주민등록표상 생계를 같이하는 세대원이 소유한 차량 1대 기준을 충족합니다.<br>• <strong>판정 결과:</strong> 사회보장 차량가액 전액이 재산 산정에서 제외되어 <strong>월 소득인정액에 0원(미반영)</strong> 처리됩니다.";
           return;
         }
       }
 
-      // 2. 생업용 차량 특례 (50% 감면 + 잔여 50%에 대해 일반재산 4.17%)
       if (usage === 'business') {
         var isBusinessEligible = (category === 'truck_small') || 
                                  (category === 'truck_large') || 
@@ -1159,12 +1139,11 @@
           resBadge.innerText = "일반재산 4.17% (50% 감면)";
           monthlyValDiv.innerText = "약 " + monthlyIncome.toLocaleString() + " 만 원 / 월";
           monthlyValDiv.style.color = '#15803d';
-          resDesc.innerHTML = "• <strong>법정 근거:</strong> 화물·승합 또는 1,600cc 미만 생업용 차량으로서 소득활동에 직접 사용됨을 확인받았습니다.<br>• <strong>계산 방식:</strong> 차량가액 " + price.toLocaleString() + "만 원 중 <strong>50% 감면</strong> 후 잔여 <strong>" + halfAsset.toLocaleString() + "만 원만 일반재산(월 4.17%)</strong>으로 반영됩니다.<br>• <strong>월 소득인정액 산입액:</strong> 월 약 <strong>" + monthlyIncome.toLocaleString() + "만 원</strong> (100% 월소득 컷오프 방지)";
+          resDesc.innerHTML = "• <strong>법정 근거:</strong> 화물·승합 또는 1,600cc 미만 생업용 차량으로서 소득활동에 직접 사용됨을 확인받았습니다.<br>• <strong>계산 방식:</strong> 차량가액 " + price.toLocaleString() + "만 원 중 <strong>50% 감면</strong> 후 잔여 <strong>" + halfAsset.toLocaleString() + "만 원만 일반재산(월 4.17%)</strong>으로 반영됩니다.<br>• <strong>월 소득인정액 산입액:</strong> 월 약 <strong>" + monthlyIncome.toLocaleString() + "만 원</strong>";
           return;
         }
       }
 
-      // 3. 다인/다자녀 가구 완화 기준
       if (household === 'large_family') {
         var isLargeFamilyCar = (cc < 2500) || (category === 'sedan7') || (category === 'van_small') || (category === 'truck_small');
         var isAgeOrPriceRelaxed = (isOver10 || price < 500);
@@ -1181,12 +1160,11 @@
           resBadge.innerText = "일반재산 4.17% 적용";
           monthlyValDiv.innerText = "약 " + monthlyIncome.toLocaleString() + " 만 원 / 월";
           monthlyValDiv.style.color = '#15803d';
-          resDesc.innerHTML = "• <strong>법정 근거:</strong> 다인(3인 이상) 또는 다자녀(2자녀 이상) 가구 완화 기준[2,500cc 미만 승용 또는 7인승 이상/승합/화물로서 차령 10년 이상 또는 가액 500만원 미만]을 충족합니다.<br>• <strong>계산 방식:</strong> 차량가액 " + price.toLocaleString() + "만 원이 일반재산(월 4.17%)으로 합산됩니다.<br>• <strong>월 소득인정액 산입액:</strong> 월 약 <strong>" + monthlyIncome.toLocaleString() + "만 원</strong>";
+          resDesc.innerHTML = "• <strong>법정 근거:</strong> 다인(3인 이상) 또는 다자녀(2자녀 이상) 가구 완화 기준을 충족합니다.<br>• <strong>계산 방식:</strong> 차량가액 " + price.toLocaleString() + "만 원이 일반재산(월 4.17%)으로 합산됩니다.<br>• <strong>월 소득인정액 산입액:</strong> 월 약 <strong>" + monthlyIncome.toLocaleString() + "만 원</strong>";
           return;
         }
       }
 
-      // 4. 일반 가구 완화 기준 (1,600cc 미만 & 10년 이상 OR 차량가액 200만 원 미만)
       var isStandardGeneralSedan = (category === 'sedan' && cc < 1600 && isOver10);
       var isStandardGeneralSmallVanTruck = ((category === 'van_small' || category === 'truck_small') && isOver10);
 
@@ -1208,7 +1186,6 @@
         return;
       }
 
-      // 5. 완화 기준 미충족: 100% 월소득 환산 (수급 탈락 위험)
       evaluatedCarResult = { ruleType: "cutoff", price: price, applicableAssetVal: 0, monthlyIncomeVal: price, isCutoff: true };
 
       resBox.style.backgroundColor = '#fef2f2';
@@ -1220,7 +1197,7 @@
       monthlyValDiv.innerText = price.toLocaleString() + " 만 원 / 월";
       monthlyValDiv.style.color = '#b91c1c';
 
-      resDesc.innerHTML = "• <strong>판정 사유:</strong> 배기량 " + cc + "cc, 차령 " + age + "년, 가액 " + price.toLocaleString() + "만 원으로 [1,600cc 미만 & 10년 이상] 또는 [가액 200만원 미만] 완화 기준을 충족하지 못했습니다.<br>• <strong>치명적 결과:</strong> 차량가액 전액인 <strong>" + price.toLocaleString() + "만 원이 매월 소득으로 100% 반영</strong>되어 생계·의료·주거급여 수급 기준선을 즉시 초과할 위험이 매우 높습니다.<br>• <strong>실무 대응:</strong> 명의 이전, 생업용 증빙 확보(사업자등록·영업소득), 폐차 여부를 사전에 반드시 상담하시기 바랍니다.";
+      resDesc.innerHTML = "• <strong>판정 사유:</strong> 배기량 " + cc + "cc, 차령 " + age + "년, 가액 " + price.toLocaleString() + "만 원으로 완화 기준을 충족하지 못했습니다.<br>• <strong>결과:</strong> 차량가액 전액인 <strong>" + price.toLocaleString() + "만 원이 매월 소득으로 100% 반영</strong>되어 기준선을 초과할 위험이 높습니다.<br>• <strong>실무 대응:</strong> 명의 이전, 생업용 증빙 확보(사업자등록·영업소득), 폐차 여부를 사전에 반드시 검토하세요.";
     }
 
     function applyCarToSimulation() {
@@ -1247,9 +1224,6 @@
       runSimulation();
     }
 
-    // ==========================================
-    // 3. 상담 및 모의계산 로직 (TAB 1)
-    // ==========================================
     function switchTab(tabId) {
       var contents = document.querySelectorAll('.tab-content');
       for (var i = 0; i < contents.length; i++) contents[i].classList.remove('active');
@@ -1728,9 +1702,6 @@
         "</ul>";
     }
 
-    // ==========================================
-    // 4. 부동산 공시가격 검증 엔진
-    // ==========================================
     var REGISTERED_ACCURATE_DB = {
       "sangin_hwaseong_2": {
         matchPatterns: ["송현로7길 9", "상인화성파크드림2단지", "상인동 1596"],
