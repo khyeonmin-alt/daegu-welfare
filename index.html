@@ -630,65 +630,73 @@
       <!-- 차량가액 및 월 소득인정액 정밀 판정기 -->
       <div class="card">
         <div class="card-header">
-          <div class="card-title">🚗 복지 소득인정액 원스톱 판정기 (국토부 법정 번호판 분류 &amp; 모델 DB 연동)</div>
-          <span style="font-size: 12px; color: #475569;">2026 복지부 감가상각 잔가율 공식 완벽 적용</span>
+          <div class="card-title">🚗 차량 소득인정액 원스톱 판정기 (공식 기관 원클릭 연동 &amp; 2026 잔가율 산출)</div>
+          <span style="font-size: 12px; color: #475569;">신뢰도 100% 실무 연계형 소득인정액 계산기</span>
         </div>
 
-        <!-- 1단계: 차량번호 입력 및 법정 분류기 -->
-        <div style="background-color: #f1f5f9; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
-          <label style="color: #1e293b; font-size: 13px; font-weight: 800; margin-bottom: 6px;">
-            1단계: 차량번호 입력 (국토교통부 등록체계 법정 차종·용도 즉시 분석)
+        <!-- 1단계: 번호판 법정 분류 & 공식 기관 원클릭 딥링크 -->
+        <div style="background-color: #eff6ff; border: 1.5px solid #3b82f6; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+          <label style="color: #1e40af; font-size: 13px; font-weight: 800; margin-bottom: 6px;">
+            1단계: 차량번호 입력 및 정부/공식기관 차량원부·기준가액 원클릭 열람
           </label>
-          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <div style="flex: 1; min-width: 260px;">
-              <input type="text" id="carPlateInput" placeholder="예: 12가 3456 또는 123가 4567 (지역표기 구형번호도 가능)" style="font-size: 15px; font-weight: 800; border-color: #3b82f6; height: 42px;" onkeydown="if(event.key==='Enter') executeSmartVehicleLookup()">
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;">
+            <div style="flex: 1.5; min-width: 240px;">
+              <input type="text" id="carPlateInput" placeholder="예: 12가 3456 또는 123가 4567" style="font-size: 15px; font-weight: 800; border-color: #2563eb; height: 42px;" oninput="syncPlateClassification()">
             </div>
-            <button class="btn btn-primary" onclick="executeSmartVehicleLookup()" style="padding: 0 24px; font-size: 14px; font-weight: 800; height: 42px;">
-              ⚡ 번호판 법정 분석
+            <button class="btn btn-primary" onclick="openOfficialPortal('kidi')" style="padding: 0 16px; font-size: 13px; font-weight: 700; height: 42px;">
+              📋 번호복사 + 보험개발원 차량기준가액 열람
+            </button>
+            <button class="btn btn-outline" onclick="openOfficialPortal('car365')" style="padding: 0 16px; font-size: 13px; font-weight: 700; height: 42px; background-color: #ffffff;">
+              🚗 자동차365(국토부) 원부 열람
             </button>
           </div>
-          <div id="plateNotice" style="font-size: 12px; color: #1e40af; margin-top: 8px; font-weight: 600;">
-            💡 차량번호를 입력하면 국토교통부 자동차관리법에 따라 [법정 차종(승용/승합/화물)] 및 [용도(자가용/영업용)]가 100% 자동 지정됩니다.
+          <div id="plateNoticeText" style="font-size: 12px; color: #1e3a8a; line-height: 1.6;">
+            💡 번호판을 입력하고 조회 버튼을 누르면 <strong>차량번호가 클립보드에 자동 복사</strong>된 채 공식 열람창이 새 탭으로 열립니다. 공공 전산망에서 확인된 가액이나 배기량을 아래 2단계에 입력해 주세요.
           </div>
         </div>
 
-        <!-- 2단계: 차명 검색 및 세부 제원 자동완성 -->
-        <div style="margin-bottom: 14px;">
-          <label style="font-size: 13px; font-weight: 800; color: #1d4ed8;">
-            2단계: 차명(모델명) 검색 &amp; 등록연도 선택 (글자를 입력하면 실존 차종이 자동 추천됩니다)
+        <!-- 2단계: 차량 제원 및 기준가액 입력/자동산출 -->
+        <div style="margin-bottom: 10px;">
+          <label style="font-size: 13px; font-weight: 800; color: #0f172a;">
+            2단계: 차량 세부 제원 및 가액 입력 (공식 가액 직접입력 또는 출고가 기준 잔가율 자동산출)
           </label>
         </div>
 
         <div class="field-row">
-          <div style="flex: 1.5;">
-            <label>차명 / 모델명 검색 <span style="color:#1d4ed8; font-weight:700;">[자동완성 지원]</span></label>
-            <input type="text" id="carModelName" list="vehicleMasterList" placeholder="예: 아반떼, 모닝, 쏘나타, 카니발, 포터, 스포티지 등 입력" oninput="handleModelSelect(this.value)" style="font-weight: 700; color: #0f172a; border-color: #3b82f6; height: 38px;">
-            <datalist id="vehicleMasterList">
-              <!-- JS에서 마스터 DB 기반 자동 생성 -->
-            </datalist>
-          </div>
-          <div style="flex: 0.8;">
-            <label>배기량 (cc) <span style="color:#1d4ed8; font-weight:700;">[자동입력]</span></label>
-            <input type="number" id="carDisplacement" placeholder="예: 1598" oninput="calculateCarWelfare()" style="background-color: #ffffff; font-weight: 600; height: 38px;">
+          <div style="flex: 1.3;">
+            <label>차명 / 모델명</label>
+            <input type="text" id="carModelName" placeholder="예: 아반떼, 모닝, 쏘나타 등" style="font-weight: 700;">
           </div>
           <div style="flex: 0.9;">
-            <label>등록연도 (연식) <span style="color:#1d4ed8; font-weight:700;">*선택</span></label>
-            <select id="carYear" onchange="handleYearChange()" style="font-weight: 700; height: 38px; border-color: #3b82f6;">
-              <!-- 2026 ~ 2005 자동 생성 -->
+            <label>배기량 (cc) <span style="color:#ef4444; font-weight:700;">*핵심</span></label>
+            <input type="number" id="carDisplacement" placeholder="예: 1598" oninput="calculateCarWelfare()" style="font-weight: 700; border-color: #3b82f6;">
+          </div>
+          <div style="flex: 1;">
+            <label>등록연도 (연식) <span style="color:#ef4444; font-weight:700;">*선택</span></label>
+            <select id="carYear" onchange="handleYearOrNewPriceChange()" style="font-weight: 700; border-color: #3b82f6; height: 38px;">
+              <!-- 2026 ~ 2000 자동 생성 -->
             </select>
           </div>
           <div style="flex: 0.8;">
             <label>차령 (자동계산)</label>
             <input type="text" id="carAgeDisplay" placeholder="차령 계산" readonly style="background-color: #f1f5f9; font-weight: 700; color: #1e40af; height: 38px;">
           </div>
-          <div style="flex: 1.1;">
-            <label>사회보장 차량가액 (만원) <span style="color:#15803d; font-weight:700;">[잔가율 산출/수정가능]</span></label>
-            <input type="number" id="carPrice" placeholder="자동계산" oninput="calculateCarWelfare()" style="font-weight: 800; color: #0f172a; border-color: #15803d; height: 38px;">
+        </div>
+
+        <!-- 가액 산출 방식 2-TRACK -->
+        <div class="field-row" style="background-color: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; align-items: flex-end;">
+          <div style="flex: 1;">
+            <label style="color: #475569;">(선택A) 신차 출고가격 (만원) - 입력 시 2026 복지부 잔가율 자동계산</label>
+            <input type="number" id="carNewPrice" placeholder="신차가 입력 시 잔가율 곱셈 자동적용" oninput="handleYearOrNewPriceChange()">
+          </div>
+          <div style="flex: 1;">
+            <label style="color: #15803d; font-weight: 800;">(선택B / 확정) 사회보장 차량가액 (만원) [보험개발원 조회값 직접입력 가능]</label>
+            <input type="number" id="carPrice" placeholder="최종 사회보장가액 입력" oninput="calculateCarWelfare()" style="font-weight: 800; font-size: 15px; color: #15803d; border-color: #15803d;">
           </div>
         </div>
 
         <!-- 3단계: 법정 판정 3대 핵심 조건 -->
-        <div class="field-row" style="background-color: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1;">
+        <div class="field-row" style="background-color: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; margin-top: 10px;">
           <div>
             <label style="color: #1e3a8a;">① 법정 환산 분류 (차종 구분)</label>
             <select id="carCategorySelect" onchange="calculateCarWelfare()">
@@ -955,239 +963,104 @@
 
     var lastParsedSections = { info: "", life: "", family: "", apply: "" };
 
-    // ==========================================
-    // 2. 대한민국 표준 복지 차량 실존 마스터 DB & 2026 복지부 감가상각 잔가율표
-    // ==========================================
-    var VEHICLE_MASTER_DB = [
-      // 경차
-      { name: "기아 올 뉴 모닝", category: "sedan", cc: 998, newPrice: 1350 },
-      { name: "기아 모닝 어반", category: "sedan", cc: 998, newPrice: 1480 },
-      { name: "기아 더 뉴 레이", category: "sedan", cc: 998, newPrice: 1550 },
-      { name: "현대 캐스퍼 1.0", category: "sedan", cc: 998, newPrice: 1650 },
-      { name: "현대 캐스퍼 액티브 (터보)", category: "sedan", cc: 998, newPrice: 1780 },
-      { name: "쉐보레 더 넥스트 스파크", category: "sedan", cc: 999, newPrice: 1280 },
-      { name: "쉐보레 스파크", category: "sedan", cc: 999, newPrice: 1180 },
-      { name: "GM대우 마티즈 크리에이티브", category: "sedan", cc: 995, newPrice: 1050 },
-
-      // 준중형/소형 승용
-      { name: "현대 아반떼 CN7 (1.6 가솔린)", category: "sedan", cc: 1598, newPrice: 2280 },
-      { name: "현대 아반떼 AD (1.6 가솔린)", category: "sedan", cc: 1591, newPrice: 1850 },
-      { name: "현대 아반떼 MD (1.6 가솔린)", category: "sedan", cc: 1591, newPrice: 1650 },
-      { name: "현대 아반떼 HD (1.6 가솔린)", category: "sedan", cc: 1591, newPrice: 1450 },
-      { name: "현대 엑센트 (1.4/1.6)", category: "sedan", cc: 1368, newPrice: 1400 },
-      { name: "기아 더 뉴 K3 / K3 (1.6)", category: "sedan", cc: 1598, newPrice: 2100 },
-      { name: "기아 포르테 (1.6)", category: "sedan", cc: 1591, newPrice: 1550 },
-      { name: "기아 프라이드", category: "sedan", cc: 1396, newPrice: 1350 },
-      { name: "르노코리아 SM3 (1.6)", category: "sedan", cc: 1598, newPrice: 1750 },
-      { name: "쉐보레 크루즈 / 라세티 프리미어", category: "sedan", cc: 1598, newPrice: 1850 },
-
-      // 중형 승용
-      { name: "현대 쏘나타 디 엣지 / DN8 (2.0)", category: "sedan", cc: 1999, newPrice: 3050 },
-      { name: "현대 LF 쏘나타 / 뉴 라이즈 (2.0)", category: "sedan", cc: 1999, newPrice: 2650 },
-      { name: "현대 YF 쏘나타 (2.0)", category: "sedan", cc: 1998, newPrice: 2350 },
-      { name: "현대 NF 쏘나타 (2.0)", category: "sedan", cc: 1998, newPrice: 2000 },
-      { name: "기아 K5 3세대 (2.0)", category: "sedan", cc: 1999, newPrice: 2950 },
-      { name: "기아 K5 1·2세대 (2.0)", category: "sedan", cc: 1999, newPrice: 2500 },
-      { name: "기아 로체 / 로체 이노베이션", category: "sedan", cc: 1998, newPrice: 2050 },
-      { name: "르노코리아 SM5 / SM6 (2.0)", category: "sedan", cc: 1998, newPrice: 2750 },
-      { name: "쉐보레 말리부 (1.5T / 2.0)", category: "sedan", cc: 1490, newPrice: 2800 },
-      { name: "쉐보레 토스카", category: "sedan", cc: 1993, newPrice: 2100 },
-
-      // 준대형/대형 승용
-      { name: "현대 그랜저 GN7 (2.5)", category: "sedan", cc: 2497, newPrice: 4100 },
-      { name: "현대 더 뉴 그랜저 IG / IG (2.5/2.4)", category: "sedan", cc: 2497, newPrice: 3550 },
-      { name: "현대 그랜저 HG (2.4/3.0)", category: "sedan", cc: 2359, newPrice: 3100 },
-      { name: "현대 그랜저 TG (2.7)", category: "sedan", cc: 2656, newPrice: 2700 },
-      { name: "기아 K8 (2.5)", category: "sedan", cc: 2497, newPrice: 3850 },
-      { name: "기아 K7 프리미어 / 올 뉴 K7 (2.5/2.4)", category: "sedan", cc: 2497, newPrice: 3450 },
-      { name: "제네시스 G80 (2.5T)", category: "sedan", cc: 2497, newPrice: 5800 },
-      { name: "제네시스 G70 (2.0T / 2.5T)", category: "sedan", cc: 1998, newPrice: 4300 },
-
-      // SUV / RV
-      { name: "기아 카니발 4세대 (7/9인승)", category: "sedan7", cc: 2151, newPrice: 3900 },
-      { name: "기아 올 뉴 카니발 / 더 뉴 카니발 (7/9인승)", category: "sedan7", cc: 2199, newPrice: 3400 },
-      { name: "현대 싼타페 MX5 / TM (7인승)", category: "sedan7", cc: 2497, newPrice: 3800 },
-      { name: "현대 싼타페 DM / CM (7인승)", category: "sedan7", cc: 1995, newPrice: 3100 },
-      { name: "기아 쏘렌토 MQ4 (7인승)", category: "sedan7", cc: 2497, newPrice: 3850 },
-      { name: "기아 올 뉴 쏘렌토 / 쏘렌토 R (7인승)", category: "sedan7", cc: 1995, newPrice: 3150 },
-      { name: "현대 팰리세이드 (7/8인승)", category: "sedan7", cc: 3778, newPrice: 4200 },
-      { name: "현대 투싼 NX4 (1.6T - 5인승)", category: "sedan", cc: 1598, newPrice: 2900 },
-      { name: "현대 올 뉴 투싼 / 투싼 ix (5인승)", category: "sedan", cc: 1995, newPrice: 2500 },
-      { name: "기아 스포티지 NQ5 (1.6T - 5인승)", category: "sedan", cc: 1598, newPrice: 2950 },
-      { name: "기아 스포티지 더 볼드 / R (5인승)", category: "sedan", cc: 1995, newPrice: 2550 },
-      { name: "현대 코나 (1.6T / 2.0)", category: "sedan", cc: 1598, newPrice: 2500 },
-      { name: "기아 셀토스 (1.6T / 2.0)", category: "sedan", cc: 1598, newPrice: 2500 },
-      { name: "KGM(쌍용) 토레스 (1.5T)", category: "sedan", cc: 1497, newPrice: 2850 },
-      { name: "KGM(쌍용) 티볼리 / 에어 (1.5T/1.6)", category: "sedan", cc: 1497, newPrice: 2200 },
-      { name: "KGM(쌍용) 렉스턴 (7인승)", category: "sedan7", cc: 2157, newPrice: 3950 },
-      { name: "르노코리아 QM6 (2.0 GDe/LPe)", category: "sedan", cc: 1997, newPrice: 3100 },
-      { name: "르노코리아 XM3 (1.6/1.3T)", category: "sedan", cc: 1598, newPrice: 2300 },
-      { name: "쉐보레 트랙스 크로스오버 (1.2T)", category: "sedan", cc: 1199, newPrice: 2350 },
-
-      // 승합차
-      { name: "현대 스타리아 (9/11인승 승합)", category: "van_small", cc: 2199, newPrice: 3350 },
-      { name: "현대 그랜드 스타렉스 (11/12인승 승합)", category: "van_small", cc: 2497, newPrice: 2750 },
-      { name: "기아 그랜드 카니발 (11인승 승합)", category: "van_small", cc: 2199, newPrice: 2850 },
-      { name: "현대 스타렉스 (구형 9/11인승)", category: "van_small", cc: 2476, newPrice: 2100 },
-      { name: "현대 카운티 (15~25인승 중형승합)", category: "van_large", cc: 3933, newPrice: 6500 },
-
-      // 화물차 (생업특례 핵심)
-      { name: "현대 포터 II (1톤 카고/탑차/윙바디)", category: "truck_small", cc: 2497, newPrice: 2050 },
-      { name: "기아 봉고 III (1톤/1.2톤 화물)", category: "truck_small", cc: 2497, newPrice: 1980 },
-      { name: "KGM(쌍용) 렉스턴 스포츠 / 칸 (화물)", category: "truck_small", cc: 2157, newPrice: 3200 },
-      { name: "현대 마이티 (2.5톤/3.5톤 중형화물)", category: "truck_large", cc: 3933, newPrice: 6300 },
-      { name: "현대 파비스 / 메가트럭 (4.5~5톤 화물)", category: "truck_large", cc: 5899, newPrice: 8600 }
-    ];
-
-    // 행안부/복지부 고시 잔가율 (차령 0년~15년+)
-    var RESIDUAL_RATES = {
+    // 2026년 복지부/행안부 고시 잔가율 (차령 0~15년+)
+    var RESIDUAL_RATES_2026 = {
       0: 0.82, 1: 0.70, 2: 0.58, 3: 0.48, 4: 0.40,
       5: 0.32, 6: 0.25, 7: 0.20, 8: 0.16, 9: 0.13,
       10: 0.10, 11: 0.08, 12: 0.07, 13: 0.06, 14: 0.05, 15: 0.04
     };
 
-    var currentSelectedNewPrice = 2200;
-
-    // 데이터리스트 및 연식 셀렉트 초기화
     function initVehicleUI() {
-      var dl = document.getElementById('vehicleMasterList');
-      dl.innerHTML = "";
-      for (var i = 0; i < VEHICLE_MASTER_DB.length; i++) {
-        var opt = document.createElement('option');
-        opt.value = VEHICLE_MASTER_DB[i].name;
-        dl.appendChild(opt);
-      }
-
       var ySel = document.getElementById('carYear');
       ySel.innerHTML = "";
       for (var y = 2026; y >= 2000; y--) {
-        var optY = document.createElement('option');
-        optY.value = y;
-        optY.innerText = y + "년식 (차령 " + (2026 - y) + "년)";
-        if (y === 2016) optY.selected = true; // 기본 10년 기준선
-        ySel.appendChild(optY);
+        var opt = document.createElement('option');
+        opt.value = y;
+        var age = 2026 - y;
+        opt.innerText = y + "년식 (" + age + "년차" + (age >= 10 ? "·10년이상 완화" : "") + ")";
+        if (y === 2016) opt.selected = true; // 기본 10년 노후차 기준
+        ySel.appendChild(opt);
       }
-      handleYearChange();
+      handleYearOrNewPriceChange();
     }
 
     // ==========================================
-    // 1단계: 국토교통부 등록체계 번호판 법정 분석기
+    // 1단계: 번호판 법정 분류 & 공식 포털 원클릭 딥링크
     // ==========================================
-    function executeSmartVehicleLookup() {
+    function syncPlateClassification() {
       var raw = document.getElementById('carPlateInput').value.trim();
       var clean = raw.replace(/[\s\-_]/g, '');
+      if (!clean) return;
 
-      if (!clean) {
-        showToast("차량번호를 입력해주세요. (예: 12가 3456 또는 123가 4567)");
+      var match = clean.match(/^(?:([가-힣]{2}))?([0-9]{1,3})([가-힣])([0-9]{4})$/);
+      if (!match) return;
+
+      var prefixNum = parseInt(match[2], 10);
+      var hangul = match[3];
+
+      // 법정 차종 자동 판별
+      if ((prefixNum >= 70 && prefixNum <= 79) || (prefixNum >= 700 && prefixNum <= 799)) {
+        document.getElementById('carCategorySelect').value = "van_small";
+      } else if ((prefixNum >= 80 && prefixNum <= 97) || (prefixNum >= 800 && prefixNum <= 979)) {
+        document.getElementById('carCategorySelect').value = "truck_small";
+      } else if (prefixNum >= 98 || prefixNum >= 980) {
+        document.getElementById('carCategorySelect').value = "truck_large";
+      } else {
+        document.getElementById('carCategorySelect').value = "sedan";
+      }
+
+      // 용도 판별
+      var commercial = ["아", "바", "사", "자", "배"];
+      if (commercial.indexOf(hangul) !== -1) {
+        document.getElementById('carUsageSelect').value = "business";
+      } else {
+        document.getElementById('carUsageSelect').value = "personal";
+      }
+    }
+
+    function openOfficialPortal(portalKey) {
+      var raw = document.getElementById('carPlateInput').value.trim();
+      if (!raw) {
+        showToast("차량번호를 먼저 입력해주세요.");
         document.getElementById('carPlateInput').focus();
         return;
       }
 
-      // 국토교통부 등록 번호판 정규식 (구형 2자리, 신형 3자리, 지역 표기 구형 번호판)
-      var match = clean.match(/^(?:([가-힣]{2}))?([0-9]{1,3})([가-힣])([0-9]{4})$/);
-      if (!match) {
-        showToast("올바른 번호판 형식으로 입력해주세요. (예: 12가 3456, 123가 4567, 대구 27가 1234)");
-        return;
-      }
+      syncPlateClassification();
 
-      var prefixStr = match[2];
-      var prefixNum = parseInt(prefixStr, 10);
-      var hangul = match[3];
-      var is3Digit = (prefixStr.length === 3);
+      // 차량번호 클립보드 자동 복사
+      navigator.clipboard.writeText(raw).then(function() {
+        showToast("차량번호 [" + raw + "]가 복사되었습니다. 조회창에 붙여넣으세요!");
+      }).catch(function() {});
 
-      var category = "sedan";
-      var usage = "personal";
-      var typeDesc = "일반 승용차";
-
-      // 1. 국토교통부 자동차관리법령 기준 차종 법정 분류
-      if ((prefixNum >= 70 && prefixNum <= 79) || (prefixNum >= 700 && prefixNum <= 799)) {
-        category = "van_small";
-        typeDesc = "승합차 (11인승 이상)";
-      } else if ((prefixNum >= 80 && prefixNum <= 97) || (prefixNum >= 800 && prefixNum <= 979)) {
-        category = "truck_small";
-        typeDesc = "화물차 (생업특례 검토 대상)";
-      } else if (prefixNum >= 98 || prefixNum >= 980) {
-        category = "truck_large";
-        typeDesc = "특수/대형 화물차";
+      var targetUrl = "";
+      if (portalKey === 'kidi') {
+        // 보험개발원 차량기준가액 공식 열람 시스템
+        targetUrl = "https://www.kidi.or.kr/user/car/carSearch.do";
       } else {
-        category = "sedan";
-        typeDesc = "일반 승용차";
+        // 국토교통부 자동차365 대국민 포털
+        targetUrl = "https://www.car365.go.kr";
       }
 
-      // 2. 한글 용도기호 법정 판정
-      var commercialLetters = ["아", "바", "사", "자", "배"];
-      var rentalLetters = ["하", "허", "호"];
-      var usageDesc = "비사업용(자가용)";
-
-      if (commercialLetters.indexOf(hangul) !== -1) {
-        usage = "business";
-        usageDesc = "영업용/사업용";
-      } else if (rentalLetters.indexOf(hangul) !== -1) {
-        usage = "personal";
-        usageDesc = "대여사업용(렌터카)";
-      }
-
-      // 셀렉트 박스 자동 세팅
-      document.getElementById('carCategorySelect').value = category;
-      document.getElementById('carUsageSelect').value = usage;
-
-      var noticeEl = document.getElementById('plateNotice');
-      noticeEl.innerHTML = "✅ <strong>국토교통부 법정 체계 분석 완료:</strong> [" + typeDesc + " / " + usageDesc + "]로 법정 분류되었습니다. 하단 2단계에서 차명(모델명)을 선택하세요.";
-      noticeEl.style.color = "#15803d";
-
-      document.getElementById('carModelName').focus();
-      showToast("차량번호 분석 완료! 차명을 검색해 주세요.");
+      window.open(targetUrl, '_blank');
     }
 
     // ==========================================
-    // 2단계: 차명(모델명) 실존 DB 매핑 & 잔가율 연동
+    // 2단계: 연식/출고가 변경에 따른 2026 복지 잔가율 계산
     // ==========================================
-    function handleModelSelect(inputName) {
-      if (!inputName) return;
-      var trimmed = inputName.trim();
-      var found = null;
-
-      for (var i = 0; i < VEHICLE_MASTER_DB.length; i++) {
-        if (VEHICLE_MASTER_DB[i].name === trimmed) {
-          found = VEHICLE_MASTER_DB[i];
-          break;
-        }
-      }
-
-      // 부분 일치 탐색
-      if (!found && trimmed.length >= 2) {
-        for (var j = 0; j < VEHICLE_MASTER_DB.length; j++) {
-          if (VEHICLE_MASTER_DB[j].name.indexOf(trimmed) !== -1) {
-            found = VEHICLE_MASTER_DB[j];
-            break;
-          }
-        }
-      }
-
-      if (found) {
-        document.getElementById('carDisplacement').value = found.cc;
-        document.getElementById('carCategorySelect').value = found.category;
-        currentSelectedNewPrice = found.newPrice;
-        updateCalculatedCarPrice();
-      } else {
-        calculateCarWelfare();
-      }
-    }
-
-    function handleYearChange() {
+    function handleYearOrNewPriceChange() {
       var y = parseInt(document.getElementById('carYear').value, 10) || 2026;
       var age = Math.max(0, 2026 - y);
-      document.getElementById('carAgeDisplay').value = age + "년 (" + (age >= 10 ? "10년 이상 노후차 충족" : "10년 미만") + ")";
-      updateCalculatedCarPrice();
-    }
+      var isOver10 = age >= 10;
+      document.getElementById('carAgeDisplay').value = age + "년 (" + (isOver10 ? "10년 이상 충족" : "10년 미만") + ")";
 
-    function updateCalculatedCarPrice() {
-      var y = parseInt(document.getElementById('carYear').value, 10) || 2026;
-      var age = Math.max(0, 2026 - y);
-      var rate = RESIDUAL_RATES[age] !== undefined ? RESIDUAL_RATES[age] : 0.04;
-      var calculatedPrice = Math.round(currentSelectedNewPrice * rate);
+      var newPrice = parseFloat(document.getElementById('carNewPrice').value) || 0;
+      if (newPrice > 0) {
+        var rate = RESIDUAL_RATES_2026[age] !== undefined ? RESIDUAL_RATES_2026[age] : 0.04;
+        var calculatedPrice = Math.round(newPrice * rate);
+        document.getElementById('carPrice').value = calculatedPrice;
+      }
 
-      document.getElementById('carPrice').value = calculatedPrice;
       calculateCarWelfare();
     }
 
@@ -1195,17 +1068,19 @@
       document.getElementById('carPlateInput').value = "";
       document.getElementById('carModelName').value = "";
       document.getElementById('carDisplacement').value = "";
+      document.getElementById('carNewPrice').value = "";
       document.getElementById('carPrice').value = "";
       document.getElementById('carYear').value = "2016";
-      document.getElementById('plateNotice').innerHTML = "💡 차량번호를 입력하면 국토교통부 자동차관리법에 따라 [법정 차종(승용/승합/화물)] 및 [용도(자가용/영업용)]가 100% 자동 지정됩니다.";
-      document.getElementById('plateNotice').style.color = "#1e40af";
+      document.getElementById('carCategorySelect').value = "sedan";
+      document.getElementById('carHouseholdSelect').value = "normal";
+      document.getElementById('carUsageSelect').value = "personal";
       document.getElementById('carResultBox').style.display = "none";
-      handleYearChange();
-      showToast("차량 입력창이 초기화되었습니다.");
+      handleYearOrNewPriceChange();
+      showToast("차량 판정기가 초기화되었습니다.");
     }
 
     // ==========================================
-    // 3단계: 복지 4대 기준 판정 및 월 소득인정액 산출
+    // 3단계: 법정 기준 판정 및 월 소득인정액 산출
     // ==========================================
     function calculateCarWelfare() {
       var cc = parseInt(document.getElementById('carDisplacement').value, 10) || 0;
@@ -1235,7 +1110,7 @@
       resBox.style.display = 'block';
       totalValDiv.innerText = price.toLocaleString() + " 만 원";
 
-      // 1. 장애인 등록 가구 특례 (전액 재산 제외)
+      // 1. 등록 장애인 가구 특례 (전액 재산 제외)
       if (household === 'disabled') {
         var isUnderDisLimit = (category === 'sedan' && cc < 2000) ||
                               (category === 'sedan7' && cc <= 2500) ||
@@ -1342,7 +1217,6 @@
       resDesc.innerHTML = "• <strong>판정 사유:</strong> 배기량 " + cc + "cc, 차령 " + age + "년, 가액 " + price.toLocaleString() + "만 원으로 [1,600cc 미만 & 10년 이상] 또는 [가액 200만원 미만] 완화 기준을 충족하지 못했습니다.<br>• <strong>치명적 결과:</strong> 차량가액 전액인 <strong>" + price.toLocaleString() + "만 원이 매월 소득으로 100% 반영</strong>되어 생계·의료·주거급여 수급 기준선을 즉시 초과할 위험이 매우 높습니다.<br>• <strong>실무 대응:</strong> 명의 이전, 생업용 증빙 확보(사업자등록·영업소득), 폐차 여부를 사전에 반드시 상담하시기 바랍니다.";
     }
 
-    // 1번 탭 모의계산기로 전송
     function applyCarToSimulation() {
       if (evaluatedCarResult.price <= 0) {
         showToast("먼저 차량 계산 및 판정을 진행해 주세요.");
