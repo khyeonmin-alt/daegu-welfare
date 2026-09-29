@@ -627,78 +627,62 @@
     <!-- ==================== TAB 2: 차량 소득인정액 & 부동산 공시가 ==================== -->
     <div id="tab-vehicle" class="tab-content">
       
-      <!-- 차량가액 및 월 소득인정액 정밀 판정기 -->
+      <!-- 차량 소득인정액 원스톱 판정기 -->
       <div class="card">
         <div class="card-header">
-          <div class="card-title">🚗 차량 소득인정액 원스톱 판정기 (공식 기관 원클릭 연동 &amp; 2026 잔가율 산출)</div>
-          <span style="font-size: 12px; color: #475569;">신뢰도 100% 실무 연계형 소득인정액 계산기</span>
-        </div>
-
-        <!-- 1단계: 번호판 법정 분류 & 공식 기관 원클릭 딥링크 -->
-        <div style="background-color: #eff6ff; border: 1.5px solid #3b82f6; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
-          <label style="color: #1e40af; font-size: 13px; font-weight: 800; margin-bottom: 6px;">
-            1단계: 차량번호 입력 및 정부/공식기관 차량원부·기준가액 원클릭 열람
-          </label>
-          <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;">
-            <div style="flex: 1.5; min-width: 240px;">
-              <input type="text" id="carPlateInput" placeholder="예: 12가 3456 또는 123가 4567" style="font-size: 15px; font-weight: 800; border-color: #2563eb; height: 42px;" oninput="syncPlateClassification()">
-            </div>
-            <button class="btn btn-primary" onclick="openOfficialPortal('kidi')" style="padding: 0 16px; font-size: 13px; font-weight: 700; height: 42px;">
-              📋 번호복사 + 보험개발원 차량기준가액 열람
-            </button>
-            <button class="btn btn-outline" onclick="openOfficialPortal('car365')" style="padding: 0 16px; font-size: 13px; font-weight: 700; height: 42px; background-color: #ffffff;">
-              🚗 자동차365(국토부) 원부 열람
-            </button>
-          </div>
-          <div id="plateNoticeText" style="font-size: 12px; color: #1e3a8a; line-height: 1.6;">
-            💡 번호판을 입력하고 조회 버튼을 누르면 <strong>차량번호가 클립보드에 자동 복사</strong>된 채 공식 열람창이 새 탭으로 열립니다. 공공 전산망에서 확인된 가액이나 배기량을 아래 2단계에 입력해 주세요.
+          <div class="card-title">🚗 차량 소득인정액 원스톱 판정기 (2026 복지부 법정 기준)</div>
+          <div style="display: flex; gap: 6px;">
+            <a class="btn btn-outline btn-sm" href="https://www.kidi.or.kr/user/car/carSearch.do" target="_blank" rel="noopener">
+              📋 보험개발원 기준가액 열람
+            </a>
+            <a class="btn btn-outline btn-sm" href="https://www.car365.go.kr" target="_blank" rel="noopener">
+              🚗 자동차365(국토부)
+            </a>
           </div>
         </div>
 
-        <!-- 2단계: 차량 제원 및 기준가액 입력/자동산출 -->
-        <div style="margin-bottom: 10px;">
-          <label style="font-size: 13px; font-weight: 800; color: #0f172a;">
-            2단계: 차량 세부 제원 및 가액 입력 (공식 가액 직접입력 또는 출고가 기준 잔가율 자동산출)
-          </label>
-        </div>
-
+        <!-- 직관적인 제원 및 가액 입력 폼 -->
         <div class="field-row">
-          <div style="flex: 1.3;">
+          <div style="flex: 1.4;">
             <label>차명 / 모델명</label>
-            <input type="text" id="carModelName" placeholder="예: 아반떼, 모닝, 쏘나타 등" style="font-weight: 700;">
+            <input type="text" id="carModelName" placeholder="예: 쏘나타, 아반떼, 모닝, 포터 등" style="font-weight: 700;">
           </div>
-          <div style="flex: 0.9;">
-            <label>배기량 (cc) <span style="color:#ef4444; font-weight:700;">*핵심</span></label>
-            <input type="number" id="carDisplacement" placeholder="예: 1598" oninput="calculateCarWelfare()" style="font-weight: 700; border-color: #3b82f6;">
+          <div>
+            <label>배기량 (cc) <span style="color:#ef4444; font-weight:700;">*1,600cc 기준</span></label>
+            <input type="number" id="carDisplacement" placeholder="예: 1999" oninput="calculateCarWelfare()" style="font-weight: 700; border-color: #3b82f6;">
           </div>
-          <div style="flex: 1;">
-            <label>등록연도 (연식) <span style="color:#ef4444; font-weight:700;">*선택</span></label>
+          <div>
+            <label>등록연도 (연식) <span style="color:#ef4444; font-weight:700;">*10년 기준</span></label>
             <select id="carYear" onchange="handleYearOrNewPriceChange()" style="font-weight: 700; border-color: #3b82f6; height: 38px;">
               <!-- 2026 ~ 2000 자동 생성 -->
             </select>
           </div>
-          <div style="flex: 0.8;">
+          <div>
             <label>차령 (자동계산)</label>
             <input type="text" id="carAgeDisplay" placeholder="차령 계산" readonly style="background-color: #f1f5f9; font-weight: 700; color: #1e40af; height: 38px;">
           </div>
         </div>
 
-        <!-- 가액 산출 방식 2-TRACK -->
-        <div class="field-row" style="background-color: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; align-items: flex-end;">
-          <div style="flex: 1;">
-            <label style="color: #475569;">(선택A) 신차 출고가격 (만원) - 입력 시 2026 복지부 잔가율 자동계산</label>
-            <input type="number" id="carNewPrice" placeholder="신차가 입력 시 잔가율 곱셈 자동적용" oninput="handleYearOrNewPriceChange()">
+        <!-- 가액 입력 영역 (직접입력 or 출고가 잔가율 산출) -->
+        <div class="field-row" style="background-color: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid #cbd5e1; align-items: flex-end;">
+          <div style="flex: 1.1;">
+            <label style="color: #15803d; font-weight: 800; font-size: 13px;">
+              사회보장 차량가액 (만원) <span style="color: #ef4444;">*필수 입력 (보험개발원/행복e음 가액)</span>
+            </label>
+            <input type="number" id="carPrice" placeholder="조회된 차량가액 입력 (예: 1464)" oninput="calculateCarWelfare()" style="font-weight: 800; font-size: 15px; color: #15803d; border-color: #15803d;">
           </div>
           <div style="flex: 1;">
-            <label style="color: #15803d; font-weight: 800;">(선택B / 확정) 사회보장 차량가액 (만원) [보험개발원 조회값 직접입력 가능]</label>
-            <input type="number" id="carPrice" placeholder="최종 사회보장가액 입력" oninput="calculateCarWelfare()" style="font-weight: 800; font-size: 15px; color: #15803d; border-color: #15803d;">
+            <label style="color: #64748b; font-size: 11px;">
+              (참고 보조) 신차 출고가격 (만원) 입력 시 잔가율 자동계산
+            </label>
+            <input type="number" id="carNewPrice" placeholder="출고가 입력 시 잔가율 곱셈" oninput="handleYearOrNewPriceChange()" style="color: #475569;">
           </div>
         </div>
 
-        <!-- 3단계: 법정 판정 3대 핵심 조건 -->
+        <!-- 법정 판정 3대 핵심 조건 -->
         <div class="field-row" style="background-color: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; margin-top: 10px;">
           <div>
-            <label style="color: #1e3a8a;">① 법정 환산 분류 (차종 구분)</label>
+            <label style="color: #1e3a8a;">① 차종 구분</label>
             <select id="carCategorySelect" onchange="calculateCarWelfare()">
               <option value="sedan">일반 승용 (5인승 이하)</option>
               <option value="sedan7">7인승 이상 승용 (RV·SUV·미니밴)</option>
@@ -963,7 +947,7 @@
 
     var lastParsedSections = { info: "", life: "", family: "", apply: "" };
 
-    // 2026년 복지부/행안부 고시 잔가율 (차령 0~15년+)
+    // 2026년 복지부/행안부 고시 감가상각 잔가율 (차령 0~15년+)
     var RESIDUAL_RATES_2026 = {
       0: 0.82, 1: 0.70, 2: 0.58, 3: 0.48, 4: 0.40,
       5: 0.32, 6: 0.25, 7: 0.20, 8: 0.16, 9: 0.13,
@@ -978,76 +962,12 @@
         opt.value = y;
         var age = 2026 - y;
         opt.innerText = y + "년식 (" + age + "년차" + (age >= 10 ? "·10년이상 완화" : "") + ")";
-        if (y === 2016) opt.selected = true; // 기본 10년 노후차 기준
+        if (y === 2016) opt.selected = true;
         ySel.appendChild(opt);
       }
       handleYearOrNewPriceChange();
     }
 
-    // ==========================================
-    // 1단계: 번호판 법정 분류 & 공식 포털 원클릭 딥링크
-    // ==========================================
-    function syncPlateClassification() {
-      var raw = document.getElementById('carPlateInput').value.trim();
-      var clean = raw.replace(/[\s\-_]/g, '');
-      if (!clean) return;
-
-      var match = clean.match(/^(?:([가-힣]{2}))?([0-9]{1,3})([가-힣])([0-9]{4})$/);
-      if (!match) return;
-
-      var prefixNum = parseInt(match[2], 10);
-      var hangul = match[3];
-
-      // 법정 차종 자동 판별
-      if ((prefixNum >= 70 && prefixNum <= 79) || (prefixNum >= 700 && prefixNum <= 799)) {
-        document.getElementById('carCategorySelect').value = "van_small";
-      } else if ((prefixNum >= 80 && prefixNum <= 97) || (prefixNum >= 800 && prefixNum <= 979)) {
-        document.getElementById('carCategorySelect').value = "truck_small";
-      } else if (prefixNum >= 98 || prefixNum >= 980) {
-        document.getElementById('carCategorySelect').value = "truck_large";
-      } else {
-        document.getElementById('carCategorySelect').value = "sedan";
-      }
-
-      // 용도 판별
-      var commercial = ["아", "바", "사", "자", "배"];
-      if (commercial.indexOf(hangul) !== -1) {
-        document.getElementById('carUsageSelect').value = "business";
-      } else {
-        document.getElementById('carUsageSelect').value = "personal";
-      }
-    }
-
-    function openOfficialPortal(portalKey) {
-      var raw = document.getElementById('carPlateInput').value.trim();
-      if (!raw) {
-        showToast("차량번호를 먼저 입력해주세요.");
-        document.getElementById('carPlateInput').focus();
-        return;
-      }
-
-      syncPlateClassification();
-
-      // 차량번호 클립보드 자동 복사
-      navigator.clipboard.writeText(raw).then(function() {
-        showToast("차량번호 [" + raw + "]가 복사되었습니다. 조회창에 붙여넣으세요!");
-      }).catch(function() {});
-
-      var targetUrl = "";
-      if (portalKey === 'kidi') {
-        // 보험개발원 차량기준가액 공식 열람 시스템
-        targetUrl = "https://www.kidi.or.kr/user/car/carSearch.do";
-      } else {
-        // 국토교통부 자동차365 대국민 포털
-        targetUrl = "https://www.car365.go.kr";
-      }
-
-      window.open(targetUrl, '_blank');
-    }
-
-    // ==========================================
-    // 2단계: 연식/출고가 변경에 따른 2026 복지 잔가율 계산
-    // ==========================================
     function handleYearOrNewPriceChange() {
       var y = parseInt(document.getElementById('carYear').value, 10) || 2026;
       var age = Math.max(0, 2026 - y);
@@ -1065,7 +985,6 @@
     }
 
     function resetCarForm() {
-      document.getElementById('carPlateInput').value = "";
       document.getElementById('carModelName').value = "";
       document.getElementById('carDisplacement').value = "";
       document.getElementById('carNewPrice').value = "";
@@ -1076,11 +995,11 @@
       document.getElementById('carUsageSelect').value = "personal";
       document.getElementById('carResultBox').style.display = "none";
       handleYearOrNewPriceChange();
-      showToast("차량 판정기가 초기화되었습니다.");
+      showToast("차량 입력창이 초기화되었습니다.");
     }
 
     // ==========================================
-    // 3단계: 법정 기준 판정 및 월 소득인정액 산출
+    // 2. 차량 법정 기준 판정 및 월 소득인정액 산출
     // ==========================================
     function calculateCarWelfare() {
       var cc = parseInt(document.getElementById('carDisplacement').value, 10) || 0;
@@ -1241,7 +1160,7 @@
     }
 
     // ==========================================
-    // 3. UI 및 시뮬레이션 계산 (TAB 1)
+    // 3. 상담 및 모의계산 로직 (TAB 1)
     // ==========================================
     function switchTab(tabId) {
       var contents = document.querySelectorAll('.tab-content');
@@ -1595,7 +1514,7 @@
         detailEm.innerText = totalRealIncome > emergStandard ? "소득(" + emergStandard + "만) 초과" : "순재산 한도 초과";
       }
 
-      // 3. 달구벌 희망급여
+      // 3. 대구시 달구벌 희망급여
       var dgIncomeLimit = Math.round(median * POLICY_2026.dalgubeol.incomeLimitPercent);
       var dgGenAssetLimit = POLICY_2026.dalgubeol.generalAssetLimit;
       var dgFinLimit = POLICY_2026.dalgubeol.financialLimit[members] || 1574.2;
