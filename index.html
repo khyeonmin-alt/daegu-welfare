@@ -395,7 +395,7 @@
 
     @media print {
       body { background-color: #ffffff; padding-bottom: 0; font-size: 11pt; color: #000000; }
-      header, .nav-tabs, .btn, #counselInput, .card-header button, #tab-vehicle, .field-row, #toast, .modal-backdrop, .calculation-breakdown, .copy-split-wrap { display: none !important; }
+      header, .nav-tabs, .btn, #counselInput, .card-header button, #tab-vehicle, .field-row, #toast, .modal-backdrop, .calculation-breakdown { display: none !important; }
       .main-container { max-width: 100%; margin: 0; padding: 0; }
       .grid-2col { display: block; }
       .card { border: none; box-shadow: none; padding: 0; margin-bottom: 20px; page-break-inside: avoid; }
@@ -450,16 +450,6 @@
             </div>
           </div>
           <div id="counselOutput" class="result-box">상담 내용을 입력하고 [복지사정서 생성 및 핵심 항목 자동 추출] 버튼을 누르시면 표준 서식으로 정제됩니다.</div>
-          
-          <div class="copy-split-wrap" style="margin-top: 12px; padding: 10px; background-color: #f1f5f9; border-radius: 8px; border: 1px solid #cbd5e1;">
-            <div style="font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 6px;">⚡ 행복e음 항목별 분할 복사 (클릭 시 클립보드 복사)</div>
-            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-              <button class="btn btn-outline btn-sm" onclick="copySection('info')">📋 [인적사항] 복사</button>
-              <button class="btn btn-outline btn-sm" onclick="copySection('life')">📋 [생활실태] 복사</button>
-              <button class="btn btn-outline btn-sm" onclick="copySection('family')">📋 [부양해체] 복사</button>
-              <button class="btn btn-outline btn-sm" onclick="copySection('apply')">📋 [신청급여] 복사</button>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -945,8 +935,6 @@
       isCutoff: false
     };
 
-    var lastParsedSections = { info: "", life: "", family: "", apply: "" };
-
     // 2026년 복지부/행안부 고시 감가상각 잔가율 (차령 0~15년+)
     var RESIDUAL_RATES_2026 = {
       0: 0.82, 1: 0.70, 2: 0.58, 3: 0.48, 4: 0.40,
@@ -1254,8 +1242,6 @@
 "■ 생활실태 및 위기상황\n" +
 "- 과거 직업/경제활동 이력: \n" +
 "- 현재 생계유지 및 생활비 조달 경로: \n" +
-"- 공과금/건보료/월세 체납 실태: \n" +
-"- 생계위기 발생 경위(트리거): \n" +
 "- 주 질환 및 일상생활 곤란도(거동/가사): \n\n" +
 "■ 근로능력 및 소득·재산\n" +
 "- 근로능력 상태: \n" +
@@ -1285,8 +1271,6 @@
 "■ 생활실태 및 위기상황\n" +
 "- 과거 직업/경제활동 이력: 과거 15년간 건설 일용직 및 식당 주방 보조로 생계 유지함.\n" +
 "- 현재 생계유지 및 생활비 조달 경로: 최근 6개월간 일자리 전무하여 소액 예금 소진, 현재 지인 차용 한계에 도달하여 결식 위기.\n" +
-"- 공과금/건보료/월세 체납 실태: 월세 2개월 연체 중, 건강보험료 3개월 체납.\n" +
-"- 생계위기 발생 경위(트리거): 6개월 전 허리 협착증 악화로 중량물 운반 불가하여 근로 소득 완전 중단됨.\n" +
 "- 주 질환 및 일상생활 곤란도(거동/가사): 요추간판탈출증 및 협착증으로 10분 이상 보행 곤란, 일상 가사활동 타인 도움 필요함.\n\n" +
 "■ 근로능력 및 소득·재산\n" +
 "- 근로능력 상태: 만 66세 (법정 무능력 해당), 진단서 징구 예정\n" +
@@ -1340,11 +1324,6 @@
       var familyText = sections.family.join('\n').trim();
       var applyText = sections.apply.join('\n').trim();
 
-      lastParsedSections.info = infoText;
-      lastParsedSections.life = lifeText;
-      lastParsedSections.family = familyText;
-      lastParsedSections.apply = applyText;
-
       var formatted = 
 "【복지상담 초기사정서 (행정망 표준)】\n" +
 "작성일시: " + new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }) + "\n" +
@@ -1377,17 +1356,6 @@
       var text = document.getElementById('counselOutput').innerText;
       navigator.clipboard.writeText(text).then(function() {
         showToast("사정서 전체 본문이 복사되었습니다.");
-      });
-    }
-
-    function copySection(secKey) {
-      var content = lastParsedSections[secKey] || "";
-      if (!content.trim()) {
-        showToast("해당 항목의 내용이 없습니다. 먼저 사정서를 생성해주세요.");
-        return;
-      }
-      navigator.clipboard.writeText(content).then(function() {
-        showToast("해당 단락 내용이 복사되었습니다. 행복e음에 붙여넣으세요.");
       });
     }
 
@@ -1514,7 +1482,7 @@
         detailEm.innerText = totalRealIncome > emergStandard ? "소득(" + emergStandard + "만) 초과" : "순재산 한도 초과";
       }
 
-      // 3. 대구시 달구벌 희망급여
+      // 3. 달구벌 희망급여
       var dgIncomeLimit = Math.round(median * POLICY_2026.dalgubeol.incomeLimitPercent);
       var dgGenAssetLimit = POLICY_2026.dalgubeol.generalAssetLimit;
       var dgFinLimit = POLICY_2026.dalgubeol.financialLimit[members] || 1574.2;
