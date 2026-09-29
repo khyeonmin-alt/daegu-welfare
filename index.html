@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>읍면동 스마트 복지상담 &amp; 소득인정액 판정 시스템</title>
+  <title>대구광역시 읍면동 스마트 복지상담 &amp; 소득인정액 판정기</title>
   <!-- Daum 우편번호 서비스 CDN -->
   <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
   <style>
@@ -25,7 +25,7 @@
     header {
       background-color: #ffffff;
       border-bottom: 1px solid #cbd5e1;
-      padding: 14px 24px;
+      padding: 12px 24px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -34,10 +34,27 @@
       z-index: 50;
       box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     }
+    .header-title {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
     .header-title h1 {
       font-size: 18px;
-      font-weight: 700;
+      font-weight: 800;
       color: #0f172a;
+      letter-spacing: -0.5px;
+    }
+    .header-org-badge {
+      font-size: 11px;
+      font-weight: 600;
+      color: #1d4ed8;
+      background-color: #eff6ff;
+      border: 1px solid #bfdbfe;
+      padding: 2px 8px;
+      border-radius: 4px;
+      letter-spacing: -0.2px;
     }
 
     /* 시인성을 극대화한 상단 탭 컨테이너 */
@@ -69,7 +86,7 @@
       background-color: #e2e8f0;
       color: #0f172a;
     }
-    /* 선택된 활성 탭 (선명한 그라데이션 및 그림자 입체감) */
+    /* 선택된 활성 탭 */
     .nav-tab.active {
       background: linear-gradient(135deg, #2563eb, #1d4ed8);
       color: #ffffff;
@@ -423,7 +440,8 @@
 
   <header>
     <div class="header-title">
-      <h1>읍면동 스마트 복지상담 &amp; 소득인정액 판정기</h1>
+      <h1>대구광역시 읍면동 스마트 복지상담 &amp; 소득인정액 판정기</h1>
+      <span class="header-org-badge">대구광역시 복지정책과</span>
     </div>
     <!-- 시인성이 강화된 네비게이션 탭 -->
     <div class="nav-tabs">
