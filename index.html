@@ -636,11 +636,25 @@
           </div>
         </div>
 
-        <!-- 직관적인 제원 및 가액 입력 폼 -->
+        <!-- 모델 프리셋 및 제원 입력 폼 -->
         <div class="field-row">
           <div style="flex: 1.4;">
-            <label>차명 / 모델명</label>
-            <input type="text" id="carModelName" placeholder="예: 쏘나타, 아반떼, 모닝, 포터 등" style="font-weight: 700;">
+            <label style="color: #1d4ed8; font-weight: 700;">차명 / 모델 프리셋 (선택 시 제원·가액 자동 산출)</label>
+            <select id="carPresetSelect" onchange="handleCarPresetChange()" style="font-weight: 700; border-color: #3b82f6;">
+              <option value="">-- 주요 차종 선택 시 자동 계산 (직접입력 가능) --</option>
+              <option value="morning">모닝 / 레이 (1,000cc 경차)</option>
+              <option value="spark">스파크 (1,000cc 경차)</option>
+              <option value="avante">아반떼 (1,600cc 준중형)</option>
+              <option value="k3">K3 (1,600cc 준중형)</option>
+              <option value="sonata">쏘나타 (2,000cc 중형)</option>
+              <option value="k5">K5 (2,000cc 중형)</option>
+              <option value="grandeur">그랜저 (2,500cc 준대형)</option>
+              <option value="tucson">투싼 / 스포티지 (1,600cc SUV)</option>
+              <option value="santafe">싼타페 / 쏘렌토 (2,200cc SUV)</option>
+              <option value="carnival">카니발 (7~9인승 RV)</option>
+              <option value="porter">포터2 / 봉고3 (1톤 소형화물)</option>
+              <option value="starex">스타리아 / 스타렉스 (11~12인승 승합)</option>
+            </select>
           </div>
           <div>
             <label>배기량 (cc) <span style="color:#ef4444; font-weight:700;">*1,600cc 기준</span></label>
@@ -648,7 +662,7 @@
           </div>
           <div>
             <label>등록연도 (연식) <span style="color:#ef4444; font-weight:700;">*10년 기준</span></label>
-            <select id="carYear" onchange="handleYearOrNewPriceChange()" style="font-weight: 700; border-color: #3b82f6; height: 38px;">
+            <select id="carYear" onchange="handleYearChange()" style="font-weight: 700; border-color: #3b82f6; height: 38px;">
               <!-- 2026 ~ 2000 자동 생성 -->
             </select>
           </div>
@@ -658,19 +672,16 @@
           </div>
         </div>
 
-        <!-- 가액 입력 영역 -->
-        <div class="field-row" style="background-color: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid #cbd5e1; align-items: flex-end;">
-          <div style="flex: 1.1;">
-            <label style="color: #15803d; font-weight: 800; font-size: 13px;">
-              사회보장 차량가액 (만원) <span style="color: #ef4444;">*필수 입력 (보험개발원/행복e음 가액)</span>
-            </label>
-            <input type="number" id="carPrice" placeholder="조회된 차량가액 입력 (예: 1464)" oninput="calculateCarWelfare()" style="font-weight: 800; font-size: 15px; color: #15803d; border-color: #15803d;">
-          </div>
-          <div style="flex: 1;">
-            <label style="color: #64748b; font-size: 11px;">
-              (참고 보조) 신차 출고가격 (만원) 입력 시 잔가율 자동계산
-            </label>
-            <input type="number" id="carNewPrice" placeholder="출고가 입력 시 잔가율 곱셈" oninput="handleYearOrNewPriceChange()" style="color: #475569;">
+        <!-- 가액 단독 입력 영역 (자동완성 및 직접수정 가능) -->
+        <div class="field-row" style="background-color: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid #cbd5e1;">
+          <div style="width: 100%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <label style="color: #15803d; font-weight: 800; font-size: 13px; margin-bottom: 0;">
+                사회보장 차량가액 (만원) <span style="color: #ef4444;">*차종·연식 선택 시 자동 산정 (직접 수정 가능)</span>
+              </label>
+              <span id="carEstInfo" style="font-size: 11px; color: #64748b; font-weight: 600;"></span>
+            </div>
+            <input type="number" id="carPrice" placeholder="차종 선택 시 자동 계산되거나 직접 입력 (예: 1464)" oninput="calculateCarWelfare()" style="font-weight: 800; font-size: 15px; color: #15803d; border-color: #15803d;">
           </div>
         </div>
 
@@ -929,6 +940,29 @@
       }
     };
 
+    // 실무 다빈도 차종 사전 (대표 출고가 기준)
+    var POPULAR_CARS_DB = {
+      "morning": { name: "모닝 / 레이 (경차)", cc: 998, newPrice: 1350, type: "sedan" },
+      "spark":   { name: "스파크 (경차)", cc: 999, newPrice: 1250, type: "sedan" },
+      "avante":  { name: "아반떼 (준중형)", cc: 1598, newPrice: 2100, type: "sedan" },
+      "k3":      { name: "K3 (준중형)", cc: 1598, newPrice: 2050, type: "sedan" },
+      "sonata":  { name: "쏘나타 (중형)", cc: 1999, newPrice: 2800, type: "sedan" },
+      "k5":      { name: "K5 (중형)", cc: 1999, newPrice: 2850, type: "sedan" },
+      "grandeur":{ name: "그랜저 (준대형)", cc: 2497, newPrice: 3700, type: "sedan" },
+      "tucson":  { name: "투싼 / 스포티지 (SUV)", cc: 1598, newPrice: 2900, type: "sedan" },
+      "santafe": { name: "싼타페 / 쏘렌토 (SUV)", cc: 2199, newPrice: 3600, type: "sedan" },
+      "carnival":{ name: "카니발 (RV)", cc: 2151, newPrice: 3500, type: "sedan7" },
+      "porter":  { name: "포터2 / 봉고3 (1톤 화물)", cc: 2497, newPrice: 1900, type: "truck_small" },
+      "starex":  { name: "스타리아 / 스타렉스 (승합)", cc: 2199, newPrice: 3100, type: "van_small" }
+    };
+
+    // 2026 복지부·행안부 감가상각 잔가율 (차령 0년 ~ 15년 이상)
+    var RESIDUAL_RATES_2026 = {
+      0: 0.82, 1: 0.70, 2: 0.58, 3: 0.48, 4: 0.40,
+      5: 0.32, 6: 0.25, 7: 0.20, 8: 0.16, 9: 0.13,
+      10: 0.10, 11: 0.08, 12: 0.07, 13: 0.06, 14: 0.05, 15: 0.04
+    };
+
     var currentCalculatedPriceMan = 0;
     var lastPostalData = null;
 
@@ -938,13 +972,6 @@
       applicableAssetVal: 0,
       monthlyIncomeVal: 0,
       isCutoff: false
-    };
-
-    // 2026년 복지부/행안부 고시 감가상각 잔가율 (차령 0~15년+)
-    var RESIDUAL_RATES_2026 = {
-      0: 0.82, 1: 0.70, 2: 0.58, 3: 0.48, 4: 0.40,
-      5: 0.32, 6: 0.25, 7: 0.20, 8: 0.16, 9: 0.13,
-      10: 0.10, 11: 0.08, 12: 0.07, 13: 0.06, 14: 0.05, 15: 0.04
     };
 
     function initVehicleUI() {
@@ -958,36 +985,66 @@
         if (y === 2016) opt.selected = true;
         ySel.appendChild(opt);
       }
-      handleYearOrNewPriceChange();
+      handleYearChange();
     }
 
-    function handleYearOrNewPriceChange() {
+    // 모델 프리셋 선택 시 가액 자동산출
+    function handleCarPresetChange() {
+      var presetKey = document.getElementById('carPresetSelect').value;
+      if (!presetKey || !POPULAR_CARS_DB[presetKey]) {
+        document.getElementById('carEstInfo').innerText = "";
+        return;
+      }
+
+      var car = POPULAR_CARS_DB[presetKey];
+      document.getElementById('carDisplacement').value = car.cc;
+      document.getElementById('carCategorySelect').value = car.type;
+
+      autoCalculateCarPrice();
+    }
+
+    function handleYearChange() {
       var y = parseInt(document.getElementById('carYear').value, 10) || 2026;
       var age = Math.max(0, 2026 - y);
       var isOver10 = age >= 10;
       document.getElementById('carAgeDisplay').value = age + "년 (" + (isOver10 ? "10년 이상 충족" : "10년 미만") + ")";
 
-      var newPrice = parseFloat(document.getElementById('carNewPrice').value) || 0;
-      if (newPrice > 0) {
-        var rate = RESIDUAL_RATES_2026[age] !== undefined ? RESIDUAL_RATES_2026[age] : 0.04;
-        var calculatedPrice = Math.round(newPrice * rate);
-        document.getElementById('carPrice').value = calculatedPrice;
+      // 프리셋이 선택되어 있다면 연식 변경 시 가액 재계산
+      if (document.getElementById('carPresetSelect').value) {
+        autoCalculateCarPrice();
+      } else {
+        calculateCarWelfare();
       }
+    }
+
+    // 연식과 프리셋 기준 자동 산정
+    function autoCalculateCarPrice() {
+      var presetKey = document.getElementById('carPresetSelect').value;
+      if (!presetKey || !POPULAR_CARS_DB[presetKey]) return;
+
+      var car = POPULAR_CARS_DB[presetKey];
+      var y = parseInt(document.getElementById('carYear').value, 10) || 2026;
+      var age = Math.max(0, 2026 - y);
+      var rate = RESIDUAL_RATES_2026[age] !== undefined ? RESIDUAL_RATES_2026[age] : 0.04;
+
+      var estimatedPrice = Math.round(car.newPrice * rate);
+      document.getElementById('carPrice').value = estimatedPrice;
+      document.getElementById('carEstInfo').innerText = "(잔가율 " + Math.round(rate * 100) + "% 적용 추정가)";
 
       calculateCarWelfare();
     }
 
     function resetCarForm() {
-      document.getElementById('carModelName').value = "";
+      document.getElementById('carPresetSelect').value = "";
       document.getElementById('carDisplacement').value = "";
-      document.getElementById('carNewPrice').value = "";
       document.getElementById('carPrice').value = "";
+      document.getElementById('carEstInfo').innerText = "";
       document.getElementById('carYear').value = "2016";
       document.getElementById('carCategorySelect').value = "sedan";
       document.getElementById('carHouseholdSelect').value = "normal";
       document.getElementById('carUsageSelect').value = "personal";
       document.getElementById('carResultBox').style.display = "none";
-      handleYearOrNewPriceChange();
+      handleYearChange();
       showToast("차량 입력창이 초기화되었습니다.");
     }
 
@@ -1129,7 +1186,7 @@
       resDesc.innerHTML = "• <strong>판정 사유:</strong> 배기량 " + cc + "cc, 차령 " + age + "년, 가액 " + price.toLocaleString() + "만 원으로 [1,600cc 미만 & 10년 이상] 또는 [가액 200만원 미만] 완화 기준을 충족하지 못했습니다.<br>• <strong>치명적 결과:</strong> 차량가액 전액인 <strong>" + price.toLocaleString() + "만 원이 매월 소득으로 100% 반영</strong>되어 생계·의료·주거급여 수급 기준선을 즉시 초과할 위험이 매우 높습니다.<br>• <strong>실무 대응:</strong> 명의 이전, 생업용 증빙 확보(사업자등록·영업소득), 폐차 여부를 사전에 반드시 상담하시기 바랍니다.";
     }
 
-    // [개선]: 누적 합산 오류 방지 (독립 필드 simCarGeneral에 직접 매핑)
+    // 1번 탭 모의계산기에 차량결과 즉시 반영
     function applyCarToSimulation() {
       if (evaluatedCarResult.price <= 0) {
         showToast("먼저 차량 계산 및 판정을 진행해 주세요.");
@@ -1231,7 +1288,7 @@
       if (text.indexOf("해체") !== -1 || text.indexOf("연락두절") !== -1 || text.indexOf("왕래두절") !== -1 || text.indexOf("단절") !== -1) result.support = "severed";
       else if (text.indexOf("부양의무자 없음") !== -1 || text.indexOf("가족 없음") !== -1) result.support = "none";
 
-      // [개선]: 임차보증금(전·월세) 95% 법정 환산 적용
+      // 임차보증금(전·월세) 95% 법정 보정계수 적용
       var depositVal = parseAmountByPatterns(text, ["임차보증금", "전세금", "보증금"]);
       var resVal = parseAmountByPatterns(text, ["주거용재산", "자가주택", "주택공시가"]);
       
@@ -1397,9 +1454,7 @@
       });
     }
 
-    // ==========================================
-    // [핵심 보완] 법정 계산 로직 (주거한도 초과분 판정 순서 정정)
-    // ==========================================
+    // 법정 소득인정액 계산 로직
     function runSimulation() {
       var members = parseInt(document.getElementById('simMembers').value, 10) || 1;
       var region = document.getElementById('simRegion').value;
@@ -1419,21 +1474,17 @@
       var baseDeduct = POLICY_2026.baseDeduction[region];
       var resLimit = POLICY_2026.residentialLimit[region];
 
-      // 금융재산 500만원 생활준비금 선공제
       var actualFin = Math.max(0, finProp - POLICY_2026.financialDeduction);
       var combinedGen = genProp + carGenProp;
-
-      // 총 공제 가능액 = 기본재산공제액 + 금융부채
       var remainDeduction = baseDeduct + debt;
 
-      // 1) 주거용재산에서 기본공제+부채 우선 차감
+      // 주거용재산 우선 공제
       var remainRes = resProp;
       var deductRes = Math.min(remainRes, remainDeduction);
       remainRes -= deductRes;
       remainDeduction -= deductRes;
 
-      // 2) 주거용재산 공제 후 초과분 한도 판정 (지침 정밀 부합)
-      //    공제 후 잔여 주거용재산이 주거한도를 넘을 때만 초과분을 일반재산으로 가산
+      // 주거한도 초과분 판정
       var transferredGen = 0;
       var finalRes = remainRes;
       if (finalRes > resLimit) {
@@ -1441,7 +1492,7 @@
         finalRes = resLimit;
       }
 
-      // 3) 일반재산(차량 가산분 + 주거한도 초과분 포함)에서 남은 공제액 차감
+      // 일반재산 차감
       var actualGen = combinedGen + transferredGen;
       var finalGen = actualGen;
       if (finalGen > 0 && remainDeduction > 0) {
@@ -1450,7 +1501,7 @@
         remainDeduction -= deductGen;
       }
 
-      // 4) 금융재산에서 잔여 공제액 차감
+      // 금융재산 차감
       var finalFin = actualFin;
       if (finalFin > 0 && remainDeduction > 0) {
         var deductFin = Math.min(finalFin, remainDeduction);
@@ -1458,7 +1509,6 @@
         remainDeduction -= deductFin;
       }
 
-      // 월 소득환산율 적용
       var propIncomeResidential = Math.round(finalRes * POLICY_2026.rates.residential);
       var propIncomeGeneral = Math.round(finalGen * POLICY_2026.rates.general);
       var propIncomeFinancial = Math.round(finalFin * POLICY_2026.rates.financial);
@@ -1466,7 +1516,6 @@
 
       var totalPropIncome = propIncomeResidential + propIncomeGeneral + propIncomeFinancial + propIncomeCar;
 
-      // 근로소득 공제 계산
       var earnedDeducted = 0;
       var deductDesc = "";
       if (workAbility === 'none') {
@@ -1787,7 +1836,6 @@
       document.getElementById('officialAlimiTableWrap').style.display = 'none';
     }
 
-    // [개선]: 미등록 단지 입력 시 국토부 알리미 원클릭 열람 지원
     function lookupOfficialPriceDirect() {
       var addr = document.getElementById('propAddressInput').value.trim();
       var type = document.getElementById('propTypeSelect').value;
@@ -1864,7 +1912,6 @@
         return;
       }
 
-      // 미등록 주소 안내
       currentCalculatedPriceMan = 0;
       updateCalculatedPrice(0);
       tableWrap.style.display = 'none';
@@ -1875,7 +1922,7 @@
       noticeBox.style.color = '#1e3a8a';
       noticeBox.innerHTML = 
         "<div style='font-weight: 800; font-size: 14px; margin-bottom: 6px;'>🏛️ 국토교통부 알리미 공식 열람 대상 주소</div>" +
-        "<div style='margin-bottom: 8px;'>조회 주소 <strong>[" + addr + " " + dong + " " + ho + "]</strong>가 클라이언트 간이 DB에 없어 정부 공식 열람창 조회가 필요합니다.</div>" +
+        "<div style='margin-bottom: 8px;'>조회 주소 <strong>[" + addr + " " + dong + " " + ho + "]</strong>가 간이 DB에 없어 정부 공식 열람창 조회가 필요합니다.</div>" +
         "<button class='btn btn-outline btn-sm' onclick='openExternalRealtyFallback()' style='background-color:#ffffff; font-weight:700;'>🔗 국토교통부 알리미 열람창 바로가기 (주소 자동복사)</button>" +
         "<div style='margin-top:6px; font-size:11px; color:#475569;'>확인하신 공시가격을 하단 [공시가격 직접 수정] 란에 입력해 주시면 즉시 반영됩니다.</div>";
     }
