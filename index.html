@@ -57,7 +57,7 @@
       letter-spacing: -0.2px;
     }
 
-    /* 시인성을 극대화한 상단 탭 컨테이너 */
+    /* 시인성 극대화 상단 네비게이션 탭 */
     .nav-tabs {
       display: flex;
       gap: 10px;
@@ -86,7 +86,6 @@
       background-color: #e2e8f0;
       color: #0f172a;
     }
-    /* 선택된 활성 탭 */
     .nav-tab.active {
       background: linear-gradient(135deg, #2563eb, #1d4ed8);
       color: #ffffff;
@@ -443,7 +442,6 @@
       <h1>대구광역시 읍면동 스마트 복지상담 &amp; 소득인정액 판정기</h1>
       <span class="header-org-badge">대구광역시 복지정책과</span>
     </div>
-    <!-- 시인성이 강화된 네비게이션 탭 -->
     <div class="nav-tabs">
       <button class="nav-tab active" onclick="switchTab('tab-counsel')">
         📋 1. 복지상담 &amp; 5대 사업 모의판정
@@ -509,11 +507,12 @@
             </select>
           </div>
           <div>
-            <label>거주 지역</label>
+            <label>거주 지역 (법정 기본재산공제/주거한도)</label>
             <select id="simRegion" onchange="runSimulation()">
-              <option value="large" selected>대도시(대구 등) (기본공제 9,900만원 / 주거한도 1.72억)</option>
-              <option value="medium">중소도시 (기본공제 7,700만원 / 주거한도 1.12억)</option>
-              <option value="small">농어촌 (기본공제 5,300만원 / 주거한도 9,900만원)</option>
+              <option value="daegu" selected>대구광역시 구 지역 (공제 7,700만원 / 주거한도 1.46억)</option>
+              <option value="gunwi">대구광역시 군위군 (군지역 공제 5,300만원 / 주거한도 1.12억)</option>
+              <option value="seoul">서울특별시 (공제 9,900만원 / 주거한도 1.72억)</option>
+              <option value="gyeonggi">경기도 (공제 8,000만원 / 주거한도 1.51억)</option>
             </select>
           </div>
           <div>
@@ -957,18 +956,22 @@
 
   <script>
     // ==========================================
-    // 1. 2026년 법정 기준 상수
+    // 1. 2026년 법정 기준 상수 (대구광역시 중심 정밀 보정)
     // ==========================================
     var POLICY_2026 = {
       medianIncome: { 1: 256.4, 2: 419.9, 3: 535.9, 4: 649.5, 5: 755.7, 6: 855.6, 7: 951.5 },
-      baseDeduction: { large: 9900, medium: 7700, small: 5300 },
-      residentialLimit: { large: 17200, medium: 11200, small: 9900 },
+      // 대구(광역시) 7,700만 / 군위군(군지역) 5,300만 / 서울 9,900만 / 경기 8,000만
+      baseDeduction: { daegu: 7700, gunwi: 5300, seoul: 9900, gyeonggi: 8000 },
+      // 주거용재산 한도: 대구 1억 4,600만 / 군위군 1억 1,200만 / 서울 1억 7,200만 / 경기 1억 5,100만
+      residentialLimit: { daegu: 14600, gunwi: 11200, seoul: 17200, gyeonggi: 15100 },
       rates: { residential: 0.0104, general: 0.0417, financial: 0.0626, car: 1.0 },
       financialDeduction: 500,
       standards: { livelihood: 0.32, medical: 0.40, housing: 0.48, nearPoverty: 0.50, emergency: 0.75 },
-      emergencyAssetLimit: { large: 31000, medium: 19400, small: 16500 },
+      // 긴급지원 재산한도: 대구 2억 4,100만 / 군위군 1억 6,500만 / 서울 3억 1,000만
+      emergencyAssetLimit: { daegu: 24100, gunwi: 16500, seoul: 31000, gyeonggi: 24100 },
       basicPensionLimit: { single: 213, couple: 340.8 },
-      basicPensionBaseDeduct: { large: 13500, medium: 8500, small: 7250 },
+      // 기초연금 기본재산공제: 대구(대도시) 1억 3,500만 / 군위군 7,250만
+      basicPensionBaseDeduct: { daegu: 13500, gunwi: 7250, seoul: 13500, gyeonggi: 13500 },
       basicPensionEarnedDeduct: 116,
       dalgubeol: {
         incomeLimitPercent: 1.0,
@@ -1025,7 +1028,6 @@
       handleYearChange();
     }
 
-    // 모델 프리셋 선택 시 가액 자동 산출
     function handleCarPresetChange() {
       var presetKey = document.getElementById('carPresetSelect').value;
       if (!presetKey || !POPULAR_CARS_DB[presetKey]) {
@@ -1053,7 +1055,6 @@
       }
     }
 
-    // 연식 및 프리셋 기준 자동 산정
     function autoCalculateCarPrice() {
       var presetKey = document.getElementById('carPresetSelect').value;
       if (!presetKey || !POPULAR_CARS_DB[presetKey]) return;
@@ -1504,8 +1505,8 @@
       var car100 = parseFloat(document.getElementById('simCar100').value) || 0;
 
       var median = POLICY_2026.medianIncome[members] || 256.4;
-      var baseDeduct = POLICY_2026.baseDeduction[region];
-      var resLimit = POLICY_2026.residentialLimit[region];
+      var baseDeduct = POLICY_2026.baseDeduction[region] || 7700;
+      var resLimit = POLICY_2026.residentialLimit[region] || 14600;
 
       var actualFin = Math.max(0, finProp - POLICY_2026.financialDeduction);
       var combinedGen = genProp + carGenProp;
@@ -1569,7 +1570,7 @@
       var totalRealIncome = earned + other;
       var netAssets = (resProp + combinedGen + finProp) - debt;
 
-      // 1. 기초생활보장
+      // 1. 국민기초생활보장
       var liveStandard = Math.round(median * POLICY_2026.standards.livelihood);
       var medStandard = Math.round(median * POLICY_2026.standards.medical);
       var houseStandard = Math.round(median * POLICY_2026.standards.housing);
@@ -1604,7 +1605,7 @@
 
       // 2. 긴급복지지원
       var emergStandard = Math.round(median * POLICY_2026.standards.emergency);
-      var emergAssetLimit = POLICY_2026.emergencyAssetLimit[region];
+      var emergAssetLimit = POLICY_2026.emergencyAssetLimit[region] || 24100;
 
       document.getElementById('valEmergIncome').innerText = totalRealIncome;
       var badgeEm = document.getElementById('badgeEmergency');
@@ -1616,12 +1617,12 @@
         cardEm.classList.add("pass");
         badgeEm.className = "benefit-badge badge-pass";
         badgeEm.innerText = "긴급지원 충족";
-        detailEm.innerText = "실소득 " + totalRealIncome + "만(기준 " + emergStandard + "만) 및 순재산 요건 충족";
+        detailEm.innerText = "실소득 " + totalRealIncome + "만(기준 " + emergStandard + "만) 및 재산한도(" + emergAssetLimit + "만) 충족";
       } else {
         cardEm.classList.add("fail");
         badgeEm.className = "benefit-badge badge-fail";
         badgeEm.innerText = "긴급기준 초과";
-        detailEm.innerText = totalRealIncome > emergStandard ? "소득(" + emergStandard + "만) 초과" : "순재산 한도 초과";
+        detailEm.innerText = totalRealIncome > emergStandard ? "소득(" + emergStandard + "만) 초과" : "순재산 한도(" + emergAssetLimit + "만) 초과";
       }
 
       // 3. 달구벌 희망급여
@@ -1679,7 +1680,7 @@
       }
 
       // 5. 기초연금
-      var bpDeduct = POLICY_2026.basicPensionBaseDeduct[region];
+      var bpDeduct = POLICY_2026.basicPensionBaseDeduct[region] || 13500;
       var bpLimit = members >= 2 ? POLICY_2026.basicPensionLimit.couple : POLICY_2026.basicPensionLimit.single;
       
       var bpCarLuxury = (car100 >= 4000) ? car100 : 0;
@@ -1718,7 +1719,7 @@
 
       document.getElementById('breakdownContent').innerHTML = 
         "<ul>" +
-          "<li><strong>기준중위소득(2026):</strong> " + members + "인 가구 " + median + "만 원 (대도시공제: " + baseDeduct + "만 원, 주거한도: " + resLimit + "만 원)</li>" +
+          "<li><strong>기준중위소득(2026):</strong> " + members + "인 가구 " + median + "만 원 (선택지역 기본공제: " + baseDeduct + "만 원, 주거한도: " + resLimit + "만 원)</li>" +
           "<li><strong>기초보장 소득평가액:</strong> 근로" + deductDesc + " " + earnedDeducted + "만 + 기타 " + other + "만 = <strong>" + evalIncome + "만 원</strong></li>" +
           "<li><strong>기초보장 재산환산액:</strong> 주거(월 1.04%) " + propIncomeResidential + "만 + 일반(월 4.17%) " + propIncomeGeneral + "만 (차량반영 " + carGenProp + "만 포함)" + (transferredGen > 0 ? " [주거한도초과 " + transferredGen + "만 가산]" : "") + " + 금융(월 6.26%) " + propIncomeFinancial + "만 + 차량100% " + propIncomeCar + "만 = <strong>월 " + totalPropIncome + "만 원</strong></li>" +
           "<li><strong>기초보장 최종 소득인정액:</strong> 소득평가액(" + evalIncome + "만) + 재산환산액(" + totalPropIncome + "만) = <span style='color: #1d4ed8; font-weight:700;'>" + recognizedIncome + "만 원</span></li>" +
