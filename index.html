@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>읍면동 스마트 복지상담 &amp; 소득인정액 모의판정 시스템</title>
-  <!-- Daum 우편번호 서비스 CDN -->
-  <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+  <!-- Daum 우편번호 서비스 CDN (blob: URL 및 샌드박스 호환을 위해 https: 프로토콜 명시) -->
+  <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
   <style>
     :root {
       --primary: #1d4ed8;
@@ -85,7 +85,6 @@
     .calculation-breakdown summary { font-weight: 700; cursor: pointer; color: var(--primary); margin-bottom: 6px; outline: none; }
     .calculation-breakdown ul { margin-left: 18px; margin-top: 6px; }
 
-    /* 빠른 금액 추가 버튼 칩 */
     .btn-chip { padding: 4px 8px; font-size: 11px; background: #e2e8f0; border-radius: 4px; border: none; cursor: pointer; font-weight: 600; color: #334155; }
     .btn-chip:hover { background: #cbd5e1; }
 
@@ -115,7 +114,7 @@
 
   <header>
     <div class="header-title">
-      <span class="header-badge">행정망 독립형 v2.2</span>
+      <span class="header-badge">행정망 독립형 v2.3</span>
       <h1>읍면동 스마트 복지상담 &amp; 소득인정액 판정기</h1>
       <span class="header-desc">2026 보건복지부 복지사업안내 법정 공식 적용</span>
     </div>
@@ -355,13 +354,13 @@
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
           
-          <!-- 좌측 컬럼: 검색 및 입력창 -->
           <div>
             <div style="margin-bottom: 12px;">
               <label>1. 도로명 주소 검색 (카카오 우편번호 서비스)</label>
               <div style="display: flex; gap: 8px;">
-                <input type="text" id="propAddressInput" placeholder="[주소 검색] 버튼을 눌러 주소를 선택하세요" readonly style="background: #f8fafc; font-weight: 600;">
+                <input type="text" id="propAddressInput" placeholder="[주소 검색]을 누르거나 직접 입력하세요" style="background: #ffffff; font-weight: 600;">
                 <button class="btn btn-primary" onclick="openDaumPostcode()" style="white-space: nowrap;">🔍 주소 검색</button>
+                <button class="btn btn-outline" type="button" onclick="enableManualAddressInput(true)" style="white-space: nowrap;">✏️ 직접 입력</button>
               </div>
             </div>
 
@@ -392,17 +391,14 @@
               </div>
             </div>
 
-            <!-- 스마트 열람 실행 버튼 -->
             <div style="margin-top: 14px;">
               <button class="btn btn-primary" style="width: 100%; font-size: 14px; padding: 10px;" onclick="openOfficialRealtySystem()">
                 ⚡ 주소 자동복사 및 국토교통부 열람창 열기
               </button>
             </div>
 
-            <!-- 안내 알림 박스 -->
             <div id="propStatusNotice" style="margin-top: 12px; display: none; padding: 12px; border-radius: 8px; font-size: 12px; line-height: 1.6;"></div>
 
-            <!-- 직접 입력 컨트롤 -->
             <div style="margin-top: 14px; padding: 14px; background: #f8fafc; border-radius: 8px; border: 1px solid var(--border-color);">
               <label style="font-weight: 700; color: #1e293b;">공시가격 직접 입력 (만 원 단위)</label>
               <div style="display: flex; gap: 8px; margin-bottom: 8px;">
@@ -410,7 +406,6 @@
                 <span style="display: flex; align-items: center; font-weight: 700; font-size: 13px; color: var(--text-sub); white-space: nowrap;">만 원</span>
               </div>
               
-              <!-- 간편 금액 증액 버튼 -->
               <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 12px;">
                 <button class="btn-chip" onclick="addPriceMan(10000)">+1억</button>
                 <button class="btn-chip" onclick="addPriceMan(5000)">+5,000만</button>
@@ -419,7 +414,6 @@
                 <button class="btn-chip" onclick="resetPriceMan()" style="color: #b91c1c;">초기화</button>
               </div>
 
-              <!-- 시세 기반 공시지가 간이 추정기 -->
               <div style="padding-top: 10px; border-top: 1px dashed var(--border-color);">
                 <label style="color: var(--text-sub);">💡 민원인이 시세만 알고 있는 경우 (현실화율 69% 추산)</label>
                 <div style="display: flex; gap: 6px;">
@@ -430,7 +424,6 @@
             </div>
           </div>
 
-          <!-- 우측 컬럼: 결과 확인 및 1번 탭 반영 -->
           <div>
             <div class="benefit-card" style="border: 2px solid #bfdbfe; background: #f8fafc; padding: 18px; margin-bottom: 14px;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -509,7 +502,7 @@
       basicPensionBaseDeduct: { large: 13500, medium: 8500, small: 7250 }
     };
 
-    let currentCalculatedPriceMan = 0; // 만 원 단위
+    let currentCalculatedPriceMan = 0;
     let lastEvaluatedCar = { isCutoff: false, price: 0 };
 
     // ==========================================
@@ -684,6 +677,7 @@
       }
     }
 
+    // [수정] 하단 담당자 종합의견 문구 제거
     function processCounseling() {
       const text = document.getElementById('counselInput').value;
       if (!text.trim()) {
@@ -696,12 +690,7 @@
 작성일시: ${new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
 접수창구: 주민센터 복지민원창구 내방상담
 
-${text.trim()}
-
---------------------------------------------------
-[담당자 종합의견 및 심사계획]
-상담자 진술 및 제출 서류를 확인하여 국민기초생활보장 및 공적급여 신청서를 접수함.
-행복e음 전산망을 통한 공적 소득·재산 자료 조회 후 법정 기준에 따라 보장결정 예정임.`;
+${text.trim()}`;
 
       document.getElementById('counselOutput').innerText = formatted;
 
@@ -1011,35 +1000,89 @@ ${text.trim()}
     // ==========================================
     // Daum Postcode & 공시가격 스마트 연계 엔진
     // ==========================================
-    function openDaumPostcode() {
+    function ensureDaumScriptLoaded() {
+      return new Promise((resolve, reject) => {
+        if (typeof daum !== 'undefined' && window.daum && window.daum.Postcode) {
+          return resolve();
+        }
+        const existing = document.getElementById('daum-postcode-script');
+        if (existing) existing.remove();
+        
+        const script = document.createElement('script');
+        script.id = 'daum-postcode-script';
+        script.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
+        script.async = true;
+        script.onload = () => {
+          if (typeof daum !== 'undefined' && window.daum && window.daum.Postcode) {
+            resolve();
+          } else {
+            reject(new Error("Daum object not found"));
+          }
+        };
+        script.onerror = () => reject(new Error("Network or sandbox blocked CDN"));
+        document.head.appendChild(script);
+      });
+    }
+
+    function enableManualAddressInput(showNotice = false) {
+      const input = document.getElementById('propAddressInput');
+      input.removeAttribute('readonly');
+      input.style.background = '#ffffff';
+      input.placeholder = '도로명 주소를 직접 입력하세요 (예: 대구 수성구 고산로 90)';
+      input.focus();
+      if (showNotice) {
+        showToast("주소 직접 입력 모드로 전환되었습니다.");
+      }
+    }
+
+    async function openDaumPostcode() {
       const modal = document.getElementById('postcodeModal');
       const layer = document.getElementById('postcodeLayer');
+
+      // Daum 모듈 로드 확인 및 비동기 복구
+      if (typeof daum === 'undefined' || !window.daum || !window.daum.Postcode) {
+        try {
+          showToast("우편번호 검색 모듈 연결 중...");
+          await ensureDaumScriptLoaded();
+        } catch (err) {
+          enableManualAddressInput();
+          showToast("외부 우편번호 CDN 연결이 불가하여 직접 입력 모드로 전환되었습니다.");
+          return;
+        }
+      }
+
       modal.classList.add('open');
       layer.innerHTML = "";
 
-      new daum.Postcode({
-        oncomplete: function(data) {
-          document.getElementById('propAddressInput').value = data.roadAddress || data.jibunAddress;
-          
-          const bcode = data.bcode || "-";
-          const bdMgtSn = data.buildingCode || "-";
-          const pnu = bdMgtSn.length >= 19 ? bdMgtSn.substring(0, 19) : (bcode.padEnd(19, '0'));
+      try {
+        new daum.Postcode({
+          oncomplete: function(data) {
+            document.getElementById('propAddressInput').value = data.roadAddress || data.jibunAddress;
+            
+            const bcode = data.bcode || "-";
+            const bdMgtSn = data.buildingCode || "-";
+            const pnu = bdMgtSn.length >= 19 ? bdMgtSn.substring(0, 19) : (bcode.padEnd(19, '0'));
 
-          document.getElementById('propBcode').innerText = bcode;
-          document.getElementById('propBdMgtSn').innerText = bdMgtSn;
-          document.getElementById('propPnu').innerText = pnu;
+            document.getElementById('propBcode').innerText = bcode;
+            document.getElementById('propBdMgtSn').innerText = bdMgtSn;
+            document.getElementById('propPnu').innerText = pnu;
 
-          if (data.apartment === 'Y') {
-            document.getElementById('propTypeSelect').value = 'apt';
-          }
-          togglePropTypeUI();
+            if (data.apartment === 'Y') {
+              document.getElementById('propTypeSelect').value = 'apt';
+            }
+            togglePropTypeUI();
 
-          closeDaumPostcode();
-          showToast("주소가 입력되었습니다.");
-        },
-        width: '100%',
-        height: '100%'
-      }).embed(layer);
+            closeDaumPostcode();
+            showToast("주소가 입력되었습니다.");
+          },
+          width: '100%',
+          height: '100%'
+        }).embed(layer);
+      } catch (err) {
+        closeDaumPostcode();
+        enableManualAddressInput();
+        showToast("우편번호 창을 열 수 없어 직접 입력 모드로 전환되었습니다.");
+      }
     }
 
     function closeDaumPostcode() {
@@ -1052,7 +1095,6 @@ ${text.trim()}
       dongHoWrap.style.display = (type === 'apt') ? 'flex' : 'none';
     }
 
-    // [개선] 주소 복사 + 공식 열람 시스템 다이렉트 팝업
     function openOfficialRealtySystem() {
       const addr = document.getElementById('propAddressInput').value.trim();
       const type = document.getElementById('propTypeSelect').value;
@@ -1063,17 +1105,14 @@ ${text.trim()}
         return;
       }
 
-      // 주소 자동 복사
       navigator.clipboard.writeText(addr).then(() => {
         showToast("주소가 클립보드에 복사되었습니다!");
       }).catch(() => {});
 
-      // 대상 사이트 분기
-      let targetUrl = "https://www.realtyprice.kr/notice/town/nfSiteLink.htm"; // 아파트
-      if (type === 'house') targetUrl = "https://www.realtyprice.kr/notice/hpindividual/siteLink.htm"; // 단독
-      if (type === 'land') targetUrl = "https://www.realtyprice.kr/notice/gsindividual/siteLink.htm"; // 토지
+      let targetUrl = "https://www.realtyprice.kr/notice/town/nfSiteLink.htm";
+      if (type === 'house') targetUrl = "https://www.realtyprice.kr/notice/hpindividual/siteLink.htm";
+      if (type === 'land') targetUrl = "https://www.realtyprice.kr/notice/gsindividual/siteLink.htm";
 
-      // 공식 열람창 새 탭 오픈
       window.open(targetUrl, '_blank');
 
       noticeBox.style.display = 'block';
@@ -1088,7 +1127,6 @@ ${text.trim()}
       document.getElementById('propManualPriceMan').focus();
     }
 
-    // 만 원 단위 입력 핸들러
     function handleManualPriceManInput() {
       const manVal = parseFloat(document.getElementById('propManualPriceMan').value) || 0;
       updateCalculatedPrice(manVal);
@@ -1106,14 +1144,13 @@ ${text.trim()}
       updateCalculatedPrice(0);
     }
 
-    // 시세 기반 공시가 간이 추산 (현실화율 69%)
     function estimateOfficialPrice() {
       const marketVal = parseFloat(document.getElementById('marketPriceInput').value) || 0;
       if (marketVal <= 0) {
         alert("대략적인 매매 시세(만원)를 입력해주세요.");
         return;
       }
-      const estimated = Math.round(marketVal * 0.69); // 현실화율 69%
+      const estimated = Math.round(marketVal * 0.69);
       document.getElementById('propManualPriceMan').value = estimated;
       updateCalculatedPrice(estimated);
       showToast(`시세 ${marketVal.toLocaleString()}만원 기준 공시가(약 ${estimated.toLocaleString()}만원)가 추산되었습니다.`);
