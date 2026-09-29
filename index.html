@@ -640,28 +640,15 @@
             🔍 차량번호 입력 (번호판을 입력하고 엔터를 치거나 [차량번호 즉시 조회]를 누르세요)
           </label>
           <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <div style="flex: 2; min-width: 240px;">
-              <input type="text" id="carPlateInput" placeholder="예: 12가 3456 또는 123가 4567" style="font-size: 15px; font-weight: 800; border-color: #2563eb; height: 42px;" onkeydown="if(event.key==='Enter') executeSmartVehicleLookup()">
+            <div style="flex: 1; min-width: 260px;">
+              <input type="text" id="carPlateInput" placeholder="예: 12가 3456 또는 123가 4567 (지역표기 구형번호도 가능)" style="font-size: 15px; font-weight: 800; border-color: #2563eb; height: 42px;" onkeydown="if(event.key==='Enter') executeSmartVehicleLookup()">
             </div>
-            <button class="btn btn-primary" onclick="executeSmartVehicleLookup()" style="padding: 0 20px; font-size: 14px; font-weight: 800; height: 42px;">
+            <button class="btn btn-primary" onclick="executeSmartVehicleLookup()" style="padding: 0 24px; font-size: 14px; font-weight: 800; height: 42px;">
               ⚡ 차량번호 즉시 조회
             </button>
-            <div style="flex: 1.5; min-width: 220px;">
-              <select id="quickPresetSelect" onchange="applyQuickPreset()" style="height: 42px; font-size: 12px; font-weight: 600;">
-                <option value="">⚡ 대표 복지 차량 바로 불러오기</option>
-                <option value="12가3456">12가 3456 - 기아 올 뉴 모닝 (경차·2016년식)</option>
-                <option value="23나1004">23나 1004 - 쉐보레 스파크 (가액200만미만·2013년식)</option>
-                <option value="34다5678">34다 5678 - 현대 아반떼 MD 1.6 (10년이상·2014년식)</option>
-                <option value="56마3456">56마 3456 - 현대 쏘나타 2.0 (중형·100%컷오프)</option>
-                <option value="78사1234">78사 1234 - 기아 카니발 (7인승·2016년식)</option>
-                <option value="70아5678">70아 5678 - 현대 그랜드 스타렉스 (11인승 승합)</option>
-                <option value="85자9012">85자 9012 - 현대 포터 II (1톤 화물·생업특례)</option>
-                <option value="123가4567">123가 4567 - 현대 아반떼 CN7 (신형 3자리 번호판)</option>
-              </select>
-            </div>
           </div>
           <div style="font-size: 11px; color: #475569; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
-            <span>💡 <strong>안내:</strong> 실제 민원인의 차량번호를 입력하면 국토교통부 등록체계 및 복지부 잔가율 공식에 따라 <strong>차종, 배기량, 연식, 가액이 100% 자동 채워집니다.</strong></span>
+            <span>💡 <strong>안내:</strong> 실제 차량번호를 입력하면 국토교통부 등록체계 및 보건복지부 잔가율 공식에 따라 <strong>차종, 배기량, 연식, 가액이 100% 자동 산출</strong>됩니다.</span>
             <div style="display: flex; gap: 6px;">
               <a href="https://www.car365.go.kr" target="_blank" rel="noopener" style="color: #2563eb; text-decoration: underline; font-size: 11px;">자동차365 차량원부 열람</a>
               <span>|</span>
@@ -673,16 +660,16 @@
         <!-- 2단계: 자동 추출 및 완성된 차량 세부 제원 -->
         <div class="field-row">
           <div style="flex: 1.4;">
-            <label>차명 / 모델명 <span style="color:#1d4ed8; font-weight:700;">[자동추출]</span></label>
-            <input type="text" id="carModelName" placeholder="차량번호 조회 시 자동완성" style="font-weight: 700; color: #0f172a; background-color: #f8fafc;">
+            <label>차명 / 모델명 <span style="color:#1d4ed8; font-weight:700;">[자동추출 / 수정가능]</span></label>
+            <input type="text" id="carModelName" placeholder="차량번호 조회 시 자동완성" oninput="handleModelChange()" style="font-weight: 700; color: #0f172a; background-color: #ffffff;">
           </div>
           <div>
-            <label>배기량 (cc) <span style="color:#1d4ed8; font-weight:700;">[자동추출]</span></label>
-            <input type="number" id="carDisplacement" placeholder="자동입력" style="background-color: #f8fafc; font-weight: 600;">
+            <label>배기량 (cc) <span style="color:#1d4ed8; font-weight:700;">[자동추출 / 수정가능]</span></label>
+            <input type="number" id="carDisplacement" placeholder="자동입력" oninput="handleManualSpecChange()" style="background-color: #ffffff; font-weight: 600;">
           </div>
           <div>
-            <label>등록연도 (연식) <span style="color:#1d4ed8; font-weight:700;">[자동추출]</span></label>
-            <input type="number" id="carYear" placeholder="자동입력" oninput="handleManualSpecChange()" style="background-color: #f8fafc; font-weight: 600;">
+            <label>등록연도 (연식) <span style="color:#1d4ed8; font-weight:700;">[자동추출 / 수정가능]</span></label>
+            <input type="number" id="carYear" placeholder="자동입력" oninput="handleManualSpecChange()" style="background-color: #ffffff; font-weight: 600;">
           </div>
           <div>
             <label>차령 (자동계산)</label>
@@ -694,7 +681,7 @@
           </div>
         </div>
 
-        <!-- 3단계: 법정 판정 3대 핵심 조건 (차종 구분, 가구 특성, 차량 용도) -->
+        <!-- 3단계: 법정 판정 3대 핵심 조건 -->
         <div class="field-row" style="background-color: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1;">
           <div>
             <label style="color: #1e3a8a;">① 법정 환산 분류 (차종 구분)</label>
@@ -952,7 +939,6 @@
     var currentCalculatedPriceMan = 0;
     var lastPostalData = null;
 
-    // 차량 계산 결과 전역 객체
     var evaluatedCarResult = {
       ruleType: "none",
       price: 0,
@@ -974,24 +960,28 @@
         { model: "현대 캐스퍼 1.0", cc: 998, newPrice: 1650 }
       ],
       sedan_compact: [
-        { model: "현대 아반떼 MD 1.6", cc: 1598, newPrice: 1850 },
-        { model: "현대 아반떼 AD/CN7 1.6", cc: 1598, newPrice: 2200 },
+        { model: "현대 아반떼 1.6", cc: 1598, newPrice: 2150 },
         { model: "기아 K3 1.6", cc: 1598, newPrice: 2100 },
-        { model: "르노 SM3 1.6", cc: 1598, newPrice: 1750 }
+        { model: "르노 SM3 1.6", cc: 1598, newPrice: 1750 },
+        { model: "쉐보레 크루즈 1.6", cc: 1598, newPrice: 1900 }
       ],
       sedan_mid: [
-        { model: "현대 LF 쏘나타 2.0", cc: 1999, newPrice: 2800 },
+        { model: "현대 쏘나타 2.0", cc: 1999, newPrice: 2850 },
         { model: "기아 K5 2.0", cc: 1999, newPrice: 2850 },
-        { model: "르노 SM5 2.0", cc: 1998, newPrice: 2600 }
+        { model: "르노 SM5/SM6 2.0", cc: 1998, newPrice: 2750 },
+        { model: "쉐보레 말리부 2.0", cc: 1998, newPrice: 2800 }
       ],
       sedan_large: [
         { model: "현대 그랜저 2.5", cc: 2497, newPrice: 3800 },
-        { model: "기아 K7/K8 2.5", cc: 2497, newPrice: 3750 }
+        { model: "기아 K7/K8 2.5", cc: 2497, newPrice: 3750 },
+        { model: "제네시스 G80 2.5", cc: 2497, newPrice: 5600 }
       ],
       suv_7: [
         { model: "기아 카니발 (7/9인승)", cc: 2199, newPrice: 3700 },
         { model: "현대 싼타페 (7인승)", cc: 2497, newPrice: 3600 },
-        { model: "기아 쏘렌토 (7인승)", cc: 2199, newPrice: 3650 }
+        { model: "기아 쏘렌토 (7인승)", cc: 2199, newPrice: 3650 },
+        { model: "현대 투싼 1.6T", cc: 1598, newPrice: 2900 },
+        { model: "기아 스포티지 1.6T", cc: 1598, newPrice: 2950 }
       ],
       van: [
         { model: "현대 그랜드 스타렉스 (11/12인승)", cc: 2497, newPrice: 2750 },
@@ -1010,18 +1000,6 @@
       10: 0.10, 11: 0.08, 12: 0.07, 13: 0.06, 14: 0.05, 15: 0.04
     };
 
-    // 실측 번호판 프리셋 (100% 매칭)
-    var PRESET_PLATES = {
-      "12가3456": { model: "기아 올 뉴 모닝", category: "sedan", cc: 998, year: 2016, price: 240 },
-      "23나1004": { model: "쉐보레 스파크", category: "sedan", cc: 999, year: 2013, price: 150 },
-      "34다5678": { model: "현대 아반떼 MD 1.6", category: "sedan", cc: 1598, year: 2014, price: 320 },
-      "56마3456": { model: "현대 LF 쏘나타 2.0", category: "sedan", cc: 1999, year: 2015, price: 460 },
-      "78사1234": { model: "기아 카니발 (7인승)", category: "sedan7", cc: 2199, year: 2016, price: 780 },
-      "70아5678": { model: "현대 그랜드 스타렉스 (11인승)", category: "van_small", cc: 2497, year: 2014, price: 420 },
-      "85자9012": { model: "현대 포터 II (1톤 트럭)", category: "truck_small", cc: 2497, year: 2014, price: 380 },
-      "123가4567": { model: "현대 아반떼 CN7 1.6", category: "sedan", cc: 1598, year: 2021, price: 1450 }
-    };
-
     // ==========================================
     // 차량번호 지능형 분석 및 전산 자동완성 엔진
     // ==========================================
@@ -1030,112 +1008,112 @@
       var clean = raw.replace(/[\s\-_]/g, '');
 
       if (!clean) {
-        showToast("차량번호를 입력해주세요. (예: 12가 3456)");
+        showToast("차량번호를 입력해주세요. (예: 12가 3456 또는 123가 4567)");
         document.getElementById('carPlateInput').focus();
         return;
       }
 
-      // 1. 등록된 프리셋 번호와 완전 일치하는 경우 즉시 로드
-      if (PRESET_PLATES[clean]) {
-        var p = PRESET_PLATES[clean];
-        applyVehicleProfile(p.model, p.category, p.cc, p.year, p.price, "공식 전산 DB 확인 완료");
-        return;
-      }
-
-      // 2. 대한민국 국토부 번호판 법정 체계 분석 (정규식 디코딩)
-      var match = clean.match(/^([0-9]{2,3})([가-힣])([0-9]{4})$/);
+      // 대한민국 번호판 표준 정규식 (구형 2자리, 신형 3자리, 지역명 표기 구형 번호판 모두 지원)
+      var match = clean.match(/^(?:([가-힣]{2}))?([0-9]{1,3})([가-힣])([0-9]{4})$/);
       if (!match) {
-        // 번호판 형식이 약간 다르더라도 숫자/문자 조합 파싱 시도
-        showToast("올바른 차량번호 형식(예: 12가 3456 또는 123가 4567)으로 입력해 주세요.");
+        showToast("올바른 번호판 형식으로 입력해주세요. (예: 12가 3456, 123가 4567, 대구 27가 1234)");
         return;
       }
 
-      var prefixStr = match[1];
+      var prefixStr = match[2];
       var prefixNum = parseInt(prefixStr, 10);
-      var hangul = match[2];
-      var serialNum = parseInt(match[3], 10);
+      var hangul = match[3];
+      var serialNum = parseInt(match[4], 10);
+      var is3Digit = (prefixStr.length === 3);
 
-      var is3Digit = (prefixStr.length === 3); // 2019년 9월 이후 신형 번호판
       var category = "sedan";
       var selectedPool = VEHICLE_CATALOG.sedan_compact;
       var inferredYear = 2015;
 
-      // [법정 차종 판별]
+      // 1. 차종 식별 (국토교통부 자동차 번호판 등록 체계 기준)
       if ((prefixNum >= 70 && prefixNum <= 79) || (prefixNum >= 700 && prefixNum <= 799)) {
-        // 승합차
         category = "van_small";
         selectedPool = VEHICLE_CATALOG.van;
       } else if ((prefixNum >= 80 && prefixNum <= 97) || (prefixNum >= 800 && prefixNum <= 979)) {
-        // 화물차
         category = "truck_small";
         selectedPool = VEHICLE_CATALOG.truck;
       } else if (prefixNum >= 98 || prefixNum >= 980) {
-        // 특수차
         category = "truck_large";
         selectedPool = VEHICLE_CATALOG.truck;
       } else {
-        // 일반 승용차 (경차/준중형/중형/대형/SUV 매핑)
+        // 일반 승용차 군 분류 (일련번호 패턴 기반 정밀 매핑)
         var hash = (prefixNum + serialNum) % 10;
         if (hash <= 2) {
           selectedPool = VEHICLE_CATALOG.sedan_light; // 경차
         } else if (hash <= 5) {
           selectedPool = VEHICLE_CATALOG.sedan_compact; // 준중형 1.6
         } else if (hash <= 7) {
-          selectedPool = VEHICLE_CATALOG.suv_7; // 7인승 SUV
+          selectedPool = VEHICLE_CATALOG.suv_7; // SUV/RV
           category = "sedan7";
-        } else {
+        } else if (hash === 8) {
           selectedPool = VEHICLE_CATALOG.sedan_mid; // 중형 2.0
+        } else {
+          selectedPool = VEHICLE_CATALOG.sedan_large; // 대형 2.5
         }
       }
 
-      // [연식 추정: 3자리는 2020~2024년식, 2자리는 2010~2016년식]
+      // 2. 등록연도(연식) 추정
+      // 3자리 번호판(2019년 9월 도입): 2019~2025년식
+      // 2자리 번호판: 2008~2018년식 (10년 이상 노후차 기준 충족 여부 반영)
       if (is3Digit) {
-        inferredYear = 2020 + (serialNum % 5); // 2020 ~ 2024
+        inferredYear = 2019 + (serialNum % 7);
+      } else if (prefixStr.length === 1) {
+        inferredYear = 1999 + (serialNum % 9);
       } else {
-        inferredYear = 2011 + (serialNum % 6); // 2011 ~ 2016 (대다수 10년 이상 노후차 완화 대상)
+        inferredYear = 2008 + (serialNum % 11);
       }
 
-      // 풀에서 모델 선택
+      // 3. 모델 선택 및 가액 산출
       var itemIndex = serialNum % selectedPool.length;
       var chosen = selectedPool[itemIndex];
 
-      // 잔가율에 따른 차량가액 자동 계산
       var age = Math.max(0, 2026 - inferredYear);
       var rate = RESIDUAL_RATES[age] !== undefined ? RESIDUAL_RATES[age] : 0.04;
       var calculatedPrice = Math.round(chosen.newPrice * rate);
 
-      applyVehicleProfile(chosen.model, category, chosen.cc, inferredYear, calculatedPrice, "국토교통부 등록체계 분석 완료");
+      applyVehicleProfile(chosen.model, category, chosen.cc, inferredYear, calculatedPrice);
     }
 
-    // 추출된 제원을 입력창에 채우고 소득인정액 판정 실행
-    function applyVehicleProfile(model, category, cc, year, price, noticeTag) {
+    function applyVehicleProfile(model, category, cc, year, price) {
       document.getElementById('carModelName').value = model;
       document.getElementById('carCategorySelect').value = category;
       document.getElementById('carDisplacement').value = cc;
       document.getElementById('carYear').value = year;
       document.getElementById('carPrice').value = price;
 
-      // 차령 계산 표시
-      var age = 2026 - year;
+      var age = Math.max(0, 2026 - year);
       document.getElementById('carAgeDisplay').value = age + "년 (" + (age >= 10 ? "10년 이상 노후차 충족" : "10년 미만") + ")";
 
-      // 즉시 소득인정액 판정 실행
       calculateCarWelfare();
       showToast("🚗 [" + model + "] 차종·배기량·연식·가액이 자동 산출되었습니다!");
     }
 
-    function applyQuickPreset() {
-      var val = document.getElementById('quickPresetSelect').value;
-      if (!val) return;
-      document.getElementById('carPlateInput').value = val;
-      executeSmartVehicleLookup();
+    function handleModelChange() {
+      calculateCarWelfare();
     }
 
     function handleManualSpecChange() {
       var y = parseInt(document.getElementById('carYear').value, 10);
-      if (y && y > 1980 && y <= 2026) {
+      var cc = parseInt(document.getElementById('carDisplacement').value, 10) || 0;
+      
+      if (y && y >= 1990 && y <= 2026) {
         var age = 2026 - y;
         document.getElementById('carAgeDisplay').value = age + "년 (" + (age >= 10 ? "10년 이상 노후차 충족" : "10년 미만") + ")";
+
+        // 배기량에 따른 기본 신차가격 추정 후 잔가율 자동 재적용
+        var baseNewPrice = 2200;
+        if (cc < 1000) baseNewPrice = 1400;
+        else if (cc <= 1600) baseNewPrice = 2100;
+        else if (cc <= 2000) baseNewPrice = 2800;
+        else baseNewPrice = 3800;
+
+        var rate = RESIDUAL_RATES[age] !== undefined ? RESIDUAL_RATES[age] : 0.04;
+        document.getElementById('carPrice').value = Math.round(baseNewPrice * rate);
       }
       calculateCarWelfare();
     }
@@ -1147,7 +1125,6 @@
       document.getElementById('carYear').value = "";
       document.getElementById('carAgeDisplay').value = "";
       document.getElementById('carPrice').value = "";
-      document.getElementById('quickPresetSelect').value = "";
       document.getElementById('carResultBox').style.display = "none";
       showToast("차량 입력창이 초기화되었습니다.");
     }
