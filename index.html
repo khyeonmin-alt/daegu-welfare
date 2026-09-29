@@ -40,28 +40,42 @@
       color: #0f172a;
     }
 
+    /* 시인성을 극대화한 상단 탭 컨테이너 */
     .nav-tabs {
       display: flex;
-      gap: 8px;
-      background-color: #e2e8f0;
-      padding: 4px;
-      border-radius: 8px;
+      gap: 10px;
+      background-color: #f1f5f9;
+      padding: 6px;
+      border-radius: 12px;
+      border: 2px solid #cbd5e1;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.04);
     }
     .nav-tab {
-      padding: 6px 16px;
-      font-size: 13px;
-      font-weight: 600;
-      border-radius: 6px;
+      padding: 10px 22px;
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: 8px;
       cursor: pointer;
-      border: none;
-      background-color: transparent;
-      color: #475569;
-      transition: all 0.15s;
-    }
-    .nav-tab.active {
+      border: 1px solid transparent;
       background-color: #ffffff;
-      color: #1d4ed8;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+      color: #475569;
+      transition: all 0.2s ease-in-out;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      letter-spacing: -0.3px;
+    }
+    .nav-tab:hover {
+      background-color: #e2e8f0;
+      color: #0f172a;
+    }
+    /* 선택된 활성 탭 (선명한 그라데이션 및 그림자 입체감) */
+    .nav-tab.active {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #ffffff;
+      border-color: #1e40af;
+      box-shadow: 0 4px 10px rgba(29, 78, 216, 0.35);
+      transform: translateY(-1px);
     }
 
     .main-container {
@@ -411,9 +425,14 @@
     <div class="header-title">
       <h1>읍면동 스마트 복지상담 &amp; 소득인정액 판정기</h1>
     </div>
+    <!-- 시인성이 강화된 네비게이션 탭 -->
     <div class="nav-tabs">
-      <button class="nav-tab active" onclick="switchTab('tab-counsel')">1. 복지상담 &amp; 5대 사업 모의판정</button>
-      <button class="nav-tab" onclick="switchTab('tab-vehicle')">2. 차량 소득인정액 &amp; 부동산 공시가</button>
+      <button class="nav-tab active" onclick="switchTab('tab-counsel')">
+        📋 1. 복지상담 &amp; 5대 사업 모의판정
+      </button>
+      <button class="nav-tab" onclick="switchTab('tab-vehicle')">
+        🚗 2. 차량 소득인정액 &amp; 부동산 공시가
+      </button>
     </div>
   </header>
 
@@ -672,7 +691,7 @@
           </div>
         </div>
 
-        <!-- 가액 단독 입력 영역 (자동완성 및 직접수정 가능) -->
+        <!-- 가액 단독 입력 영역 (자동 산정 및 직접 수정 지원) -->
         <div class="field-row" style="background-color: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid #cbd5e1;">
           <div style="width: 100%;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
@@ -988,7 +1007,7 @@
       handleYearChange();
     }
 
-    // 모델 프리셋 선택 시 가액 자동산출
+    // 모델 프리셋 선택 시 가액 자동 산출
     function handleCarPresetChange() {
       var presetKey = document.getElementById('carPresetSelect').value;
       if (!presetKey || !POPULAR_CARS_DB[presetKey]) {
@@ -1009,7 +1028,6 @@
       var isOver10 = age >= 10;
       document.getElementById('carAgeDisplay').value = age + "년 (" + (isOver10 ? "10년 이상 충족" : "10년 미만") + ")";
 
-      // 프리셋이 선택되어 있다면 연식 변경 시 가액 재계산
       if (document.getElementById('carPresetSelect').value) {
         autoCalculateCarPrice();
       } else {
@@ -1017,7 +1035,7 @@
       }
     }
 
-    // 연식과 프리셋 기준 자동 산정
+    // 연식 및 프리셋 기준 자동 산정
     function autoCalculateCarPrice() {
       var presetKey = document.getElementById('carPresetSelect').value;
       if (!presetKey || !POPULAR_CARS_DB[presetKey]) return;
@@ -1186,7 +1204,6 @@
       resDesc.innerHTML = "• <strong>판정 사유:</strong> 배기량 " + cc + "cc, 차령 " + age + "년, 가액 " + price.toLocaleString() + "만 원으로 [1,600cc 미만 & 10년 이상] 또는 [가액 200만원 미만] 완화 기준을 충족하지 못했습니다.<br>• <strong>치명적 결과:</strong> 차량가액 전액인 <strong>" + price.toLocaleString() + "만 원이 매월 소득으로 100% 반영</strong>되어 생계·의료·주거급여 수급 기준선을 즉시 초과할 위험이 매우 높습니다.<br>• <strong>실무 대응:</strong> 명의 이전, 생업용 증빙 확보(사업자등록·영업소득), 폐차 여부를 사전에 반드시 상담하시기 바랍니다.";
     }
 
-    // 1번 탭 모의계산기에 차량결과 즉시 반영
     function applyCarToSimulation() {
       if (evaluatedCarResult.price <= 0) {
         showToast("먼저 차량 계산 및 판정을 진행해 주세요.");
@@ -1288,7 +1305,6 @@
       if (text.indexOf("해체") !== -1 || text.indexOf("연락두절") !== -1 || text.indexOf("왕래두절") !== -1 || text.indexOf("단절") !== -1) result.support = "severed";
       else if (text.indexOf("부양의무자 없음") !== -1 || text.indexOf("가족 없음") !== -1) result.support = "none";
 
-      // 임차보증금(전·월세) 95% 법정 보정계수 적용
       var depositVal = parseAmountByPatterns(text, ["임차보증금", "전세금", "보증금"]);
       var resVal = parseAmountByPatterns(text, ["주거용재산", "자가주택", "주택공시가"]);
       
@@ -1454,7 +1470,6 @@
       });
     }
 
-    // 법정 소득인정액 계산 로직
     function runSimulation() {
       var members = parseInt(document.getElementById('simMembers').value, 10) || 1;
       var region = document.getElementById('simRegion').value;
@@ -1478,13 +1493,11 @@
       var combinedGen = genProp + carGenProp;
       var remainDeduction = baseDeduct + debt;
 
-      // 주거용재산 우선 공제
       var remainRes = resProp;
       var deductRes = Math.min(remainRes, remainDeduction);
       remainRes -= deductRes;
       remainDeduction -= deductRes;
 
-      // 주거한도 초과분 판정
       var transferredGen = 0;
       var finalRes = remainRes;
       if (finalRes > resLimit) {
@@ -1492,7 +1505,6 @@
         finalRes = resLimit;
       }
 
-      // 일반재산 차감
       var actualGen = combinedGen + transferredGen;
       var finalGen = actualGen;
       if (finalGen > 0 && remainDeduction > 0) {
@@ -1501,7 +1513,6 @@
         remainDeduction -= deductGen;
       }
 
-      // 금융재산 차감
       var finalFin = actualFin;
       if (finalFin > 0 && remainDeduction > 0) {
         var deductFin = Math.min(finalFin, remainDeduction);
