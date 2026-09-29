@@ -34,28 +34,10 @@
       z-index: 50;
       box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     }
-    .header-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .header-badge {
-      background-color: #dbeafe;
-      color: #1e40af;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 9999px;
-      border: 1px solid #bfdbfe;
-    }
     .header-title h1 {
       font-size: 18px;
       font-weight: 700;
       color: #0f172a;
-    }
-    .header-desc {
-      font-size: 12px;
-      color: #475569;
     }
 
     .nav-tabs {
@@ -218,7 +200,6 @@
       overflow-y: auto;
     }
 
-    /* 5대 사업 모의판정 반응형 매트릭스 */
     .matrix-grid {
       display: flex;
       flex-wrap: wrap;
@@ -419,9 +400,7 @@
 
   <header>
     <div class="header-title">
-      <span class="header-badge">행정망 무결점 v4.3</span>
       <h1>읍면동 스마트 복지상담 &amp; 소득인정액 판정기</h1>
-      <span class="header-desc">2026 복지사업안내 &amp; 대구시 달구벌 희망급여 법정 산식 100% 매칭</span>
     </div>
     <div class="nav-tabs">
       <button class="nav-tab active" onclick="switchTab('tab-counsel')">1. 복지상담 &amp; 5대 사업 모의판정</button>
@@ -478,10 +457,7 @@
 
       <div class="card">
         <div class="card-header">
-          <div class="card-title">📊 5대 핵심 복지사업별 소득인정액 및 지원 모의판정 (대구 달구벌 희망급여 포함)</div>
-          <div style="font-size: 12px; color: #475569;">
-            * 법정 산식(노인 20만원 선공제, 기초연금 116만원 선공제 및 연 4% 환산율, 달구벌 독립심사) 완벽 적용
-          </div>
+          <div class="card-title">📊 5대 핵심 복지사업별 소득인정액 및 지원 모의판정</div>
         </div>
 
         <div class="field-row">
@@ -867,10 +843,9 @@
 
   <script>
     // ==========================================
-    // 1. 2026년 법정 기준 상수 (달구벌 희망급여 포함)
+    // 1. 2026년 법정 기준 상수
     // ==========================================
     var POLICY_2026 = {
-      // 2026년 기준 중위소득 (월 단위 / 만원 환산)
       medianIncome: { 1: 256.4, 2: 419.9, 3: 535.9, 4: 649.5, 5: 755.7, 6: 855.6, 7: 951.5 },
       baseDeduction: { large: 9900, medium: 7700, small: 5300 },
       residentialLimit: { large: 17200, medium: 11200, small: 9900 },
@@ -878,17 +853,12 @@
       financialDeduction: 500,
       standards: { livelihood: 0.32, medical: 0.40, housing: 0.48, nearPoverty: 0.50, emergency: 0.75 },
       emergencyAssetLimit: { large: 31000, medium: 19400, small: 16500 },
-      
-      // 기초연금 기준액 및 공제 (2026 개정 적용)
       basicPensionLimit: { single: 213, couple: 340.8 },
       basicPensionBaseDeduct: { large: 13500, medium: 8500, small: 7250 },
-      basicPensionEarnedDeduct: 116, // 116만 원 정액 선공제
-      
-      // 대구시 자체사업: 달구벌 희망급여 기준
+      basicPensionEarnedDeduct: 116,
       dalgubeol: {
-        incomeLimitPercent: 1.0, // 기준중위소득 100% 이하
-        generalAssetLimit: 35000, // 일반재산 3억 5,000만원 이하
-        // 가구원수별 금융재산 기준 (천원 단위 -> 만원 환산: 기본공제 600만 + 중위소득 150%)
+        incomeLimitPercent: 1.0,
+        generalAssetLimit: 35000,
         financialLimit: { 1: 984.6, 2: 1229.8, 3: 1403.8, 4: 1574.2, 5: 1733.5, 6: 1883.3, 7: 2027.2 }
       }
     };
@@ -897,7 +867,6 @@
     var lastEvaluatedCar = { isCutoff: false, price: 0 };
     var lastPostalData = null;
 
-    // 분할 복사용 캐시
     var lastParsedSections = {
       info: "",
       life: "",
@@ -1248,7 +1217,7 @@
     }
 
     // ==========================================
-    // 3. 시뮬레이션 핵심 계산 (정밀 법정 산식 100% 매칭)
+    // 3. 시뮬레이션 핵심 계산
     // ==========================================
     function runSimulation() {
       var members = parseInt(document.getElementById('simMembers').value, 10) || 1;
@@ -1268,9 +1237,7 @@
       var baseDeduct = POLICY_2026.baseDeduction[region];
       var resLimit = POLICY_2026.residentialLimit[region];
 
-      // ----------------------------------------------------
       // [A] 기초생활보장 & 일반 차상위 재산의 소득환산액 산출
-      // ----------------------------------------------------
       var actualRes = resProp;
       var transferredGen = 0;
       if (actualRes > resLimit) {
@@ -1303,21 +1270,17 @@
       var propIncomeResidential = Math.round(finalRes * POLICY_2026.rates.residential);
       var propIncomeGeneral = Math.round(finalGen * POLICY_2026.rates.general);
       var propIncomeFinancial = Math.round(finalFin * POLICY_2026.rates.financial);
-      var propIncomeCar = car100; // 기초생활보장: 컷오프 대상은 전액 월 100% 반영
+      var propIncomeCar = car100;
 
       var totalPropIncome = propIncomeResidential + propIncomeGeneral + propIncomeFinancial + propIncomeCar;
 
-      // ----------------------------------------------------
-      // [B] 기초생활보장 소득평가액 산출 (노인 20만원 선공제 정밀 반영)
-      // ----------------------------------------------------
+      // [B] 기초생활보장 소득평가액 산출
       var earnedDeducted = 0;
-      var isSenior = (workAbility === 'none'); // 만 65세 이상
+      var isSenior = (workAbility === 'none');
       if (isSenior) {
-        // 만 65세 이상 노인: 20만원 선공제 후 30% 추가 공제 (소득 20만원 이하는 0원)
         var after20 = Math.max(0, earned - 20);
         earnedDeducted = Math.round(after20 * 0.7);
       } else {
-        // 일반 근로자: 기본 30% 공제 (70%만 반영)
         earnedDeducted = Math.round(earned * 0.7);
       }
       var evalIncome = earnedDeducted + other;
@@ -1326,9 +1289,7 @@
       var totalRealIncome = earned + other;
       var netAssets = (resProp + genProp + finProp) - debt;
 
-      // ----------------------------------------------------
-      // [1] 국민기초생활보장 판정 (생계 32%, 의료 40%, 주거 48%)
-      // ----------------------------------------------------
+      // [1] 국민기초생활보장 판정
       var liveStandard = Math.round(median * POLICY_2026.standards.livelihood);
       var medStandard = Math.round(median * POLICY_2026.standards.medical);
       var houseStandard = Math.round(median * POLICY_2026.standards.housing);
@@ -1361,9 +1322,7 @@
         detailBL.innerText = "주거기준(" + houseStandard + "만) 초과로 선정 제외 예상";
       }
 
-      // ----------------------------------------------------
-      // [2] 정부 긴급복지지원 판정 (중위 75% 실소득 & 순재산 독립 심사)
-      // ----------------------------------------------------
+      // [2] 정부 긴급복지지원 판정
       var emergStandard = Math.round(median * POLICY_2026.standards.emergency);
       var emergAssetLimit = POLICY_2026.emergencyAssetLimit[region];
 
@@ -1385,9 +1344,7 @@
         detailEm.innerText = totalRealIncome > emergStandard ? "소득(" + emergStandard + "만) 초과" : "순재산 한도 초과";
       }
 
-      // ----------------------------------------------------
-      // [3] 대구시 달구벌 희망급여 (중위 100%·재산3.5억·금융 독립심사)
-      // ----------------------------------------------------
+      // [3] 대구시 달구벌 희망급여
       var dgIncomeLimit = Math.round(median * POLICY_2026.dalgubeol.incomeLimitPercent);
       var dgGenAssetLimit = POLICY_2026.dalgubeol.generalAssetLimit;
       var dgFinLimit = POLICY_2026.dalgubeol.financialLimit[members] || 1574.2;
@@ -1421,9 +1378,7 @@
         detailDG.innerHTML = reasons.join(", ") + "<br><span style='color:#b91c1c;'>※ 구·군 인정 시 예외지원 심의 가능</span>";
       }
 
-      // ----------------------------------------------------
-      // [4] 차상위계층 판정 (기준중위소득 50% 이하)
-      // ----------------------------------------------------
+      // [4] 차상위계층 판정
       var nearStandard = Math.round(median * POLICY_2026.standards.nearPoverty);
       document.getElementById('valNearPoverty').innerText = recognizedIncome;
       var badgeNP = document.getElementById('badgeNearPoverty');
@@ -1443,21 +1398,16 @@
         detailNP.innerText = "중위 50%(" + nearStandard + "만) 초과";
       }
 
-      // ----------------------------------------------------
-      // [5] 기초연금 정밀 산출 (116만원 선공제 + 연 4% 완만 환산율)
-      // ----------------------------------------------------
+      // [5] 기초연금 산출
       var bpDeduct = POLICY_2026.basicPensionBaseDeduct[region];
       var bpLimit = members >= 2 ? POLICY_2026.basicPensionLimit.couple : POLICY_2026.basicPensionLimit.single;
       
-      // 기초연금 자동차 규정: 4,000만원 미만 차량은 일반재산(연 4%)으로 완만하게 합산, 4,000만 이상만 월 100%
       var bpCarLuxury = (car100 >= 4000) ? car100 : 0;
       var bpCarGeneral = (car100 < 4000) ? car100 : 0;
 
-      // 주거용+일반재산 통합, 금융 2,000만원 기본공제
       var bpNetProp = Math.max(0, (resProp + genProp + bpCarGeneral - bpDeduct) + Math.max(0, finProp - 2000) - debt);
-      var bpPropIncome = Math.round((bpNetProp * 0.04) / 12) + bpCarLuxury; // 연 4%의 월 환산액(0.33%)
+      var bpPropIncome = Math.round((bpNetProp * 0.04) / 12) + bpCarLuxury;
 
-      // 근로소득: 116만 원 정액 선공제 후 30% 추가 공제
       var bpEarned = Math.max(0, Math.round((earned - POLICY_2026.basicPensionEarnedDeduct) * 0.7));
       var bpTotal = bpEarned + other + bpPropIncome;
 
@@ -1486,9 +1436,7 @@
         detailBP.innerText = "만 65세 이상 대상 (신청 불가)";
       }
 
-      // ----------------------------------------------------
       // 세부 산출식 디스플레이
-      // ----------------------------------------------------
       var seniorDeductNotice = isSenior ? " [만 65세 노인: 20만원 선공제 후 30% 공제]" : " [일반: 30% 공제]";
       document.getElementById('breakdownContent').innerHTML = 
         "<ul>" +
