@@ -404,7 +404,7 @@
     </div>
     <div class="nav-tabs">
       <button class="nav-tab active" onclick="switchTab('tab-counsel')">1. 복지상담 &amp; 5대 사업 모의판정</button>
-      <button class="nav-tab" onclick="switchTab('tab-vehicle')">2. 차량 컷오프 &amp; 부동산 공시가</button>
+      <button class="nav-tab" onclick="switchTab('tab-vehicle')">2. 차량 소득인정액 &amp; 부동산 공시가</button>
     </div>
   </header>
 
@@ -442,7 +442,6 @@
           </div>
           <div id="counselOutput" class="result-box">상담 내용을 입력하고 [복지사정서 생성 및 핵심 항목 자동 추출] 버튼을 누르시면 표준 서식으로 정제됩니다.</div>
           
-          <!-- 행복e음 항목별 빠른 분할 복사 도구 -->
           <div class="copy-split-wrap" style="margin-top: 12px; padding: 10px; background-color: #f1f5f9; border-radius: 8px; border: 1px solid #cbd5e1;">
             <div style="font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 6px;">⚡ 행복e음 항목별 분할 복사 (클릭 시 클립보드 복사)</div>
             <div style="display: flex; gap: 6px; flex-wrap: wrap;">
@@ -616,62 +615,118 @@
       </div>
     </div>
 
-    <!-- ==================== TAB 2: 차량 컷오프 & 부동산 공시가 ==================== -->
+    <!-- ==================== TAB 2: 차량 소득인정액 & 부동산 공시가 ==================== -->
     <div id="tab-vehicle" class="tab-content">
       
-      <!-- 차량 판정기 -->
+      <!-- 차량가액 및 월 소득인정액 계산기 (전면 개편) -->
       <div class="card">
         <div class="card-header">
-          <div class="card-title">🚗 차량 컷오프(100% 월소득 환산 vs 일반재산 4.17%) 사전 판정기</div>
-          <span style="font-size: 12px; color: #475569;">2026년 기준 1,600cc 미만 &amp; 10년 이상 또는 200만원 미만 시 일반재산</span>
+          <div class="card-title">🚗 복지대상자 차량가액 및 월 소득인정액 정밀 계산기</div>
+          <span style="font-size: 12px; color: #475569;">차량정보·차종·가구특성·용도에 따른 법정 환산율 및 월 반영액 판정</span>
         </div>
 
+        <!-- 1행: 차량 기본 정보 및 간편 매칭 -->
         <div class="field-row">
+          <div style="flex: 1.5; min-width: 220px;">
+            <label>차량번호 입력 (또는 대표차종 자동완성)</label>
+            <div style="display: flex; gap: 6px;">
+              <input type="text" id="carPlateInput" placeholder="예: 12가 3456 또는 아반떼" oninput="handlePlateInput()">
+              <select id="carSampleSelect" onchange="applyCarSamplePreset()" style="width: 140px; font-size: 12px;">
+                <option value="">대표예시 선택</option>
+                <option value="spark">스파크(경차)</option>
+                <option value="morning">모닝(경차)</option>
+                <option value="avante">아반떼 1.6</option>
+                <option value="sonata16">쏘나타 1.6T</option>
+                <option value="sonata20">쏘나타 2.0</option>
+                <option value="carnival7">카니발(7인승)</option>
+                <option value="starex">스타렉스(승합)</option>
+                <option value="porter">포터II(1톤화물)</option>
+              </select>
+            </div>
+          </div>
           <div>
-            <label>차종 세부 트림 선택</label>
-            <select id="carModelSelect" onchange="handleCarSelect()">
-              <option value="">직접 배기량/차량가액 입력</option>
-              <option value="spark">쉐보레 스파크 (999cc 경차)</option>
-              <option value="morning">기아 모닝 (998cc 경차)</option>
-              <option value="avante">현대 아반떼 1.6 (1,598cc)</option>
-              <option value="sonata16">현대 쏘나타 1.6 터보 (1,591cc ➔ 1600cc 미만)</option>
-              <option value="sonata20">현대 쏘나타 2.0 자연흡기 (1,999cc ➔ 100% 컷오프 주의)</option>
-              <option value="tucson16">현대 투싼 1.6 터보 (1,598cc)</option>
-              <option value="porter">현대 포터 II / 봉고 III (생계형 화물차)</option>
-            </select>
+            <label>차명 / 모델명</label>
+            <input type="text" id="carModelName" placeholder="예: 현대 아반떼 MD">
           </div>
           <div>
             <label>배기량 (cc)</label>
             <input type="number" id="carDisplacement" placeholder="예: 1598">
           </div>
           <div>
-            <label>차량 제작/등록연도 (연식)</label>
-            <input type="number" id="carYear" placeholder="예: 2012">
+            <label>등록연도 (연식)</label>
+            <input type="number" id="carYear" placeholder="예: 2014" oninput="updateCarAgeDisplay()">
+          </div>
+          <div>
+            <label>차령 (자동계산)</label>
+            <input type="text" id="carAgeDisplay" placeholder="연식 입력 시 자동계산" readonly style="background-color: #f8fafc; font-weight: 600;">
           </div>
           <div>
             <label>사회보장차량가액 (만원)</label>
-            <input type="number" id="carPrice" placeholder="예: 150">
+            <input type="number" id="carPrice" placeholder="예: 250">
+          </div>
+        </div>
+
+        <!-- 2행: 법정 판정 3대 핵심 조건 (차종 구분, 가구 특성, 차량 용도) -->
+        <div class="field-row" style="background-color: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1;">
+          <div>
+            <label style="color: #1e3a8a;">① 차종 구분</label>
+            <select id="carCategorySelect">
+              <option value="sedan">일반 승용 (5인승 이하)</option>
+              <option value="sedan7">7인승 이상 승용 (RV·SUV·미니밴)</option>
+              <option value="van_small">승합차 (소형: 11~15인승)</option>
+              <option value="van_large">승합차 (중·대형: 16인승 이상)</option>
+              <option value="truck_small">화물차 (소형: 1톤 이하)</option>
+              <option value="truck_large">화물차 (중·대형: 1톤 초과)</option>
+            </select>
           </div>
           <div>
-            <label>특수 목적/용도</label>
-            <select id="carPurpose">
-              <option value="normal">일반 자가용</option>
-              <option value="disabled">장애인 직접운전/동승용 (면제)</option>
-              <option value="business">생업용(화물·용달·영업용)</option>
+            <label style="color: #1e3a8a;">② 가구 특성</label>
+            <select id="carHouseholdSelect">
+              <option value="normal">일반 가구</option>
+              <option value="disabled">장애인 등록 가구 (장애인 명의/직접운전·동승 1대)</option>
+              <option value="large_family">다인/다자녀 가구 (3인 이상 또는 2자녀 이상)</option>
+            </select>
+          </div>
+          <div>
+            <label style="color: #1e3a8a;">③ 차량 용도</label>
+            <select id="carUsageSelect">
+              <option value="personal">일반 자가용 (단순 출퇴근·이동)</option>
+              <option value="business">생업용 (사업자등록 및 실질 소득활동 직접 사용 입증)</option>
             </select>
           </div>
         </div>
 
         <div style="margin-top: 10px; display: flex; justify-content: flex-end; gap: 8px;">
-          <button class="btn btn-primary" onclick="evaluateCar()">🔍 차량 기준 판정</button>
+          <button class="btn btn-primary" onclick="calculateCarWelfare()" style="padding: 10px 20px; font-size: 14px;">
+            ⚡ 소득인정액 계산 및 법정 기준 판정
+          </button>
         </div>
 
-        <div id="carResultBox" style="margin-top: 14px; display: none; padding: 14px; border-radius: 8px; border: 1px solid #cbd5e1;">
-          <div id="carResultTitle" style="font-weight: 700; font-size: 14px; margin-bottom: 4px;"></div>
-          <div id="carResultDesc" style="font-size: 13px; color: #475569; margin-bottom: 10px;"></div>
-          <button class="btn btn-outline btn-sm" id="btnApplyCar" onclick="applyCarToSimulation()">
-            📥 판정 결과를 1번 탭 모의계산기에 자동 반영
-          </button>
+        <!-- 판정 결과 카드 -->
+        <div id="carResultBox" style="margin-top: 16px; display: none; padding: 18px; border-radius: 8px; border: 1px solid #cbd5e1;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div id="carResultTitle" style="font-weight: 800; font-size: 16px;"></div>
+            <span id="carResultBadge" class="benefit-badge" style="font-size: 13px; padding: 4px 10px;"></span>
+          </div>
+
+          <div class="grid-2col" style="margin-bottom: 12px;">
+            <div style="background-color: #ffffff; padding: 12px; border-radius: 6px; border: 1px solid #cbd5e1;">
+              <div style="font-size: 11px; color: #64748b;">사회보장 차량가액</div>
+              <div id="carResTotalVal" style="font-size: 18px; font-weight: 700; color: #1e293b;">- 만 원</div>
+            </div>
+            <div style="background-color: #ffffff; padding: 12px; border-radius: 6px; border: 1px solid #cbd5e1;">
+              <div style="font-size: 11px; color: #64748b;">매월 기초생활보장 소득인정액 반영액 (월 산정액)</div>
+              <div id="carResMonthlyVal" style="font-size: 20px; font-weight: 800; color: #1d4ed8;">- 만 원/월</div>
+            </div>
+          </div>
+
+          <div id="carResultDesc" style="font-size: 13px; line-height: 1.7; color: #334155; margin-bottom: 14px; background-color: #ffffff; padding: 12px; border-radius: 6px; border: 1px solid #cbd5e1;"></div>
+
+          <div style="display: flex; gap: 8px; justify-content: flex-end;">
+            <button class="btn btn-success" id="btnApplyCar" onclick="applyCarToSimulation()">
+              👉 계산된 결과를 1번 탭(모의계산기)에 즉시 반영하기
+            </button>
+          </div>
         </div>
       </div>
 
@@ -864,8 +919,16 @@
     };
 
     var currentCalculatedPriceMan = 0;
-    var lastEvaluatedCar = { isCutoff: false, price: 0 };
     var lastPostalData = null;
+
+    // 차량 계산 결과 전역 저장 객체
+    var evaluatedCarResult = {
+      ruleType: "none",      // exempt, general, business_general, cutoff
+      price: 0,              // 원 차량가액
+      applicableAssetVal: 0, // 일반재산으로 반영될 금액
+      monthlyIncomeVal: 0,   // 월 소득인정액 반영액
+      isCutoff: false        // 100% 컷오프 여부
+    };
 
     var lastParsedSections = {
       info: "",
@@ -1237,7 +1300,6 @@
       var baseDeduct = POLICY_2026.baseDeduction[region];
       var resLimit = POLICY_2026.residentialLimit[region];
 
-      // [A] 기초생활보장 & 일반 차상위 재산의 소득환산액 산출
       var actualRes = resProp;
       var transferredGen = 0;
       if (actualRes > resLimit) {
@@ -1274,7 +1336,6 @@
 
       var totalPropIncome = propIncomeResidential + propIncomeGeneral + propIncomeFinancial + propIncomeCar;
 
-      // [B] 기초생활보장 소득평가액 산출
       var earnedDeducted = 0;
       var isSenior = (workAbility === 'none');
       if (isSenior) {
@@ -1289,7 +1350,7 @@
       var totalRealIncome = earned + other;
       var netAssets = (resProp + genProp + finProp) - debt;
 
-      // [1] 국민기초생활보장 판정
+      // 1. 기초생활보장
       var liveStandard = Math.round(median * POLICY_2026.standards.livelihood);
       var medStandard = Math.round(median * POLICY_2026.standards.medical);
       var houseStandard = Math.round(median * POLICY_2026.standards.housing);
@@ -1322,7 +1383,7 @@
         detailBL.innerText = "주거기준(" + houseStandard + "만) 초과로 선정 제외 예상";
       }
 
-      // [2] 정부 긴급복지지원 판정
+      // 2. 긴급복지지원
       var emergStandard = Math.round(median * POLICY_2026.standards.emergency);
       var emergAssetLimit = POLICY_2026.emergencyAssetLimit[region];
 
@@ -1344,7 +1405,7 @@
         detailEm.innerText = totalRealIncome > emergStandard ? "소득(" + emergStandard + "만) 초과" : "순재산 한도 초과";
       }
 
-      // [3] 대구시 달구벌 희망급여
+      // 3. 달구벌 희망급여
       var dgIncomeLimit = Math.round(median * POLICY_2026.dalgubeol.incomeLimitPercent);
       var dgGenAssetLimit = POLICY_2026.dalgubeol.generalAssetLimit;
       var dgFinLimit = POLICY_2026.dalgubeol.financialLimit[members] || 1574.2;
@@ -1378,7 +1439,7 @@
         detailDG.innerHTML = reasons.join(", ") + "<br><span style='color:#b91c1c;'>※ 구·군 인정 시 예외지원 심의 가능</span>";
       }
 
-      // [4] 차상위계층 판정
+      // 4. 차상위계층
       var nearStandard = Math.round(median * POLICY_2026.standards.nearPoverty);
       document.getElementById('valNearPoverty').innerText = recognizedIncome;
       var badgeNP = document.getElementById('badgeNearPoverty');
@@ -1398,7 +1459,7 @@
         detailNP.innerText = "중위 50%(" + nearStandard + "만) 초과";
       }
 
-      // [5] 기초연금 산출
+      // 5. 기초연금
       var bpDeduct = POLICY_2026.basicPensionBaseDeduct[region];
       var bpLimit = members >= 2 ? POLICY_2026.basicPensionLimit.couple : POLICY_2026.basicPensionLimit.single;
       
@@ -1436,7 +1497,6 @@
         detailBP.innerText = "만 65세 이상 대상 (신청 불가)";
       }
 
-      // 세부 산출식 디스플레이
       var seniorDeductNotice = isSenior ? " [만 65세 노인: 20만원 선공제 후 30% 공제]" : " [일반: 30% 공제]";
       document.getElementById('breakdownContent').innerHTML = 
         "<ul>" +
@@ -1450,99 +1510,280 @@
     }
 
     // ==========================================
-    // TAB 2 차량 판정
+    // TAB 2 차량가액 & 소득인정액 정밀 계산 엔진
     // ==========================================
-    function handleCarSelect() {
-      var model = document.getElementById('carModelSelect').value;
-      if (model === 'spark') {
-        document.getElementById('carDisplacement').value = 999;
-        document.getElementById('carYear').value = 2015;
-        document.getElementById('carPrice').value = 250;
-      } else if (model === 'morning') {
-        document.getElementById('carDisplacement').value = 998;
-        document.getElementById('carYear').value = 2016;
-        document.getElementById('carPrice').value = 280;
-      } else if (model === 'avante') {
-        document.getElementById('carDisplacement').value = 1598;
-        document.getElementById('carYear').value = 2013;
-        document.getElementById('carPrice').value = 350;
-      } else if (model === 'sonata16') {
-        document.getElementById('carDisplacement').value = 1591;
-        document.getElementById('carYear').value = 2015;
-        document.getElementById('carPrice').value = 450;
-      } else if (model === 'sonata20') {
-        document.getElementById('carDisplacement').value = 1999;
-        document.getElementById('carYear').value = 2015;
-        document.getElementById('carPrice').value = 500;
-      } else if (model === 'tucson16') {
-        document.getElementById('carDisplacement').value = 1598;
-        document.getElementById('carYear').value = 2016;
-        document.getElementById('carPrice').value = 600;
-      } else if (model === 'porter') {
-        document.getElementById('carDisplacement').value = 2497;
-        document.getElementById('carYear').value = 2014;
-        document.getElementById('carPrice').value = 400;
-        document.getElementById('carPurpose').value = 'business';
+    var VEHICLE_PRESET_DB = {
+      "spark": { name: "쉐보레 스파크 (경차)", cc: 999, year: 2015, price: 220, category: "sedan" },
+      "morning": { name: "기아 올 뉴 모닝", cc: 998, year: 2016, price: 260, category: "sedan" },
+      "avante": { name: "현대 아반떼 MD 1.6", cc: 1598, year: 2013, price: 350, category: "sedan" },
+      "sonata16": { name: "현대 LF 쏘나타 1.6 터보", cc: 1591, year: 2015, price: 450, category: "sedan" },
+      "sonata20": { name: "현대 쏘나타 2.0 (중형)", cc: 1999, year: 2015, price: 480, category: "sedan" },
+      "carnival7": { name: "기아 올 뉴 카니발 (7인승)", cc: 2199, year: 2015, price: 650, category: "sedan7" },
+      "starex": { name: "현대 그랜드 스타렉스 (11인승 승합)", cc: 2497, year: 2014, price: 420, category: "van_small" },
+      "porter": { name: "현대 포터 II (1톤 화물)", cc: 2497, year: 2014, price: 380, category: "truck_small" }
+    };
+
+    function updateCarAgeDisplay() {
+      var y = parseInt(document.getElementById('carYear').value, 10);
+      var display = document.getElementById('carAgeDisplay');
+      if (y && y > 1980 && y <= 2026) {
+        var age = 2026 - y;
+        display.value = age + "년 (차령 " + (age >= 10 ? "10년 이상 충족" : "10년 미만") + ")";
+      } else {
+        display.value = "";
       }
     }
 
-    function evaluateCar() {
+    function applyCarSamplePreset() {
+      var key = document.getElementById('carSampleSelect').value;
+      if (!key || !VEHICLE_PRESET_DB[key]) return;
+      var data = VEHICLE_PRESET_DB[key];
+      document.getElementById('carModelName').value = data.name;
+      document.getElementById('carDisplacement').value = data.cc;
+      document.getElementById('carYear').value = data.year;
+      document.getElementById('carPrice').value = data.price;
+      document.getElementById('carCategorySelect').value = data.category;
+      document.getElementById('carPlateInput').value = "12가 3456";
+      updateCarAgeDisplay();
+      showToast(data.name + " 정보가 자동 입력되었습니다.");
+    }
+
+    function handlePlateInput() {
+      var val = document.getElementById('carPlateInput').value.trim();
+      for (var k in VEHICLE_PRESET_DB) {
+        if (val.indexOf(k) !== -1 || VEHICLE_PRESET_DB[k].name.indexOf(val) !== -1) {
+          applyCarDataDirect(VEHICLE_PRESET_DB[k]);
+          break;
+        }
+      }
+    }
+
+    function applyCarDataDirect(data) {
+      document.getElementById('carModelName').value = data.name;
+      document.getElementById('carDisplacement').value = data.cc;
+      document.getElementById('carYear').value = data.year;
+      document.getElementById('carPrice').value = data.price;
+      document.getElementById('carCategorySelect').value = data.category;
+      updateCarAgeDisplay();
+    }
+
+    // 차량 법정 기준 판정 및 월 소득인정액 계산 핵심 함수
+    function calculateCarWelfare() {
+      var plate = document.getElementById('carPlateInput').value.trim();
+      var modelName = document.getElementById('carModelName').value.trim() || "차량";
       var cc = parseInt(document.getElementById('carDisplacement').value, 10) || 0;
       var year = parseInt(document.getElementById('carYear').value, 10) || 2026;
-      var price = parseInt(document.getElementById('carPrice').value, 10) || 0;
-      var purpose = document.getElementById('carPurpose').value;
+      var price = parseFloat(document.getElementById('carPrice').value) || 0;
+
+      var category = document.getElementById('carCategorySelect').value;
+      var household = document.getElementById('carHouseholdSelect').value;
+      var usage = document.getElementById('carUsageSelect').value;
+
       var age = 2026 - year;
+      var isOver10 = age >= 10;
+      var isUnder200Man = price < 200;
 
       var resBox = document.getElementById('carResultBox');
       var resTitle = document.getElementById('carResultTitle');
+      var resBadge = document.getElementById('carResultBadge');
       var resDesc = document.getElementById('carResultDesc');
-      resBox.style.display = 'block';
+      var totalValDiv = document.getElementById('carResTotalVal');
+      var monthlyValDiv = document.getElementById('carResMonthlyVal');
 
-      if (purpose === 'disabled' || purpose === 'business') {
-        resBox.style.backgroundColor = '#f0fdf4';
-        resBox.style.borderColor = '#86efac';
-        resTitle.innerText = "✅ 감면 / 일반재산 환산율 (4.17%) 적용 가능";
-        resTitle.style.color = '#15803d';
-        resDesc.innerText = "장애인용 차량 또는 생업용 화물차량 기준에 해당하여 100% 월소득 환산에서 전액 제외됩니다.";
-        lastEvaluatedCar = { isCutoff: false, price: price };
+      if (price <= 0) {
+        showToast("사회보장차량가액(만원)을 입력해주세요.");
         return;
       }
 
-      var isUnder1600 = cc < 1600;
-      var isOver10Years = age >= 10;
-      var isUnder200Man = price < 200;
+      resBox.style.display = 'block';
+      totalValDiv.innerText = price.toLocaleString() + " 만 원";
 
-      if (isUnder200Man || (isUnder1600 && isOver10Years)) {
+      // -----------------------------------------------------------------
+      // 판정 로직 시작 (2026 국민기초생활보장사업안내 지침)
+      // -----------------------------------------------------------------
+
+      // [경우 1] 장애인 등록 가구 특례 (1대 전액 재산 산정 제외)
+      // - 2,000cc 미만 승용, 7~10인승 승용, 15인승 이하 승합, 1톤 이하 화물
+      if (household === 'disabled') {
+        var isUnderDisLimit = (category === 'sedan' && cc < 2000) ||
+                              (category === 'sedan7' && cc <= 2500) ||
+                              (category === 'van_small') ||
+                              (category === 'truck_small');
+
+        if (isUnderDisLimit) {
+          evaluatedCarResult = {
+            ruleType: "exempt",
+            price: price,
+            applicableAssetVal: 0,
+            monthlyIncomeVal: 0,
+            isCutoff: false
+          };
+
+          resBox.style.backgroundColor = '#f0fdf4';
+          resBox.style.borderColor = '#86efac';
+          resTitle.innerText = "✅ 장애인 등록 가구 차량: 전액 재산 산정 제외 (면제)";
+          resTitle.style.color = '#15803d';
+          resBadge.className = "benefit-badge badge-pass";
+          resBadge.innerText = "소득인정액 0원 산입";
+          monthlyValDiv.innerText = "0 만 원 / 월 (전액 제외)";
+          monthlyValDiv.style.color = '#15803d';
+
+          resDesc.innerHTML = 
+            "• <strong>법정 근거:</strong> 장애인복지법상 등록 장애인이 사용하는 차량 1대(배기량 2,000cc 미만 승용, 15인승 이하 승합, 1톤 이하 화물 등) 기준을 충족합니다.<br>" +
+            "• <strong>결과:</strong> 사회보장차량가액 " + price.toLocaleString() + "만 원 전액이 소득 및 재산 산정에서 제외되어 <strong>월 소득인정액에 0원(미반영)</strong> 처리됩니다.";
+          return;
+        }
+      }
+
+      // [경우 2] 생업용 차량 특례 (사업자등록 및 실질 소득활동 입증 1대)
+      // - 1,600cc 미만 승용, 승합차, 화물차: 가액의 50% 감면 후 잔여 50%에 대해 일반재산(4.17%) 환산
+      if (usage === 'business') {
+        var isBusinessEligible = (category === 'truck_small') || 
+                                 (category === 'truck_large') || 
+                                 (category === 'van_small') || 
+                                 (category === 'van_large') || 
+                                 (cc < 1600);
+
+        if (isBusinessEligible) {
+          var halfAsset = Math.round(price * 0.5);
+          var monthlyIncome = Math.round(halfAsset * 0.0417);
+
+          evaluatedCarResult = {
+            ruleType: "business_general",
+            price: price,
+            applicableAssetVal: halfAsset,
+            monthlyIncomeVal: monthlyIncome,
+            isCutoff: false
+          };
+
+          resBox.style.backgroundColor = '#f0fdf4';
+          resBox.style.borderColor = '#86efac';
+          resTitle.innerText = "✅ 생업용 차량 특례: 50% 감면 + 일반재산(4.17%) 적용";
+          resTitle.style.color = '#15803d';
+          resBadge.className = "benefit-badge badge-pass";
+          resBadge.innerText = "일반재산 4.17% (50% 감면)";
+          monthlyValDiv.innerText = "약 " + monthlyIncome.toLocaleString() + " 만 원 / 월";
+          monthlyValDiv.style.color = '#15803d';
+
+          resDesc.innerHTML = 
+            "• <strong>법정 근거:</strong> 화물·승합 또는 1,600cc 미만 생업용 차량으로 소득활동에 직접 사용됨을 확인받았습니다.<br>" +
+            "• <strong>계산 방식:</strong> 차량가액 " + price.toLocaleString() + "만 원 중 <strong>50% 감면(" + halfAsset.toLocaleString() + "만 원 공제)</strong> 후 잔여 <strong>" + halfAsset.toLocaleString() + "만 원만 일반재산(월 4.17%)</strong>으로 반영됩니다.<br>" +
+            "• <strong>월 소득인정액 산입액:</strong> 월 약 <strong>" + monthlyIncome.toLocaleString() + "만 원</strong> (100% 컷오프 방지)";
+          return;
+        }
+      }
+
+      // [경우 3] 다인/다자녀 가구 (3인 이상 또는 2자녀 이상) 일반재산 완화 기준
+      // - 2,500cc 미만 승용 또는 7인승 이상/승합/화물로서 (차령 10년 이상 OR 차량가액 500만원 미만)
+      if (household === 'large_family') {
+        var isLargeFamilyCar = (cc < 2500) || (category === 'sedan7') || (category === 'van_small') || (category === 'truck_small');
+        var isAgeOrPriceRelaxed = (isOver10 || price < 500);
+
+        if (isLargeFamilyCar && isAgeOrPriceRelaxed) {
+          var monthlyIncome = Math.round(price * 0.0417);
+          evaluatedCarResult = {
+            ruleType: "general",
+            price: price,
+            applicableAssetVal: price,
+            monthlyIncomeVal: monthlyIncome,
+            isCutoff: false
+          };
+
+          resBox.style.backgroundColor = '#f0fdf4';
+          resBox.style.borderColor = '#86efac';
+          resTitle.innerText = "✅ 다인·다자녀 가구 완화 기준: 일반재산(4.17%) 적용";
+          resTitle.style.color = '#15803d';
+          resBadge.className = "benefit-badge badge-pass";
+          resBadge.innerText = "일반재산 4.17% 적용";
+          monthlyValDiv.innerText = "약 " + monthlyIncome.toLocaleString() + " 만 원 / 월";
+          monthlyValDiv.style.color = '#15803d';
+
+          resDesc.innerHTML = 
+            "• <strong>법정 근거:</strong> 다인(3인 이상) 또는 다자녀(2자녀 이상) 가구 완화 기준[2,500cc 미만 및 차령 10년 이상 또는 500만 원 미만]을 충족합니다.<br>" +
+            "• <strong>계산 방식:</strong> 차량가액 " + price.toLocaleString() + "만 원 전액이 일반재산(월 4.17%)으로 합산됩니다.<br>" +
+            "• <strong>월 소득인정액 산입액:</strong> 월 약 <strong>" + monthlyIncome.toLocaleString() + "만 원</strong>";
+          return;
+        }
+      }
+
+      // [경우 4] 일반 가구 완화 기준
+      // - 1,600cc 미만 승용 AND 차령 10년 이상
+      // - 또는 차종/배기량 불문 차량가액 200만 원 미만인 경우
+      var isStandardGeneralSedan = (category === 'sedan' && cc < 1600 && isOver10);
+      var isStandardGeneralSmallVanTruck = ((category === 'van_small' || category === 'truck_small') && isOver10);
+
+      if (isUnder200Man || isStandardGeneralSedan || isStandardGeneralSmallVanTruck) {
+        var monthlyIncome = Math.round(price * 0.0417);
+        evaluatedCarResult = {
+          ruleType: "general",
+          price: price,
+          applicableAssetVal: price,
+          monthlyIncomeVal: monthlyIncome,
+          isCutoff: false
+        };
+
         resBox.style.backgroundColor = '#f0fdf4';
         resBox.style.borderColor = '#86efac';
-        resTitle.innerText = "✅ 일반재산 환산율 (4.17%) 적용 대상";
+        resTitle.innerText = "✅ 일반재산 환산율 (월 4.17%) 적용 대상";
         resTitle.style.color = '#15803d';
-        resDesc.innerText = "배기량 " + cc + "cc, 차령 " + age + "년, 가액 " + price + "만 원으로 [1,600cc 미만 & 10년 이상] 요건을 충족하여 일반재산(월 4.17%)으로 분류됩니다.";
-        lastEvaluatedCar = { isCutoff: false, price: price };
-      } else {
-        resBox.style.backgroundColor = '#fef2f2';
-        resBox.style.borderColor = '#fca5a5';
-        resTitle.innerText = "⚠️ 100% 월소득 환산 대상 (수급 탈락 위험!)";
-        resTitle.style.color = '#b91c1c';
-        resDesc.innerText = "배기량 " + cc + "cc, 차령 " + age + "년, 가액 " + price + "만 원으로 일반재산 환산 요건을 충족하지 못해 차량가액 전액(" + price + "만 원)이 매월 소득으로 100% 반영됩니다.";
-        lastEvaluatedCar = { isCutoff: true, price: price };
+        resBadge.className = "benefit-badge badge-pass";
+        resBadge.innerText = "일반재산 4.17% 적용";
+        monthlyValDiv.innerText = "약 " + monthlyIncome.toLocaleString() + " 만 원 / 월";
+        monthlyValDiv.style.color = '#15803d';
+
+        var reasonText = isUnder200Man ? "차량가액 200만 원 미만" : "배기량 1,600cc 미만 & 차령 10년 이상(차령 " + age + "년)";
+        resDesc.innerHTML = 
+          "• <strong>적용 요건:</strong> [" + reasonText + "] 요건을 충족하여 월 100% 소득환산 대상에서 제외되었습니다.<br>" +
+          "• <strong>계산 방식:</strong> 차량가액 " + price.toLocaleString() + "만 원이 일반재산(월 4.17%)으로 합산됩니다.<br>" +
+          "• <strong>월 소득인정액 산입액:</strong> 월 약 <strong>" + monthlyIncome.toLocaleString() + "만 원</strong>";
+        return;
       }
+
+      // [경우 5] 완화 기준 미충족: 100% 월소득 환산 (수급 컷오프 위험)
+      evaluatedCarResult = {
+        ruleType: "cutoff",
+        price: price,
+        applicableAssetVal: 0,
+        monthlyIncomeVal: price,
+        isCutoff: true
+      };
+
+      resBox.style.backgroundColor = '#fef2f2';
+      resBox.style.borderColor = '#fca5a5';
+      resTitle.innerText = "⚠️ 100% 월소득 환산 대상 (수급 탈락 위험!)";
+      resTitle.style.color = '#b91c1c';
+      resBadge.className = "benefit-badge badge-fail";
+      resBadge.innerText = "차량가액 100% 월소득 반영";
+      monthlyValDiv.innerText = price.toLocaleString() + " 만 원 / 월";
+      monthlyValDiv.style.color = '#b91c1c';
+
+      resDesc.innerHTML = 
+        "• <strong>판정 사유:</strong> 배기량 " + cc + "cc, 차령 " + age + "년, 가액 " + price.toLocaleString() + "만 원으로 [1,600cc 미만 & 10년 이상] 또는 [가액 200만원 미만] 완화 기준을 충족하지 못했습니다.<br>" +
+        "• <strong>치명적 결과:</strong> 차량가액 전액인 <strong>" + price.toLocaleString() + "만 원이 매월 소득으로 100% 반영</strong>되어 생계·의료·주거급여 수급 기준선을 즉시 초과할 위험이 매우 높습니다.<br>" +
+        "• <strong>실무 대응:</strong> 명의 이전, 생업용 증빙 확보(사업자등록·영업소득), 폐차 여부를 사전에 반드시 상담하시기 바랍니다.";
     }
 
+    // 1번 탭 모의계산기로 판정 수치 자동 전송
     function applyCarToSimulation() {
-      if (lastEvaluatedCar.price <= 0) {
-        showToast("차량가액을 먼저 산정해주세요.");
+      if (evaluatedCarResult.price <= 0) {
+        showToast("먼저 차량 계산 및 판정을 진행해 주세요.");
         return;
       }
-      if (lastEvaluatedCar.isCutoff) {
-        document.getElementById('simCar100').value = lastEvaluatedCar.price;
-        showToast("100% 월소득 환산 차량으로 " + lastEvaluatedCar.price + "만 원이 반영되었습니다.");
-      } else {
-        var curGen = parseFloat(document.getElementById('simGenProp').value) || 0;
-        document.getElementById('simGenProp').value = curGen + lastEvaluatedCar.price;
+
+      if (evaluatedCarResult.ruleType === "exempt") {
         document.getElementById('simCar100').value = 0;
-        showToast("일반재산에 차량가액 " + lastEvaluatedCar.price + "만 원이 합산되었습니다.");
+        showToast("장애인 특례로 차량 소득인정액이 0원(미반영) 처리되었습니다.");
+      } else if (evaluatedCarResult.ruleType === "cutoff") {
+        document.getElementById('simCar100').value = evaluatedCarResult.monthlyIncomeVal;
+        showToast("100% 월소득 환산 차량으로 " + evaluatedCarResult.monthlyIncomeVal + "만 원이 1번 탭에 반영되었습니다.");
+      } else {
+        // 일반재산 합산 (생업용 50% 감면액 또는 일반재산가액)
+        var curGen = parseFloat(document.getElementById('simGenProp').value) || 0;
+        document.getElementById('simGenProp').value = curGen + evaluatedCarResult.applicableAssetVal;
+        document.getElementById('simCar100').value = 0;
+        showToast("일반재산에 차량가액 " + evaluatedCarResult.applicableAssetVal + "만 원이 합산 반영되었습니다.");
       }
+
       switchTab('tab-counsel');
       runSimulation();
     }
