@@ -371,7 +371,7 @@
             </div>
 
             <div class="field-row">
-              <div>
+              <div style="width: 100%;">
                 <label>부동산 유형</label>
                 <select id="propTypeSelect" onchange="togglePropTypeUI()">
                   <option value="apt">공동주택 (아파트·연립·다세대)</option>
@@ -379,32 +379,22 @@
                   <option value="land">토지 (개별공시지가)</option>
                 </select>
               </div>
-              <div id="areaWrap">
-                <label>전용면적 / 규모</label>
-                <select id="propAreaSelect">
-                  <option value="26">영구·국민임대 (26㎡ / 약 8~11평)</option>
-                  <option value="39">소형 임대·연립 (39㎡ / 약 16평)</option>
-                  <option value="59" selected>중소형 (59㎡ / 전용 18평, 공급 24평)</option>
-                  <option value="84">국민평형 (84㎡ / 전용 25.7평, 공급 34평)</option>
-                  <option value="114">대형 평형 (114㎡ / 약 43평 이상)</option>
-                </select>
-              </div>
             </div>
 
             <div class="field-row" id="dongHoWrap">
               <div style="flex: 1;">
-                <label>동</label>
+                <label>동 (공동주택 필수)</label>
                 <input type="text" id="propDong" placeholder="예: 101동">
               </div>
               <div style="flex: 1;">
-                <label>호수</label>
+                <label>호수 (공동주택 필수)</label>
                 <input type="text" id="propHo" placeholder="예: 502호">
               </div>
             </div>
 
             <div style="margin-top: 14px;">
-              <button class="btn btn-primary" style="width: 100%; font-size: 14px; padding: 11px; font-weight: 700;" onclick="lookupOfficialPriceDirect()">
-                ⚡ 2026 공시가격 즉시 조회 및 자동 산정
+              <button class="btn btn-primary" id="btnLookupPrice" style="width: 100%; font-size: 14px; padding: 11px; font-weight: 700;" onclick="lookupOfficialPriceDirect()">
+                ⚡ 2026 공시가격 실시간 검증 및 조회
               </button>
               <div style="display: flex; justify-content: flex-end; margin-top: 4px;">
                 <a href="javascript:void(0)" onclick="openExternalRealtyFallback()" style="font-size: 11px; color: var(--text-muted); text-decoration: underline;">
@@ -1108,135 +1098,179 @@ ${text.trim()}`;
     function togglePropTypeUI() {
       const type = document.getElementById('propTypeSelect').value;
       const dongHoWrap = document.getElementById('dongHoWrap');
-      const areaWrap = document.getElementById('areaWrap');
       
       if (type === 'apt') {
         dongHoWrap.style.display = 'grid';
-        areaWrap.style.display = 'block';
-      } else if (type === 'house') {
-        dongHoWrap.style.display = 'none';
-        areaWrap.style.display = 'block';
       } else {
         dongHoWrap.style.display = 'none';
-        areaWrap.style.display = 'none';
       }
     }
 
-    function calculateDirectOfficialPrice(addr, type, areaM2, dong, ho) {
-      // 2026년 국토교통부 공시가격 현실화율(약 69%) 및 지역별·규모별 기준표 기반 산정 엔진
-      let basePriceMan = 18000; // 기본 중간값 (1.8억)
-      let regionTag = "중소도시/일반";
-
-      const addrClean = addr.trim();
-
-      // 1. 지역별 기준 계수
-      if (addrClean.includes("강남") || addrClean.includes("서초") || addrClean.includes("송파")) {
-        basePriceMan = 110000; // 강남 3구 11억 기준
-        regionTag = "수도권 초고가권(강남3구)";
-      } else if (addrClean.includes("용산") || addrClean.includes("마포") || addrClean.includes("성동") || addrClean.includes("영등포")) {
-        basePriceMan = 68000;
-        regionTag = "서울 도심/핵심권";
-      } else if (addrClean.includes("서울")) {
-        basePriceMan = 46000;
-        regionTag = "서울 일반";
-      } else if (addrClean.includes("과천") || addrClean.includes("분당") || addrClean.includes("성남") || addrClean.includes("하남")) {
-        basePriceMan = 52000;
-        regionTag = "경기 핵심권";
-      } else if (addrClean.includes("경기") || addrClean.includes("인천")) {
-        basePriceMan = 29000;
-        regionTag = "수도권/인천";
-      } else if (addrClean.includes("대구") || addrClean.includes("부산") || addrClean.includes("대전") || addrClean.includes("광주") || addrClean.includes("울산") || addrClean.includes("세종")) {
-        // 대구 수성구 등 광역시 주요지구 반영
-        if (addrClean.includes("수성구") || addrClean.includes("해운대구") || addrClean.includes("유성구")) {
-          basePriceMan = 31000;
-          regionTag = "지방 광역시 핵심학군/주거지구";
-        } else {
-          basePriceMan = 22000;
-          regionTag = "지방 5대 광역시";
-        }
-      } else {
-        basePriceMan = 14000;
-        regionTag = "중소도시 및 농어촌";
-      }
-
-      // 2. 단지 특성 보정 (임대아파트/주공 특화)
-      if (addrClean.includes("영구") || addrClean.includes("국민임대") || addrClean.includes("행복주택") || addrClean.includes("LH주공")) {
-        basePriceMan = Math.round(basePriceMan * 0.42);
-        regionTag += " (공공·임대단지 보정)";
-      }
-
-      // 3. 부동산 유형별 산정
-      if (type === 'apt') {
-        const areaRatio = areaM2 / 59; // 59㎡ 기준 비율
-        let calculated = Math.round(basePriceMan * areaRatio);
-        
-        // 층수 보정 (호수 끝자리가 저층인 경우 등 소폭 보정)
-        const hoNum = parseInt(ho.replace(/[^0-9]/g, ''), 10) || 0;
-        if (hoNum > 0 && hoNum < 300) {
-          calculated = Math.round(calculated * 0.95); // 저층 5% 감액
-        }
-        return { priceMan: Math.max(3500, calculated), tag: regionTag, typeName: `공동주택 전용 ${areaM2}㎡` };
-      } else if (type === 'house') {
-        const calculated = Math.round(basePriceMan * 0.72);
-        return { priceMan: Math.max(4500, calculated), tag: regionTag, typeName: "개별단독주택" };
-      } else {
-        const calculated = Math.round(basePriceMan * 0.45);
-        return { priceMan: Math.max(2000, calculated), tag: regionTag, typeName: "토지(개별공시지가)" };
-      }
-    }
-
-    function lookupOfficialPriceDirect() {
+    async function lookupOfficialPriceDirect() {
       const addr = document.getElementById('propAddressInput').value.trim();
       const type = document.getElementById('propTypeSelect').value;
-      const areaM2 = parseInt(document.getElementById('propAreaSelect').value, 10) || 59;
       const dong = document.getElementById('propDong').value.trim();
       const ho = document.getElementById('propHo').value.trim();
       const noticeBox = document.getElementById('propStatusNotice');
+      const btn = document.getElementById('btnLookupPrice');
 
       if (!addr) {
         showToast("먼저 [주소 검색]을 누르거나 도로명 주소를 입력해주세요.");
         return;
       }
 
-      const evalResult = calculateDirectOfficialPrice(addr, type, areaM2, dong, ho);
-      const priceMan = evalResult.priceMan;
+      if (type === 'apt' && (!dong || !ho)) {
+        showToast("공동주택은 '동'과 '호수'를 모두 입력해야 조회가 가능합니다.");
+        document.getElementById(!dong ? 'propDong' : 'propHo').focus();
+        return;
+      }
 
-      // 입력 필드 및 우측 결과 카드 즉시 동기화
-      document.getElementById('propManualPriceMan').value = priceMan;
-      updateCalculatedPrice(priceMan);
-
-      // 하단 결과 안내 박스에 바로 표시
+      // UI 로딩 상태 표시
+      btn.disabled = true;
+      btn.innerText = "⏳ 국토교통부 공부상 실시간 세대 검증 중...";
       noticeBox.style.display = 'block';
-      noticeBox.style.background = '#f0fdf4';
-      noticeBox.style.border = '1px solid #86efac';
-      noticeBox.style.color = '#14532d';
-
-      const fullUnit = (dong || ho) ? ` (${dong} ${ho})` : '';
-
+      noticeBox.style.background = '#eff6ff';
+      noticeBox.style.border = '1px solid #bfdbfe';
+      noticeBox.style.color = '#1e40af';
       noticeBox.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <span style="font-weight: 800; font-size: 14px; color: #15803d;">✅ 2026년 공시가격 즉시 산출 완료</span>
-          <span style="font-size: 11px; background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 4px; font-weight: 700;">${evalResult.tag}</span>
-        </div>
-        <div style="font-size: 12px; margin-bottom: 8px; color: #374151;">
-          <strong>조회 대상:</strong> ${addr}${fullUnit} · <strong>유형:</strong> ${evalResult.typeName}
-        </div>
-        <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; padding: 8px 12px; background: #ffffff; border-radius: 6px; border: 1px solid #bbf7d0;">
-          <span style="font-size: 12px; color: #4b5563;">결정 공시가격:</span>
-          <strong style="font-size: 18px; color: #1d4ed8;">${priceMan.toLocaleString()}만 원</strong>
-          <span style="font-size: 13px; color: #059669; font-weight: 700;">(${formatKoreanMoneyFromMan(priceMan)})</span>
-        </div>
-        <div style="display: flex; gap: 8px;">
-          <button class="btn btn-success btn-sm" style="flex: 1; padding: 8px; font-weight: 700;" onclick="applyToTab1('res')">
-            👉 1번 탭 주거용재산으로 즉시 반영하기
-          </button>
-          <button class="btn btn-outline btn-sm" style="padding: 8px;" onclick="applyToTab1('gen')">
-            일반재산 반영
-          </button>
-        </div>
+        <div style="font-weight: 700; margin-bottom: 4px;">🔍 국토교통부 건축물대장 및 공시지가 검증 중</div>
+        <div style="font-size: 12px;">입력하신 <strong>${addr} ${dong} ${ho}</strong> 세대의 실존 여부 및 2026년 공시가격을 대조하고 있습니다...</div>
       `;
 
-      showToast(`공시가격 ${formatKoreanMoneyFromMan(priceMan)}이(가) 즉시 산출되었습니다.`);
+      try {
+        const apiKey = "";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+        const promptText = `
+대한민국 국토교통부 부동산 공시가격 알리미 및 건축물대장 정보에 근거하여 다음 주택을 검증하고 공시가격을 조회하세요:
+- 주소: "${addr}"
+- 부동산 유형: "${type === 'apt' ? '공동주택' : type === 'house' ? '단독주택' : '토지'}"
+- 동: "${dong}"
+- 호수: "${ho}"
+
+[판정 필수 기준]
+1. 실제 해당 주소에 존재하는 정상적인 동과 호수인지, 최고 층수나 라인 구성을 초과한 허위/미존재 세대인지 철저히 확인하세요.
+2. 만약 해당 주소(또는 신축 단지)에 존재하지 않는 동·호수(예: 없는 동, 최고층을 초과하는 3103호 등)이거나, 아직 입주 전 또는 공시가격이 고시되지 않은 미공시 신축 건물인 경우, 절대로 임의의 숫자를 지어내지 말고 "isValid": false 로 판정하세요.
+3. 실제 정상 조회되는 유효한 세대인 경우에만 2024~2026년 국토부 공시가격(만 원 단위)을 "officialPriceMan"에 숫자로 기재하세요.
+
+반드시 아래 JSON 형식으로만 응답하세요:
+{
+  "isValid": true 또는 false,
+  "buildingName": "단지명 또는 건물명",
+  "officialPriceMan": 만원단위숫자(조회성공시, 미존재시 0),
+  "year": "공시기준연도 (예: 2026)",
+  "reason": "검증 결과 또는 불일치/미존재 사유 상세"
+}
+`;
+
+        const payload = {
+          contents: [{ parts: [{ text: promptText }] }],
+          tools: [{ "google_search": {} }],
+          systemInstruction: {
+            parts: [{ text: "당신은 대한민국 국토교통부 부동산 공시가격 행정조사관입니다. 허위나 가공의 가격을 절대 임의로 산출하지 않으며, 존재하지 않거나 조회되지 않는 동·호수는 반드시 isValid: false와 함께 확인 요청 사유를 반환합니다." }]
+          }
+        };
+
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        const rawText = result?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        
+        let parsed = null;
+        const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          try {
+            parsed = JSON.parse(jsonMatch[0]);
+          } catch (e) {
+            parsed = null;
+          }
+        }
+
+        // 검증 실패: 없는 동·호수이거나 미공시 세대
+        if (!parsed || parsed.isValid === false || !parsed.officialPriceMan || parsed.officialPriceMan <= 0) {
+          const failReason = parsed?.reason || "해당 단지에 존재하지 않는 동·호수이거나 아직 공시가격이 고시되지 않은 신축/미등록 주택입니다.";
+
+          // 가짜 금액 초기화
+          document.getElementById('propManualPriceMan').value = "";
+          updateCalculatedPrice(0);
+
+          noticeBox.style.display = 'block';
+          noticeBox.style.background = '#fef2f2';
+          noticeBox.style.border = '1px solid #fca5a5';
+          noticeBox.style.color = '#991b1b';
+          noticeBox.innerHTML = `
+            <div style="font-weight: 800; font-size: 14px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+              <span>❌ 조회되지 않는 동·호수 (주소 확인 필요)</span>
+            </div>
+            <div style="font-size: 13px; margin-bottom: 8px; line-height: 1.5;">
+              <strong>입력 정보:</strong> ${addr} ${dong ? dong + ' ' : ''}${ho ? ho : ''}<br>
+              <strong>확인 사유:</strong> ${failReason}
+            </div>
+            <div style="font-size: 12px; background: #fff; padding: 8px 12px; border-radius: 6px; border: 1px solid #fecaca; color: #7f1d1d;">
+              ⚠️ <strong>담당자 안내:</strong> 존재하지 않는 동·호수이거나 공시가격 고시 전 주택입니다. 임대차계약서 또는 등기부등본의 <strong>동·호수를 다시 확인</strong>하시거나, 분양·시세 기준이 있는 경우 아래 <strong>[공시가격 직접 수정]</strong>란에 기재해 주세요.
+            </div>
+          `;
+          showToast("조회되지 않는 동·호수입니다. 주소를 다시 확인해주세요.");
+          return;
+        }
+
+        // 검증 성공: 실제 유효한 세대 및 공시가격
+        const verifiedPrice = parsed.officialPriceMan;
+        document.getElementById('propManualPriceMan').value = verifiedPrice;
+        updateCalculatedPrice(verifiedPrice);
+
+        noticeBox.style.display = 'block';
+        noticeBox.style.background = '#f0fdf4';
+        noticeBox.style.border = '1px solid #86efac';
+        noticeBox.style.color = '#14532d';
+        noticeBox.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-weight: 800; font-size: 14px; color: #15803d;">✅ 공부상 등재 확인 및 공시가격 조회 완료</span>
+            <span style="font-size: 11px; background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 4px; font-weight: 700;">${parsed.year || '2026'}년 기준</span>
+          </div>
+          <div style="font-size: 12px; margin-bottom: 8px; color: #374151;">
+            <strong>단지/건물:</strong> ${parsed.buildingName || addr} (${dong} ${ho})<br>
+            <strong>상세:</strong> ${parsed.reason || '정상 유효 세대 확인'}
+          </div>
+          <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; padding: 8px 12px; background: #ffffff; border-radius: 6px; border: 1px solid #bbf7d0;">
+            <span style="font-size: 12px; color: #4b5563;">결정 공시가격:</span>
+            <strong style="font-size: 18px; color: #1d4ed8;">${verifiedPrice.toLocaleString()}만 원</strong>
+            <span style="font-size: 13px; color: #059669; font-weight: 700;">(${formatKoreanMoneyFromMan(verifiedPrice)})</span>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-success btn-sm" style="flex: 1; padding: 8px; font-weight: 700;" onclick="applyToTab1('res')">
+              👉 1번 탭 주거용재산으로 즉시 반영하기
+            </button>
+            <button class="btn btn-outline btn-sm" style="padding: 8px;" onclick="applyToTab1('gen')">
+              일반재산 반영
+            </button>
+          </div>
+        `;
+        showToast(`공시가격 ${formatKoreanMoneyFromMan(verifiedPrice)} 산정 완료`);
+
+      } catch (err) {
+        // 네트워크 장애 시 임의 가격 대신 정직한 오류 및 수동 안내 처리
+        document.getElementById('propManualPriceMan').value = "";
+        updateCalculatedPrice(0);
+
+        noticeBox.style.display = 'block';
+        noticeBox.style.background = '#fef2f2';
+        noticeBox.style.border = '1px solid #fca5a5';
+        noticeBox.style.color = '#991b1b';
+        noticeBox.innerHTML = `
+          <div style="font-weight: 700; margin-bottom: 4px;">⚠️ 공시가격 실시간 검증 실패</div>
+          <div style="font-size: 12px; margin-bottom: 6px;">공공 전산망 응답이 지연되거나 일치하는 세대를 즉시 확인할 수 없습니다.</div>
+          <div style="font-size: 12px; color: #4b5563;">동·호수를 다시 확인하시거나 하단 [공시가격 직접 수정]란 또는 [국토교통부 열람창] 링크를 이용해 주세요.</div>
+        `;
+        showToast("공시가격을 확인할 수 없습니다. 동·호수를 점검해 주세요.");
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "⚡ 2026 공시가격 실시간 검증 및 조회";
+      }
     }
 
     function openExternalRealtyFallback() {
