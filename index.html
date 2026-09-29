@@ -57,6 +57,24 @@
       letter-spacing: -0.2px;
     }
 
+    /* 복지공무원 격려 B급 유머 배너 */
+    .humor-banner {
+      background: linear-gradient(90deg, #fef3c7, #fef9c3);
+      border-bottom: 1px solid #fde047;
+      padding: 7px 24px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #854d0e;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .humor-banner:hover {
+      background: #fef08a;
+    }
+
     .nav-tabs {
       display: flex;
       gap: 10px;
@@ -95,7 +113,7 @@
 
     .main-container {
       max-width: 1440px;
-      margin: 20px auto;
+      margin: 16px auto;
       padding: 0 20px;
     }
     .tab-content {
@@ -268,6 +286,7 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      gap: 10px;
     }
     .benefit-card.pass {
       border-color: #86efac;
@@ -300,6 +319,29 @@
     .badge-fail {
       background-color: #fee2e2;
       color: #b91c1c;
+    }
+
+    /* 카드 내 실지급 예상액 박스 */
+    .benefit-est-box {
+      background-color: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 6px;
+      padding: 7px 10px;
+      margin-top: 6px;
+    }
+    .benefit-est-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #1e3a8a;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .benefit-est-val {
+      font-size: 13px;
+      font-weight: 800;
+      color: #047857;
+      margin-top: 2px;
     }
 
     .field-row {
@@ -424,7 +466,7 @@
 
     @media print {
       body { background-color: #ffffff; padding-bottom: 0; font-size: 11pt; color: #000000; }
-      header, .nav-tabs, .btn, #counselInput, .card-header button, #tab-vehicle, .field-row, #toast, .modal-backdrop, .calculation-breakdown { display: none !important; }
+      header, .humor-banner, .nav-tabs, .btn, #counselInput, .card-header button, #tab-vehicle, .field-row, #toast, .modal-backdrop, .calculation-breakdown { display: none !important; }
       .main-container { max-width: 100%; margin: 0; padding: 0; }
       .grid-2col { display: block; }
       .card { border: none; box-shadow: none; padding: 0; margin-bottom: 20px; page-break-inside: avoid; }
@@ -435,6 +477,15 @@
   </style>
 </head>
 <body>
+
+  <!-- 상단 B급 유머 배너 -->
+  <div class="humor-banner" onclick="cycleHumorQuote()" title="클릭하면 새로운 멘트가 나옵니다">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span>💡 <strong>[오늘의 복지직 멘탈 충전소]</strong></span>
+      <span id="dailyHumorText">로딩 중...</span>
+    </div>
+    <span style="font-size: 11px; text-decoration: underline; color: #a16207;">새로고침 🔄</span>
+  </div>
 
   <header>
     <div class="header-title">
@@ -583,6 +634,15 @@
               <hr style="margin: 8px 0; border: none; border-top: 1px dashed #cbd5e1;">
               <div style="font-size: 12px;"><strong>예상 소득인정액:</strong> <span id="valBasicLife">0</span> 만원</div>
               <div style="font-size: 11px; color: #475569; margin-top: 4px;" id="detailBasicLife">-</div>
+              
+              <!-- 실지급 예상액 박스 -->
+              <div class="benefit-est-box">
+                <div class="benefit-est-title">
+                  <span>💰 예상 수급액 (생계 차액)</span>
+                  <span style="font-size:10px; color:#64748b;">(주거별도)</span>
+                </div>
+                <div class="benefit-est-val" id="estBasicLifePayout">월 0만 원</div>
+              </div>
             </div>
           </div>
 
@@ -597,6 +657,15 @@
               <hr style="margin: 8px 0; border: none; border-top: 1px dashed #cbd5e1;">
               <div style="font-size: 12px;"><strong>월 총실소득:</strong> <span id="valEmergIncome">0</span> 만원</div>
               <div style="font-size: 11px; color: #475569; margin-top: 4px;" id="detailEmergency">-</div>
+
+              <!-- 실지급 예상액 박스 -->
+              <div class="benefit-est-box">
+                <div class="benefit-est-title">
+                  <span>🚨 긴급생계지원 단가</span>
+                  <span style="font-size:10px; color:#64748b;">(최대 1~3개월)</span>
+                </div>
+                <div class="benefit-est-val" id="estEmergencyPayout">월 0만 원</div>
+              </div>
             </div>
           </div>
 
@@ -614,6 +683,14 @@
               <hr style="margin: 8px 0; border: none; border-top: 1px dashed #cbd5e1;">
               <div style="font-size: 12px;"><strong>월 총실소득:</strong> <span id="valDalgubeolIncome">0</span> 만원</div>
               <div style="font-size: 11px; color: #475569; margin-top: 4px;" id="detailDalgubeol">-</div>
+
+              <!-- 실지급 예상액 박스 -->
+              <div class="benefit-est-box">
+                <div class="benefit-est-title">
+                  <span>🏛️ 대구 구·군 예산지원</span>
+                </div>
+                <div class="benefit-est-val" id="estDalgubeolPayout" style="font-size:12px; color:#1e40af;">20만 ~ 100만 원 (구·군별 상이)</div>
+              </div>
             </div>
           </div>
 
@@ -628,6 +705,14 @@
               <hr style="margin: 8px 0; border: none; border-top: 1px dashed #cbd5e1;">
               <div style="font-size: 12px;"><strong>소득인정액:</strong> <span id="valNearPoverty">0</span> 만원</div>
               <div style="font-size: 11px; color: #475569; margin-top: 4px;" id="detailNearPoverty">-</div>
+
+              <!-- 실지급 예상액 박스 -->
+              <div class="benefit-est-box">
+                <div class="benefit-est-title">
+                  <span>🎁 간접 감면 혜택 패키지</span>
+                </div>
+                <div class="benefit-est-val" id="estNearPovertyPayout" style="font-size:12px; color:#475569;">양곡·통신·전기 감면 적용</div>
+              </div>
             </div>
           </div>
 
@@ -642,6 +727,14 @@
               <hr style="margin: 8px 0; border: none; border-top: 1px dashed #cbd5e1;">
               <div style="font-size: 12px;"><strong>연금 소득인정액:</strong> <span id="valBasicPension">0</span> 만원</div>
               <div style="font-size: 11px; color: #475569; margin-top: 4px;" id="detailBasicPension">-</div>
+
+              <!-- 실지급 예상액 박스 -->
+              <div class="benefit-est-box">
+                <div class="benefit-est-title">
+                  <span>👵 월 예상 연금 수령액</span>
+                </div>
+                <div class="benefit-est-val" id="estBasicPensionPayout">월 0만 원</div>
+              </div>
             </div>
           </div>
 
@@ -943,7 +1036,41 @@
 
   <script>
     // ==========================================
-    // 1. 2026년 법정 기준 상수 (대구 구 지역 vs 군위군·달성군 군 지역 명확화)
+    // 0. 복지공무원 매일 B급 현실 유머 리스트
+    // ==========================================
+    var HUMOR_QUOTES = [
+      "매주 로또 5천 원씩 318년 연속으로 사면 산술적으로 1등 한 번 당첨됩니다. 오늘도 차분히 일합시다.",
+      "민원인이 소리 지를 땐 속으로 '네 맞습니다 선생님, 하지만 저는 6시에 퇴근합니다'를 세 번 외치세요.",
+      "통장잔고와 카드값 명세서를 확인하면 사직서가 자동으로 서랍 깊숙이 봉인됩니다.",
+      "행복e음이 멈추는 건 시스템 오류가 아니라 여러분의 손목과 멘탈을 쉬게 하려는 나라의 큰 그림입니다.",
+      "기초수급 상담 1시간보다 더 힘든 것: 상담 끝내고 적는 행복e음 초기상담 일지 5줄.",
+      "오늘도 무사히 칼퇴할 확률: 배기량 3,000cc 그랜저 타고 수급 신청하러 온 민원인이 조용히 돌아갈 확률.",
+      "세상에서 가장 무서운 벨소리: 온나라 결재 알림음과 직통 민원전화 '따르릉'.",
+      "출근길에 '오늘 진짜 퇴사한다'고 마음먹지만 점심 메뉴 정할 때쯤 온순해지는 게 정상입니다.",
+      "오늘도 민원인 앞에서 웃어준 당신의 인내심, 사실상 국가 훈장 수여 대상입니다.",
+      "로또 1등에 당첨되어도 세금 33% 뗍니다. 세금 내러 구청에 또 오셔야 하니 그냥 계속 일하세요.",
+      "퇴근 10분 전에 들어오는 복합 위기가구 민원인이야말로 진정한 공무원의 수련 과제입니다.",
+      "커피는 카페인이 아니라 영혼을 연료로 태우는 직장인의 합법적 생명유지장치입니다.",
+      "월급날 통장을 스쳐 지나가는 월급: '잠시 쉬어갑니다 (카드사 일동)'.",
+      "수급 탈락 통지서 보내고 항의 전화 5통 받기 vs 그냥 야근하기... 둘 다 하기 싫은 게 정상입니다.",
+      "아무리 힘들어도 잊지 마세요. 주말은 반드시 오고, 20일 봉급날은 생각보다 빠릅니다."
+    ];
+
+    function cycleHumorQuote() {
+      var rand = Math.floor(Math.random() * HUMOR_QUOTES.length);
+      document.getElementById('dailyHumorText').innerText = HUMOR_QUOTES[rand];
+    }
+
+    function initDailyHumor() {
+      // 날짜 기반 결정적 인덱스 (하루 동안 기본 고정 유지)
+      var today = new Date();
+      var dayNum = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+      var idx = dayNum % HUMOR_QUOTES.length;
+      document.getElementById('dailyHumorText').innerText = HUMOR_QUOTES[idx];
+    }
+
+    // ==========================================
+    // 1. 2026년 법정 기준 상수
     // ==========================================
     var POLICY_2026 = {
       medianIncome: { 1: 256.4, 2: 419.9, 3: 535.9, 4: 649.5, 5: 755.7, 6: 855.6, 7: 951.5 },
@@ -954,10 +1081,11 @@
       rates: { residential: 0.0104, general: 0.0417, financial: 0.0626, car: 1.0 },
       financialDeduction: 500,
       standards: { livelihood: 0.32, medical: 0.40, housing: 0.48, nearPoverty: 0.50, emergency: 0.75 },
+      // 긴급생계지원금 가구원수별 단가(만원)
+      emergencyPayouts: { 1: 71.3, 2: 117.8, 3: 150.9, 4: 183.4, 5: 214.3, 6: 243.6, 7: 272.1 },
       // 긴급지원 재산한도: 대구 구 지역 2억 4,100만 / 군위군·달성군 1억 6,500만 / 서울 3억 1,000만
       emergencyAssetLimit: { daegu: 24100, gunwi: 16500, seoul: 31000, gyeonggi: 24100 },
       basicPensionLimit: { single: 213, couple: 340.8 },
-      // 기초연금 기본재산공제: 대구 구 지역(대도시) 1억 3,500만 / 군위군·달성군(농어촌) 7,250만
       basicPensionBaseDeduct: { daegu: 13500, gunwi: 7250, seoul: 13500, gyeonggi: 13500 },
       basicPensionEarnedDeduct: 116,
       dalgubeol: {
@@ -1544,7 +1672,7 @@
       var totalRealIncome = earned + other;
       var netAssets = (resProp + combinedGen + finProp) - debt;
 
-      // 1. 국민기초생활보장
+      // 1. 국민기초생활보장 판정 및 예상 수급액 산출
       var liveStandard = Math.round(median * POLICY_2026.standards.livelihood);
       var medStandard = Math.round(median * POLICY_2026.standards.medical);
       var houseStandard = Math.round(median * POLICY_2026.standards.housing);
@@ -1553,6 +1681,7 @@
       var badgeBL = document.getElementById('badgeBasicLife');
       var cardBL = document.getElementById('cardBasicLife');
       var detailBL = document.getElementById('detailBasicLife');
+      var estBasicLifeDiv = document.getElementById('estBasicLifePayout');
 
       cardBL.className = "benefit-card";
       if (recognizedIncome <= liveStandard) {
@@ -1560,31 +1689,43 @@
         badgeBL.className = "benefit-badge badge-pass";
         badgeBL.innerText = "생계·의료·주거 가능";
         detailBL.innerText = "생계기준(" + liveStandard + "만) 충족. " + (workAbility === 'none' ? '근로무능력 충족' : '조건부 수급 대상');
+        
+        var diffLivelihood = Math.max(0, liveStandard - recognizedIncome);
+        estBasicLifeDiv.innerText = "월 약 " + diffLivelihood.toLocaleString() + "만 원 (보충급여)";
+        estBasicLifeDiv.style.color = "#047857";
       } else if (recognizedIncome <= medStandard) {
         cardBL.classList.add("conditional");
         badgeBL.className = "benefit-badge badge-conditional";
         badgeBL.innerText = "의료·주거 가능";
         detailBL.innerText = "의료기준(" + medStandard + "만) 충족. " + (support === 'severed' ? '부양의무 해체심의 요망' : '부양조사진행');
+        estBasicLifeDiv.innerText = "생계 0원 / 의료 1·2종 / 주거급여 지급";
+        estBasicLifeDiv.style.color = "#a16207";
       } else if (recognizedIncome <= houseStandard) {
         cardBL.classList.add("conditional");
         badgeBL.className = "benefit-badge badge-conditional";
         badgeBL.innerText = "주거급여 가능";
         detailBL.innerText = "주거기준(" + houseStandard + "만) 충족 (부양의무자 미적용)";
+        estBasicLifeDiv.innerText = "주거급여 기준임대료 내 실비 지원";
+        estBasicLifeDiv.style.color = "#a16207";
       } else {
         cardBL.classList.add("fail");
         badgeBL.className = "benefit-badge badge-fail";
         badgeBL.innerText = "기준 초과";
         detailBL.innerText = "주거기준(" + houseStandard + "만) 초과로 선정 제외 예상";
+        estBasicLifeDiv.innerText = "해당 없음 (기준 초과)";
+        estBasicLifeDiv.style.color = "#b91c1c";
       }
 
-      // 2. 긴급복지지원
+      // 2. 긴급복지지원 판정 및 예상 수급액 산출
       var emergStandard = Math.round(median * POLICY_2026.standards.emergency);
       var emergAssetLimit = POLICY_2026.emergencyAssetLimit[region] || 24100;
+      var emergPayAmount = POLICY_2026.emergencyPayouts[members] || 71.3;
 
       document.getElementById('valEmergIncome').innerText = totalRealIncome;
       var badgeEm = document.getElementById('badgeEmergency');
       var cardEm = document.getElementById('cardEmergency');
       var detailEm = document.getElementById('detailEmergency');
+      var estEmergDiv = document.getElementById('estEmergencyPayout');
       
       cardEm.className = "benefit-card";
       if (totalRealIncome <= emergStandard && netAssets <= emergAssetLimit) {
@@ -1592,14 +1733,18 @@
         badgeEm.className = "benefit-badge badge-pass";
         badgeEm.innerText = "긴급지원 충족";
         detailEm.innerText = "실소득 " + totalRealIncome + "만(기준 " + emergStandard + "만) 및 재산한도(" + emergAssetLimit + "만) 충족";
+        estEmergDiv.innerText = "월 " + emergPayAmount.toLocaleString() + "만 원 (정액 생계)";
+        estEmergDiv.style.color = "#047857";
       } else {
         cardEm.classList.add("fail");
         badgeEm.className = "benefit-badge badge-fail";
         badgeEm.innerText = "긴급기준 초과";
         detailEm.innerText = totalRealIncome > emergStandard ? "소득(" + emergStandard + "만) 초과" : "순재산 한도(" + emergAssetLimit + "만) 초과";
+        estEmergDiv.innerText = "지원 대상 아님";
+        estEmergDiv.style.color = "#b91c1c";
       }
 
-      // 3. 달구벌 희망급여
+      // 3. 달구벌 희망급여 (구·군별 차등 명시)
       var dgIncomeLimit = Math.round(median * POLICY_2026.dalgubeol.incomeLimitPercent);
       var dgGenAssetLimit = POLICY_2026.dalgubeol.generalAssetLimit;
       var dgFinLimit = POLICY_2026.dalgubeol.financialLimit[members] || 1574.2;
@@ -1609,6 +1754,7 @@
       var badgeDG = document.getElementById('badgeDalgubeol');
       var cardDG = document.getElementById('cardDalgubeol');
       var detailDG = document.getElementById('detailDalgubeol');
+      var estDGDiv = document.getElementById('estDalgubeolPayout');
 
       var isDGIncomePass = totalRealIncome <= dgIncomeLimit;
       var isDGAssetPass = combinedRealProp <= dgGenAssetLimit;
@@ -1618,8 +1764,10 @@
       if (isDGIncomePass && isDGAssetPass && isDGFinPass) {
         cardDG.classList.add("pass");
         badgeDG.className = "benefit-badge badge-pass";
-        badgeDG.innerText = "지원 가능 (20~100만)";
-        detailDG.innerHTML = "소득·재산·금융 요건 모두 충족<br><span style='color:#15803d; font-weight:700;'>👉 위기상황 시 20만~100만원 지원</span>";
+        badgeDG.innerText = "지원 가능";
+        detailDG.innerHTML = "소득·재산·금융 요건 모두 충족<br><span style='color:#15803d; font-weight:700;'>※ 구·군별 조례·배정액에 따라 실지급액 차등</span>";
+        estDGDiv.innerText = "20만 ~ 100만 원 (구·군별 상이)";
+        estDGDiv.style.color = "#1d4ed8";
       } else {
         cardDG.classList.add("fail");
         badgeDG.className = "benefit-badge badge-fail";
@@ -1631,6 +1779,8 @@
         if (!isDGFinPass) reasons.push("금융(" + dgFinLimit + "만) 초과");
 
         detailDG.innerHTML = reasons.join(", ") + "<br><span style='color:#b91c1c;'>※ 구·군 인정 시 예외지원 심의 가능</span>";
+        estDGDiv.innerText = "구청 심의 시 예외지원 가능";
+        estDGDiv.style.color = "#64748b";
       }
 
       // 4. 차상위계층
@@ -1639,6 +1789,7 @@
       var badgeNP = document.getElementById('badgeNearPoverty');
       var cardNP = document.getElementById('cardNearPoverty');
       var detailNP = document.getElementById('detailNearPoverty');
+      var estNPDiv = document.getElementById('estNearPovertyPayout');
       
       cardNP.className = "benefit-card";
       if (recognizedIncome <= nearStandard) {
@@ -1646,14 +1797,18 @@
         badgeNP.className = "benefit-badge badge-pass";
         badgeNP.innerText = "차상위 충족";
         detailNP.innerText = "중위 50%(" + nearStandard + "만) 이하 충족";
+        estNPDiv.innerText = "양곡(60~80%할인)·전기·가스 감면";
+        estNPDiv.style.color = "#047857";
       } else {
         cardNP.classList.add("fail");
         badgeNP.className = "benefit-badge badge-fail";
         badgeNP.innerText = "기준 초과";
         detailNP.innerText = "중위 50%(" + nearStandard + "만) 초과";
+        estNPDiv.innerText = "해당 없음";
+        estNPDiv.style.color = "#b91c1c";
       }
 
-      // 5. 기초연금
+      // 5. 기초연금 판정 및 예상 수령액
       var bpDeduct = POLICY_2026.basicPensionBaseDeduct[region] || 13500;
       var bpLimit = members >= 2 ? POLICY_2026.basicPensionLimit.couple : POLICY_2026.basicPensionLimit.single;
       
@@ -1670,6 +1825,7 @@
       var badgeBP = document.getElementById('badgeBasicPension');
       var cardBP = document.getElementById('cardBasicPension');
       var detailBP = document.getElementById('detailBasicPension');
+      var estBPDiv = document.getElementById('estBasicPensionPayout');
 
       cardBP.className = "benefit-card";
       if (workAbility === 'none') {
@@ -1678,17 +1834,25 @@
           badgeBP.className = "benefit-badge badge-pass";
           badgeBP.innerText = "기초연금 수급가능";
           detailBP.innerText = "소득인정액 " + bpTotal + "만 (선정기준 " + bpLimit + "만 이하)";
+
+          var maxPension = (members >= 2) ? 53.5 : 33.4;
+          estBPDiv.innerText = "월 최대 " + maxPension + "만 원 (" + (members >= 2 ? "부부합산" : "단독") + ")";
+          estBPDiv.style.color = "#047857";
         } else {
           cardBP.classList.add("fail");
           badgeBP.className = "benefit-badge badge-fail";
           badgeBP.innerText = "소득기준 초과";
           detailBP.innerText = "선정기준액(" + bpLimit + "만) 초과";
+          estBPDiv.innerText = "선정기준액 초과 (수령 불가)";
+          estBPDiv.style.color = "#b91c1c";
         }
       } else {
         cardBP.classList.add("fail");
         badgeBP.className = "benefit-badge badge-fail";
         badgeBP.innerText = "연령 미달";
         detailBP.innerText = "만 65세 이상 대상 (신청 불가)";
+        estBPDiv.innerText = "만 65세 미만 신청 불가";
+        estBPDiv.style.color = "#b91c1c";
       }
 
       document.getElementById('breakdownContent').innerHTML = 
@@ -1698,7 +1862,7 @@
           "<li><strong>기초보장 재산환산액:</strong> 주거(월 1.04%) " + propIncomeResidential + "만 + 일반(월 4.17%) " + propIncomeGeneral + "만 (차량반영 " + carGenProp + "만 포함)" + (transferredGen > 0 ? " [주거한도초과 " + transferredGen + "만 가산]" : "") + " + 금융(월 6.26%) " + propIncomeFinancial + "만 + 차량100% " + propIncomeCar + "만 = <strong>월 " + totalPropIncome + "만 원</strong></li>" +
           "<li><strong>기초보장 최종 소득인정액:</strong> 소득평가액(" + evalIncome + "만) + 재산환산액(" + totalPropIncome + "만) = <span style='color: #1d4ed8; font-weight:700;'>" + recognizedIncome + "만 원</span></li>" +
           "<li style='margin-top:6px; padding-top:6px; border-top:1px dashed #cbd5e1;'><strong>[기초연금 별도 산식]</strong> 근로 116만원 선공제(" + bpEarned + "만) + 재산 통합 연 4% 환산(월 " + bpPropIncome + "만) = <strong>월 " + bpTotal + "만 원</strong> (선정기준 " + bpLimit + "만 원)</li>" +
-          "<li><strong>[대구 달구벌 희망급여]</strong> 실소득 <strong>" + dgIncomeLimit + "만 원 이하</strong>, 일반재산 <strong>3억 5,000만 원 이하</strong>, 금융 <strong>" + dgFinLimit + "만 원 이하</strong> 충족 시 20만~100만 원 지원</li>" +
+          "<li><strong>[대구 달구벌 희망급여]</strong> 실소득 <strong>" + dgIncomeLimit + "만 원 이하</strong>, 일반재산 <strong>3억 5,000만 원 이하</strong>, 금융 <strong>" + dgFinLimit + "만 원 이하</strong> 충족 시 20만~100만 원 (구·군 조례에 따라 차등 지원)</li>" +
         "</ul>";
     }
 
@@ -2013,6 +2177,7 @@
     window.addEventListener('DOMContentLoaded', function() {
       var savedMemo = localStorage.getItem('welfare_counsel_memo');
       if (savedMemo) document.getElementById('counselInput').value = savedMemo;
+      initDailyHumor();
       initVehicleUI();
       runSimulation();
     });
