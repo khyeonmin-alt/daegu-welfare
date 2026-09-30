@@ -5,8 +5,6 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>대구광역시 읍면동 스마트 복지상담 &amp; 소득인정액 판정기</title>
-  <!-- Daum 우편번호 서비스 CDN -->
-  <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -354,19 +352,6 @@
       min-width: 130px;
     }
 
-    .pill-info {
-      display: inline-flex;
-      align-items: center;
-      background-color: #f1f5f9;
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 600;
-      color: #334155;
-      border: 1px solid #e2e8f0;
-      margin-right: 6px;
-    }
-
     .calculation-breakdown {
       background-color: #f1f5f9;
       border-radius: 8px;
@@ -438,50 +423,6 @@
       width: fit-content;
     }
 
-    /* 우편번호 모달 */
-    .modal-backdrop {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0,0,0,0.5);
-      z-index: 1000;
-      display: none;
-      visibility: hidden;
-      opacity: 0;
-      pointer-events: none;
-      align-items: center;
-      justify-content: center;
-      transition: opacity 0.2s ease-in-out;
-    }
-    .modal-backdrop.open {
-      display: flex !important;
-      visibility: visible !important;
-      opacity: 1 !important;
-      pointer-events: auto !important;
-    }
-    .modal-card {
-      background-color: #ffffff;
-      width: 550px;
-      max-width: 95%;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    }
-    .modal-header {
-      padding: 14px 18px;
-      background-color: #f8fafc;
-      border-bottom: 1px solid #cbd5e1;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-weight: 700;
-    }
-    .modal-body {
-      padding: 16px;
-    }
-
     #toast {
       position: fixed;
       bottom: 25px;
@@ -532,7 +473,6 @@
       #tab-vehicle,
       .field-row,
       #toast,
-      .modal-backdrop,
       .calculation-breakdown,
       .ext-call-btn {
         display: none !important;
@@ -925,7 +865,7 @@
               🏢 타 기관 연계 특화 지원사업 자동 매칭 (서민금융·의료·고용·연금)
             </div>
             <div style="font-size: 12px; color: #b91c1c; font-weight: 700; margin-top: 4px;">
-              ⚠️ [주의] 아래 사업들은 읍·면·동 행정복지센터에서 접수받지 않으며, 표기된 각 소관 전문기관으로 민원인이 직접 신청해야 합니다.
+              ⚠️️ [주의] 아래 사업들은 읍·면·동 행정복지센터에서 접수받지 않으며, 표기된 각 소관 전문기관으로 민원인이 직접 신청해야 합니다.
             </div>
           </div>
           <span style="font-size: 11px; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-weight: 600; color: #475569;">
@@ -1066,66 +1006,28 @@
         </div>
       </div>
 
-      <!-- ==================== 전국 부동산 공시가격 원클릭 열람 카드 ==================== -->
+      <!-- ==================== 부동산 공시가격 원클릭 열람 및 재산 산정 카드 ==================== -->
       <div class="card">
         <div class="card-header">
-          <div class="card-title">🏠 전국 부동산 공시가격 원클릭 열람 및 재산 산정</div>
+          <div class="card-title">🏠 전국 부동산 공시가격 공식 열람 및 재산 산정</div>
           <span style="font-size: 12px; color: #475569;">국토교통부 공시가격 알리미 공식 연동</span>
         </div>
 
         <div class="grid-2col">
+          <!-- 좌측: 바로가기 버튼 및 입력 폼 -->
           <div>
-            <div style="margin-bottom: 12px;">
-              <label>1. 도로명 주소 검색 (우편번호 서비스로 표준 주소를 선택하세요)</label>
-              <div style="display: flex; gap: 8px;">
-                <input type="text" id="propAddressInput" placeholder="[🔍 주소 검색] 버튼을 누르거나 직접 입력하세요" style="font-weight: 600; background-color: #f8fafc;">
-                <button class="btn btn-primary" type="button" onclick="openDaumPostcode()" style="white-space: nowrap;">🔍 주소 검색</button>
-              </div>
-            </div>
-
-            <div style="display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap;">
-              <span class="pill-info">PNU: <span id="propPnu">-</span></span>
-              <span class="pill-info">법정동: <span id="propBcode">-</span></span>
-              <span class="pill-info">건물번호: <span id="propBdMgtSn">-</span></span>
-            </div>
-
-            <div class="field-row">
-              <div>
-                <label>부동산 유형</label>
-                <select id="propTypeSelect" onchange="togglePropTypeUI()">
-                  <option value="apt">공동주택 (아파트·연립·다세대)</option>
-                  <option value="house">개별단독주택 (단독·다가구)</option>
-                  <option value="land">토지 (개별공시지가)</option>
-                </select>
-              </div>
-              <div id="complexNameBadgeWrap" style="flex: 1;">
-                <label>단지/건물명 (선택)</label>
-                <input type="text" id="propBuildingNameDisplay" placeholder="주소 검색 시 자동 반영 또는 직접 입력" style="font-size: 13px;">
-              </div>
-            </div>
-
-            <div class="field-row" id="dongHoWrap">
-              <div style="flex: 1;">
-                <label>동 (棟)</label>
-                <input type="text" id="propDong" placeholder="예: 101동">
-              </div>
-              <div style="flex: 1;">
-                <label>호수 (號)</label>
-                <input type="text" id="propHo" placeholder="예: 1001호">
-              </div>
-            </div>
-
-            <div style="margin-top: 10px;">
-              <button class="btn btn-primary" type="button" style="width: 100%; font-size: 14px; padding: 12px; font-weight: 700; background: linear-gradient(135deg, #1d4ed8, #2563eb);" onclick="openRealtyPriceDirect()">
-                🌐 주소 복사 &amp; 국토교통부 공시가격 조회창 즉시 열기
+            <div style="margin-bottom: 16px;">
+              <button class="btn btn-primary" type="button" style="width: 100%; font-size: 15px; padding: 14px; font-weight: 800; background: linear-gradient(135deg, #1d4ed8, #2563eb); border-radius: 8px; box-shadow: 0 4px 10px rgba(29, 78, 216, 0.25);" onclick="openRealtyPriceDirect()">
+                🌐 국토교통부 공시가격 알리미 공식 열람창 열기 ↗
               </button>
-              <div style="font-size: 11.5px; color: #475569; margin-top: 6px; line-height: 1.5;">
-                💡 버튼을 누르면 <strong>입력한 주소가 자동으로 복사</strong>되며 해당 유형의 국토교통부 열람창이 새 탭으로 열립니다. 열람창 검색창에 <strong>[붙여넣기(Ctrl+V)]</strong>하여 바로 조회하세요.
+              <div style="font-size: 12px; color: #475569; margin-top: 8px; line-height: 1.6; background-color: #f1f5f9; padding: 10px 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                💡 <strong>안내:</strong> 버튼을 누르면 국토교통부 공식 열람 페이지가 새 창으로 열립니다. 해당 페이지에서 공동주택(아파트·다세대) 또는 개별주택·토지를 선택해 조회하세요.
               </div>
             </div>
 
-            <div style="margin-top: 14px; padding: 14px; background-color: #f8fafc; border-radius: 8px; border: 1px solid #cbd5e1;">
-              <label style="font-weight: 700; color: #1e293b;">2. 사이트에서 확인한 공시가격 입력 (만 원 단위)</label>
+            <!-- 공시가격 입력란 -->
+            <div style="padding: 14px; background-color: #f8fafc; border-radius: 8px; border: 1px solid #cbd5e1;">
+              <label style="font-weight: 700; color: #1e293b; font-size: 13px;">확인한 공시가격 입력 (만 원 단위)</label>
               <div style="display: flex; gap: 8px; margin-bottom: 8px;">
                 <input type="number" id="propManualPriceMan" placeholder="예: 23400 (2억 3,400만원)" oninput="handleManualPriceManInput()" style="font-weight: 800; font-size: 15px; color: #15803d; border-color: #86efac;">
                 <span style="display: flex; align-items: center; font-weight: 700; font-size: 13px; color: #475569; white-space: nowrap;">만 원</span>
@@ -1138,13 +1040,13 @@
                 <button class="btn btn-outline btn-sm" type="button" onclick="resetPriceMan()" style="color: #b91c1c;">초기화</button>
               </div>
             </div>
-
           </div>
 
+          <!-- 우측: 결과 환산 카드 및 1번 탭 반영 버튼 -->
           <div>
             <div class="benefit-card" style="border: 2px solid #bfdbfe; background-color: #f8fafc; padding: 18px; margin-bottom: 14px;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <span class="benefit-badge badge-pass" id="propYearBadge">2026년 기준</span>
+                <span class="benefit-badge badge-pass">국토교통부 기준</span>
                 <span style="font-size: 12px; color: #475569;">사회보장재산 산정</span>
               </div>
               
@@ -1178,17 +1080,6 @@
 
   </div>
 
-  <!-- 도로명 주소 검색 모달 레이어 -->
-  <div id="postcodeModal" class="modal-backdrop">
-    <div class="modal-card">
-      <div class="modal-header">
-        <span>도로명 주소 검색</span>
-        <button class="btn btn-outline btn-sm" onclick="closeDaumPostcode()">✕ 닫기</button>
-      </div>
-      <div class="modal-body" id="postcodeLayer" style="height: 450px;"></div>
-    </div>
-  </div>
-
   <!-- ==================== 민원인 전용 교부 서류 인쇄 템플릿 ==================== -->
   <div id="printOnlyDocGuide">
     <div style="border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-end;">
@@ -1206,7 +1097,6 @@
 
     <h3 style="font-size: 13pt; margin-bottom: 8px; border-left: 4px solid #1d4ed8; padding-left: 8px;">■ 제출하셔야 할 서류 목록 (체크리스트)</h3>
     <div id="printGuideDocList" style="border: 1px solid #333; border-radius: 4px; padding: 14px; margin-bottom: 18px; line-height: 1.8;">
-      <!-- 담당자가 편집한 textarea 내용이 동적 반영됩니다 -->
     </div>
 
     <div style="border: 1px dashed #666; padding: 12px; font-size: 9.5pt; background: #fafafa; border-radius: 4px; margin-bottom: 10px;">
@@ -2372,111 +2262,12 @@
     }
 
     // ==========================================
-    // 2. 부동산 공시가격 원클릭 열람 및 연동 로직
+    // 2. 부동산 공시가격 원클릭 공식 열람 및 연동 로직
     // ==========================================
-    var REALTY_OFFICIAL_URLS = {
-      apt: "https://www.realtyprice.kr/notice/town/nfSiteLink.htm",
-      house: "https://www.realtyprice.kr/notice/hpindividual/siteLink.htm",
-      land: "https://www.realtyprice.kr/notice/gsindividual/siteLink.htm"
-    };
-
-    function ensureDaumScriptLoaded() {
-      return new Promise(function(resolve, reject) {
-        if (typeof daum !== 'undefined' && window.daum && window.daum.Postcode) {
-          return resolve();
-        }
-        var script = document.createElement('script');
-        script.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
-        script.onload = function() { resolve(); };
-        script.onerror = function() { reject(new Error("CDN Load Failed")); };
-        document.head.appendChild(script);
-      });
-    }
-
-    function openDaumPostcode() {
-      var modal = document.getElementById('postcodeModal');
-      var layer = document.getElementById('postcodeLayer');
-
-      ensureDaumScriptLoaded().then(function() {
-        modal.classList.add('open');
-        layer.innerHTML = "";
-
-        new daum.Postcode({
-          oncomplete: function(data) {
-            document.getElementById('propAddressInput').value = data.roadAddress || data.jibunAddress;
-            
-            var bcode = data.bcode || "-";
-            var bdMgtSn = data.buildingCode || "-";
-            var pnu = bdMgtSn.length >= 19 ? bdMgtSn.substring(0, 19) : (bcode.padEnd(19, '0'));
-
-            document.getElementById('propBcode').innerText = bcode;
-            document.getElementById('propBdMgtSn').innerText = bdMgtSn;
-            document.getElementById('propPnu').innerText = pnu;
-
-            var bName = data.buildingName ? data.buildingName.trim() : (data.apartment === 'Y' ? '공동주택' : '');
-            if (bName) document.getElementById('propBuildingNameDisplay').value = bName;
-
-            if (data.apartment === 'Y') {
-              document.getElementById('propTypeSelect').value = 'apt';
-            }
-            togglePropTypeUI();
-
-            closeDaumPostcode();
-            showToast("주소가 입력되었습니다. 동과 호수를 입력 후 조회창을 여세요.");
-          },
-          width: '100%',
-          height: '100%'
-        }).embed(layer);
-      }).catch(function() {
-        showToast("우편번호 로딩에 실패했습니다. 주소를 직접 입력해주세요.");
-      });
-    }
-
-    function closeDaumPostcode() {
-      document.getElementById('postcodeModal').classList.remove('open');
-    }
-
-    function togglePropTypeUI() {
-      var type = document.getElementById('propTypeSelect').value;
-      var dongHoWrap = document.getElementById('dongHoWrap');
-      var badgeWrap = document.getElementById('complexNameBadgeWrap');
-      if (type === 'apt') {
-        dongHoWrap.style.display = 'flex';
-        badgeWrap.style.display = 'block';
-      } else {
-        dongHoWrap.style.display = 'none';
-        badgeWrap.style.display = 'none';
-      }
-    }
-
     function openRealtyPriceDirect() {
-      var addr = document.getElementById('propAddressInput').value.trim();
-      var type = document.getElementById('propTypeSelect').value;
-      var bName = document.getElementById('propBuildingNameDisplay').value.trim();
-      var dong = document.getElementById('propDong').value.trim();
-      var ho = document.getElementById('propHo').value.trim();
-
-      var fullSearchText = addr;
-      if (bName && fullSearchText.indexOf(bName) === -1) fullSearchText += " " + bName;
-      if (dong) fullSearchText += " " + dong;
-      if (ho) fullSearchText += " " + ho;
-      fullSearchText = fullSearchText.trim();
-
-      var targetUrl = REALTY_OFFICIAL_URLS[type] || REALTY_OFFICIAL_URLS.apt;
-
-      if (fullSearchText) {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(fullSearchText).then(function() {
-            showToast("주소 복사 완료! 공식창에 [Ctrl+V]로 붙여넣으세요.");
-          }).catch(function() {
-            showToast("국토교통부 열람 사이트로 이동합니다.");
-          });
-        }
-      } else {
-        showToast("입력된 주소가 없어 기본 열람 사이트로 이동합니다.");
-      }
-
-      window.open(targetUrl, '_blank', 'noopener,noreferrer');
+      // 국토교통부 부동산 공시가격 알리미 공식 메인 창 열기
+      window.open('https://www.realtyprice.kr', '_blank', 'noopener,noreferrer');
+      showToast("국토교통부 공시가격 알리미 열람창을 열었습니다.");
     }
 
     function updateCalculatedPrice(manVal) {
@@ -2485,14 +2276,11 @@
       var wonDiv = document.getElementById('propPriceWon');
       var korDiv = document.getElementById('propPriceKorean');
       var detailDiv = document.getElementById('propDetailInfo');
-      var addr = document.getElementById('propAddressInput').value || "소재지 미지정";
-      var dong = document.getElementById('propDong').value;
-      var ho = document.getElementById('propHo').value;
 
       if (manVal > 0) {
         wonDiv.innerText = won.toLocaleString() + " 원";
         korDiv.innerText = formatKoreanMoneyFromMan(manVal);
-        detailDiv.innerText = addr + " " + dong + " " + ho + " - 공시가격 산정 완료 (" + manVal.toLocaleString() + "만 원)";
+        detailDiv.innerText = "공시가격 " + manVal.toLocaleString() + "만 원이 산정되었습니다. 하단 버튼을 눌러 1번 탭에 반영하세요.";
       } else {
         wonDiv.innerText = "- 원";
         korDiv.innerText = "-";
@@ -2519,7 +2307,7 @@
 
     function applyToTab1(target) {
       if (currentCalculatedPriceMan <= 0) {
-        showToast("유효한 공시가격을 먼저 확인하거나 입력해주세요.");
+        showToast("유효한 공시가격을 먼저 입력해주세요.");
         return;
       }
       if (target === 'res') {
