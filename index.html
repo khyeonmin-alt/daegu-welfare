@@ -209,7 +209,6 @@
       gap: 8px;
     }
 
-    /* 긴급 위기신호 최상단 경고 배너 */
     .risk-alert-banner {
       background: linear-gradient(135deg, #fff1f2, #ffe4e6);
       border: 2px solid #f43f5e;
@@ -281,10 +280,10 @@
     }
 
     .counsel-textarea {
-      height: 380px;
+      height: 480px;
       resize: vertical;
       line-height: 1.6;
-      font-size: 13px;
+      font-size: 12.5px;
     }
 
     /* 신호등 카드 UI */
@@ -303,43 +302,21 @@
       flex-direction: column;
       justify-content: space-between;
     }
-    .traffic-card.green {
-      border-color: #86efac;
-      background-color: #f0fdf4;
-    }
-    .traffic-card.yellow {
-      border-color: #fde047;
-      background-color: #fefce8;
-    }
-    .traffic-card.red {
-      border-color: #fca5a5;
-      background-color: #fff1f2;
-    }
+    .traffic-card.green { border-color: #86efac; background-color: #f0fdf4; }
+    .traffic-card.yellow { border-color: #fde047; background-color: #fefce8; }
+    .traffic-card.red { border-color: #fca5a5; background-color: #fff1f2; }
     .traffic-head {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 6px;
     }
-    .traffic-title {
-      font-size: 12px;
-      font-weight: 800;
-      color: #1e293b;
-    }
-    .traffic-status-pill {
-      font-size: 11px;
-      font-weight: 800;
-      padding: 2px 8px;
-      border-radius: 12px;
-    }
+    .traffic-title { font-size: 12px; font-weight: 800; color: #1e293b; }
+    .traffic-status-pill { font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 12px; }
     .pill-green { background: #dcfce7; color: #15803d; }
     .pill-yellow { background: #fef9c3; color: #a16207; }
     .pill-red { background: #fee2e2; color: #b91c1c; }
-    .traffic-desc {
-      font-size: 12px;
-      color: #334155;
-      line-height: 1.5;
-    }
+    .traffic-desc { font-size: 12px; color: #334155; line-height: 1.5; }
 
     /* 공문서 규격 사정표 테이블 */
     .official-doc-table {
@@ -364,14 +341,12 @@
     }
     .official-doc-table td {
       padding: 8px 12px;
-      font-size: 12.5px;
+      font-size: 12px;
       color: #0f172a;
       border-bottom: 1px solid #e2e8f0;
     }
     .official-doc-table tr:last-child th,
-    .official-doc-table tr:last-child td {
-      border-bottom: none;
-    }
+    .official-doc-table tr:last-child td { border-bottom: none; }
 
     .matrix-grid {
       display: flex;
@@ -460,8 +435,8 @@
       <div class="step-flow-item active" id="stepIndicator1">
         <div class="step-num">1</div>
         <div>
-          <div class="step-text-title">구술 메모 &amp; 상담 기록</div>
-          <div class="step-text-desc">비정형 텍스트 자유 입력</div>
+          <div class="step-text-title">기초생활보장 법정 상담 서식 입력</div>
+          <div class="step-text-desc">인적·근로능력·소득·재산·부양의무자</div>
         </div>
       </div>
       <div class="step-flow-item active" id="stepIndicator2">
@@ -480,7 +455,7 @@
       </div>
     </div>
 
-    <!-- FR-05: 온디바이스 실시간 위기신호 탐지 경고 배너 (위기 시에만 자동 팝업) -->
+    <!-- FR-05: 온디바이스 실시간 위기신호 탐지 경고 배너 -->
     <div id="riskAlertBanner" class="risk-alert-banner" style="display: none;">
       <div class="risk-alert-title">
         <span style="display: flex; align-items: center; gap: 8px;">
@@ -498,16 +473,16 @@
       <!-- 좌측: 입력창 -->
       <div class="card">
         <div class="card-header">
-          <div class="card-title">📝 [1단계] 상담 메모 &amp; 비정형 구술 입력</div>
+          <div class="card-title">📝 [1단계] 복지상담 기록 &amp; 비정형 구술 입력</div>
           <div style="display: flex; gap: 6px;">
-            <button class="btn btn-outline btn-sm" onclick="loadBlankTemplate()">📋 표준 서식</button>
+            <button class="btn btn-outline btn-sm" onclick="loadBlankTemplate()" style="font-weight:800; color:#1d4ed8; border-color:#93c5fd;">📋 표준 서식</button>
             <button class="btn btn-outline btn-sm" onclick="loadSampleTemplate()">📝 실무 예시</button>
             <button class="btn btn-danger btn-sm" onclick="loadRiskSampleTemplate()" style="border-color:#fca5a5; color:#be123c;">🚨 위기 사례</button>
             <button class="btn btn-outline btn-sm" onclick="clearCounselInput()">🧹 비우기</button>
           </div>
         </div>
         
-        <textarea id="counselInput" class="counsel-textarea" placeholder="민원인의 구술 기록을 편하게 입력하세요. 온디바이스 AI가 실시간으로 부양단절 사유와 함께 자살암시, 가정폭력, 아동학대 등 긴급 위기신호를 분석합니다."></textarea>
+        <textarea id="counselInput" class="counsel-textarea" placeholder="상단의 [📋 표준 서식] 버튼을 누르면 법정 기초생활수급자 맞춤 상담 서식이 자동으로 입력창에 채워집니다. 민원인의 구술 기록을 편하게 입력하세요."></textarea>
         
         <div style="margin-top: 14px; display: flex; gap: 8px;">
           <button class="btn btn-primary" style="flex: 2; font-size: 14px; padding: 12px; font-weight: 800;" onclick="processCounseling()">
@@ -532,7 +507,6 @@
 
         <!-- 신호등 카드 (가족단절 상태 / 위기신호 감지) -->
         <div class="traffic-grid" id="trafficGridArea">
-          <!-- 가족단절 신호등 -->
           <div class="traffic-card green" id="trafficSeverCard">
             <div class="traffic-head">
               <span class="traffic-title">👨‍👩‍👧 가족관계 단절(지생보)</span>
@@ -541,7 +515,6 @@
             <div class="traffic-desc" id="trafficSeverDesc">상담 내용을 입력하면 단절 정황을 추론합니다.</div>
           </div>
 
-          <!-- 위기신호 신호등 -->
           <div class="traffic-card green" id="trafficRiskCard">
             <div class="traffic-head">
               <span class="traffic-title">🚨 긴급 위기신호(FR-05)</span>
@@ -559,24 +532,28 @@
         
         <table class="official-doc-table">
           <tr>
-            <th>가구 인적사항</th>
-            <td id="docApplicantInfo">1인 가구 (단독 거주)</td>
+            <th>1. 가구원 및 건강상태</th>
+            <td id="docApplicantInfo">1인 가구 (단독 거주) | 건강상태 양호 (일반 근로능력)</td>
           </tr>
           <tr>
-            <th>월 소득 현황</th>
-            <td id="docIncomeInfo">월 0만 원 (근로 0만 / 기타 0만)</td>
+            <th>2. 근로능력 유무</th>
+            <td id="docWorkAbilityInfo">근로능력 평가 대상 (18세~64세 일반)</td>
           </tr>
           <tr>
-            <th>재산 및 부채</th>
-            <td id="docAssetInfo">주거재산 0만 원 | 부채 0만 원</td>
+            <th>3. 월 소득 사항</th>
+            <td id="docIncomeInfo">월 0만 원 (근로 0만 / 공적이전 0만)</td>
           </tr>
           <tr>
-            <th>부양단절 심의</th>
-            <td id="docSeverInfo">단절 사유 없음 (일반 조사 대상)</td>
+            <th>4. 재산 및 자동차</th>
+            <td id="docAssetInfo">주거재산 0만 원 | 자동차 미보유</td>
+          </tr>
+          <tr>
+            <th>5. 부양의무자 조사</th>
+            <td id="docSeverInfo">단절 사유 없음 (의료급여 일반 소득·재산조사 대상)</td>
           </tr>
           <tr>
             <th>행정 조치 소견</th>
-            <td id="docActionInfo" style="color: #1d4ed8; font-weight: 700;">통상 국민기초생활보장 모의판정 진행</td>
+            <td id="docActionInfo" style="color: #1d4ed8; font-weight: 700;">국민기초생활보장 맞춤형 급여 모의판정 진행</td>
           </tr>
         </table>
       </div>
@@ -605,7 +582,7 @@
           </select>
         </div>
         <div>
-          <label>거주 지역 (법정 기본재산공제)</label>
+          <label>거주 지역 (기본재산공제)</label>
           <select id="simRegion" onchange="runSimulation()">
             <option value="daegu" selected>대구광역시 구(區) 지역 (공제 7,700만원)</option>
             <option value="gunwi">대구광역시 군위군·달성군 (공제 5,300만원)</option>
@@ -631,17 +608,16 @@
       </div>
 
       <div class="field-row" style="background-color: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1;">
-        <div><label>월 근로소득 (만원)</label><input type="number" id="simEarnedIncome" value="0" min="0" oninput="runSimulation()"></div>
-        <div><label>월 기타소득 (만원)</label><input type="number" id="simOtherIncome" value="0" min="0" oninput="runSimulation()"></div>
-        <div><label>주거용재산 (만원)</label><input type="number" id="simResProp" value="0" min="0" oninput="runSimulation()"></div>
-        <div><label>일반재산 (부동산) (만원)</label><input type="number" id="simGenProp" value="0" min="0" oninput="runSimulation()"></div>
+        <div><label>월 근로·사업소득 (만원)</label><input type="number" id="simEarnedIncome" value="0" min="0" oninput="runSimulation()"></div>
+        <div><label>공적·사적이전소득 (만원)</label><input type="number" id="simOtherIncome" value="0" min="0" oninput="runSimulation()"></div>
+        <div><label>주거용재산(보증금 등) (만원)</label><input type="number" id="simResProp" value="0" min="0" oninput="runSimulation()"></div>
+        <div><label>일반재산 (부동산 등) (만원)</label><input type="number" id="simGenProp" value="0" min="0" oninput="runSimulation()"></div>
         <div><label>금융재산 (만원)</label><input type="number" id="simFinProp" value="0" min="0" oninput="runSimulation()"></div>
         <div><label>금융부채 (만원)</label><input type="number" id="simDebt" value="0" min="0" oninput="runSimulation()"></div>
       </div>
 
       <!-- 5대 복지사업 카드 매트릭스 -->
       <div class="matrix-grid">
-        <!-- 1. 긴급복지지원 -->
         <div class="benefit-card" id="cardEmergency">
           <div>
             <span class="benefit-badge badge-fail" id="badgeEmergency">판정 대기</span>
@@ -658,7 +634,6 @@
           </div>
         </div>
 
-        <!-- 2. 국민기초생활보장 -->
         <div class="benefit-card" id="cardBasicLife">
           <div>
             <span class="benefit-badge badge-fail" id="badgeBasicLife">판정 대기</span>
@@ -675,7 +650,6 @@
           </div>
         </div>
 
-        <!-- 3. 대구 달구벌 희망급여 -->
         <div class="benefit-card" id="cardDalgubeol" style="border: 2px solid #93c5fd;">
           <div>
             <span class="benefit-badge badge-fail" id="badgeDalgubeol">판정 대기</span>
@@ -692,7 +666,6 @@
           </div>
         </div>
 
-        <!-- 4. 차상위계층 -->
         <div class="benefit-card" id="cardNearPoverty">
           <div>
             <span class="benefit-badge badge-fail" id="badgeNearPoverty">판정 대기</span>
@@ -709,7 +682,6 @@
           </div>
         </div>
 
-        <!-- 5. 기초연금 -->
         <div class="benefit-card" id="cardBasicPension">
           <div>
             <span class="benefit-badge badge-fail" id="badgeBasicPension">판정 대기</span>
@@ -739,9 +711,7 @@
         </div>
         <button class="btn btn-outline btn-sm" onclick="closeRiskActionModal()">✕ 닫기</button>
       </div>
-
       <div id="riskModalContent" style="font-size: 13px; line-height: 1.7; color: #334155; margin-bottom: 16px;"></div>
-
       <div style="display: flex; justify-content: flex-end; gap: 8px;">
         <button class="btn btn-outline" onclick="closeRiskActionModal()">닫기</button>
         <button class="btn btn-primary" onclick="applyRiskEmergencyIntervention()">⚡ 긴급복지 직권우선신청 연계</button>
@@ -752,7 +722,6 @@
   <div id="toast">알림</div>
 
   <script>
-    // 2026 복지 기준 상수
     var POLICY_2026 = {
       medianIncome: { 1: 256.4, 2: 419.9, 3: 535.9, 4: 649.5, 5: 755.7 },
       baseDeduction: { daegu: 7700, gunwi: 5300 },
@@ -842,7 +811,74 @@
       }
     };
 
-    // 복지 상담 처리 & 신호등 및 사정표 렌더링
+    // ==========================================
+    // 📋 요청하신 기초생활수급자 맞춤형 복지상담 표준 서식
+    // ==========================================
+    function loadBlankTemplate() {
+      document.getElementById('counselInput').value = 
+`[기초생활보장 및 맞춤형 사회보장급여 초기상담표]
+
+1. 가구원 구성 및 기본 인적사항
+• 세대주 성명: 홍길동 (주민번호: 580101-1******, 만 68세)
+• 보장가구 범위: 1인 가구 (단독 세대주, 실제 생계 및 주거 단독 운영)
+• 건강상태 및 질병: 척추협착증 및 퇴행성 관절염으로 거동 불편 (진단서 기제출)
+• 근로능력 유무: 만 65세 이상 법정 근로무능력자 해당
+
+2. 소득 사항 (소득평가액 산정)
+• 근로 및 사업소득: 0원 (질환으로 경제활동 중단 상태)
+• 공적이전소득: 기초연금 334,000원 수급 중
+• 재산 및 사적이전소득: 없음 (가족·친인척 지원 정기 송금 일체 없음)
+
+3. 재산 현황 (재산의 소득환산액 산정)
+• 주거 형태: 월세 (보증금 1,500만 원 / 월세 30만 원, 확정일자 필)
+• 일반재산: 없음 (부동산, 토지, 상가 등 미보유)
+• 금융재산: 농협 예금 잔액 약 180만 원 (생활준비금 500만원 공제 이내)
+• 부채 내역: 병원비 치료용 대출 400만 원 (신용회복 연체 중)
+• 자동차 보유: 미보유 (100% 환산차량 없음)
+
+4. 부양의무자 기준 (의료급여 중심)
+• 부양의무자 현황: 장남 1명 (만 43세)
+• 부양 기피 및 단절 여부: 10년 전 사업 부도 후 가출, 연락두절 상태임.
+• 소명 자료: 가족관계 해체사유서 자필 작성 의사 밝힘 및 최근 1년 이상 통장거래내역 제출 가능
+
+5. 가구별 특성 및 긴급성 (연계 사업)
+• 신청 희망 급여: 기초의료급여 및 기초주거급여 우선 희망
+• 위기 상황 여부: 최근 공과금 체납 2개월 발생하여 주거 위기 직전
+• 타 제도 연계 검토: 정부양곡 80% 할인 신청, 에너지바우처 지급 대상`;
+      
+      showToast("기초생활수급자 맞춤형 표준 서식이 입력되었습니다.");
+    }
+
+    function loadSampleTemplate() {
+      document.getElementById('counselInput').value = 
+`[상담메모 - 대봉1동 주민센터 내방]
+대상자 김명자(가명, 59년생), 단독 거주 1인 가구.
+허리디스크 및 퇴행성 관절염으로 일 못 하신 지 반년 넘음. 진단서 발급받아 오심.
+보증금 2,000만원에 월세 35만원 거주 중. 통장에 250만원 정도 있고 병원비로 쓴 빚이 600만원 있음.
+아들이 하나 있는데 10년 전에 크게 싸우고 집 나간 뒤로 번호도 바뀌고 어디 사는지 전혀 모름.
+돈 한 푼 보내준 적 없고 왕래 일체 없음. 해체사유서 자필 작성 의사 밝힘.`;
+      showToast("실무 예시가 입력되었습니다.");
+    }
+
+    function loadRiskSampleTemplate() {
+      document.getElementById('counselInput').value = 
+`[상담메모 - 긴급 위기사례 내방 기록]
+대상자 박OO(만 42세), 초등학생 자녀 1명과 단독 거주 (2인 가구).
+전 배우자의 지속적인 폭행과 협박으로 도망쳐 나와 월세방에 피신해 있는 상태임.
+당장 아이 밥 줄 돈도 없고 월세가 3달 밀려 쫓겨날 위기에 처해 있음.
+너무 불안하고 우울해서 그냥 아이 데리고 다 끝내고 죽고 싶다는 말을 반복하심.
+보증금 300만원에 월세 25만원 거주 중이며 통장 잔고 5만원 남음.`;
+      showToast("위기 사례 예시가 입력되었습니다.");
+    }
+
+    function clearCounselInput() {
+      document.getElementById('counselInput').value = "";
+      document.getElementById('riskAlertBanner').style.display = 'none';
+      document.getElementById('emergencyPriorityBadge').style.display = 'none';
+      currentRiskStatus = { detected: false, signals: [], auditLogs: [] };
+      showToast("입력창이 비워졌습니다.");
+    }
+
     async function processCounseling() {
       var text = document.getElementById('counselInput').value;
       if (!text.trim()) {
@@ -850,14 +886,11 @@
         return;
       }
 
-      // 1. FR-05 다중 위기신호 탐지
       var signals = await RiskSignalEngine.detectSignals(text);
       updateRiskBannerAndTraffic(signals);
 
-      // 2. 가족단절 및 인적/소득/재산 파싱
       var parsed = parseCounselText(text);
 
-      // 가족단절 신호등 카드 업데이트
       var severCard = document.getElementById('trafficSeverCard');
       var severPill = document.getElementById('trafficSeverPill');
       var severDesc = document.getElementById('trafficSeverDesc');
@@ -866,7 +899,7 @@
         severCard.className = "traffic-card yellow";
         severPill.className = "traffic-status-pill pill-yellow";
         severPill.innerText = "단절 유력 (신뢰도 88%)";
-        severDesc.innerText = "자녀와 장기 연락두절 확인됨. 지방생활보장위원회 해체사유서 심의 대상.";
+        severDesc.innerText = "부양의무자와 장기 연락두절 확인됨. 지방생활보장위원회 해체사유서 심의 대상.";
       } else {
         severCard.className = "traffic-card green";
         severPill.className = "traffic-status-pill pill-green";
@@ -874,29 +907,32 @@
         severDesc.innerText = "부양의무 단절 사유 미감지. 통상 소득·재산 조사 진행.";
       }
 
-      // 3. 공식 공문서 사정표 그리드 채우기
-      document.getElementById('docApplicantInfo').innerText = (parsed.members || 1) + "인 가구 (단독 거주 대상)";
-      document.getElementById('docIncomeInfo').innerText = "월 " + (parsed.earned || 0).toLocaleString() + "만 원 (근로 " + (parsed.earned || 0) + "만 / 기타 0만)";
-      document.getElementById('docAssetInfo').innerText = "주거용 " + (parsed.resProp || 0).toLocaleString() + "만 원 | 부채 " + (parsed.debt || 0).toLocaleString() + "만 원";
-      document.getElementById('docSeverInfo').innerText = parsed.support === 'severed' ? "가족관계 해체사유서 징구 및 지생보 심의 상정 필요" : "특이 단절 사유 없음 (일반 조사)";
-      document.getElementById('docActionInfo').innerText = signals.length > 0 ? "🚨 긴급복지 우선 심사 및 안전망 연계 조치" : "기초생활보장 및 차상위 맞춤형 모의판정 진행";
+      // 우측 공문서 표 업데이트
+      var healthText = parsed.workAbility === 'none' ? "만 65세 이상 (법정 무능력)" : (parsed.workAbility === 'illness' ? "질환·부상 (진단서 징구 요망)" : "양호 (근로능력 있음)");
+      document.getElementById('docApplicantInfo').innerText = (parsed.members || 1) + "인 가구 (" + (parsed.age ? "만 " + parsed.age + "세" : "단독") + ") | 건강상태: " + healthText;
+      document.getElementById('docWorkAbilityInfo').innerText = parsed.workAbility === 'none' ? "만 65세 이상 노인특례 적용" : (parsed.workAbility === 'illness' ? "근로무능력자(질병·장애) 판정 심사" : "일반 근로능력자(30% 기본공제)");
+      document.getElementById('docIncomeInfo').innerText = "월 " + (parsed.earned || 0).toLocaleString() + "만 원 (근로 " + (parsed.earned || 0) + "만 / 기타이전 " + (parsed.other || 0) + "만)";
+      document.getElementById('docAssetInfo').innerText = "주거용 " + (parsed.resProp || 0).toLocaleString() + "만 원 | 부채 " + (parsed.debt || 0).toLocaleString() + "만 원 | 자동차 미반영";
+      document.getElementById('docSeverInfo').innerText = parsed.support === 'severed' ? "가족관계 해체사유서 징구 및 지생보 심의 상정 필요" : "특이 단절 사유 없음 (의료급여 일반 조사)";
+      document.getElementById('docActionInfo').innerText = signals.length > 0 ? "🚨 긴급복지 우선 심사 및 유관기관 안전망 즉각 연계" : "국민기초생활보장(생계·의료·주거) 모의판정 진행";
 
-      // 4. 모의계산기 인풋 자동 연동
+      // 룰 엔진 연동
       if (parsed.members) document.getElementById('simMembers').value = parsed.members;
+      if (parsed.workAbility) document.getElementById('simWorkAbility').value = parsed.workAbility;
+      if (parsed.support) document.getElementById('simSupportObligor').value = parsed.support;
       if (parsed.earned !== undefined) document.getElementById('simEarnedIncome').value = parsed.earned;
+      if (parsed.other !== undefined) document.getElementById('simOtherIncome').value = parsed.other;
       if (parsed.resProp !== undefined) document.getElementById('simResProp').value = parsed.resProp;
       if (parsed.debt !== undefined) document.getElementById('simDebt').value = parsed.debt;
-      if (parsed.support) document.getElementById('simSupportObligor').value = parsed.support;
 
       runSimulation();
-      showToast("AI 사정표 작성 및 5대 급여 모의판정이 완료되었습니다.");
+      showToast("표준 사정서 생성 및 5대 급여 모의판정이 완료되었습니다.");
     }
 
     function updateRiskBannerAndTraffic(signals) {
       var banner = document.getElementById('riskAlertBanner');
       var content = document.getElementById('riskAlertContent');
       var priorityBadge = document.getElementById('emergencyPriorityBadge');
-
       var riskCard = document.getElementById('trafficRiskCard');
       var riskPill = document.getElementById('trafficRiskPill');
       var riskDesc = document.getElementById('trafficRiskDesc');
@@ -911,7 +947,6 @@
         return;
       }
 
-      // 위기 감지 시
       banner.style.display = 'block';
       priorityBadge.style.display = 'inline-block';
       riskCard.className = "traffic-card red";
@@ -931,14 +966,26 @@
     function runSimulation() {
       var members = parseInt(document.getElementById('simMembers').value, 10) || 1;
       var region = document.getElementById('simRegion').value;
+      var workAbility = document.getElementById('simWorkAbility').value;
       var earned = parseFloat(document.getElementById('simEarnedIncome').value) || 0;
       var other = parseFloat(document.getElementById('simOtherIncome').value) || 0;
       var resProp = parseFloat(document.getElementById('simResProp').value) || 0;
       var debt = parseFloat(document.getElementById('simDebt').value) || 0;
 
-      var totalIncome = earned + other;
+      // 소득공제
+      var earnedDeduct = 0;
+      if (workAbility === 'none') {
+        earnedDeduct = Math.max(0, (earned - 20) * 0.3 + 20);
+      } else if (workAbility === 'youth') {
+        earnedDeduct = Math.max(0, (earned - 40) * 0.3 + 40);
+      } else if (workAbility === 'able') {
+        earnedDeduct = earned * 0.3;
+      }
+      var finalEarned = Math.max(0, earned - earnedDeduct);
+      var incomeVal = Math.round((finalEarned + other) * 10) / 10;
+
       var netRes = Math.max(0, resProp - (POLICY_2026.baseDeduction[region] || 7700) - debt);
-      var recognized = Math.round((totalIncome * 0.7 + netRes * 0.0104) * 10) / 10;
+      var recognized = Math.round((incomeVal + netRes * 0.0104) * 10) / 10;
 
       var median = POLICY_2026.medianIncome[members] || 256.4;
       var liveStd = Math.round(median * POLICY_2026.standards.livelihood * 10) / 10;
@@ -963,8 +1010,9 @@
         bPayout.innerText = "월 0원";
       }
 
-      // 2. 긴급복지 (위기신호 연동 시 우선개입 플래그)
-      document.getElementById('valEmergIncome').innerText = totalIncome;
+      // 2. 긴급복지
+      var totalRealIncome = earned + other;
+      document.getElementById('valEmergIncome').innerText = totalRealIncome;
       var eCard = document.getElementById('cardEmergency');
       var eBadge = document.getElementById('badgeEmergency');
       var ePayout = document.getElementById('estEmergencyPayout');
@@ -975,7 +1023,7 @@
         eBadge.className = "benefit-badge badge-danger";
         eBadge.innerText = "🚨 위기신호 우선개입";
         ePayout.innerText = "월 " + eAmount + "만 원 (즉시 개입 대상)";
-      } else if (totalIncome <= emergStd) {
+      } else if (totalRealIncome <= emergStd) {
         eCard.className = "benefit-card pass";
         eBadge.className = "benefit-badge badge-pass";
         eBadge.innerText = "긴급복지 충족";
@@ -987,11 +1035,11 @@
         ePayout.innerText = "지원 불가";
       }
 
-      // 3. 달구벌 희망급여
-      document.getElementById('valDalgubeolIncome').innerText = totalIncome;
+      // 3. 달구벌
+      document.getElementById('valDalgubeolIncome').innerText = totalRealIncome;
       var dCard = document.getElementById('cardDalgubeol');
       var dBadge = document.getElementById('badgeDalgubeol');
-      if (totalIncome <= median) {
+      if (totalRealIncome <= median) {
         dCard.className = "benefit-card pass";
         dBadge.className = "benefit-badge badge-pass";
         dBadge.innerText = "대구시 지원 대상";
@@ -1020,7 +1068,7 @@
       document.getElementById('valBasicPension').innerText = bpIncome;
       var pCard = document.getElementById('cardBasicPension');
       var pBadge = document.getElementById('badgeBasicPension');
-      var isOld = document.getElementById('simWorkAbility').value === 'none';
+      var isOld = (workAbility === 'none');
       if (isOld && bpIncome <= 213) {
         pCard.className = "benefit-card pass";
         pBadge.className = "benefit-badge badge-pass";
@@ -1038,11 +1086,31 @@
       var res = { members: 1 };
       var m = text.match(/([1-5])\s*인\s*가구/);
       if (m) res.members = parseInt(m[1], 10);
-      var earn = text.match(/(?:소득|월급|급여)[^\d]*([\d,]+)\s*만\s*원/);
+      
+      var ageMatch = text.match(/만\s*([0-9]{1,2})\s*세/) || text.match(/([0-9]{2})\s*년생/);
+      if (ageMatch) {
+        res.age = parseInt(ageMatch[1], 10);
+        if (res.age >= 65) res.workAbility = "none";
+      }
+
+      if (text.indexOf("무능력") !== -1 || text.indexOf("65세 이상") !== -1) res.workAbility = "none";
+      else if (text.indexOf("진단서") !== -1 || text.indexOf("협착증") !== -1 || text.indexOf("질환") !== -1) res.workAbility = "illness";
+      else if (text.indexOf("근로능력 있음") !== -1) res.workAbility = "able";
+
+      var earn = text.match(/(?:근로|사업소득|급여)[^\d]*([\d,]+)\s*만\s*원/);
       if (earn) res.earned = parseInt(earn[1].replace(/,/g, ''), 10);
-      var prop = text.match(/(?:보증금|재산)[^\d]*([\d,]+)\s*만\s*원/);
+
+      var oth = text.match(/(?:기초연금|연금|이전소득)[^\d]*([\d,]+)\s*만\s*원/);
+      if (oth) res.other = parseInt(oth[1].replace(/,/g, ''), 10);
+
+      var prop = text.match(/(?:보증금|주거용재산)[^\d]*([\d,]+)\s*만\s*원/);
       if (prop) res.resProp = parseInt(prop[1].replace(/,/g, ''), 10);
+
+      var dbt = text.match(/(?:부채|대출)[^\d]*([\d,]+)\s*만\s*원/);
+      if (dbt) res.debt = parseInt(dbt[1].replace(/,/g, ''), 10);
+
       if (/(?:연락\s*끊|해체|두절|10년\s*전)/.test(text)) res.support = "severed";
+
       return res;
     }
 
@@ -1091,41 +1159,20 @@
       alert("[FR-05 온디바이스 감사 추적(Audit-Trail) 로그]\n\n" + JSON.stringify(logs[logs.length - 1], null, 2));
     }
 
-    function loadRiskSampleTemplate() {
-      document.getElementById('counselInput').value = 
-`[상담메모 - 긴급 위기사례 내방 기록]
-대상자 박OO(만 42세), 초등학생 자녀 1명과 단독 거주 (2인 가구).
-전 배우자의 지속적인 폭행과 협박으로 도망쳐 나와 월세방에 피신해 있는 상태임.
-당장 아이 밥 줄 돈도 없고 월세가 3달 밀려 쫓겨날 위기에 처해 있음.
-너무 불안하고 우울해서 그냥 아이 데리고 다 끝내고 죽고 싶다는 말을 반복하심.
-보증금 300만원에 월세 25만원 거주 중이며 통장 잔고 5만원 남음.`;
-      showToast("위기 사례 예시가 입력되었습니다.");
-    }
-
-    function loadBlankTemplate() {
-      document.getElementById('counselInput').value = "■ 신청인: 홍길동 (1인 가구)\n- 소득: 없음\n- 재산: 보증금 1,000만 원\n- 특이사항: 자녀와 8년 전 연락두절";
-      showToast("표준 서식이 입력되었습니다.");
-    }
-
-    function loadSampleTemplate() {
-      document.getElementById('counselInput').value = "대상자 1인 가구, 허리 통증으로 근로 불가. 보증금 2,000만원에 통장 200만원 있음. 아들과는 10년 전 크게 싸우고 연락 끊김.";
-      showToast("실무 예시가 입력되었습니다.");
-    }
-
-    function clearCounselInput() {
-      document.getElementById('counselInput').value = "";
-      document.getElementById('riskAlertBanner').style.display = 'none';
-      document.getElementById('emergencyPriorityBadge').style.display = 'none';
-      currentRiskStatus = { detected: false, signals: [], auditLogs: [] };
-      showToast("입력창이 비워졌습니다.");
-    }
-
     function copyResultText() {
       var txt = document.getElementById('docApplicantInfo').innerText + "\n" +
+                document.getElementById('docWorkAbilityInfo').innerText + "\n" +
                 document.getElementById('docIncomeInfo').innerText + "\n" +
                 document.getElementById('docAssetInfo').innerText;
       navigator.clipboard.writeText(txt);
       showToast("사정서 요약 정보가 복사되었습니다.");
+    }
+
+    function showToast(msg) {
+      var t = document.getElementById('toast');
+      t.innerText = msg;
+      t.classList.add('show');
+      setTimeout(function() { t.classList.remove('show'); }, 2400);
     }
 
     window.addEventListener('DOMContentLoaded', function() {
