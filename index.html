@@ -528,6 +528,11 @@
     }
 
     /* ==================== 인쇄(Print) CSS 전면 보완 ==================== */
+    @page {
+      /* 브라우저 자동 머리글/바닥글(페이지 타이틀 등) 제거 */
+      margin: 15mm 10mm 15mm 10mm;
+    }
+
     @media print {
       body {
         background-color: #ffffff !important;
@@ -637,7 +642,7 @@
 
       body.print-doc-mode #printOnlyDocGuide {
         display: block !important;
-        padding: 25px !important;
+        padding: 10px 15px !important;
         font-size: 11pt !important;
         line-height: 1.7 !important;
       }
@@ -706,7 +711,7 @@
         </div>
       </div>
 
-      <!-- 1. 5대 핵심 복지사업별 소득인정액 및 지원 모의판정 (위치 이동: 구비서류 상단 배치) -->
+      <!-- 1. 5대 핵심 복지사업별 소득인정액 및 지원 모의판정 -->
       <div class="card">
         <div class="card-header">
           <div class="card-title">📊 5대 핵심 복지사업별 소득인정액 및 지원 모의판정</div>
@@ -910,7 +915,7 @@
         </details>
       </div>
 
-      <!-- 2. 민원인 구비서류 직접 편집 및 교부 카드 (위치 이동: 모의판정 하단 배치) -->
+      <!-- 2. 민원인 구비서류 직접 편집 및 교부 카드 -->
       <div class="card" style="border: 2px solid #bfdbfe; background-color: #ffffff;">
         <div class="card-header" style="border-bottom: 2px solid #dbeafe;">
           <div>
@@ -943,7 +948,7 @@
         </div>
       </div>
 
-      <!-- ==================== 지자체 외 전문기관 복지·금융 지원 매칭 ==================== -->
+      <!-- 타 기관 연계 특화 지원사업 자동 매칭 -->
       <div class="card" style="border: 2px solid #cbd5e1; background-color: #ffffff;">
         <div class="card-header" style="border-bottom: 2px solid #e2e8f0;">
           <div>
@@ -951,7 +956,7 @@
               🏢 타 기관 연계 특화 지원사업 자동 매칭 (서민금융·의료·고용·연금)
             </div>
             <div style="font-size: 12px; color: #b91c1c; font-weight: 700; margin-top: 4px;">
-              ⚠️ [주의] 아래 사업들은 읍·면·동 행정복지센터에서 접수받지 않으며, 표기된 각 소관 전문기관으로 민원인이 직접 신청해야 합니다.
+              ⚠️️ [주의] 아래 사업들은 읍·면·동 행정복지센터에서 접수받지 않으며, 표기된 각 소관 전문기관으로 민원인이 직접 신청해야 합니다.
             </div>
           </div>
           <span style="font-size: 11px; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-weight: 600; color: #475569;">
@@ -1242,16 +1247,14 @@
     </div>
   </div>
 
-  <!-- ==================== 민원인 전용 교부 서류 인쇄 템플릿 ==================== -->
+  <!-- ==================== 민원인 전용 교부 서류 인쇄 템플릿 (수정 완료) ==================== -->
   <div id="printOnlyDocGuide">
-    <div style="border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-end;">
+    <div style="border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-end;">
       <div>
-        <h2 style="font-size: 20pt; font-weight: 800; margin-bottom: 4px;">사회보장급여 신청 구비서류 안내문</h2>
-        <div style="font-size: 10.5pt; color: #444;">행정복지센터 맞춤형 복지창구</div>
+        <h2 style="font-size: 20pt; font-weight: 800; margin-bottom: 0;">사회보장급여 신청 구비서류 안내문</h2>
       </div>
       <div style="text-align: right; font-size: 10pt;">
         <div>발급일자: <span id="printGuideDate">-</span></div>
-        <div>민원인 성명: <strong><span id="printGuideName">-</span></strong> 님 귀하</div>
       </div>
     </div>
 
@@ -1264,15 +1267,10 @@
       <!-- 담당자가 편집한 textarea 내용이 동적 반영됩니다 -->
     </div>
 
-    <div style="border: 1px dashed #666; padding: 12px; font-size: 9.5pt; background: #fafafa; border-radius: 4px; margin-bottom: 20px;">
+    <div style="border: 1px dashed #666; padding: 12px; font-size: 9.5pt; background: #fafafa; border-radius: 4px; margin-bottom: 10px;">
       <strong>※ 유의사항</strong><br>
-      1. 주민등록등본, 가족관계증명서, 건강보험료 납부확인서 등 행정정보공동이용망 조회가 가능한 서류는 제출하지 않으셔도 됩니다.<br>
-      2. 부양의무자가 있는 경우 금융정보제공동의서에 부양의무자의 서명(또는 인감날인)이 반드시 필요합니다.<br>
-      3. 소득·재산 조사 과정에서 담당 공무원의 사실조사에 따라 추가 증빙서류를 요청할 수 있습니다.
-    </div>
-
-    <div style="text-align: center; margin-top: 30px; font-size: 12pt; font-weight: 700;">
-      행정복지센터 맞춤형복지팀
+      1. 부양의무자가 있는 경우 금융정보제공동의서에 부양의무자의 서명이 반드시 필요합니다.<br>
+      2. 소득·재산 조사 과정에서 담당 공무원의 사실조사에 따라 추가 증빙서류를 요청할 수 있습니다.
     </div>
   </div>
 
@@ -1918,8 +1916,6 @@
     }
 
     function printDocumentGuideOnly() {
-      var applicantName = lastExtractedCounsel.name || "민원인";
-      document.getElementById('printGuideName').innerText = applicantName;
       document.getElementById('printGuideDate').innerText = new Date().toLocaleDateString('ko-KR');
 
       // 신청 예정 급여 설정 (달구벌 희망급여 제외)
@@ -2296,7 +2292,7 @@
         estEmergDiv.style.color = "#b91c1c";
       }
 
-      // 3. 달구벌 희망급여
+      // 3. 대구시 달구벌 희망급여
       var dgIncomeLimit = Math.round(median * POLICY_2026.dalgubeol.incomeLimitPercent);
       var dgGenAssetLimit = POLICY_2026.dalgubeol.generalAssetLimit;
       var dgFinLimit = POLICY_2026.dalgubeol.financialLimit[members] || 1574.2;
