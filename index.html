@@ -431,6 +431,68 @@
       width: fit-content;
     }
 
+    .table-alimi {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 12px;
+      background-color: #ffffff;
+    }
+    .table-alimi th, .table-alimi td {
+      border: 1px solid #cbd5e1;
+      padding: 7px 10px;
+      text-align: center;
+    }
+    .table-alimi th {
+      background-color: #f1f5f9;
+      color: #334155;
+      font-weight: 700;
+    }
+
+    /* 우편번호 모달: 기본 상태에서 완전히 숨김 처리하여 탭 1번 하단 노출 방지 */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 1000;
+      display: none;
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.2s ease-in-out;
+    }
+    .modal-backdrop.open {
+      display: flex !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+    }
+    .modal-card {
+      background-color: #ffffff;
+      width: 550px;
+      max-width: 95%;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    .modal-header {
+      padding: 14px 18px;
+      background-color: #f8fafc;
+      border-bottom: 1px solid #cbd5e1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+    }
+    .modal-body {
+      padding: 16px;
+    }
+
     #toast {
       position: fixed;
       bottom: 25px;
@@ -466,7 +528,7 @@
 </head>
 <body>
 
-  <!-- 상단 B급 유머 배너 (완성형 문장 DB 기반) -->
+  <!-- 상단 B급 유머 배너 -->
   <div class="humor-banner" onclick="cycleHumorQuote()" title="클릭하면 새로운 멘트가 나옵니다">
     <div style="display: flex; align-items: center; gap: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
       <span>☕ <strong>[복지직 현실 각성제]</strong></span>
@@ -729,7 +791,7 @@
         </details>
       </div>
 
-      <!-- ==================== 추가된 섹션: 지자체 외 전문기관 복지·금융 지원 매칭 ==================== -->
+      <!-- ==================== 지자체 외 전문기관 복지·금융 지원 매칭 ==================== -->
       <div class="card" style="border: 2px solid #cbd5e1; background-color: #ffffff;">
         <div class="card-header" style="border-bottom: 2px solid #e2e8f0;">
           <div>
@@ -1017,6 +1079,7 @@
 
   </div>
 
+  <!-- 도로명 주소 검색 모달 레이어 (기본 상태에서 CSS 완전히 격리) -->
   <div id="postcodeModal" class="modal-backdrop">
     <div class="modal-card">
       <div class="modal-header">
@@ -1433,12 +1496,13 @@
       return result;
     }
 
+    // 표준 서식 불러오기: 가구원수 기본값 1인가구를 제거하고 빈칸 처리
     function loadBlankTemplate() {
       document.getElementById('counselInput').value = 
 "■ 기본 인적사항\n" +
 "- 성명: \n" +
 "- 생년월일: \n" +
-"- 가구원수: 1인 가구\n" +
+"- 가구원수: \n" +
 "- 연락처: \n" +
 "- 거주지 주거실태: 보증부월세 (보증금    만 원 / 월세    만 원)\n\n" +
 "■ 생활실태 및 위기상황\n" +
@@ -1586,7 +1650,6 @@
       var debt = params.debt;
       var workAbility = params.workAbility;
       var finProp = params.finProp;
-      var netAssets = params.netAssets;
       var isBasicEligible = params.isBasicEligible;
       var isNearEligible = params.isNearEligible;
 
@@ -1624,7 +1687,7 @@
         desc: "• 암, 뇌혈관·심장질환, 희귀난치, 중증화상 환자 대상<br>• 진료비 본인부담률을 5~10% 수준으로 대폭 인하"
       });
 
-      // 4. 정부 긴급의료비 지원 (보건소/정부)
+      // 4. 정부 긴급의료비 지원
       var isEmergMedMatch = (totalRealIncome <= median * 0.75) && (finProp <= 600);
       list.push({
         title: "정부 긴급의료비 지원",
@@ -1683,7 +1746,7 @@
         desc: "• 3개월 이상 재직 근로자 대상 최대 2,000만 원 한도<br>• 연 10~11%대 중금리, 최장 5년 분할상환"
       });
 
-      // 9. 신용회복위원회: 채무조정 (워크아웃)
+      // 9. 신용회복위원회: 채무조정
       var isWorkoutMatch = (debt > 0);
       list.push({
         title: "신용회복위원회 채무조정",
@@ -1731,7 +1794,6 @@
         desc: isSeniorLoan ? "• 만 60세 이상 국민연금 수급자 대상 최대 1,000만 원 초저금리 대여<br>• 의료비, 전·월세보증금 용도 긴급대여" : "• 구직급여 수급 기간 중 국민연금 보험료의 75%를 국가 지원<br>• 생애 최대 12개월 지원"
       });
 
-      // HTML 빌드
       var html = "";
       for (var i = 0; i < list.length; i++) {
         var item = list[i];
@@ -1834,7 +1896,7 @@
       var totalRealIncome = earned + other;
       var netAssets = (resProp + combinedGen + finProp) - debt;
 
-      // 1. 국민기초생활보장
+      // 1. 국민기초생활보장[cite: 1]
       var liveStandard = Math.round(median * POLICY_2026.standards.livelihood);
       var medStandard = Math.round(median * POLICY_2026.standards.medical);
       var houseStandard = Math.round(median * POLICY_2026.standards.housing);
@@ -1882,7 +1944,7 @@
         estBasicLifeDiv.style.color = "#b91c1c";
       }
 
-      // 2. 긴급복지지원
+      // 2. 긴급복지지원[cite: 1]
       var emergStandard = Math.round(median * POLICY_2026.standards.emergency);
       var emergAssetLimit = POLICY_2026.emergencyAssetLimit[region] || 24100;
       var emergPayAmount = POLICY_2026.emergencyPayouts[members] || 71.3;
@@ -1910,7 +1972,7 @@
         estEmergDiv.style.color = "#b91c1c";
       }
 
-      // 3. 달구벌 희망급여
+      // 3. 달구벌 희망급여[cite: 1]
       var dgIncomeLimit = Math.round(median * POLICY_2026.dalgubeol.incomeLimitPercent);
       var dgGenAssetLimit = POLICY_2026.dalgubeol.generalAssetLimit;
       var dgFinLimit = POLICY_2026.dalgubeol.financialLimit[members] || 1574.2;
@@ -1949,7 +2011,7 @@
         estDGDiv.style.color = "#64748b";
       }
 
-      // 4. 차상위계층
+      // 4. 차상위계층[cite: 1]
       var nearStandard = Math.round(median * POLICY_2026.standards.nearPoverty);
       document.getElementById('valNearPoverty').innerText = recognizedIncome;
       var badgeNP = document.getElementById('badgeNearPoverty');
@@ -1976,7 +2038,7 @@
         estNPDiv.style.color = "#b91c1c";
       }
 
-      // 5. 기초연금
+      // 5. 기초연금[cite: 1]
       var bpDeduct = POLICY_2026.basicPensionBaseDeduct[region] || 13500;
       var bpLimit = members >= 2 ? POLICY_2026.basicPensionLimit.couple : POLICY_2026.basicPensionLimit.single;
       
