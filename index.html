@@ -253,7 +253,7 @@
       overflow-y: auto;
     }
 
-    /* 추가 문진 (AI Co-pilot) 패널 스타일 */
+    /* 추가 문진 및 리마인더 패널 */
     .inquiry-panel {
       background: #eff6ff;
       border: 1.5px solid #93c5fd;
@@ -265,23 +265,28 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
-    }
-    .inquiry-badge-count {
-      background: #ef4444;
-      color: #ffffff;
-      font-size: 11px;
-      font-weight: 800;
-      padding: 1px 7px;
-      border-radius: 10px;
+      margin-bottom: 10px;
     }
     .inquiry-item {
       background: #ffffff;
-      border: 1px solid #bfdbfe;
+      border: 1px solid #cbd5e1;
       border-radius: 6px;
       padding: 10px 12px;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       font-size: 12px;
+      border-left: 4px solid #64748b;
+    }
+    .inquiry-item.level-danger {
+      border-left-color: #ef4444;
+      background-color: #fffaf0;
+    }
+    .inquiry-item.level-warning {
+      border-left-color: #f59e0b;
+      background-color: #fffdf5;
+    }
+    .inquiry-item.level-info {
+      border-left-color: #3b82f6;
+      background-color: #ffffff;
     }
     .inquiry-item:last-child {
       margin-bottom: 0;
@@ -307,6 +312,7 @@
       padding: 6px 10px;
       border-radius: 4px;
       border: 1px dashed #cbd5e1;
+      gap: 8px;
     }
     .inquiry-question {
       font-weight: 600;
@@ -508,7 +514,6 @@
       display: none;
     }
 
-    /* 인쇄(Print) CSS 설정 */
     @page {
       margin: 0;
     }
@@ -685,12 +690,12 @@
             </div>
           </div>
 
-          <!-- AI 누락 요건 분석 & 4대 핵심 추가 문진 패널 -->
+          <!-- AI 누락 요건 분석 & 심층 추가 문진 리마인더 패널 -->
           <div id="aiInquiryBox" class="inquiry-panel" style="display: none;">
             <div class="inquiry-header">
               <div style="font-weight: 800; font-size: 13px; color: #1e3a8a; display: flex; align-items: center; gap: 6px;">
-                <span>💡 AI 법정 요건 누락 진단 및 추가 문진(Co-pilot)</span>
-                <span class="inquiry-badge-count" id="inquiryCount">0건</span>
+                <span>💡 법정 누락 요건 &amp; 실무 핵심 리마인더(Co-pilot)</span>
+                <span id="inquiryCountBadge" style="display: flex; gap: 4px;"></span>
               </div>
               <span style="font-size: 11px; color: #2563eb; font-weight: 600;">질문 클릭 시 메모창 자동 입력</span>
             </div>
@@ -724,7 +729,7 @@
             <label>거주 지역 (법정 기본재산공제/주거한도)</label>
             <select id="simRegion" onchange="runSimulation()">
               <option value="daegu" selected>대구광역시 구(區) 지역 (공제 7,700만원 / 주거한도 1.46억)</option>
-              <option value="gunwi">대구광역시 군위군·달성군 (군지역 공제 5,300만원 / 주거한도 1.12억)</option>
+              <option value="gunwi">대구광역시 군위군·달성군 (공제 5,300만원 / 주거한도 1.12억)</option>
               <option value="seoul">서울특별시 (공제 9,900만원 / 주거한도 1.72억)</option>
               <option value="gyeonggi">경기도 (공제 8,000만원 / 주거한도 1.51억)</option>
             </select>
@@ -914,7 +919,7 @@
               🔄 기본 서류 재추출
             </button>
             <button class="btn btn-primary btn-sm" onclick="printDocumentGuideOnly()">
-              🖨️ 구비서류 안내문 인쇄
+              🖨️️ 구비서류 안내문 인쇄
             </button>
           </div>
         </div>
@@ -947,9 +952,7 @@
           </span>
         </div>
 
-        <div class="external-card-grid" id="externalBenefitGrid">
-          <!-- 스크립트에서 자동 렌더링 -->
-        </div>
+        <div class="external-card-grid" id="externalBenefitGrid"></div>
       </div>
 
     </div>
@@ -994,8 +997,7 @@
           </div>
           <div>
             <label>등록연도 (연식) <span style="color:#ef4444; font-weight:700;">*10년 기준</span></label>
-            <select id="carYear" onchange="handleYearChange()" style="font-weight: 700; border-color: #3b82f6; height: 38px;">
-            </select>
+            <select id="carYear" onchange="handleYearChange()" style="font-weight: 700; border-color: #3b82f6; height: 38px;"></select>
           </div>
           <div>
             <label>차령 (자동계산)</label>
@@ -1045,9 +1047,7 @@
         </div>
 
         <div style="margin-top: 10px; display: flex; justify-content: flex-end; gap: 8px;">
-          <button class="btn btn-outline" onclick="resetCarForm()">
-            🔄 초기화
-          </button>
+          <button class="btn btn-outline" onclick="resetCarForm()">🔄 초기화</button>
           <button class="btn btn-primary" onclick="calculateCarWelfare()" style="padding: 10px 24px; font-size: 14px; font-weight: 700;">
             ⚡ 소득인정액 계산 및 법정 기준 판정
           </button>
@@ -1088,7 +1088,6 @@
         </div>
 
         <div class="grid-2col">
-          <!-- 좌측: 바로가기 버튼 및 입력 폼 -->
           <div>
             <div style="margin-bottom: 16px;">
               <button class="btn btn-primary" type="button" style="width: 100%; font-size: 15px; padding: 14px; font-weight: 800; background: linear-gradient(135deg, #1d4ed8, #2563eb); border-radius: 8px; box-shadow: 0 4px 10px rgba(29, 78, 216, 0.25);" onclick="openRealtyPriceDirect()">
@@ -1099,7 +1098,6 @@
               </div>
             </div>
 
-            <!-- 공시가격 입력란 -->
             <div style="padding: 14px; background-color: #f8fafc; border-radius: 8px; border: 1px solid #cbd5e1;">
               <label style="font-weight: 700; color: #1e293b; font-size: 13px;">확인한 공시가격 입력 (만 원 단위)</label>
               <div style="display: flex; gap: 8px; margin-bottom: 8px;">
@@ -1116,7 +1114,6 @@
             </div>
           </div>
 
-          <!-- 우측: 결과 환산 카드 및 1번 탭 반영 버튼 -->
           <div>
             <div class="benefit-card" style="border: 2px solid #bfdbfe; background-color: #f8fafc; padding: 18px; margin-bottom: 14px;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -1144,7 +1141,7 @@
                 🏠 1번 탭 주거용재산 즉시 반영
               </button>
               <button class="btn btn-outline" type="button" style="flex: 1; font-weight: 700;" onclick="applyToTab1('gen')">
-                🏞️ 1번 탭 일반재산 즉시 반영
+                🏞️️ 1번 탭 일반재산 즉시 반영
               </button>
             </div>
           </div>
@@ -1170,8 +1167,7 @@
     </div>
 
     <h3 style="font-size: 13pt; margin-bottom: 8px; border-left: 4px solid #1d4ed8; padding-left: 8px;">■ 제출하셔야 할 서류 목록 (체크리스트)</h3>
-    <div id="printGuideDocList" style="border: 1px solid #333; border-radius: 4px; padding: 14px; margin-bottom: 18px; line-height: 1.8;">
-    </div>
+    <div id="printGuideDocList" style="border: 1px solid #333; border-radius: 4px; padding: 14px; margin-bottom: 18px; line-height: 1.8;"></div>
 
     <div style="border: 1px dashed #666; padding: 12px; font-size: 9.5pt; background: #fafafa; border-radius: 4px; margin-bottom: 10px;">
       <strong>※ 유의사항</strong><br>
@@ -1596,75 +1592,81 @@
     }
 
     // ==========================================
-    // AI 4대 핵심 행정요건 정밀 진단 및 추가 문진 엔진
-    // (근로능력평가 / 별도가구 / 수급특례 / 가족관계해체)
+    // 실무형 누락 방지 & 리마인더 종합 진단 엔진
     // ==========================================
     function diagnoseMissingRequirements(text, extracted) {
       var inquiries = [];
 
-      // ----------------------------------------------------
-      // [영역 1] 근로능력평가 및 무능력 판정 심층 진단
-      // ----------------------------------------------------
+      // 1. 차량 보유 여부 확인 (탈락률 1위 요인)
+      var hasCarInfo = /(?:차량|자동차|소나타|아반떼|포터|화물|오토바이|이륜차|모닝|그랜저|k5|투싼)/.test(text);
+      if (!hasCarInfo) {
+        inquiries.push({
+          level: "danger",
+          tag: "차량재산",
+          title: "본인 및 가구원 명의 자동차 소유 여부 확인 (탈락 1순위)",
+          desc: "배기량 1,600cc 이상이거나 차령 10년 미만 승용차는 가액의 100%가 월소득으로 반영되어 즉시 탈락합니다.",
+          question: "신청인 또는 주민등록상 세대원 명의로 등록된 차량(승용차, 화물차, 오토바이 등)이 있으신가요?",
+          fieldTemplate: "- 보유차량: (없음 / 차종:      연식:      배기량:    cc)"
+        });
+      }
+
+      // 2. 숨은 금융재산(보험 해약환급금, 주택청약통장)
+      var mentionsHiddenFin = /(?:해약환급|환급금|청약|적금|신탁)/.test(text);
+      if (extracted.finProp !== undefined && extracted.finProp < 300 && !mentionsHiddenFin) {
+        inquiries.push({
+          level: "danger",
+          tag: "금융조회",
+          title: "보험 해약환급금 및 청약저축 사전 확인 (조사팀 보완 다발)",
+          desc: "민원인은 입출금 잔액만 말하지만, 전산조회 시 장기 보장성보험 해약환급금과 청약저축이 전액 합산되어 탈락하는 사례가 빈번합니다.",
+          question: "해약 시 환급금이 나오는 보장성/저축성 보험이나, 과거 가입한 주택청약통장이 남아있으신가요?",
+          fieldTemplate: "- 숨은 금융재산 사전 확인: (보험 해약환급금 약    만원 / 주택청약 약    만원 / 없음)"
+        });
+      }
+
+      // 3. 최근 1~3년 이내 부동산·전세금 등 자산 처분 이력 (기타산정재산)
+      var mentionsAssetDisposal = /(?:집\s*팔|보증금\s*뺀|자산\s*처분|재산\s*처분|증여|상속|빚\s*갚았)/.test(text);
+      var isAssetAlmostZero = (extracted.resProp === undefined || extracted.resProp < 1000) && (extracted.finProp === undefined || extracted.finProp < 200);
+      if (isAssetAlmostZero && !mentionsAssetDisposal) {
+        inquiries.push({
+          level: "danger",
+          tag: "기타산정재산",
+          title: "최근 3년 이내 주택 매각·전세보증금 처분 이력 확인",
+          desc: "최근 3년 내 처분한 부동산·임차보증금은 자연소비(생계·의료비 등) 증빙이 되지 않으면 전액 '기타산정재산'으로 합산됩니다.",
+          question: "최근 1~3년 사이에 본인 소유 집을 팔았거나 전세보증금을 돌려받아 자녀에게 주거나 채무를 갚은 적이 있으신가요?",
+          fieldTemplate: "- 최근 3년 내 자산 처분 이력: (없음 / 최근    년  월 처분금액 약    만원 소명자료 필요)"
+        });
+      }
+
+      // 4. 근로능력평가용 진단서 및 진료기록지 징구 필요 여부
       var isElderly = extracted.age && extracted.age >= 65;
-      var mentionsIllness = /(?:아파서|통증|수술|질환|디스크|협착증|우울증|장애|치료|병원|입원)/.test(text);
+      var mentionsIllness = /(?:아파서|통증|수술|질환|디스크|협착증|우울증|장애|치료|병원|입원|골절)/.test(text);
       var hasCertMention = /(?:근로능력평가용\s*진단서|진단서\s*발급|의무기록|진료기록)/.test(text);
 
       if (!isElderly && mentionsIllness && !hasCertMention) {
         inquiries.push({
-          id: "work_ability_eval",
+          level: "warning",
           tag: "근로능력평가",
-          title: "근로능력평가용 진단서 및 진료기록지 징구 필요",
-          desc: "만 18세~64세 질환자는 국민연금공단 근로능력평가를 거치지 않으면 '조건부수급자(자활사업 의무)'로 지정됩니다.",
+          title: "근로능력평가용 진단서 및 2~3개월 진료기록지 필수 징구",
+          desc: "만 18세~64세 질환자는 국민연금공단 근로능력평가를 거치지 않으면 '조건부수급자(자활근로 의무)'로 지정됩니다.",
           question: "최근 2개월 이내에 병원에서 발급받은 '근로능력평가용 진단서'와 최근 2~3개월간의 진료기록지 사본을 제출하실 수 있나요?",
           fieldTemplate: "- 근로능력평가: 최근 2개월 내 근로능력평가용 진단서 제출 여부 (제출예정 / 미발급)\n- 주요 상병명 및 통원 기간: "
         });
       }
 
-      // ----------------------------------------------------
-      // [영역 2] 별도가구 보장 인정 가능성 탐지
-      // ----------------------------------------------------
-      var mentionsLivingTogether = /(?:부모님\s*집|동거|같이\s*살|얹혀|모시고|함께\s*거주|합가)/.test(text);
-
+      // 5. 별도가구 보장 인정 가능성 탐지
+      var mentionsLivingTogether = /(?:부모님\s*집|동거|같이\s*살|얹혀|모시고|함께\s*거주|합가|자녀\s*집)/.test(text);
       if (mentionsLivingTogether || (text.indexOf("부모") !== -1 && extracted.members === 1)) {
         inquiries.push({
-          id: "separate_household",
+          level: "warning",
           tag: "별도가구",
           title: "주민등록상 합가 가구의 '별도가구 보장' 적용 검토",
-          desc: "부모와 동거 중이라도 [중증장애인·희귀난치·만 30세 이상 미혼·한부모] 가구는 부모 재산을 제외하고 본인만 별도가구로 보장받을 수 있습니다.",
-          question: "부모님(또는 자녀)과 같은 주소지에 전입되어 있으신가요? 주거 공간이나 취사·생계를 독립적으로 분리하여 생활하고 계신가요?",
+          desc: "부모나 자녀와 동거 중이라도 [중증장애인·희귀난치·만 30세 이상 미혼·한부모] 가구는 가족 재산을 제외하고 단독가구로 보장받을 수 있습니다.",
+          question: "가족과 주민등록상 같이 전입되어 있으신가요? 주거 공간이나 취사·생계를 독립적으로 분리하여 생활하고 계신가요?",
           fieldTemplate: "- 별도가구 유형: (만 30세 이상 미혼자녀 / 중증장애인·희귀난치 / 한부모 / 해당없음)\n- 실질적 취사 및 생계 분리 실태: "
         });
       }
 
-      // ----------------------------------------------------
-      // [영역 3] 법정 수급 특례 (청년주거분리 / 이행기의료 / 자활특례)
-      // ----------------------------------------------------
-      var isYouth = (extracted.age && extracted.age >= 19 && extracted.age < 30) || /(?:대학생|취업준비|청년|자취)/.test(text);
-      if (isYouth && /(?:원룸|기숙사|타지|월세|자취)/.test(text)) {
-        inquiries.push({
-          id: "youth_housing_benefit",
-          tag: "수급특례",
-          title: "만 19세~29세 미혼 청년 주거급여 분리지급 특례",
-          desc: "부모와 주민등록 시·군·구가 다른 타지에 거주하며 임대차계약을 맺은 만 19세~29세 미혼 청년은 부모 가구와 별도로 청년 주거급여를 수령할 수 있습니다.",
-          question: "부모님과 주소지를 달리하여 타 시·군·구에 거주(전입신고 완료) 중이며, 본인 명의의 월세 계약서와 계좌이체 영수증이 있으신가요?",
-          fieldTemplate: "- 청년 주거급여 분리지급 대상: (전입신고 완료 / 부모와 동일 시군구 / 전입 미완료)\n- 본인 명의 임대차계약 및 실거주 확인: "
-        });
-      }
-
-      if (extracted.earned && extracted.earned > 80 && /(?:자활|취업|알바|급여상승)/.test(text)) {
-        inquiries.push({
-          id: "transitional_benefit",
-          tag: "수급특례",
-          title: "이행기 의료급여 및 자활급여 특례 적용 가능성",
-          desc: "자활사업이나 취업으로 생계급여 기준을 초과하더라도 자활특례 또는 이행기 의료급여(최장 2년간 의료급여 유지) 혜택을 부여할 수 있습니다.",
-          question: "현재 참여 중인 일자리가 주민센터·자활센터의 자활사업인가요, 일반 민간 취업인가요? 최근 취업으로 소득이 급증한 상태인가요?",
-          fieldTemplate: "- 특례 검토: (자활사업 참여자 자활특례 / 취업에 따른 이행기 의료급여 2년 유예)"
-        });
-      }
-
-      // ----------------------------------------------------
-      // [영역 4] 가족관계 해체 (부양의무자 단절) 5대 요건 심층 진단
-      // ----------------------------------------------------
+      // 6. 가족관계 해체 (부양의무자 단절) 5대 요건 심층 진단
       if (extracted.support === "severed" || /(?:가족\s*단절|연락두절|왕래두절|해체|가족불화|야반도주)/.test(text)) {
         var hasWhen = /(?:[0-9]{1,2}\s*년|[0-9]{1,2}\s*개?월|오래전|수년|과거)/.test(text);
         var hasWhy = /(?:부도|사기|채무|폭행|가출|이혼|외도|방임)/.test(text);
@@ -1672,29 +1674,71 @@
 
         if (!hasWhen || !hasWhy || !hasEvidence) {
           inquiries.push({
-            id: "family_severance_committee",
+            level: "warning",
             tag: "가족관계해체",
             title: "지방생활보장위원회 심의용 5대 사실조사 요건 보완",
             desc: "의료급여 수급을 위해 가족관계 해체 심의에 상정하려면 [단절 시점, 단절 계기, 최근 1년 이상 경제적 지원 전무] 객관적 입증이 필수적입니다.",
-            question: "부양의무자와 단절된 정확한 연도와 구체적인 계기(사업실패, 가족폭력 등)는 무엇이며, 최근 1년간 송금이나 통화 기록이 전혀 없음을 증빙할 수 있나요?",
+            question: "부양의무자와 단절된 정확한 연도와 구체적인 계기(사업실패, 폭력 등)는 무엇이며, 최근 1년간 송금이나 연락이 전혀 없었음을 증빙할 수 있나요?",
             fieldTemplate: "- 부양의무 단절 시점: (약      년 전부터)\n- 단절의 결정적 계기: (예: 사업부도 및 채무독촉, 이혼 등)\n- 최근 1년 이상 경제적 지원 및 왕래 실태: 일체 없음\n- 구비 가능 입증자료: (통화내역서 / 부채독촉장 / 수용증명서 / 인우보증 제3자확인서)"
           });
         }
       }
 
-      // ----------------------------------------------------
-      // [기본 안전망] 차량 보유 여부 확인 (탈락률 1위 요인)
-      // ----------------------------------------------------
-      var hasCarInfo = /(?:차량|자동차|소나타|아반떼|포터|화물|오토바이|이륜차)/.test(text);
-      if (!hasCarInfo) {
+      // 7. 청년주거분리 / 이행기 특례
+      var isYouth = (extracted.age && extracted.age >= 19 && extracted.age < 30) || /(?:대학생|취업준비|청년|자취)/.test(text);
+      if (isYouth && /(?:원룸|기숙사|타지|월세|자취)/.test(text)) {
         inquiries.push({
-          id: "car_check",
-          tag: "차량재산",
-          title: "본인 및 가구원 명의 자동차 소유 여부 확인",
-          desc: "배기량 1,600cc 이상이거나 차령 10년 미만 승용차는 가액의 100%가 월소득으로 반영되어 즉시 탈락합니다.",
-          question: "신청인 또는 주민등록상 세대원 명의로 등록된 차량(승용차, 화물차, 오토바이 등)이 있으신가요?",
-          fieldTemplate: "- 보유차량: (없음 / 차종:      년식:      배기량:    cc)"
+          level: "info",
+          tag: "수급특례",
+          title: "만 19세~29세 미혼 청년 주거급여 분리지급 특례",
+          desc: "부모와 주민등록 시·군·구가 다른 타지에 거주하며 임대차계약을 맺은 만 19세~29세 미혼 청년은 부모 가구와 별도로 청년 주거급여 수령이 가능합니다.",
+          question: "부모님과 주소지를 달리하여 타 시·군·구에 거주(전입신고 완료) 중이며, 본인 명의의 월세 계약서와 이체 영수증이 있으신가요?",
+          fieldTemplate: "- 청년 주거급여 분리지급 대상: (전입신고 완료 / 부모와 동일 시군구 / 전입 미완료)\n- 본인 명의 임대차계약 및 실거주 확인: "
         });
+      }
+
+      // 8. 부채·신용불량 민원인 대상 압류방지통장(행복지킴이통장) 체크
+      var mentionsDebt = /(?:부채|대출|연체|독촉|신불|신용불량|파산|회생|채무)/.test(text);
+      var mentionsSafeAccount = /(?:행복지킴이|압류방지)/.test(text);
+      if (mentionsDebt && !mentionsSafeAccount) {
+        inquiries.push({
+          level: "info",
+          tag: "압류방지",
+          title: "급여 압류 위험 방지 및 '행복지킴이통장' 발급 사전 안내",
+          desc: "신용유의자·부채보유자는 생계급여 결정 후 일반 계좌로 수령 시 즉시 압류될 위험이 있으므로 압류방지전용통장 개설을 사전 안내해야 합니다.",
+          question: "현재 은행 통장이 압류되어 있거나 압류될 위험이 있으신가요? (수급 결정 시 압류방지전용통장 개설 필요)",
+          fieldTemplate: "- 압류 우려 계좌 여부: (있음 - 행복지킴이통장 개설 안내 완료 / 없음)\n- 기존 거래 및 압류 은행: "
+        });
+      }
+
+      // 9. 임차보증금 압류/질권설정 및 무료임대(사용대차) 확인
+      if (extracted.resProp && extracted.resProp > 0) {
+        var mentionsPledge = /(?:질권|담보대출|압류|무료임대|사용대차)/.test(text);
+        if (!mentionsPledge) {
+          inquiries.push({
+            level: "info",
+            tag: "임대차특이",
+            title: "임차보증금 압류·질권설정(대출) 및 사용대차 여부",
+            desc: "보증금에 은행 질권설정(전세대출)이나 법원 압류가 걸려 있는 경우, 실질 자산 산정 시 차감되거나 별도 사실조사가 필요합니다.",
+            question: "거주 중인 전·월세 보증금에 은행 전세대출(질권설정)이나 가압류가 설정되어 있지는 않으신가요?",
+            fieldTemplate: "- 임차보증금 특이사항: (순수 본인자금 / 은행 전세대출 질권설정 약    만원 / 가압류 있음)"
+          });
+        }
+      }
+
+      // 10. 월세 체납 실태 확인 (긴급지원 위기사유 연계)
+      if (text.indexOf("월세") !== -1) {
+        var mentionsOverdueRent = /(?:연체|밀린\s*월세|미납|체납)/.test(text);
+        if (!mentionsOverdueRent) {
+          inquiries.push({
+            level: "info",
+            tag: "위기사유/주거",
+            title: "월세 체납 여부 확인 (정부 긴급복지 위기사유 직결)",
+            desc: "월세가 3개월 이상 체납된 경우 정부 긴급복지지원(주거·생계) 법정 위기사유로 직결되어 즉시 지원이 가능합니다.",
+            question: "현재 거주 중인 월세가 몇 달 밀려있으신가요? (임대인 연체 확인서 제출 시 긴급지원 요건 충족 가능)",
+            fieldTemplate: "- 월세 체납 실태: (현재    개월 연체 중, 총    만원 체납 / 체납 없음)"
+          });
+        }
       }
 
       return inquiries;
@@ -1703,7 +1747,7 @@
     function renderAIInquiries(inquiries) {
       var box = document.getElementById('aiInquiryBox');
       var listEl = document.getElementById('inquiryList');
-      var countEl = document.getElementById('inquiryCount');
+      var badgeBox = document.getElementById('inquiryCountBadge');
 
       if (!inquiries || inquiries.length === 0) {
         box.style.display = "none";
@@ -1711,15 +1755,34 @@
       }
 
       box.style.display = "block";
-      countEl.innerText = inquiries.length + "건 요건 보완 권장";
+
+      var dangerCount = inquiries.filter(function(x) { return x.level === "danger"; }).length;
+      var warnCount = inquiries.filter(function(x) { return x.level === "warning"; }).length;
+      var infoCount = inquiries.filter(function(x) { return x.level === "info"; }).length;
+
+      var badgeHtml = "";
+      if (dangerCount > 0) {
+        badgeHtml += "<span style='background:#ef4444; color:#fff; font-size:11px; font-weight:800; padding:1px 7px; border-radius:10px;'>🚨 탈락위험 " + dangerCount + "건</span>";
+      }
+      if (warnCount > 0) {
+        badgeHtml += "<span style='background:#f59e0b; color:#fff; font-size:11px; font-weight:800; padding:1px 7px; border-radius:10px;'>⚠️ 필수보완 " + warnCount + "건</span>";
+      }
+      if (infoCount > 0) {
+        badgeHtml += "<span style='background:#3b82f6; color:#fff; font-size:11px; font-weight:800; padding:1px 7px; border-radius:10px;'>💡 제도연계 " + infoCount + "건</span>";
+      }
+      badgeBox.innerHTML = badgeHtml;
 
       var html = "";
       for (var i = 0; i < inquiries.length; i++) {
         var item = inquiries[i];
+        var levelClass = "level-" + item.level;
+        var icon = item.level === "danger" ? "🚨" : (item.level === "warning" ? "⚠️" : "💡");
+        var tagColor = item.level === "danger" ? "#fee2e2; color:#b91c1c;" : (item.level === "warning" ? "#fef3c7; color:#92400e;" : "#dbeafe; color:#1e40af;");
+
         html += 
-          "<div class='inquiry-item'>" +
+          "<div class='inquiry-item " + levelClass + "'>" +
             "<div class='inquiry-title'>" +
-              "<span style='background:#dbeafe; color:#1e40af; font-size:10px; padding:1px 5px; border-radius:3px;'>" + item.tag + "</span>" +
+              "<span style='background:" + tagColor + " font-size:10px; font-weight:700; padding:1px 5px; border-radius:3px;'>" + icon + " " + item.tag + "</span>" +
               "<span>" + item.title + "</span>" +
             "</div>" +
             "<div class='inquiry-desc'>" + item.desc + "</div>" +
@@ -1758,7 +1821,7 @@
 "■ 근로능력 및 소득·재산\n" +
 "- 근로능력 상태: \n" +
 "- 월 소득 (근로소득 / 사업·기타소득): \n" +
-"- 재산현황 (※ 확인되지 않는 재산 항목은 기재하지 마세요): \n" +
+"- 재산현황: 임차보증금    만 원, 금융재산    만 원, 부채    만 원\n" +
 "- 보유차량: \n\n" +
 "■ 부양의무자 및 가족관계 해체 (해당 시 작성, 해당 없으면 삭제)\n" +
 "- 부양의무자 인적사항: \n" +
@@ -1852,7 +1915,6 @@
       var extracted = parseCounselText(text);
       lastExtractedCounsel = extracted;
 
-      // 추가 문진 분석 및 렌더링
       var inquiries = diagnoseMissingRequirements(text, extracted);
       renderAIInquiries(inquiries);
 
@@ -1880,7 +1942,7 @@
 
       runSimulation();
       saveToLocalStorage();
-      showToast("사정서 정제, AI 요건 진단 및 핵심 항목이 반영되었습니다!");
+      showToast("사정서 정제, 요건 진단 및 핵심 항목이 반영되었습니다!");
     }
 
     function copyResultText() {
@@ -1906,7 +1968,7 @@
       docList.push("사회보장급여 신청서 (행정복지센터 비치, 창구 작성)");
       docList.push("신분증 (주민등록증, 운전면허증, 여권 중 택1)");
       docList.push("금융정보등제공동의서 (가구원 및 부양의무자 서명 필수)");
-      docList.push("급여 입금용 통장 사본 (본인 명의 계좌)");
+      docList.push("급여 입금용 통장 사본 (본인 명의 계좌 / 압류 우려 시 행복지킴이통장)");
 
       if (params.resProp > 0 || text.indexOf("월세") !== -1 || text.indexOf("전세") !== -1 || text.indexOf("보증금") !== -1) {
         if (text.indexOf("무료") !== -1 || text.indexOf("사용대차") !== -1) {
