@@ -206,6 +206,14 @@
     .btn-danger:hover {
       background-color: #fecaca;
     }
+    .btn-success {
+      background-color: #15803d;
+      color: #ffffff;
+      border-color: #15803d;
+    }
+    .btn-success:hover {
+      background-color: #166534;
+    }
 
     label {
       display: block;
@@ -449,7 +457,7 @@
       font-weight: 700;
     }
 
-    /* 우편번호 모달: 기본 상태에서 완전히 숨김 처리하여 탭 1번 하단 노출 방지 */
+    /* 우편번호 모달 */
     .modal-backdrop {
       position: fixed;
       top: 0;
@@ -514,15 +522,104 @@
       opacity: 1;
     }
 
+    /* ==================== 인쇄(Print) CSS 전면 보완 ==================== */
     @media print {
-      body { background-color: #ffffff; padding-bottom: 0; font-size: 11pt; color: #000000; }
-      header, .humor-banner, .nav-tabs, .btn, #counselInput, .card-header button, #tab-vehicle, .field-row, #toast, .modal-backdrop, .calculation-breakdown { display: none !important; }
-      .main-container { max-width: 100%; margin: 0; padding: 0; }
-      .grid-2col { display: block; }
-      .card { border: none; box-shadow: none; padding: 0; margin-bottom: 20px; page-break-inside: avoid; }
-      .result-box { border: 1px solid #000; background-color: #ffffff; min-height: auto; max-height: none; overflow: visible; font-size: 11pt; }
-      .matrix-grid { display: flex; gap: 10px; }
-      .benefit-card { border: 1px solid #999; background-color: #ffffff !important; }
+      body {
+        background-color: #ffffff !important;
+        padding-bottom: 0 !important;
+        font-size: 10.5pt !important;
+        color: #000000 !important;
+      }
+      
+      /* 불필요 UI 숨김 */
+      header,
+      .humor-banner,
+      .nav-tabs,
+      .btn,
+      #counselInput,
+      .card-header button,
+      .card-header a,
+      #tab-vehicle,
+      .field-row,
+      #toast,
+      .modal-backdrop,
+      .calculation-breakdown,
+      .ext-call-btn {
+        display: none !important;
+      }
+
+      /* 2번 탭에 있어도 1번 탭 사정서 및 결과가 항상 강제 출력되도록 처리 */
+      #tab-counsel {
+        display: block !important;
+        visibility: visible !important;
+      }
+
+      .main-container {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      
+      .grid-2col {
+        display: block !important;
+      }
+      
+      .card {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin-bottom: 16px !important;
+        page-break-inside: avoid;
+      }
+
+      .card-header {
+        border-bottom: 2px solid #000000 !important;
+        padding-bottom: 6px !important;
+        margin-bottom: 10px !important;
+      }
+
+      .result-box {
+        border: 1px solid #333333 !important;
+        background-color: #ffffff !important;
+        min-height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+        font-size: 10pt !important;
+        line-height: 1.6 !important;
+        page-break-inside: avoid;
+      }
+
+      .matrix-grid {
+        display: grid !important;
+        grid-template-columns: repeat(5, 1fr) !important;
+        gap: 8px !important;
+      }
+
+      .benefit-card {
+        border: 1px solid #666666 !important;
+        background-color: #ffffff !important;
+        page-break-inside: avoid;
+        padding: 8px !important;
+      }
+
+      .benefit-est-box {
+        background-color: #f8fafc !important;
+        border: 1px solid #cccccc !important;
+      }
+
+      .external-card-grid {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 8px !important;
+        page-break-inside: avoid;
+      }
+
+      .external-card {
+        border: 1px solid #999999 !important;
+        background-color: #ffffff !important;
+        page-break-inside: avoid;
+        padding: 8px !important;
+      }
     }
   </style>
 </head>
@@ -700,7 +797,7 @@
             <div>
               <span class="benefit-badge badge-fail" id="badgeEmergency">판정 대기</span>
               <div style="font-weight: 700; font-size: 14px; margin-bottom: 2px;">긴급복지지원 (정부)</div>
-              <div style="font-size: 11px; color: #475569;">실소득 75% &amp; 재산 독립심사</div>
+              <div style="font-size: 11px; color: #475569;">실소득 75%·재산·금융 심사</div>
             </div>
             <div>
               <hr style="margin: 8px 0; border: none; border-top: 1px dashed #cbd5e1;">
@@ -1079,7 +1176,7 @@
 
   </div>
 
-  <!-- 도로명 주소 검색 모달 레이어 (기본 상태에서 CSS 완전히 격리) -->
+  <!-- 도로명 주소 검색 모달 레이어 -->
   <div id="postcodeModal" class="modal-backdrop">
     <div class="modal-card">
       <div class="modal-header">
@@ -1094,7 +1191,7 @@
 
   <script>
     // ==========================================
-    // 0. 완성형 고품질 B급 현실 유머 DB
+    // 0. B급 현실 유머 DB
     // ==========================================
     var HUMOR_CURATED_LIST = [
       "내가 사면 고점이고 내가 팔면 폭등하지만, 내일 아침 출근 시간은 단 1분의 오차도 없이 정확합니다.",
@@ -1139,6 +1236,8 @@
       standards: { livelihood: 0.32, medical: 0.40, housing: 0.48, nearPoverty: 0.50, emergency: 0.75 },
       emergencyPayouts: { 1: 71.3, 2: 117.8, 3: 150.9, 4: 183.4, 5: 214.3, 6: 243.6, 7: 272.1 },
       emergencyAssetLimit: { daegu: 24100, gunwi: 16500, seoul: 31000, gyeonggi: 24100 },
+      // 긴급복지 기본 600만 원 + 가구별 일상생활준비금 공제 합산 한도 (만원)
+      emergencyFinLimit: { 1: 856.4, 2: 1019.9, 3: 1135.9, 4: 1249.5, 5: 1355.7, 6: 1455.6, 7: 1551.5 },
       basicPensionLimit: { single: 213, couple: 340.8 },
       basicPensionBaseDeduct: { daegu: 13500, gunwi: 7250, seoul: 13500, gyeonggi: 13500 },
       basicPensionEarnedDeduct: 116,
@@ -1496,7 +1595,6 @@
       return result;
     }
 
-    // 표준 서식 불러오기: 가구원수 기본값 1인가구를 제거하고 빈칸 처리
     function loadBlankTemplate() {
       document.getElementById('counselInput').value = 
 "■ 기본 인적사항\n" +
@@ -1550,7 +1648,7 @@
 "- 3. 무엇 때문에: 채무 독촉 및 가족 불화로 인한 심각한 갈등\n" +
 "- 4. 부양 거부·기피 실태: 12년간 왕래 및 경제적 지원 일체 전무하며 연락 두절 상태\n\n" +
 "■ 신청 급여\n" +
-"- 신청 급여: 국민기초생활보장(생계·의료·주거급여), 달구벌 희망급여, 기초연금";
+"- 신청 급여: 국민기초생활보장(생계·의료·주거급여), 긴급복지지원, 달구벌 희망급여, 기초연금";
       showToast("실무 작성 예시를 불러왔습니다.");
       saveToLocalStorage();
     }
@@ -1637,9 +1735,6 @@
       });
     }
 
-    // ==========================================
-    // 타 기관 특화 지원사업 평가 엔진
-    // ==========================================
     function updateExternalBenefits(params) {
       var container = document.getElementById('externalBenefitGrid');
       var list = [];
@@ -1687,14 +1782,15 @@
         desc: "• 암, 뇌혈관·심장질환, 희귀난치, 중증화상 환자 대상<br>• 진료비 본인부담률을 5~10% 수준으로 대폭 인하"
       });
 
-      // 4. 정부 긴급의료비 지원
-      var isEmergMedMatch = (totalRealIncome <= median * 0.75) && (finProp <= 600);
+      // 4. 정부 긴급의료비 지원 (긴급지원 금융한도 연동)
+      var emergFinLim = POLICY_2026.emergencyFinLimit[params.members] || 856.4;
+      var isEmergMedMatch = (totalRealIncome <= median * 0.75) && (finProp <= emergFinLim);
       list.push({
         title: "정부 긴급의료비 지원",
         org: "보건복지상담센터 / 보건소",
         tel: "129",
         matched: isEmergMedMatch,
-        badge: isEmergMedMatch ? "소득·금융 요건 충족" : "소득 75% 또는 금융 600만 초과",
+        badge: isEmergMedMatch ? "소득·금융 요건 충족" : "소득 75% 또는 금융한도 초과",
         statusClass: isEmergMedMatch ? "matched" : "review",
         desc: "• 중한 질병·부상 시 본인부담금 및 필수 비급여 지원<br>• 1회 최대 300만 원 지원 (최대 2회)"
       });
@@ -1896,7 +1992,7 @@
       var totalRealIncome = earned + other;
       var netAssets = (resProp + combinedGen + finProp) - debt;
 
-      // 1. 국민기초생활보장[cite: 1]
+      // 1. 국민기초생활보장
       var liveStandard = Math.round(median * POLICY_2026.standards.livelihood);
       var medStandard = Math.round(median * POLICY_2026.standards.medical);
       var houseStandard = Math.round(median * POLICY_2026.standards.housing);
@@ -1944,9 +2040,12 @@
         estBasicLifeDiv.style.color = "#b91c1c";
       }
 
-      // 2. 긴급복지지원[cite: 1]
+      // ========================================================
+      // 2. 긴급복지지원 (보완: 금융재산 기준 일상생활공제 포함 판정)
+      // ========================================================
       var emergStandard = Math.round(median * POLICY_2026.standards.emergency);
       var emergAssetLimit = POLICY_2026.emergencyAssetLimit[region] || 24100;
+      var emergFinLimitVal = POLICY_2026.emergencyFinLimit[members] || 856.4;
       var emergPayAmount = POLICY_2026.emergencyPayouts[members] || 71.3;
 
       document.getElementById('valEmergIncome').innerText = totalRealIncome;
@@ -1955,24 +2054,34 @@
       var detailEm = document.getElementById('detailEmergency');
       var estEmergDiv = document.getElementById('estEmergencyPayout');
       
+      var isEmergIncomePass = totalRealIncome <= emergStandard;
+      var isEmergAssetPass = netAssets <= emergAssetLimit;
+      var isEmergFinPass = finProp <= emergFinLimitVal;
+
       cardEm.className = "benefit-card";
-      if (totalRealIncome <= emergStandard && netAssets <= emergAssetLimit) {
+      if (isEmergIncomePass && isEmergAssetPass && isEmergFinPass) {
         cardEm.classList.add("pass");
         badgeEm.className = "benefit-badge badge-pass";
         badgeEm.innerText = "긴급지원 충족";
-        detailEm.innerText = "실소득 " + totalRealIncome + "만(기준 " + emergStandard + "만) 및 재산한도(" + emergAssetLimit + "만) 충족";
+        detailEm.innerText = "소득(" + totalRealIncome + "만/" + emergStandard + "만)·일반재산(" + emergAssetLimit + "만)·금융재산(" + finProp + "만/" + Math.round(emergFinLimitVal) + "만) 충족";
         estEmergDiv.innerText = "월 " + emergPayAmount.toLocaleString() + "만 원 (정액 생계)";
         estEmergDiv.style.color = "#047857";
       } else {
         cardEm.classList.add("fail");
         badgeEm.className = "benefit-badge badge-fail";
         badgeEm.innerText = "긴급기준 초과";
-        detailEm.innerText = totalRealIncome > emergStandard ? "소득(" + emergStandard + "만) 초과" : "순재산 한도(" + emergAssetLimit + "만) 초과";
+        
+        var emFailReasons = [];
+        if (!isEmergIncomePass) emFailReasons.push("실소득(" + totalRealIncome + "만 > 기준 " + emergStandard + "만)");
+        if (!isEmergAssetPass) emFailReasons.push("순재산(" + Math.round(netAssets) + "만 > 한도 " + emergAssetLimit + "만)");
+        if (!isEmergFinPass) emFailReasons.push("금융재산(" + finProp + "만 > 한도 " + Math.round(emergFinLimitVal) + "만)");
+        
+        detailEm.innerText = emFailReasons.join(", ") + " 초과로 지원 제외";
         estEmergDiv.innerText = "지원 대상 아님";
         estEmergDiv.style.color = "#b91c1c";
       }
 
-      // 3. 달구벌 희망급여[cite: 1]
+      // 3. 달구벌 희망급여
       var dgIncomeLimit = Math.round(median * POLICY_2026.dalgubeol.incomeLimitPercent);
       var dgGenAssetLimit = POLICY_2026.dalgubeol.generalAssetLimit;
       var dgFinLimit = POLICY_2026.dalgubeol.financialLimit[members] || 1574.2;
@@ -2011,7 +2120,7 @@
         estDGDiv.style.color = "#64748b";
       }
 
-      // 4. 차상위계층[cite: 1]
+      // 4. 차상위계층
       var nearStandard = Math.round(median * POLICY_2026.standards.nearPoverty);
       document.getElementById('valNearPoverty').innerText = recognizedIncome;
       var badgeNP = document.getElementById('badgeNearPoverty');
@@ -2038,7 +2147,7 @@
         estNPDiv.style.color = "#b91c1c";
       }
 
-      // 5. 기초연금[cite: 1]
+      // 5. 기초연금
       var bpDeduct = POLICY_2026.basicPensionBaseDeduct[region] || 13500;
       var bpLimit = members >= 2 ? POLICY_2026.basicPensionLimit.couple : POLICY_2026.basicPensionLimit.single;
       
@@ -2091,12 +2200,14 @@
           "<li><strong>기초보장 소득평가액:</strong> 근로" + deductDesc + " " + earnedDeducted + "만 + 기타 " + other + "만 = <strong>" + evalIncome + "만 원</strong></li>" +
           "<li><strong>기초보장 재산환산액:</strong> 주거(월 1.04%) " + propIncomeResidential + "만 + 일반(월 4.17%) " + propIncomeGeneral + "만 (차량반영 " + carGenProp + "만 포함)" + (transferredGen > 0 ? " [주거한도초과 " + transferredGen + "만 가산]" : "") + " + 금융(월 6.26%) " + propIncomeFinancial + "만 + 차량100% " + propIncomeCar + "만 = <strong>월 " + totalPropIncome + "만 원</strong></li>" +
           "<li><strong>기초보장 최종 소득인정액:</strong> 소득평가액(" + evalIncome + "만) + 재산환산액(" + totalPropIncome + "만) = <span style='color: #1d4ed8; font-weight:700;'>" + recognizedIncome + "만 원</span></li>" +
-          "<li style='margin-top:6px; padding-top:6px; border-top:1px dashed #cbd5e1;'><strong>[기초연금 별도 산식]</strong> 근로 116만원 선공제(" + bpEarned + "만) + 재산 통합 연 4% 환산(월 " + bpPropIncome + "만) = <strong>월 " + bpTotal + "만 원</strong> (선정기준 " + bpLimit + "만 원)</li>" +
+          "<li style='margin-top:6px; padding-top:6px; border-top:1px dashed #cbd5e1;'><strong>[정부 긴급복지지원]</strong> 실소득 <strong>" + emergStandard + "만 이하</strong>, 일반재산 <strong>" + emergAssetLimit + "만 이하</strong>, 금융재산 <strong>" + Math.round(emergFinLimitVal) + "만 이하</strong> (기본 600만 + 일상생활준비금 " + median + "만 반영) 충족 시 지원</li>" +
+          "<li><strong>[기초연금 별도 산식]</strong> 근로 116만원 선공제(" + bpEarned + "만) + 재산 통합 연 4% 환산(월 " + bpPropIncome + "만) = <strong>월 " + bpTotal + "만 원</strong> (선정기준 " + bpLimit + "만 원)</li>" +
           "<li><strong>[대구 달구벌 희망급여]</strong> 실소득 <strong>" + dgIncomeLimit + "만 원 이하</strong>, 일반재산 <strong>3억 5,000만 원 이하</strong>, 금융 <strong>" + dgFinLimit + "만 원 이하</strong> 충족 시 20만~100만 원 (구·군 조례에 따라 차등 지원)</li>" +
         "</ul>";
 
       // 타 기관 특화 지원사업 평가 업데이트
       updateExternalBenefits({
+        members: members,
         totalRealIncome: totalRealIncome,
         median: median,
         earned: earned,
