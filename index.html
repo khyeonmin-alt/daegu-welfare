@@ -55,7 +55,6 @@
       letter-spacing: -0.2px;
     }
 
-    /* 복지공무원 격려 B급 유머 배너 */
     .humor-banner {
       background: linear-gradient(90deg, #fef3c7, #fef9c3);
       border-bottom: 1px solid #fde047;
@@ -236,7 +235,7 @@
     }
 
     .counsel-textarea {
-      height: 380px;
+      height: 480px;
       resize: vertical;
       line-height: 1.6;
       font-size: 13px;
@@ -249,9 +248,70 @@
       white-space: pre-wrap;
       font-size: 13px;
       line-height: 1.7;
-      min-height: 380px;
-      max-height: 600px;
+      min-height: 250px;
+      max-height: 520px;
       overflow-y: auto;
+    }
+
+    /* 추가 문진 (AI Co-pilot) 패널 스타일 */
+    .inquiry-panel {
+      background: #eff6ff;
+      border: 1.5px solid #93c5fd;
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+    .inquiry-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .inquiry-badge-count {
+      background: #ef4444;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 800;
+      padding: 1px 7px;
+      border-radius: 10px;
+    }
+    .inquiry-item {
+      background: #ffffff;
+      border: 1px solid #bfdbfe;
+      border-radius: 6px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      font-size: 12px;
+    }
+    .inquiry-item:last-child {
+      margin-bottom: 0;
+    }
+    .inquiry-title {
+      font-weight: 700;
+      color: #1e3a8a;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+    .inquiry-desc {
+      color: #475569;
+      line-height: 1.5;
+      margin-bottom: 6px;
+    }
+    .inquiry-action-box {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8fafc;
+      padding: 6px 10px;
+      border-radius: 4px;
+      border: 1px dashed #cbd5e1;
+    }
+    .inquiry-question {
+      font-weight: 600;
+      color: #0f172a;
+      flex: 1;
     }
 
     .matrix-grid {
@@ -448,7 +508,7 @@
       display: none;
     }
 
-    /* ==================== 인쇄(Print) CSS 설정 ==================== */
+    /* 인쇄(Print) CSS 설정 */
     @page {
       margin: 0;
     }
@@ -474,7 +534,8 @@
       .field-row,
       #toast,
       .calculation-breakdown,
-      .ext-call-btn {
+      .ext-call-btn,
+      #aiInquiryBox {
         display: none !important;
       }
 
@@ -610,19 +671,32 @@
           
           <div style="margin-top: 14px;">
             <button class="btn btn-primary" style="width: 100%; font-size: 14px; padding: 11px; font-weight: 700;" onclick="processCounseling()">
-              ⚡ 복지사정서 생성 및 핵심 항목 자동 추출
+              ⚡ 복지사정서 생성, 누락요건 진단 &amp; 핵심 항목 자동 추출
             </button>
           </div>
         </div>
 
         <div class="card">
           <div class="card-header">
-            <div class="card-title">📋 정제된 복지상담 사정서</div>
+            <div class="card-title">📋 정제된 복지상담 사정서 &amp; AI 보조</div>
             <div style="display: flex; gap: 6px;">
               <button class="btn btn-outline btn-sm" onclick="copyResultText()">📄 전체 복사</button>
-              <button class="btn btn-outline btn-sm" onclick="safePrintDoc()">🖨️ 인쇄</button>
+              <button class="btn btn-outline btn-sm" onclick="safePrintDoc()">🖨️ 사정서 인쇄</button>
             </div>
           </div>
+
+          <!-- 신규: AI 누락 요건 분석 & 추가 문진 제안 패널 -->
+          <div id="aiInquiryBox" class="inquiry-panel" style="display: none;">
+            <div class="inquiry-header">
+              <div style="font-weight: 800; font-size: 13px; color: #1e3a8a; display: flex; align-items: center; gap: 6px;">
+                <span>💡 AI 법정 요건 누락 진단 및 추가 문진(Co-pilot)</span>
+                <span class="inquiry-badge-count" id="inquiryCount">0건</span>
+              </div>
+              <span style="font-size: 11px; color: #2563eb; font-weight: 600;">질문 클릭 시 메모창 자동 입력</span>
+            </div>
+            <div id="inquiryList"></div>
+          </div>
+
           <div id="counselOutput" class="result-box">상담 내용을 입력하고 [복지사정서 생성 및 핵심 항목 자동 추출] 버튼을 누르시면 표준 서식으로 정제됩니다.</div>
         </div>
       </div>
@@ -865,7 +939,7 @@
               🏢 타 기관 연계 특화 지원사업 자동 매칭 (서민금융·의료·고용·연금)
             </div>
             <div style="font-size: 12px; color: #b91c1c; font-weight: 700; margin-top: 4px;">
-              ⚠️️ [주의] 아래 사업들은 읍·면·동 행정복지센터에서 접수받지 않으며, 표기된 각 소관 전문기관으로 민원인이 직접 신청해야 합니다.
+              ⚠ [주의] 아래 사업들은 읍·면·동 행정복지센터에서 접수받지 않으며, 표기된 각 소관 전문기관으로 민원인이 직접 신청해야 합니다.
             </div>
           </div>
           <span style="font-size: 11px; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-weight: 600; color: #475569;">
@@ -1521,6 +1595,142 @@
       return result;
     }
 
+    // ==========================================
+    // AI 누락 요건 분석 및 추가 문진 생성 엔진
+    // ==========================================
+    function diagnoseMissingRequirements(text, extracted) {
+      var inquiries = [];
+
+      // 1. 부양의무자 가족관계 해체 시점 및 입증자료
+      if (extracted.support === "severed" || text.indexOf("연락두절") !== -1 || text.indexOf("가족관계") !== -1) {
+        var hasDuration = /(?:[0-9]{1,2}\s*년|[0-9]{1,2}\s*개?월|오래전|수년)/.test(text);
+        var hasProof = /(?:통화내역|소명|수용|가출|경찰|부도)/.test(text);
+        if (!hasDuration || !hasProof) {
+          inquiries.push({
+            id: "family_proof",
+            tag: "부양의무자",
+            title: "가족관계 해체(왕래·지원 단절) 입증 요건 구체화",
+            desc: "지방생활보장위원회 심의를 통과하려면 단절 시점(최소 수년 이상)과 객관적 단절 정황이 구체적으로 적시되어야 합니다.",
+            question: "부양의무자와 마지막으로 연락이나 왕래를 한 정확한 시점(연/월)과 왕래가 단절된 계기는 무엇인가요?",
+            fieldTemplate: "- 부양의무자 단절시점: \n- 부양기피 사유: "
+          });
+        }
+      }
+
+      // 2. 근로능력 평가용 진단서 및 질환 요건
+      if (extracted.workAbility === "illness" || text.indexOf("질환") !== -1 || text.indexOf("협착증") !== -1 || text.indexOf("아파서") !== -1) {
+        var hasCert = text.indexOf("근로능력평가용") !== -1 || text.indexOf("진단서") !== -1;
+        if (!hasCert) {
+          inquiries.push({
+            id: "medical_cert",
+            tag: "근로능력",
+            title: "근로무능력 의학적 증빙(진단서) 발급 여부 확인",
+            desc: "단순 통증 호소만으로는 법정 근로무능력자로 인정되지 않아 조건부수급(자활참여)으로 지정될 수 있습니다.",
+            question: "최근 2~3개월 이내에 병원에서 발급받으신 '근로능력평가용 진단서'나 진료기록 사본이 있으신가요?",
+            fieldTemplate: "- 근로능력평가용 진단서 유무: (발급완료 / 미발급 / 병원진료중)\n- 주요 진단 상병명: "
+          });
+        }
+      }
+
+      // 3. 주거실태 및 임차보증금/사용대차 여부
+      var hasRentInfo = text.indexOf("보증금") !== -1 || text.indexOf("월세") !== -1 || text.indexOf("전세") !== -1 || text.indexOf("자가") !== -1;
+      if (!hasRentInfo) {
+        inquiries.push({
+          id: "housing_type",
+          tag: "주거재산",
+          title: "거주형태(전·월세·무료임차) 및 임차보증금 누락",
+          desc: "주거급여 산정 및 기본재산 평가를 위해 정확한 보증금과 월세, 확정일자 부여 여부가 확인되어야 합니다.",
+          question: "현재 거주 중이신 주택의 형태가 자가, 전·월세, 혹은 친인척 무료임차(사용대차) 중 어느 쪽에 해당하시나요?",
+          fieldTemplate: "- 거주형태: (보증금 만원 / 월세 만원 / 사용대차)"
+        });
+      }
+
+      // 4. 차량 보유 여부 명확화
+      var hasCarInfo = text.indexOf("차량") !== -1 || text.indexOf("자동차") !== -1 || text.indexOf("운전") !== -1;
+      if (!hasCarInfo) {
+        inquiries.push({
+          id: "car_check",
+          tag: "차량재산",
+          title: "본인 및 가구원 명의 자동차 소유 여부 미확인",
+          desc: "1,600cc 이상 차량 또는 10년 미만 차량은 가액의 100%가 매월 소득으로 환산되어 즉시 탈락할 수 있습니다.",
+          question: "본인 또는 세대원 명의로 등록된 차량(승용차, 화물차, 오토바이 등)을 소유하고 계신가요?",
+          fieldTemplate: "- 보유차량: (없음 / 차종:      년식:      배기량:    cc)"
+        });
+      }
+
+      // 5. 금융부채 사용처 및 공적 대출 증빙
+      if (extracted.debt && extracted.debt > 0) {
+        var hasDebtUsage = /(?:의료비|생활비|사업자금|사채|금융기관)/.test(text);
+        if (!hasDebtUsage) {
+          inquiries.push({
+            id: "debt_proof",
+            tag: "금융부채",
+            title: "부채 발생 원인 및 제도권 금융기관 대출 여부",
+            desc: "사채나 개인 간 차용금은 원칙적으로 기초보장 부채 공제에서 제외되므로 1금융·2금융·공공기관 대출인지 확인해야 합니다.",
+            question: "기재하신 부채가 은행·카드사 등 금융기관 대출인가요? 대출금은 주로 어떤 용도(의료비·생계비 등)로 사용하셨나요?",
+            fieldTemplate: "- 부채 내역: (금융기관명:       / 용도: 의료비·생활비 등)"
+          });
+        }
+      }
+
+      // 6. 만 65세 이상 노인의 기초연금 및 노령연금 수령 현황
+      if (extracted.age && extracted.age >= 65 && text.indexOf("기초연금") === -1 && text.indexOf("국민연금") === -1) {
+        inquiries.push({
+          id: "pension_check",
+          tag: "공정이전소득",
+          title: "기초연금 및 국민연금(노령연금) 현재 수령액 확인",
+          desc: "수급 신청 시 이미 지급받고 있는 공적연금액은 전액 공적이전소득(월 소득평가액)으로 합산됩니다.",
+          question: "매월 25일에 입금되는 기초연금이나 국민연금을 이미 수령하고 계신 것이 있으신가요?",
+          fieldTemplate: "- 공적연금 수령현황: (기초연금: 월 만원 / 국민연금: 월 만원)"
+        });
+      }
+
+      return inquiries;
+    }
+
+    function renderAIInquiries(inquiries) {
+      var box = document.getElementById('aiInquiryBox');
+      var listEl = document.getElementById('inquiryList');
+      var countEl = document.getElementById('inquiryCount');
+
+      if (!inquiries || inquiries.length === 0) {
+        box.style.display = "none";
+        return;
+      }
+
+      box.style.display = "block";
+      countEl.innerText = inquiries.length + "건 요건 보완 권장";
+
+      var html = "";
+      for (var i = 0; i < inquiries.length; i++) {
+        var item = inquiries[i];
+        html += 
+          "<div class='inquiry-item'>" +
+            "<div class='inquiry-title'>" +
+              "<span style='background:#dbeafe; color:#1e40af; font-size:10px; padding:1px 5px; border-radius:3px;'>" + item.tag + "</span>" +
+              "<span>" + item.title + "</span>" +
+            "</div>" +
+            "<div class='inquiry-desc'>" + item.desc + "</div>" +
+            "<div class='inquiry-action-box'>" +
+              "<div class='inquiry-question'>🗣️️ <em>\"" + item.question + "\"</em></div>" +
+              "<button class='btn btn-outline btn-sm' style='font-size:11px; padding:3px 8px; font-weight:700; color:#1d4ed8; background:#ffffff; border-color:#93c5fd;' onclick=\"appendInquiryToMemo('" + encodeURIComponent(item.fieldTemplate) + "')\">" +
+                "+ 메모에 반영" +
+              "</button>" +
+            "</div>" +
+          "</div>";
+      }
+      listEl.innerHTML = html;
+    }
+
+    function appendInquiryToMemo(encodedTemplate) {
+      var template = decodeURIComponent(encodedTemplate);
+      var memo = document.getElementById('counselInput');
+      memo.value = memo.value.trim() + "\n\n[추가 확인 사항]\n" + template;
+      memo.focus();
+      showToast("상담 메모창 하단에 추가 문진 항목이 추가되었습니다.");
+      saveToLocalStorage();
+    }
+
     function loadBlankTemplate() {
       document.getElementById('counselInput').value = 
 "■ 기본 인적사항\n" +
@@ -1582,6 +1792,7 @@
     function clearCounselInput() {
       document.getElementById('counselInput').value = "";
       document.getElementById('counselOutput').innerText = "상담 내용을 입력하고 [복지사정서 생성 및 핵심 항목 자동 추출] 버튼을 누르시면 표준 서식으로 정제됩니다.";
+      document.getElementById('aiInquiryBox').style.display = "none";
       localStorage.removeItem('welfare_counsel_memo');
       showToast("입력창을 비웠습니다.");
     }
@@ -1629,6 +1840,10 @@
       var extracted = parseCounselText(text);
       lastExtractedCounsel = extracted;
 
+      // 추가 문진 분석 및 렌더링
+      var inquiries = diagnoseMissingRequirements(text, extracted);
+      renderAIInquiries(inquiries);
+
       if (extracted.members) document.getElementById('simMembers').value = extracted.members;
       if (extracted.workAbility) document.getElementById('simWorkAbility').value = extracted.workAbility;
       if (extracted.support) document.getElementById('simSupportObligor').value = extracted.support;
@@ -1653,7 +1868,7 @@
 
       runSimulation();
       saveToLocalStorage();
-      showToast("사정서 정제 및 소득·재산 핵심 항목이 반영되었습니다!");
+      showToast("사정서 정제, AI 요건 진단 및 핵심 항목이 반영되었습니다!");
     }
 
     function copyResultText() {
@@ -2265,7 +2480,6 @@
     // 2. 부동산 공시가격 원클릭 공식 열람 및 연동 로직
     // ==========================================
     function openRealtyPriceDirect() {
-      // 국토교통부 부동산 공시가격 알리미 공식 메인 창 열기
       window.open('https://www.realtyprice.kr', '_blank', 'noopener,noreferrer');
       showToast("국토교통부 공시가격 알리미 열람창을 열었습니다.");
     }
