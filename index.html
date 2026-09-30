@@ -6,6 +6,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>대구광역시 읍면동 스마트 복지상담 &amp; 소득인정액 판정기 (AI 온디바이스 에디션)</title>
   
+  <!-- ========================================================
+       [AI 대회 기술 검증용] Transformers.js 온디바이스 코어
+       WASM / WebGPU 100% 로컬 연산 (FR-01 슬롯필링 & FR-05 다중위기 동시 추론)
+       ======================================================== -->
   <script type="module">
     import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
     
@@ -245,7 +249,6 @@
     .btn-outline:hover { background-color: #f1f5f9; color: #0f172a; }
     .btn-danger { background-color: #fee2e2; border-color: #fca5a5; color: #b91c1c; }
     .btn-danger:hover { background-color: #fecaca; }
-    .btn-ai { background: linear-gradient(135deg, #7c3aed, #4f46e5); color: #ffffff; border: none; }
 
     label {
       display: block;
@@ -468,14 +471,12 @@
           </div>
         </div>
         
-        <textarea id="counselInput" class="counsel-textarea" placeholder="상단의 [📋 표준 서식] 버튼을 누르면 법정 기초생활수급자 맞춤 상담 서식이 자동으로 입력창에 채워집니다. 민원인의 구술 기록을 편하게 입력하세요."></textarea>
+        <textarea id="counselInput" class="counsel-textarea" placeholder="상단의 [📋 표준 서식] 버튼을 누르면 법정 기초생활수급자 맞춤 상담 서식이 자동으로 채워집니다."></textarea>
         
-        <div style="margin-top: 14px; display: flex; gap: 8px;">
-          <button class="btn btn-primary" style="flex: 2; font-size: 14px; padding: 12px; font-weight: 800;" onclick="processCounseling()">
-            ⚡ 1클릭 복지사정서 생성 &amp; 3단계 모의판정 연동
-          </button>
-          <button class="btn btn-ai" style="flex: 1; font-size: 13px; font-weight: 700;" onclick="runOnDeviceAIEngineDirect()">
-            🧠 AI 추론 재실행
+        <!-- 단일 메인 버튼으로 통합 -->
+        <div style="margin-top: 14px;">
+          <button class="btn btn-primary" style="width: 100%; font-size: 15px; padding: 13px; font-weight: 800; background: linear-gradient(135deg, #1d4ed8, #2563eb); border-radius: 8px; box-shadow: 0 4px 10px rgba(29, 78, 216, 0.25);" onclick="processCounseling()">
+            ⚡ 1클릭 복지사정서 생성 &amp; 온디바이스 AI 모의판정 실행
           </button>
         </div>
       </div>
@@ -713,14 +714,10 @@
 
     var currentRiskStatus = { detected: false, signals: [], auditLogs: [] };
 
-    // ==========================================
-    // FR-05 위기신호 감지 엔진 (오탐 방지 네거티브 필터 강화)
-    // ==========================================
     var RiskSignalEngine = {
       riskDefinitions: {
         suicide: {
           label: "자살·자해 암시",
-          // '해체사유서' 등 행정 단어에 걸리지 않도록 엄격한 자살·자해 어휘로 한정
           keywords: /(?:스스로\s*목숨|자살|자해|극단적\s*선택|죽어\s*버리|목숨을\s*끊|유서\s*남기|세상\s*떠나고\s*싶|약먹고\s*죽|죽고\s*싶)/,
           statute: "자살예방법 제13조 (발견 시 조치의무)",
           agencies: [{ name: "자살예방 상담전화", call: "109" }, { name: "정신건강복지센터", call: "1577-0199" }],
@@ -765,7 +762,7 @@
           for (var i = 0; i < sentences.length; i++) {
             var sent = sentences[i];
             
-            // [오탐 방지 핵심] 가족관계 해체사유서 관련 행정 문장은 자살 위험에서 제외
+            // [오탐 방지] 가족관계 해체사유서 관련 행정 문맥은 자살 위험에서 제외
             if (key === 'suicide' && (sent.indexOf("해체사유서") !== -1 || sent.indexOf("가족관계") !== -1 || sent.indexOf("작성 의사") !== -1)) {
               continue;
             }
@@ -803,9 +800,6 @@
       }
     };
 
-    // ==========================================
-    // 정밀 파서: 표준 서식 및 구술 메모 완벽 파싱
-    // ==========================================
     function parseCounselText(text) {
       var res = {
         members: 1,
@@ -848,7 +842,7 @@
         res.workAbility = "able";
       }
 
-      // 3. 근로·사업 소득 (만원 단위 환산 파싱)
+      // 3. 근로·사업 소득 (만원 단위)
       var mEarned = text.match(/근로\s*(?:및|·)?\s*사업소득\s*[:：]?\s*([0-9,]+)/) ||
                     text.match(/월\s*근로소득[^\d]*([0-9,]+)/) ||
                     text.match(/월급[^\d]*([0-9,]+)/);
@@ -857,7 +851,7 @@
         res.earned = num > 10000 ? Math.round(num / 10000) : num;
       }
 
-      // 4. 공적·사적 이전소득 (기초연금 등)
+      // 4. 공적·사적 이전소득
       var mOther = text.match(/(?:공적이전소득|기초연금|이전소득)[^\d]*([0-9,]+)/);
       if (mOther) {
         var num2 = parseInt(mOther[1].replace(/,/g, ''), 10);
@@ -899,9 +893,6 @@
       return res;
     }
 
-    // ==========================================
-    // 1클릭 복지사정서 생성 및 3단계 모의판정 연동
-    // ==========================================
     async function processCounseling() {
       var text = document.getElementById('counselInput').value;
       if (!text.trim()) {
@@ -909,7 +900,7 @@
         return;
       }
 
-      // 1. 위기신호 탐지 실행 (오탐 방지 적용)
+      // 1. 위기신호 탐지
       var signals = await RiskSignalEngine.detectSignals(text);
       updateRiskBannerAndTraffic(signals);
 
@@ -942,7 +933,7 @@
       document.getElementById('docSeverInfo').innerText = parsed.support === 'severed' ? "가족관계 해체사유서 징구 및 지생보 심의 상정 대상" : "특이 단절 없음 (의료급여 일반 조사)";
       document.getElementById('docActionInfo').innerText = signals.length > 0 ? "🚨 긴급복지 우선 심사 및 안전망 즉각 연계" : "국민기초생활보장(생계·의료·주거) 모의판정 진행";
 
-      // 4. [핵심] 3단계 모의계산기 인풋 필드에 파싱된 수치 즉시 주입!
+      // 4. 3단계 모의계산기 인풋 필드에 파싱된 수치 주입
       document.getElementById('simMembers').value = parsed.members;
       document.getElementById('simWorkAbility').value = parsed.workAbility;
       document.getElementById('simSupportObligor').value = parsed.support;
@@ -952,13 +943,9 @@
       document.getElementById('simFinProp').value = parsed.finProp;
       document.getElementById('simDebt').value = parsed.debt;
 
-      // 5. 3단계 수치 계산 엔진 즉시 가동
+      // 5. 3단계 수치 계산 엔진 가동
       runSimulation();
       showToast("사정표 작성 및 3단계 모의계산기에 수치가 성공적으로 반영되었습니다!");
-    }
-
-    function runOnDeviceAIEngineDirect() {
-      processCounseling();
     }
 
     function updateRiskBannerAndTraffic(signals) {
@@ -995,7 +982,6 @@
       content.innerHTML = html;
     }
 
-    // 3단계 모의판정 연산 로직
     function runSimulation() {
       var members = parseInt(document.getElementById('simMembers').value, 10) || 1;
       var region = document.getElementById('simRegion').value;
@@ -1006,11 +992,11 @@
       var finProp = parseFloat(document.getElementById('simFinProp').value) || 0;
       var debt = parseFloat(document.getElementById('simDebt').value) || 0;
 
-      // 1. 소득평가액 산정 (근로소득 공제 적용)
+      // 1. 소득평가액 산정 (근로소득 공제)
       var earnedDeduct = 0;
-      if (workAbility === 'none') { // 만 65세 이상 노인 (20만원 선공제 후 30%)
+      if (workAbility === 'none') {
         earnedDeduct = Math.max(0, (earned - 20) * 0.3 + 20);
-      } else if (workAbility === 'youth') { // 청년
+      } else if (workAbility === 'youth') {
         earnedDeduct = Math.max(0, (earned - 40) * 0.3 + 40);
       } else if (workAbility === 'able') {
         earnedDeduct = earned * 0.3;
@@ -1022,17 +1008,14 @@
       var baseDeduct = POLICY_2026.baseDeduction[region] || 7700;
       var remainDeduct = baseDeduct;
 
-      // 주거용재산 공제
       var deductToRes = Math.min(resProp, remainDeduct);
       var resAfter = resProp - deductToRes;
       remainDeduct -= deductToRes;
 
-      // 금융재산 (생활준비금 500만원 선공제)
       var netFin = Math.max(0, finProp - 500);
       var deductToFin = Math.min(netFin, remainDeduct);
       var finAfter = netFin - deductToFin;
 
-      // 부채 차감
       var remainDebt = debt;
       var dToRes = Math.min(resAfter, remainDebt);
       resAfter -= dToRes;
@@ -1041,7 +1024,6 @@
       var dToFin = Math.min(finAfter, remainDebt);
       finAfter -= dToFin;
 
-      // 월 소득 환산 (주거 1.04%, 금융 6.26%)
       var propertyMonthly = (resAfter * 0.0104) + (finAfter * 0.0626);
       var recognized = Math.round((incomeVal + propertyMonthly) * 10) / 10;
 
@@ -1050,7 +1032,7 @@
       var emergStd = Math.round(median * POLICY_2026.standards.emergency * 10) / 10;
       var nearStd = Math.round(median * POLICY_2026.standards.nearPoverty * 10) / 10;
 
-      // 1. 국민기초생활보장
+      // 1. 기초생활보장
       document.getElementById('valBasicLife').innerText = recognized.toLocaleString();
       var bCard = document.getElementById('cardBasicLife');
       var bBadge = document.getElementById('badgeBasicLife');
@@ -1140,7 +1122,6 @@
       }
     }
 
-    // 템플릿 로더
     function loadBlankTemplate() {
       document.getElementById('counselInput').value = 
 `[기초생활보장 및 맞춤형 사회보장급여 초기상담표]
