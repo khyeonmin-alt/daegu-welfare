@@ -214,6 +214,14 @@
     .btn-success:hover {
       background-color: #166534;
     }
+    .btn-warning {
+      background-color: #fef3c7;
+      color: #92400e;
+      border-color: #fcd34d;
+    }
+    .btn-warning:hover {
+      background-color: #fde68a;
+    }
 
     label {
       display: block;
@@ -443,8 +451,8 @@
     .doc-check-item {
       display: flex;
       align-items: flex-start;
-      gap: 10px;
-      padding: 10px 14px;
+      gap: 8px;
+      padding: 8px 12px;
       border-bottom: 1px solid #f1f5f9;
       font-size: 13px;
     }
@@ -569,10 +577,7 @@
         color: #000000 !important;
       }
       
-      /* 출력 시 프로그램 헤더, 배너, 탭, 버튼 등 웹 UI 완전 제거 */
       header,
-      .header-title,
-      .header-title h1,
       .humor-banner,
       .nav-tabs,
       .btn,
@@ -588,7 +593,7 @@
         display: none !important;
       }
 
-      /* 1번 탭 사정서 및 결과 항상 강제 출력 */
+      /* 기본 인쇄: 1번 탭 사정서 및 결과 항상 강제 출력 */
       #tab-counsel {
         display: block !important;
         visibility: visible !important;
@@ -739,31 +744,44 @@
         </div>
       </div>
 
-      <!-- ==================== 민원인 구비서류 자동 선별 카드 ==================== -->
+      <!-- ==================== 민원인 구비서류 자동 추출 및 문자 전송 카드 (신규 추가) ==================== -->
       <div class="card" style="border: 2px solid #bfdbfe; background-color: #ffffff;">
         <div class="card-header" style="border-bottom: 2px solid #dbeafe;">
           <div>
             <div class="card-title" style="font-size: 16px; color: #1e40af;">
-              📑 민원인 상황별 맞춤 구비서류 안내
+              📑 민원인 상황별 맞춤 구비서류 자동 선별 &amp; 문자 발송 안내
             </div>
             <div style="font-size: 12px; color: #475569; margin-top: 4px;">
-              상담 내용 및 소득·재산 실태를 분석하여 민원인에게 교부할 구비서류 목록을 자동 선별합니다.
+              상담 내용 및 소득·재산 실태를 분석하여 민원인에게 교부할 서류와 전송용 문자 문구를 자동 생성합니다.
             </div>
           </div>
-          <div>
+          <div style="display: flex; gap: 6px;">
+            <button class="btn btn-warning btn-sm" onclick="copySmsMessage()">
+              📱 문자(SMS) 문구 복사
+            </button>
             <button class="btn btn-primary btn-sm" onclick="printDocumentGuideOnly()">
               🖨️ 구비서류 안내문 인쇄
             </button>
           </div>
         </div>
 
-        <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px;">
-          <div style="font-weight: 700; color: #1e293b; margin-bottom: 8px; display: flex; justify-content: space-between;">
-            <span>📌 자동 선별된 맞춤 구비서류 목록</span>
-            <span id="docTargetApplicant" style="font-size: 12px; color: #1d4ed8; font-weight: 600;">(민원인: 미지정)</span>
+        <div class="grid-2col" style="align-items: stretch;">
+          <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px;">
+            <div style="font-weight: 700; color: #1e293b; margin-bottom: 8px; display: flex; justify-content: space-between;">
+              <span>📌 자동 선별된 맞춤 구비서류 목록</span>
+              <span id="docTargetApplicant" style="font-size: 12px; color: #1d4ed8; font-weight: 600;">(민원인: 미지정)</span>
+            </div>
+            <div id="docListContainer" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden;">
+              <!-- 동적 생성 -->
+            </div>
           </div>
-          <div id="docListContainer" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden;">
-            <!-- 동적 생성 -->
+
+          <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px; display: flex; flex-direction: column;">
+            <div style="font-weight: 700; color: #1e293b; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+              <span>💬 휴대전화 발송용 문자 문구 (미리보기)</span>
+              <span style="font-size: 11px; color: #64748b;">수정 후 복사 가능</span>
+            </div>
+            <textarea id="smsTextPreview" style="flex: 1; min-height: 180px; resize: vertical; font-size: 12px; line-height: 1.6; font-family: monospace; border-color: #93c5fd; background-color: #ffffff;" placeholder="상담 내용을 입력하고 모의판정을 진행하면 문자 문구가 자동 생성됩니다..."></textarea>
           </div>
         </div>
       </div>
@@ -1275,7 +1293,7 @@
     <div style="border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-end;">
       <div>
         <h2 style="font-size: 20pt; font-weight: 800; margin-bottom: 4px;">사회보장급여 신청 구비서류 안내문</h2>
-        <div style="font-size: 10.5pt; color: #444;">행정복지센터 맞춤형 복지창구</div>
+        <div style="font-size: 10.5pt; color: #444;">대구광역시 읍·면·동 행정복지센터 맞춤형 복지창구</div>
       </div>
       <div style="text-align: right; font-size: 10pt;">
         <div>발급일자: <span id="printGuideDate">-</span></div>
@@ -1300,7 +1318,7 @@
     </div>
 
     <div style="text-align: center; margin-top: 30px; font-size: 12pt; font-weight: 700;">
-      행정복지센터 맞춤형복지팀
+      대구광역시 행정복지센터 맞춤형복지팀 (☎ 129 보건복지상담센터)
     </div>
   </div>
 
@@ -1692,7 +1710,7 @@
         result.workAbility = "able";
       }
 
-      if (text.indexOf("해체") !== -1 || text.indexOf("연락두절") !== -1 || text.indexOf("왕래두절") !== -1) result.support = "severed";
+      if (text.indexOf("해체") !== -1 || text.indexOf("연락두절") !== -1 || text.indexOf("왕래두절") !== -1 || text.indexOf("단절") !== -1) result.support = "severed";
       else if (text.indexOf("부양의무자 없음") !== -1 || text.indexOf("가족 없음") !== -1) result.support = "none";
 
       var depositVal = parseAmountByPatterns(text, ["임차보증금", "전세금", "보증금"]);
@@ -1773,7 +1791,7 @@
 "- 3. 무엇 때문에: 채무 독촉 및 가족 불화로 인한 심각한 갈등\n" +
 "- 4. 부양 거부·기피 실태: 12년간 왕래 및 경제적 지원 일체 전무하며 연락 두절 상태\n\n" +
 "■ 신청 급여\n" +
-"- 신청 급여: 국민기초생활보장(생계·의료·주거급여), 긴급복지지원, 기초연금";
+"- 신청 급여: 국민기초생활보장(생계·의료·주거급여), 긴급복지지원, 달구벌 희망급여, 기초연금";
       showToast("실무 작성 예시를 불러왔습니다.");
       saveToLocalStorage();
     }
@@ -1820,8 +1838,8 @@
 "1. 가구 기본 인적사항\n" + (infoText || "- 특이사항 없음") + "\n\n" +
 "2. 생활실태 및 생계유지 경로 (사실조사)\n" + (lifeText || "- 특이사항 없음") + "\n\n" +
 "3. 소득·재산 및 근로능력 현황\n" + (propText || "- 특이사항 없음") + "\n\n" +
-(familyText ? ("4. 가족관계 해체 사유 조사\n" + familyText + "\n\n") : "") +
-"5. 신청 급여\n" + (applyText || "- 신청 급여: 국민기초생활보장, 긴급복지지원");
+(familyText ? ("4. 가족관계 해체(단절) 사유 조사\n" + familyText + "\n\n") : "") +
+"5. 신청 급여\n" + (applyText || "- 신청 급여: 국민기초생활보장, 달구벌 희망급여");
 
       document.getElementById('counselOutput').innerText = formatted;
       
@@ -1863,7 +1881,7 @@
     }
 
     // ========================================================
-    // 상황별 구비서류 자동 선별 로직
+    // 상황별 구비서류 자동 추출 및 문자 문구 생성 로직 (신규)
     // ========================================================
     function updateRequiredDocuments(params) {
       var applicantName = lastExtractedCounsel.name || "민원인";
@@ -1874,30 +1892,30 @@
 
       // 1. 공통 기본 서류
       docList.push({ tag: "req", title: "신분증", note: "주민등록증, 운전면허증, 여권 중 택1" });
-      docList.push({ tag: "form", title: "사회보장급여 신청서", note: "행정복지센터 비치 (창구 작성)" });
+      docList.push({ tag: "form", title: "사회보장급여 신청서", note: "행정복지센터 비치 (창구 작성 가능)" });
       docList.push({ tag: "form", title: "금융정보등제공동의서", note: "가구원 및 부양의무자 서명 필수" });
-      docList.push({ tag: "req", title: "급여 입금용 통장 사본", note: "본인 명의 계좌 (압류방지통장 개설 가능)" });
+      docList.push({ tag: "req", title: "급여 입금용 통장 사본", note: "본인 명의 계좌 (압류 방지 전용통장 발급 가능)" });
 
       // 2. 주거 형태별 서류
       if (params.resProp > 0 || text.indexOf("월세") !== -1 || text.indexOf("전세") !== -1 || text.indexOf("보증금") !== -1) {
         if (text.indexOf("무료") !== -1 || text.indexOf("사용대차") !== -1) {
           docList.push({ tag: "cond", title: "무료임대확인서 (사용대차)", note: "친인척 등 주택 무상거주 시 소유자 확인" });
         } else {
-          docList.push({ tag: "cond", title: "임대차계약서 (전·월세 계약서)", note: "계약서 사본 (확정일자 무관)" });
+          docList.push({ tag: "cond", title: "임대차계약서 (전·월세 계약서)", note: "확정일자 날인본 지참 권장" });
         }
       }
 
       // 3. 소득 활동별 서류
       if (params.earned > 0) {
-        docList.push({ tag: "cond", title: "소득증빙 서류", note: "최근 3개월분 급여명세서 또는 임금통장 거래내역" });
+        docList.push({ tag: "cond", title: "소득증빙 서류", note: "최근 3개월분 급여명세서 또는 임금통장 입금내역" });
       }
       if (params.other > 0 || text.indexOf("사업") !== -1) {
-        docList.push({ tag: "cond", title: "소득금액증명원 또는 휴·폐업사실증명", note: "세무서 또는 홈택스 발급" });
+        docList.push({ tag: "cond", title: "소득금액증명원 또는 휴·폐업사실증명", note: "사업소득 및 휴폐업 확인용" });
       }
 
       // 4. 근로능력 및 건강 상태별 서류
       if (params.workAbility === 'illness' || text.indexOf("진단서") !== -1 || text.indexOf("협착증") !== -1 || text.indexOf("질환") !== -1 || text.indexOf("수술") !== -1) {
-        docList.push({ tag: "cond", title: "근로능력평가용 진단서 및 진료기록사본", note: "최근 2개월 이내 발급 (※ 정신질환·정신과는 최근 3개월 이상 진료기록지 필수)" });
+        docList.push({ tag: "cond", title: "근로능력평가용 진단서 및 진료기록사본", note: "최근 2개월 이내 발급 (질환 확인용)" });
       }
       if (text.indexOf("장애") !== -1) {
         docList.push({ tag: "cond", title: "복지카드 (장애인등록증)", note: "장애인 특례 및 감면 혜택 적용" });
@@ -1908,16 +1926,16 @@
         docList.push({ tag: "cond", title: "금융거래확인서 및 부채증명원", note: "금융기관 발급 (원금·이자 연체 및 잔액 확인)" });
       }
 
-      // 6. 가족관계 해체 사유 시
+      // 6. 가족관계 해체·단절 사유 시
       if (params.support === 'severed') {
-        docList.push({ tag: "cond", title: "가족관계 해체 사유서", note: "장기간 연락·왕래 두절 경위 소명 (창구 양식)" });
-        docList.push({ tag: "cond", title: "통장거래내역서", note: "최근 1년 이상 경제적 지원 단절 및 미지원 입증용" });
-        docList.push({ tag: "cond", title: "가족관계 해체 입증자료 (해당 시)", note: "부채독촉장, 가출신고접수증, 수용증명서 등 증빙" });
+        docList.push({ tag: "cond", title: "가족관계 해체(단절) 사유서", note: "장기간 연락·왕래 두절 경위 소명 (창구 양식)" });
+        docList.push({ tag: "cond", title: "가족관계 단절 입증자료 (해당 시)", note: "부채독촉장, 가출신고서, 수용증명서 등 증빙" });
       }
 
       // 화면 렌더링
       var container = document.getElementById('docListContainer');
       var html = "";
+      var smsDocText = [];
 
       for (var i = 0; i < docList.length; i++) {
         var d = docList[i];
@@ -1932,8 +1950,22 @@
               "<div style='font-size:11px; color:#64748b;'>" + d.note + "</div>" +
             "</div>" +
           "</div>";
+
+        smsDocText.push((i + 1) + ". " + d.title + " (" + d.note + ")");
       }
       container.innerHTML = html;
+
+      // 발송용 SMS 문구 생성
+      var smsMessage = 
+"[대구 읍면동 행정복지센터 맞춤형복지팀]\n" +
+"안녕하세요, " + applicantName + " 님.\n" +
+"상담하신 복지급여 신청을 위한 구비서류를 안내해 드립니다.\n\n" +
+"■ 제출 구비서류 목록:\n" +
+smsDocText.join("\n") + "\n\n" +
+"※ 방문 시 신분증을 반드시 지참해 주시기 바랍니다.\n" +
+"※ 문의사항: 읍·면·동 행정복지센터 맞춤형복지팀 또는 ☎ 129";
+
+      document.getElementById('smsTextPreview').value = smsMessage;
 
       // 인쇄용 템플릿 데이터 채우기
       document.getElementById('printGuideName').innerText = applicantName;
@@ -1942,6 +1974,7 @@
       var appliedBenefits = [];
       if (document.getElementById('badgeBasicLife').innerText.indexOf("가능") !== -1) appliedBenefits.push("국민기초생활보장");
       if (document.getElementById('badgeEmergency').innerText.indexOf("충족") !== -1) appliedBenefits.push("긴급복지지원");
+      if (document.getElementById('badgeDalgubeol').innerText.indexOf("가능") !== -1) appliedBenefits.push("달구벌 희망급여");
       if (document.getElementById('badgeNearPoverty').innerText.indexOf("충족") !== -1) appliedBenefits.push("차상위계층");
       if (document.getElementById('badgeBasicPension').innerText.indexOf("수급가능") !== -1) appliedBenefits.push("기초연금");
 
@@ -1953,6 +1986,17 @@
       }
       printDocHtml += "</ul>";
       document.getElementById('printGuideDocList').innerHTML = printDocHtml;
+    }
+
+    function copySmsMessage() {
+      var smsText = document.getElementById('smsTextPreview').value;
+      if (!smsText.trim()) {
+        showToast("안내 문구가 없습니다.");
+        return;
+      }
+      navigator.clipboard.writeText(smsText).then(function() {
+        showToast("📱 휴대전화 발송용 문자 문구가 복사되었습니다.");
+      });
     }
 
     function printDocumentGuideOnly() {
@@ -2315,7 +2359,7 @@
 
       document.getElementById('valDalgubeolIncome').innerText = totalRealIncome;
       var badgeDG = document.getElementById('badgeDalgubeol');
-      var cardDG = document.getElementById('cardDalgubeol');
+      var cardDG = document.getElementById('cardDG');
       var detailDG = document.getElementById('detailDalgubeol');
       var estDGDiv = document.getElementById('estDalgubeolPayout');
 
@@ -2323,6 +2367,7 @@
       var isDGAssetPass = combinedRealProp <= dgGenAssetLimit;
       var isDGFinPass = finProp <= dgFinLimit;
 
+      cardDG = document.getElementById('cardDalgubeol');
       cardDG.className = "benefit-card";
       if (isDGIncomePass && isDGAssetPass && isDGFinPass) {
         cardDG.classList.add("pass");
@@ -2431,7 +2476,7 @@
           "<li><strong>[대구 달구벌 희망급여]</strong> 실소득 <strong>" + dgIncomeLimit + "만 원 이하</strong>, 일반재산 <strong>3억 5,000만 원 이하</strong>, 금융 <strong>" + dgFinLimit + "만 원 이하</strong> 충족 시 20만~100만 원 (구·군 조례에 따라 차등 지원)</li>" +
         "</ul>";
 
-      // 구비서류 자동 선별 트리거
+      // 구비서류 자동 선별 및 문자 생성 트리거
       updateRequiredDocuments({
         members: members,
         earned: earned,
