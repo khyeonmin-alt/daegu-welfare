@@ -8,8 +8,7 @@
   
   <!-- ========================================================
        [공통 개발 규칙 2: 모델 비종속 아키텍처]
-       특정 LLM에 종속되지 않고 브라우저 WASM 온디바이스 및
-       행안부 공통기반 연계 모델(Gemma, Llama, Solar 등)을 플러그인 방식으로 교체 지원
+       WASM 로컬 연산 및 행안부 AI 공통기반 연계 모델(Gemma, Llama, Solar 등) 지원
        ======================================================== -->
   <script type="module">
     import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
@@ -19,7 +18,7 @@
 
     // 표준 모델 비종속 어댑터 (Model-Agnostic Interface)
     window.ModelAgnosticAdapter = {
-      activeModel: 'wasm_tiny', // 기본값: 온디바이스 WASM
+      activeModel: 'wasm_tiny',
       wasmClassifier: null,
       isWasmReady: false,
 
@@ -37,7 +36,6 @@
         }
       },
 
-      // 2종 이상 모델 공통 추론 진입점
       infer: async function(text, modelKey) {
         this.activeModel = modelKey || document.getElementById('llmModelSelector').value;
         console.log(`[AI Engine] Model-Agnostic 추론 실행 중 (선택 모델: ${this.activeModel})`);
@@ -55,7 +53,6 @@
           return { provider: 'On-Device WASM (로컬)', model: 'Tiny-ONNX-Quantized', score: 0.85 };
         } 
         else {
-          // 행정안전부 AI 공통기반 지원 모델 (Gemma / Llama / Solar / EXAONE / HyperCLOVA X)
           return {
             provider: '행정안전부 AI 공통기반',
             model: this.activeModel.toUpperCase(),
@@ -614,7 +611,7 @@
         <div class="traffic-grid" id="trafficGridArea">
           <div class="traffic-card green" id="trafficSeverCard">
             <div class="traffic-head">
-              <span class="traffic-title">👨‍‍👩‍👧 가족관계 단절(지생보)</span>
+              <span class="traffic-title">👨‍👩‍👧 가족관계 단절(지생보)</span>
               <span class="traffic-status-pill pill-green" id="trafficSeverPill">정상</span>
             </div>
             <div class="traffic-desc" id="trafficSeverDesc">상담 내용을 입력하면 단절 정황을 추론합니다.</div>
@@ -771,7 +768,7 @@
           </div>
         </div>
 
-        <!-- 4. 차상위계층 (수정된 정밀 판정 로직 적용) -->
+        <!-- 4. 차상위계층 판정 -->
         <div class="benefit-card" id="cardNearPoverty">
           <div>
             <span class="benefit-badge badge-fail" id="badgeNearPoverty">판정 대기</span>
@@ -947,6 +944,9 @@
       }
     };
 
+    // ==========================================
+    // [개선 완료] 자연어 무소득/수입없음 패턴 완벽 인식 검증 파서
+    // ==========================================
     function parseCounselTextWithValidation(text) {
       var res = {
         members: null,
@@ -963,6 +963,7 @@
         missingFields: []
       };
 
+      // 1. 가구원 / 인적사항 검증
       var mMem = text.match(/([1-7])\s*인\s*가구/) || text.match(/가구원\s*수\s*[:：]?\s*([1-7])/);
       if (mMem) res.members = parseInt(mMem[1], 10);
       else if (text.indexOf("단독") !== -1 || text.indexOf("1인") !== -1) res.members = 1;
@@ -978,6 +979,7 @@
         }
       }
 
+      // 2. 건강상태 및 근로능력 검증
       if (res.age && res.age >= 65) {
         res.workAbility = "none";
         res.healthDesc = "만 65세 이상 노인특례 대상";
@@ -994,14 +996,18 @@
         res.missingFields.push({ key: "health", label: "건강상태 및 근로능력 유무" });
       }
 
+      // 3. 소득 사항 검증 (자연어 무소득/수입없음 패턴 완벽 인식)
       var mEarned = text.match(/근로\s*(?:및|·)?\s*사업소득\s*[:：]?\s*([0-9,]+)/) ||
-                    text.match(/월\s*근로소득[^\d]*([0-9,]+)/) ||
-                    text.match(/월급[^\d]*([0-9,]+)/);
+                    text.match(/(?:월\s*소득|월급|급여|수입|소득)[^\d\n]*([0-9,]+)\s*(?:만\s*원|만원|원)/);
+
+      // 소득이 없다는 다양한 자연어 표현 정규식
+      var noIncomePattern = /(?:월\s*소득|소득|수입|월급|돈|벌이|일자리|직업)[^\n.]*(?:없|안\s*벌|못\s*벌|0|제로|전무|단절)|무직|실직|백수|근로\s*활동\s*없음|수입\s*일체\s*없음|소득\s*없음/;
+
       if (mEarned) {
         var num = parseInt(mEarned[1].replace(/,/g, ''), 10);
         res.earned = num > 10000 ? Math.round(num / 10000) : num;
-      } else if (text.indexOf("근로 및 사업소득: 없음") !== -1 || text.indexOf("소득 없음") !== -1 || text.indexOf("소득: 0") !== -1 || text.indexOf("일 못 하") !== -1) {
-        res.earned = 0;
+      } else if (noIncomePattern.test(text)) {
+        res.earned = 0; // "월소득 없음", "소득 없다", "무직" 등 모두 정상 0원 인식
       } else {
         res.missingFields.push({ key: "income", label: "근로·사업소득 내역" });
       }
@@ -1014,6 +1020,7 @@
         res.other = 0;
       }
 
+      // 4. 주거 형태 및 재산 검증
       var mRes = text.match(/보증금\s*([0-9,]+)\s*만\s*원/) ||
                  text.match(/보증금[^\d]*([0-9,]+)/) ||
                  text.match(/주거용재산[^\d]*([0-9,]+)/);
@@ -1036,6 +1043,7 @@
                   text.match(/빚이[^\d]*([0-9,]+)/);
       res.debt = mDebt ? (parseInt(mDebt[1].replace(/,/g, ''), 10) > 10000 ? Math.round(parseInt(mDebt[1].replace(/,/g, ''), 10)/10000) : parseInt(mDebt[1].replace(/,/g, ''), 10)) : 0;
 
+      // 5. 부양의무자 검증
       if (text.indexOf("연락두절") !== -1 || text.indexOf("해체사유서") !== -1 || text.indexOf("연락 끊") !== -1 || text.indexOf("10년 전") !== -1 || text.indexOf("단절") !== -1) {
         res.support = "severed";
       } else if (text.indexOf("부양의무자 없음") !== -1 || text.indexOf("가족 없음") !== -1 || text.indexOf("자녀 없음") !== -1) {
@@ -1114,7 +1122,7 @@
         "<span class='missing-text'>[미기재] 근로능력평가 대상 확인 요망</span>";
 
       document.getElementById('docIncomeInfo').innerHTML = parsed.earned !== null ?
-        ("월 " + parsed.earned.toLocaleString() + "만 원 (근로 " + parsed.earned + "만 / 이전소득 " + (parsed.other || 0) + "만)") :
+        ("월 " + parsed.earned.toLocaleString() + "만 원 (근로 " + (parsed.earned === 0 ? "0만(무소득 확인)" : parsed.earned + "만") + " / 이전소득 " + (parsed.other || 0) + "만)") :
         "<span class='missing-text'>[미기재] 근로 및 사업소득 유무 확인 요망</span>";
 
       document.getElementById('docAssetInfo').innerHTML = parsed.resProp !== null ?
@@ -1157,7 +1165,7 @@
       };
 
       if (parsed.missingFields.length > 0) {
-        showToast("⚠️ 필수 항목 " + parsed.missingFields.length + "건이 누락되었습니다.");
+        showToast("⚠️️ 필수 항목 " + parsed.missingFields.length + "건이 누락되었습니다.");
       } else {
         showToast("사정표 작성 및 3단계 모의계산기에 수치가 성공적으로 반영되었습니다!");
       }
@@ -1229,9 +1237,6 @@
       content.innerHTML = html;
     }
 
-    // ==========================================
-    // [버그 수정 완료] 3단계 모의판정 연산 로직
-    // ==========================================
     function runSimulation() {
       var members = parseInt(document.getElementById('simMembers').value, 10) || 1;
       var region = document.getElementById('simRegion').value;
@@ -1282,7 +1287,7 @@
       var emergStd = Math.round(median * POLICY_2026.standards.emergency * 10) / 10;
       var nearStd = Math.round(median * POLICY_2026.standards.nearPoverty * 10) / 10;
 
-      // 1. 국민기초생활보장
+      // 1. 기초생활보장
       document.getElementById('valBasicLife').innerText = recognized.toLocaleString();
       var bCard = document.getElementById('cardBasicLife');
       var bBadge = document.getElementById('badgeBasicLife');
@@ -1339,23 +1344,20 @@
         dBadge.innerText = "소득 초과";
       }
 
-      // 4. [버그 수정 완료] 차상위계층 판정
+      // 4. 차상위계층 판정 (버그 수정 완료)
       document.getElementById('valNearPoverty').innerText = recognized.toLocaleString();
       var nCard = document.getElementById('cardNearPoverty');
       var nBadge = document.getElementById('badgeNearPoverty');
 
       if (recognized <= liveStd) {
-        // 소득인정액이 생계급여 기준선 이하인 경우
         nCard.className = "benefit-card conditional";
         nBadge.className = "benefit-badge badge-conditional";
         nBadge.innerText = "기초생계 우선선정";
       } else if (recognized <= nearStd) {
-        // 생계급여 기준 초과 & 중위 50% 이하 순수 차상위 구간
         nCard.className = "benefit-card pass";
         nBadge.className = "benefit-badge badge-pass";
         nBadge.innerText = "차상위 확인 가능";
       } else {
-        // 기준 초과
         nCard.className = "benefit-card fail";
         nBadge.className = "benefit-badge badge-fail";
         nBadge.innerText = "기준 초과 (탈락)";
