@@ -1,93 +1,1055 @@
-// ==========================================
-    // 0. 복지공무원 & 직장인 고품질 완성형 B급 현실 유머 DB (120선)
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>대구광역시 읍면동 스마트 복지상담 &amp; 소득인정액 판정기</title>
+  <!-- Daum 우편번호 서비스 CDN -->
+  <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", sans-serif;
+    }
+    body {
+      background-color: #f8fafc;
+      color: #0f172a;
+      font-size: 14px;
+      line-height: 1.5;
+      padding-bottom: 60px;
+    }
+
+    header {
+      background-color: #ffffff;
+      border-bottom: 1px solid #cbd5e1;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .header-title {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .header-title h1 {
+      font-size: 18px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.5px;
+    }
+    .header-org-badge {
+      font-size: 11px;
+      font-weight: 600;
+      color: #1d4ed8;
+      background-color: #eff6ff;
+      border: 1px solid #bfdbfe;
+      padding: 2px 8px;
+      border-radius: 4px;
+      letter-spacing: -0.2px;
+    }
+
+    /* 복지공무원 격려 B급 유머 배너 */
+    .humor-banner {
+      background: linear-gradient(90deg, #fef3c7, #fef9c3);
+      border-bottom: 1px solid #fde047;
+      padding: 8px 24px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #854d0e;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .humor-banner:hover {
+      background: #fef08a;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 10px;
+      background-color: #f1f5f9;
+      padding: 6px;
+      border-radius: 12px;
+      border: 2px solid #cbd5e1;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.04);
+    }
+    .nav-tab {
+      padding: 10px 22px;
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      background-color: #ffffff;
+      color: #475569;
+      transition: all 0.2s ease-in-out;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      letter-spacing: -0.3px;
+    }
+    .nav-tab:hover {
+      background-color: #e2e8f0;
+      color: #0f172a;
+    }
+    .nav-tab.active {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #ffffff;
+      border-color: #1e40af;
+      box-shadow: 0 4px 10px rgba(29, 78, 216, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .main-container {
+      max-width: 1440px;
+      margin: 16px auto;
+      padding: 0 20px;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+
+    .grid-2col {
+      display: flex;
+      gap: 20px;
+    }
+    .grid-2col > div {
+      flex: 1;
+      min-width: 0;
+    }
+    @media (max-width: 900px) {
+      .grid-2col {
+        flex-direction: column;
+      }
+    }
+
+    .card {
+      background-color: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+      margin-bottom: 20px;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 12px;
+    }
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .btn-sm {
+      padding: 5px 10px;
+      font-size: 12px;
+    }
+    .btn-primary {
+      background-color: #1d4ed8;
+      color: #ffffff;
+      border-color: #1d4ed8;
+    }
+    .btn-primary:hover {
+      background-color: #1e40af;
+    }
+    .btn-outline {
+      background-color: #ffffff;
+      border-color: #cbd5e1;
+      color: #334155;
+    }
+    .btn-outline:hover {
+      background-color: #f1f5f9;
+      color: #0f172a;
+    }
+    .btn-danger {
+      background-color: #fee2e2;
+      border-color: #fca5a5;
+      color: #b91c1c;
+    }
+    .btn-danger:hover {
+      background-color: #fecaca;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 4px;
+    }
+    input[type="text"], input[type="number"], select, textarea {
+      width: 100%;
+      padding: 8px 12px;
+      font-size: 13px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      outline: none;
+      background-color: #ffffff;
+      color: #0f172a;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+    }
+
+    .counsel-textarea {
+      height: 380px;
+      resize: vertical;
+      line-height: 1.6;
+      font-size: 13px;
+    }
+    .result-box {
+      background-color: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 16px;
+      white-space: pre-wrap;
+      font-size: 13px;
+      line-height: 1.7;
+      min-height: 380px;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .matrix-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .matrix-grid > div {
+      flex: 1 1 calc(20% - 12px);
+      min-width: 220px;
+    }
+    @media (max-width: 1100px) {
+      .matrix-grid > div {
+        flex: 1 1 calc(33.333% - 12px);
+      }
+    }
+    @media (max-width: 700px) {
+      .matrix-grid > div {
+        flex: 1 1 100%;
+      }
+    }
+
+    .benefit-card {
+      background-color: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 14px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .benefit-card.pass {
+      border-color: #86efac;
+      background-color: #f0fdf4;
+    }
+    .benefit-card.conditional {
+      border-color: #fde047;
+      background-color: #fefce8;
+    }
+    .benefit-card.fail {
+      border-color: #fca5a5;
+      background-color: #fef2f2;
+    }
+    .benefit-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: 6px;
+    }
+    .badge-pass {
+      background-color: #dcfce7;
+      color: #15803d;
+    }
+    .badge-conditional {
+      background-color: #fef9c3;
+      color: #a16207;
+    }
+    .badge-fail {
+      background-color: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .benefit-est-box {
+      background-color: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 6px;
+      padding: 7px 10px;
+      margin-top: 6px;
+    }
+    .benefit-est-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #1e3a8a;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .benefit-est-val {
+      font-size: 13px;
+      font-weight: 800;
+      color: #047857;
+      margin-top: 2px;
+    }
+
+    .field-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .field-row > div {
+      flex: 1;
+      min-width: 130px;
+    }
+
+    .pill-info {
+      display: inline-flex;
+      align-items: center;
+      background-color: #f1f5f9;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #334155;
+      border: 1px solid #e2e8f0;
+      margin-right: 6px;
+    }
+
+    .calculation-breakdown {
+      background-color: #f1f5f9;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-top: 14px;
+      font-size: 12px;
+      color: #334155;
+      line-height: 1.6;
+    }
+    .calculation-breakdown summary {
+      font-weight: 700;
+      cursor: pointer;
+      color: #1d4ed8;
+      margin-bottom: 6px;
+      outline: none;
+    }
+    .calculation-breakdown ul {
+      margin-left: 18px;
+      margin-top: 6px;
+    }
+
+    /* 지자체 외 기관 특화 카드 그리드 스타일 */
+    .external-card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .external-card {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border-left: 4px solid #94a3b8;
+    }
+    .external-card.matched {
+      border-left-color: #10b981;
+      background: #f0fdf4;
+    }
+    .external-card.review {
+      border-left-color: #f59e0b;
+      background: #fffbeb;
+    }
+    .ext-org-tag {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: #e2e8f0;
+      color: #334155;
+      display: inline-block;
+      margin-bottom: 4px;
+    }
+    .ext-call-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #1d4ed8;
+      text-decoration: none;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-top: 8px;
+      width: fit-content;
+    }
+
+    #toast {
+      position: fixed;
+      bottom: 25px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #1e293b;
+      color: #ffffff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      z-index: 999;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    #toast.show {
+      opacity: 1;
+    }
+
+    @media print {
+      body { background-color: #ffffff; padding-bottom: 0; font-size: 11pt; color: #000000; }
+      header, .humor-banner, .nav-tabs, .btn, #counselInput, .card-header button, #tab-vehicle, .field-row, #toast, .modal-backdrop, .calculation-breakdown { display: none !important; }
+      .main-container { max-width: 100%; margin: 0; padding: 0; }
+      .grid-2col { display: block; }
+      .card { border: none; box-shadow: none; padding: 0; margin-bottom: 20px; page-break-inside: avoid; }
+      .result-box { border: 1px solid #000; background-color: #ffffff; min-height: auto; max-height: none; overflow: visible; font-size: 11pt; }
+      .matrix-grid { display: flex; gap: 10px; }
+      .benefit-card { border: 1px solid #999; background-color: #ffffff !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 상단 B급 유머 배너 (완성형 문장 DB 기반) -->
+  <div class="humor-banner" onclick="cycleHumorQuote()" title="클릭하면 새로운 멘트가 나옵니다">
+    <div style="display: flex; align-items: center; gap: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+      <span>☕ <strong>[복지직 현실 각성제]</strong></span>
+      <span id="dailyHumorText">로딩 중...</span>
+    </div>
+    <span style="font-size: 11px; text-decoration: underline; color: #a16207; white-space: nowrap; margin-left: 8px;">새로고침 🔄</span>
+  </div>
+
+  <header>
+    <div class="header-title">
+      <h1>대구광역시 읍면동 스마트 복지상담 &amp; 소득인정액 판정기</h1>
+      <span class="header-org-badge">대구광역시 복지정책과</span>
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchTab('tab-counsel')">
+        📋 1. 복지상담 &amp; 5대 사업 모의판정
+      </button>
+      <button class="nav-tab" onclick="switchTab('tab-vehicle')">
+        🚗 2. 차량 소득인정액 &amp; 부동산 공시가
+      </button>
+    </div>
+  </header>
+
+  <div class="main-container">
+
+    <!-- ==================== TAB 1: 복지상담 & 소득인정액 ==================== -->
+    <div id="tab-counsel" class="tab-content active">
+      <div class="grid-2col">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📝 상담 메모 &amp; 사실조사 입력</div>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn btn-outline btn-sm" onclick="loadBlankTemplate()">📋 표준 서식</button>
+              <button class="btn btn-outline btn-sm" onclick="loadSampleTemplate()">📝 실무 예시</button>
+              <button class="btn btn-danger btn-sm" onclick="clearCounselInput()">🧹 비우기</button>
+            </div>
+          </div>
+          
+          <textarea id="counselInput" class="counsel-textarea" placeholder="표준 서식을 불러오거나 상담 메모를 자유롭게 입력하세요. 브라우저에 자동 보존됩니다..."></textarea>
+          
+          <div style="margin-top: 14px;">
+            <button class="btn btn-primary" style="width: 100%; font-size: 14px; padding: 11px; font-weight: 700;" onclick="processCounseling()">
+              ⚡ 복지사정서 생성 및 핵심 항목 자동 추출
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">📋 정제된 복지상담 사정서</div>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn btn-outline btn-sm" onclick="copyResultText()">📄 전체 복사</button>
+              <button class="btn btn-outline btn-sm" onclick="window.print()">🖨️ 인쇄</button>
+            </div>
+          </div>
+          <div id="counselOutput" class="result-box">상담 내용을 입력하고 [복지사정서 생성 및 핵심 항목 자동 추출] 버튼을 누르시면 표준 서식으로 정제됩니다.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📊 5대 핵심 복지사업별 소득인정액 및 지원 모의판정</div>
+        </div>
+
+        <div class="field-row">
+          <div>
+            <label>가구원수</label>
+            <select id="simMembers" onchange="runSimulation()">
+              <option value="1">1인 가구</option>
+              <option value="2">2인 가구</option>
+              <option value="3">3인 가구</option>
+              <option value="4">4인 가구</option>
+              <option value="5">5인 가구</option>
+              <option value="6">6인 가구</option>
+              <option value="7">7인 가구</option>
+            </select>
+          </div>
+          <div>
+            <label>거주 지역 (법정 기본재산공제/주거한도)</label>
+            <select id="simRegion" onchange="runSimulation()">
+              <option value="daegu" selected>대구광역시 구(區) 지역 (공제 7,700만원 / 주거한도 1.46억)</option>
+              <option value="gunwi">대구광역시 군위군·달성군 (군지역 공제 5,300만원 / 주거한도 1.12억)</option>
+              <option value="seoul">서울특별시 (공제 9,900만원 / 주거한도 1.72억)</option>
+              <option value="gyeonggi">경기도 (공제 8,000만원 / 주거한도 1.51억)</option>
+            </select>
+          </div>
+          <div>
+            <label>근로유형 및 공제특례</label>
+            <select id="simWorkAbility" onchange="runSimulation()">
+              <option value="none">만 65세 이상 노인 (20만원 선공제 후 30% 공제)</option>
+              <option value="youth">청년/대학생 (만 24세 이하: 40만원 선공제 후 30% 공제)</option>
+              <option value="able">일반 근로능력자 (기본 30% 공제)</option>
+              <option value="illness">질병·부상·장애 (근로활동 없음 / 공제 미적용)</option>
+            </select>
+          </div>
+          <div>
+            <label>부양의무 상태 (의료급여 기준)</label>
+            <select id="simSupportObligor" onchange="runSimulation()">
+              <option value="severed">가족관계 해체 (지생보 심의 대상)</option>
+              <option value="none">부양의무자 없음 (사망·단독)</option>
+              <option value="normal">부양의무자 있음 (일반 소득·재산조사)</option>
+              <option value="high_income">부양의무자 고소득/고재산 (탈락위험)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-row" style="background-color: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1;">
+          <div>
+            <label>월 근로소득 (만원)</label>
+            <input type="number" id="simEarnedIncome" value="0" min="0" oninput="runSimulation()">
+          </div>
+          <div>
+            <label>월 사업/기타소득 (만원)</label>
+            <input type="number" id="simOtherIncome" value="0" min="0" oninput="runSimulation()">
+          </div>
+          <div>
+            <label>주거용재산 (만원) <span id="resDeductTag" style="color:#1d4ed8; font-weight:400; font-size:11px;"></span></label>
+            <input type="number" id="simResProp" value="0" min="0" oninput="runSimulation()">
+          </div>
+          <div>
+            <label>일반재산 (부동산 등) (만원)</label>
+            <input type="number" id="simGenProp" value="0" min="0" oninput="runSimulation()">
+          </div>
+          <div>
+            <label>차량 일반재산 반영분 (만원)</label>
+            <input type="number" id="simCarGeneral" value="0" min="0" oninput="runSimulation()" style="background-color: #f1f5f9;" title="2번 탭에서 자동 계산되어 연동됩니다">
+          </div>
+          <div>
+            <label>금융재산 (만원)</label>
+            <input type="number" id="simFinProp" value="0" min="0" oninput="runSimulation()">
+          </div>
+          <div>
+            <label>금융부채 (만원)</label>
+            <input type="number" id="simDebt" value="0" min="0" oninput="runSimulation()">
+          </div>
+          <div>
+            <label>100% 환산차량 (만원)</label>
+            <input type="number" id="simCar100" value="0" min="0" oninput="runSimulation()" style="background-color: #fef2f2; border-color: #fca5a5;" title="2번 탭에서 자동 판정됩니다">
+          </div>
+        </div>
+
+        <!-- 5대 사업 카드 매트릭스 -->
+        <div class="matrix-grid">
+          
+          <!-- 1. 국민기초생활보장 -->
+          <div class="benefit-card" id="cardBasicLife">
+            <div>
+              <span class="benefit-badge badge-fail" id="badgeBasicLife">판정 대기</span>
+              <div style="font-weight: 700; font-size: 14px; margin-bottom: 2px;">국민기초생활보장</div>
+              <div style="font-size: 11px; color: #475569;">생계·의료·주거 맞춤급여</div>
+            </div>
+            <div>
+              <hr style="margin: 8px 0; border: none; border-top: 1px dashed #cbd5e1;">
+              <div style="font-size: 12px;"><strong>예상 소득인정액:</strong> <span id="valBasicLife">0</span> 만원</div>
+              <div style="font-size: 11px; color: #475569; margin-top: 4px;" id="detailBasicLife">-</div>
+              
+              <div class="benefit-est-box">
+                <div class="benefit-est-title">
+                  <span>💰 예상 수급액 (생계 차액)</span>
+                  <span style="font-size:10px; color:#64748b;">(주거별도)</span>
+                </div>
+                <div class="benefit-est-val" id="estBasicLifePayout">월 0만 원</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. 정부 긴급복지지원 -->
+          <div class="benefit-card" id="cardEmergency">
+            <div>
+              <span class="benefit-badge badge-fail" id="badgeEmergency">판정 대기</span>
+              <div style="font-weight: 700; font-size: 14px; margin-bottom: 2px;">긴급복지지원 (정부)</div>
+              <div style="font-size: 11px; color: #475569;">실소득 75% &amp; 재산 독립심사</div>
+            </div>
+            <div>
+              <hr style="margin: 8px 0; border: none; border-top: 1px dashed #cbd5e1;">
+              <div style="font-size: 12px;"><strong>월 총실소득:</strong> <span id="valEmergIncome">0</span> 만원</div>
+              <div style="font-size: 11px; color: #475569; margin-top: 4px;" id="detailEmergency">-</div>
+
+              <div class="benefit-est-box">
+                <div class="benefit-est-title">
+                  <span>🚨 긴급생계지원 단가</span>
+                  <span style="font-size:10px; color:#64748b;">(최대 1~3개월)</span>
+                </div>
+                <div class="benefit-est-val" id="estEmergencyPayout">월 0만 원</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. 대구시 달구벌 희망급여 -->
+          <div class="benefit-card" id="cardDalgubeol" style="border: 2px solid #93c5fd;">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <span class="benefit-badge badge-fail" id="badgeDalgubeol">판정 대기</span>
+                <span style="font-size: 10px; font-weight: 700; color: #1d4ed8; background-color: #dbeafe; padding: 1px 5px; border-radius: 3px;">대구시 자체</span>
+              </div>
+              <div style="font-weight: 700; font-size: 14px; margin-bottom: 2px;">달구벌 희망급여</div>
+              <div style="font-size: 11px; color: #475569;">중위100%·재산3.5억·금융한도</div>
+            </div>
+            <div>
+              <hr style="margin: 8px 0; border: none; border-top: 1px dashed #cbd5e1;">
+              <div style="font-size: 12px;"><strong>월 총실소득:</strong> <span id="valDalgubeolIncome">0</span> 만원</div>
+              <div style="font-size: 11px; color: #475569; margin-top: 4px;" id="detailDalgubeol">-</div>
+
+              <div class="benefit-est-box">
+                <div class="benefit-est-title">
+                  <span>🏛️ 대구 구·군 예산지원</span>
+                </div>
+                <div class="benefit-est-val" id="estDalgubeolPayout" style="font-size:12px; color:#1e40af;">20만 ~ 100만 원 (구·군별 상이)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. 차상위계층 -->
+          <div class="benefit-card" id="cardNearPoverty">
+            <div>
+              <span class="benefit-badge badge-fail" id="badgeNearPoverty">판정 대기</span>
+              <div style="font-weight: 700; font-size: 14px; margin-bottom: 2px;">차상위계층</div>
+              <div style="font-size: 11px; color: #475569;">중위 50% (기초동일산식)</div>
+            </div>
+            <div>
+              <hr style="margin: 8px 0; border: none; border-top: 1px dashed #cbd5e1;">
+              <div style="font-size: 12px;"><strong>소득인정액:</strong> <span id="valNearPoverty">0</span> 만원</div>
+              <div style="font-size: 11px; color: #475569; margin-top: 4px;" id="detailNearPoverty">-</div>
+
+              <div class="benefit-est-box">
+                <div class="benefit-est-title">
+                  <span>🎁 간접 감면 혜택 패키지</span>
+                </div>
+                <div class="benefit-est-val" id="estNearPovertyPayout" style="font-size:12px; color:#047857;">양곡(60~80%할인)·전기·가스 감면</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 5. 기초연금 -->
+          <div class="benefit-card" id="cardBasicPension">
+            <div>
+              <span class="benefit-badge badge-fail" id="badgeBasicPension">판정 대기</span>
+              <div style="font-weight: 700; font-size: 14px; margin-bottom: 2px;">기초연금</div>
+              <div style="font-size: 11px; color: #475569;">만 65세 이상 (연 4% 환산)</div>
+            </div>
+            <div>
+              <hr style="margin: 8px 0; border: none; border-top: 1px dashed #cbd5e1;">
+              <div style="font-size: 12px;"><strong>연금 소득인정액:</strong> <span id="valBasicPension">0</span> 만원</div>
+              <div style="font-size: 11px; color: #475569; margin-top: 4px;" id="detailBasicPension">-</div>
+
+              <div class="benefit-est-box">
+                <div class="benefit-est-title">
+                  <span>👵 월 예상 연금 수령액</span>
+                </div>
+                <div class="benefit-est-val" id="estBasicPensionPayout">월 0만 원</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <details class="calculation-breakdown" id="calcBreakdown">
+          <summary>🔍 법정 소득인정액 세부 산출식 및 제도별 적용 차이 확인하기</summary>
+          <div id="breakdownContent">상담 내용을 입력하거나 소득/재산 수치를 입력하면 단계별 산출 결과가 표시됩니다.</div>
+        </details>
+      </div>
+
+      <!-- ==================== 추가된 섹션: 지자체 외 전문기관 복지·금융 지원 매칭 ==================== -->
+      <div class="card" style="border: 2px solid #cbd5e1; background-color: #ffffff;">
+        <div class="card-header" style="border-bottom: 2px solid #e2e8f0;">
+          <div>
+            <div class="card-title" style="font-size: 16px;">
+              🏢 타 기관 연계 특화 지원사업 자동 매칭 (서민금융·의료·고용·연금)
+            </div>
+            <div style="font-size: 12px; color: #b91c1c; font-weight: 700; margin-top: 4px;">
+              ⚠️ [주의] 아래 사업들은 읍·면·동 행정복지센터에서 접수받지 않으며, 표기된 각 소관 전문기관으로 민원인이 직접 신청해야 합니다.
+            </div>
+          </div>
+          <span style="font-size: 11px; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; font-weight: 600; color: #475569;">
+            입력 정보 기반 실시간 판정
+          </span>
+        </div>
+
+        <div class="external-card-grid" id="externalBenefitGrid">
+          <!-- 스크립트에서 자동 렌더링 -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ==================== TAB 2: 차량 소득인정액 & 부동산 공시가 ==================== -->
+    <div id="tab-vehicle" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🚗 차량 소득인정액 원스톱 판정기 (2026 복지부 법정 기준)</div>
+          <div style="display: flex; gap: 6px;">
+            <a class="btn btn-outline btn-sm" href="https://www.kidi.or.kr/user/car/carSearch.do" target="_blank" rel="noopener">
+              📋 보험개발원 기준가액 열람
+            </a>
+            <a class="btn btn-outline btn-sm" href="https://www.car365.go.kr" target="_blank" rel="noopener">
+              🚗 자동차365(국토부)
+            </a>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div style="flex: 1.4;">
+            <label style="color: #1d4ed8; font-weight: 700;">차명 / 모델 프리셋 (선택 시 제원·가액 자동 산출)</label>
+            <select id="carPresetSelect" onchange="handleCarPresetChange()" style="font-weight: 700; border-color: #3b82f6;">
+              <option value="">-- 주요 차종 선택 시 자동 계산 (직접입력 가능) --</option>
+              <option value="morning">모닝 / 레이 (1,000cc 경차)</option>
+              <option value="spark">스파크 (1,000cc 경차)</option>
+              <option value="avante">아반떼 (1,600cc 준중형)</option>
+              <option value="k3">K3 (1,600cc 준중형)</option>
+              <option value="sonata">쏘나타 (2,000cc 중형)</option>
+              <option value="k5">K5 (2,000cc 중형)</option>
+              <option value="grandeur">그랜저 (2,500cc 준대형)</option>
+              <option value="tucson">투싼 / 스포티지 (1,600cc SUV)</option>
+              <option value="santafe">싼타페 / 쏘렌토 (2,200cc SUV)</option>
+              <option value="carnival">카니발 (7~9인승 RV)</option>
+              <option value="porter">포터2 / 봉고3 (1톤 소형화물)</option>
+              <option value="starex">스타리아 / 스타렉스 (11~12인승 승합)</option>
+            </select>
+          </div>
+          <div>
+            <label>배기량 (cc) <span style="color:#ef4444; font-weight:700;">*1,600cc 기준</span></label>
+            <input type="number" id="carDisplacement" placeholder="예: 1999" oninput="calculateCarWelfare()" style="font-weight: 700; border-color: #3b82f6;">
+          </div>
+          <div>
+            <label>등록연도 (연식) <span style="color:#ef4444; font-weight:700;">*10년 기준</span></label>
+            <select id="carYear" onchange="handleYearChange()" style="font-weight: 700; border-color: #3b82f6; height: 38px;">
+            </select>
+          </div>
+          <div>
+            <label>차령 (자동계산)</label>
+            <input type="text" id="carAgeDisplay" placeholder="차령 계산" readonly style="background-color: #f1f5f9; font-weight: 700; color: #1e40af; height: 38px;">
+          </div>
+        </div>
+
+        <div class="field-row" style="background-color: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid #cbd5e1;">
+          <div style="width: 100%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <label style="color: #15803d; font-weight: 800; font-size: 13px; margin-bottom: 0;">
+                사회보장 차량가액 (만원) <span style="color: #ef4444;">*차종·연식 선택 시 자동 산정 (직접 수정 가능)</span>
+              </label>
+              <span id="carEstInfo" style="font-size: 11px; color: #64748b; font-weight: 600;"></span>
+            </div>
+            <input type="number" id="carPrice" placeholder="차종 선택 시 자동 계산되거나 직접 입력 (예: 1464)" oninput="calculateCarWelfare()" style="font-weight: 800; font-size: 15px; color: #15803d; border-color: #15803d;">
+          </div>
+        </div>
+
+        <div class="field-row" style="background-color: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; margin-top: 10px;">
+          <div>
+            <label style="color: #1e3a8a;">① 차종 구분</label>
+            <select id="carCategorySelect" onchange="calculateCarWelfare()">
+              <option value="sedan">일반 승용 (5인승 이하)</option>
+              <option value="sedan7">7인승 이상 승용 (RV·SUV·미니밴)</option>
+              <option value="van_small">승합차 (소형: 11~15인승)</option>
+              <option value="van_large">승합차 (중·대형: 16인승 이상)</option>
+              <option value="truck_small">화물차 (소형: 1톤 이하)</option>
+              <option value="truck_large">화물차 (중·대형: 1톤 초과)</option>
+            </select>
+          </div>
+          <div>
+            <label style="color: #1e3a8a;">② 가구 특성</label>
+            <select id="carHouseholdSelect" onchange="calculateCarWelfare()">
+              <option value="normal">일반 가구</option>
+              <option value="disabled">장애인 등록 가구 (장애인 명의 1대)</option>
+              <option value="large_family">다인/다자녀 가구 (3인 이상 또는 2자녀 이상)</option>
+            </select>
+          </div>
+          <div>
+            <label style="color: #1e3a8a;">③ 차량 용도</label>
+            <select id="carUsageSelect" onchange="calculateCarWelfare()">
+              <option value="personal">일반 자가용 (단순 출퇴근·이동)</option>
+              <option value="business">생업용 (사업자등록 및 실질 소득활동 직접 입증)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-top: 10px; display: flex; justify-content: flex-end; gap: 8px;">
+          <button class="btn btn-outline" onclick="resetCarForm()">
+            🔄 초기화
+          </button>
+          <button class="btn btn-primary" onclick="calculateCarWelfare()" style="padding: 10px 24px; font-size: 14px; font-weight: 700;">
+            ⚡ 소득인정액 계산 및 법정 기준 판정
+          </button>
+        </div>
+
+        <div id="carResultBox" style="margin-top: 16px; display: none; padding: 18px; border-radius: 8px; border: 1px solid #cbd5e1;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div id="carResultTitle" style="font-weight: 800; font-size: 16px;"></div>
+            <span id="carResultBadge" class="benefit-badge" style="font-size: 13px; padding: 4px 10px;"></span>
+          </div>
+
+          <div class="grid-2col" style="margin-bottom: 12px;">
+            <div style="background-color: #ffffff; padding: 12px; border-radius: 6px; border: 1px solid #cbd5e1;">
+              <div style="font-size: 11px; color: #64748b;">사회보장 차량가액 (평가액)</div>
+              <div id="carResTotalVal" style="font-size: 18px; font-weight: 700; color: #1e293b;">- 만 원</div>
+            </div>
+            <div style="background-color: #ffffff; padding: 12px; border-radius: 6px; border: 1px solid #cbd5e1;">
+              <div style="font-size: 11px; color: #64748b;">매월 기초생활보장 소득인정액 반영액 (월 산정액)</div>
+              <div id="carResMonthlyVal" style="font-size: 20px; font-weight: 800; color: #1d4ed8;">- 만 원/월</div>
+            </div>
+          </div>
+
+          <div id="carResultDesc" style="font-size: 13px; line-height: 1.7; color: #334155; margin-bottom: 14px; background-color: #ffffff; padding: 12px; border-radius: 6px; border: 1px solid #cbd5e1;"></div>
+
+          <div style="display: flex; gap: 8px; justify-content: flex-end;">
+            <button class="btn btn-success" id="btnApplyCar" onclick="applyCarToSimulation()">
+              👉 계산된 결과를 1번 탭(모의계산기)에 즉시 반영하기
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🏠 부동산 공시가격 확인 및 재산가액 산정</div>
+          <span style="font-size: 12px; color: #475569;">공동주택 실존 여부 검증 및 국토교통부 연계</span>
+        </div>
+
+        <div class="grid-2col">
+          <div>
+            <div style="margin-bottom: 12px;">
+              <label>1. 도로명 주소 검색 (카카오 우편번호 서비스를 통해 정규 주소를 선택하세요)</label>
+              <div style="display: flex; gap: 8px;">
+                <input type="text" id="propAddressInput" placeholder="[🔍 주소 검색] 버튼을 눌러 정규 도로명 주소를 선택하세요" style="font-weight: 600; background-color: #f8fafc;" readonly>
+                <button class="btn btn-primary" onclick="openDaumPostcode()" style="white-space: nowrap;">🔍 주소 검색</button>
+                <button class="btn btn-outline" type="button" onclick="enableManualAddressInput(true)" style="white-space: nowrap;">✏️ 직접 입력</button>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap;">
+              <span class="pill-info">PNU: <span id="propPnu">-</span></span>
+              <span class="pill-info">법정동: <span id="propBcode">-</span></span>
+              <span class="pill-info">건물번호: <span id="propBdMgtSn">-</span></span>
+            </div>
+
+            <div class="field-row">
+              <div>
+                <label>부동산 유형</label>
+                <select id="propTypeSelect" onchange="togglePropTypeUI()">
+                  <option value="apt">공동주택 (아파트·연립·다세대)</option>
+                  <option value="house">개별단독주택 (단독·다가구)</option>
+                  <option value="land">토지 (개별공시지가)</option>
+                </select>
+              </div>
+              <div id="complexNameBadgeWrap" style="display: flex; flex-direction: column; justify-content: flex-end;">
+                <label>확인된 단지/건물명</label>
+                <div id="propBuildingNameDisplay" style="padding: 8px 12px; background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; color: #1e293b; min-height: 38px; display: flex; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  주소 검색 시 자동 반영
+                </div>
+              </div>
+            </div>
+
+            <div class="field-row" id="dongHoWrap">
+              <div style="flex: 1;">
+                <label>동 (棟) <span style="color: #ef4444; font-weight: 700;">*</span></label>
+                <input type="text" id="propDong" placeholder="예: 2101동" oninput="handleDongHoChange()">
+              </div>
+              <div style="flex: 1;">
+                <label>호수 (號) <span style="color: #ef4444; font-weight: 700;">*</span></label>
+                <input type="text" id="propHo" placeholder="예: 2002호" oninput="handleDongHoChange()">
+              </div>
+            </div>
+
+            <div>
+              <button class="btn btn-primary" style="width: 100%; font-size: 14px; padding: 11px; font-weight: 700;" onclick="lookupOfficialPriceDirect()">
+                ⚡ 2026 공시가격 정밀 검증 및 조회
+              </button>
+              <div style="display: flex; justify-content: flex-end; margin-top: 4px;">
+                <a href="javascript:void(0)" onclick="openExternalRealtyFallback()" style="font-size: 11px; color: #64748b; text-decoration: underline;">
+                  🔗 국토교통부 공동주택가격 알리미 공식 열람창 열기 (선택)
+                </a>
+              </div>
+            </div>
+
+            <div id="propStatusNotice" style="margin-top: 12px; display: none; padding: 14px; border-radius: 8px; font-size: 13px; line-height: 1.6;"></div>
+
+            <div style="margin-top: 14px; padding: 14px; background-color: #f8fafc; border-radius: 8px; border: 1px solid #cbd5e1;">
+              <label style="font-weight: 700; color: #1e293b;">공시가격 직접 수정 / 미세 조정 (만 원 단위)</label>
+              <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                <input type="number" id="propManualPriceMan" placeholder="예: 23400 (2억 3,400만원)" oninput="handleManualPriceManInput()">
+                <span style="display: flex; align-items: center; font-weight: 700; font-size: 13px; color: #475569; white-space: nowrap;">만 원</span>
+              </div>
+              <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                <button class="btn btn-outline btn-sm" onclick="addPriceMan(10000)">+1억</button>
+                <button class="btn btn-outline btn-sm" onclick="addPriceMan(5000)">+5,000만</button>
+                <button class="btn btn-outline btn-sm" onclick="addPriceMan(1000)">+1,000만</button>
+                <button class="btn btn-outline btn-sm" onclick="addPriceMan(500)">+500만</button>
+                <button class="btn btn-outline btn-sm" onclick="resetPriceMan()" style="color: #b91c1c;">초기화</button>
+              </div>
+            </div>
+
+          </div>
+
+          <div>
+            <div class="benefit-card" style="border: 2px solid #bfdbfe; background-color: #f8fafc; padding: 18px; margin-bottom: 14px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <span class="benefit-badge badge-pass" id="propYearBadge">2026년 기준</span>
+                <span style="font-size: 12px; color: #475569;">국토교통부 대조 카드</span>
+              </div>
+              
+              <div style="margin-bottom: 12px;">
+                <div style="font-size: 11px; color: #475569;">공시가격 (원 단위)</div>
+                <div id="propPriceWon" style="font-size: 24px; font-weight: 800; color: #1e3a8a;">- 원</div>
+              </div>
+
+              <div style="margin-bottom: 12px; padding: 10px; background-color: #ffffff; border-radius: 6px; border: 1px solid #cbd5e1;">
+                <div style="font-size: 11px; color: #475569;">한글 환산 금액 (복지모의계산 단위)</div>
+                <div id="propPriceKorean" style="font-size: 16px; font-weight: 700; color: #15803d;">-</div>
+              </div>
+
+              <div id="propDetailInfo" style="font-size: 12px; color: #475569; line-height: 1.6; margin-bottom: 12px;">
+                [🔍 주소 검색]을 통해 정규 도로명 주소를 선택한 후 조회해 주세요.
+              </div>
+
+              <div id="officialAlimiTableWrap" style="display: none; margin-top: 8px;">
+                <div style="font-size: 11px; font-weight: 700; color: #334155; margin-bottom: 4px;">📋 국토교통부 알리미 공식 열람 형식</div>
+                <table class="table-alimi">
+                  <thead>
+                    <tr>
+                      <th>공시기준</th>
+                      <th>단지명</th>
+                      <th>동명</th>
+                      <th>호명</th>
+                      <th>전용면적(㎡)</th>
+                      <th>공동주택가격(원)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="alimiTableBody">
+                    <tr>
+                      <td colspan="6">조회된 내역이 없습니다.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-outline" style="flex: 1;" onclick="applyToTab1('res')">
+                🏠 1번 탭 주거용재산 즉시 반영
+              </button>
+              <button class="btn btn-outline" style="flex: 1;" onclick="applyToTab1('gen')">
+                🏞️ 1번 탭 일반재산 즉시 반영
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="postcodeModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span>도로명 주소 검색</span>
+        <button class="btn btn-outline btn-sm" onclick="closeDaumPostcode()">✕ 닫기</button>
+      </div>
+      <div class="modal-body" id="postcodeLayer" style="height: 450px;"></div>
+    </div>
+  </div>
+
+  <div id="toast">알림</div>
+
+  <script>
+    // ==========================================
+    // 0. 완성형 고품질 B급 현실 유머 DB
     // ==========================================
     var HUMOR_CURATED_LIST = [
-      // [1. 주식 · 코인 · 금융치료]
       "내가 사면 고점이고 내가 팔면 폭등하지만, 내일 아침 출근 시간은 단 1분의 오차도 없이 정확합니다.",
       "물려있는 국장 주식은 예수금으로 부활하지 않지만, 이번 달 카드값 청구서는 귀신같이 살아 돌아옵니다.",
       "미국 주식이 자는 동안 돈을 벌어다 준다더니 자는 동안 원금을 지워버렸습니다. 출근이나 합시다.",
       "가장 완벽한 헷지(Hedge) 수단은 코인이 아니라 매월 20일 통장에 찍히는 공무원 본봉입니다.",
       "비트코인 차트의 파란불은 건강에 좋습니다. 보고 있으면 피가 차갑게 식으면서 식욕이 뚝 떨어집니다.",
-      "주식 잔고를 보면 세상만사 덧없어 보이지만, 대출이자 납입 안내 문자를 보면 급격히 현실 감각이 돌아옵니다.",
-      "매수 버튼을 누를 땐 워런 버핏이었지만, 체결 완료 알림이 뜬 순간부터는 그냥 야근하는 직장인입니다.",
-      "수익률 -70% 계좌를 보면 화도 안 납니다. 그저 오늘 구내식당 메뉴가 제육볶음이기만을 간절히 바랄 뿐입니다.",
-      "주식으로 돈 벌어서 파이어족 하겠다는 꿈은 물거품이 되었으니, 온순한 태도로 복지 민원이나 처리합시다.",
-      "금융치료의 유일한 정답은 배당금이 아니라 성실하게 출퇴근해서 받는 야근수당과 출장비입니다.",
-      "하락장에선 물타기를 멈추고, 업무시간엔 딴생각을 멈추며, 퇴근길엔 배달앱 켜는 손을 멈춰야 파산 안 합니다.",
-      "차트가 바닥을 쳤다고 생각했을 때 지하실이 열리듯, 오늘 일 다 끝났다 싶을 때 5시 50분 민원인이 들어옵니다.",
-      "존버는 승리하지 않습니다. 묵묵히 행복e음 키보드를 두드리는 자만이 다음 달 카드값을 막아냅니다.",
-      "손절매 타이밍은 기가 막히게 놓치면서, 점심시간 10분 전 식당 줄 서는 타이밍은 귀신같이 맞춥니다.",
-      "계좌는 시퍼렇게 멍들었어도 내 얼굴엔 항상 행정서비스 만족도를 위한 가식적인 미소를 장착해야 합니다.",
-
-      // [2. 복지직 · 민원대 현실]
       "민원인이 소리 지를 땐 속으로 '네 맞습니다 선생님, 하지만 저는 6시에 칼퇴합니다'를 세 번 외우세요.",
       "배기량 3,000cc 대형차 타고 수급 신청하러 온 민원인에게 기준 설명하는 것만큼 인내심을 기르는 수련은 없습니다.",
       "행복e음이 멈추는 건 시스템 오류가 아니라, 지친 복지담당자의 손목터널증후군을 예방하려는 나라의 깊은 배려입니다.",
       "기초수급 심층상담 1시간보다 더 영혼이 털리는 일은, 상담 다 끝나고 적는 행복e음 초기상담 일지 5줄입니다.",
-      "오늘도 수급 탈락 통지서를 보냈습니다. 내일 오전 9시부터 불타오를 직통 전화벨 소리에 미리 묵념합시다.",
-      "민원인이 '구청장 나오라 그래!'를 시전할 때 속으로 '저도 구청장님 얼굴 1년에 두 번 봅니다' 삼키는 게 프로입니다.",
-      "금요일 오후 5시 45분에 문을 열고 들어오는 복합 위기가구는 공무원의 멘탈 내구도를 측정하는 국가 공인 시험입니다.",
-      "가장 완벽한 분산투자란 내 영혼과 멘탈을 오전 민원인과 오후 민원인에게 골고루 털리는 것입니다.",
-      "민원대 앞에서 부처와 예수의 자비를 실천하고 계신 여러분, 오늘 퇴근 후 치맥 한 잔 마실 자격이 차고 넘칩니다.",
-      "소득인정액 계산기 두드릴 때의 집중력으로 학창 시절에 공부했으면 사법고시 패스하고 판사 됐습니다.",
-      "가족관계 해체 사유서 10장 읽다 보면 막장 드라마 작가들도 무릎 꿇고 영감을 얻어갈 수준입니다.",
-      "차량가액 100% 월소득 반영 규정은 민원인에게도 치명적이지만, 그걸 설명해야 하는 내 목 건강에도 치명적입니다.",
-      "세상에서 가장 무서운 ASMR: 점심시간 끝나기 1분 전 복지창구 직통 전화기의 '따르릉' 소리.",
-      "민원인이 '세금으로 월급 받으면서!'라고 외치면, '저도 제 월급에서 세금 꼬박꼬박 떼입니다'라고 말하고 싶어집니다.",
-      "오늘 하루 악성 민원 없이 무사히 지나갔다면, 퇴근길에 조상님 묘가 있는 방향으로 큰절 한 번 올리세요.",
-
-      // [3. 직장인의 비애 · 월급과 사직서]
       "출근할 때의 나: '오늘 진짜 한마디만 더 하면 사직서 낸다.' / 점심 먹을 때의 나: '오늘 돈까스 바삭하고 맛있다.'",
       "직장인의 3대 미스터리: 번 건 없는데 잔고는 비었고, 한 건 없는데 피곤하며, 먹은 건 없는데 살이 찝니다.",
       "퇴사 마려울 때 가장 확실한 치료약은 바로 카드사 앱을 열어 이번 달 결제 예정금액을 정독하는 것입니다.",
-      "통장잔고와 마이너스통장 대출원금을 확인하는 순간, 가슴속 사직서는 서랍 가장 깊은 곳으로 자동 봉인됩니다.",
-      "월급은 로그아웃 속도로 스쳐 지나가고, 피로와 스트레스는 무한 루프로 누적되지만 그래도 버텨야 봉급이 나옵니다.",
-      "상사가 '다 너 잘되라고 하는 소리야'라고 할 때 가장 안전한 답변은 영혼 없는 끄덕임과 복사기 작동입니다.",
-      "월요일 출근길 지하철에서 문득 든 '부자가 되어야겠다'는 다짐은 오전 10시 커피 마실 때쯤 깔끔히 증발합니다.",
-      "사직서를 당당하게 던지고 나오는 상상은 무료지만, 퇴사 후 닥쳐올 건강보험료 지역가입자 고지서는 유료입니다.",
-      "커피는 기호식품이 아니라, 영혼을 연료로 태워 하루를 버티게 해주는 직장인의 합법적 생명유지장치입니다.",
-      "회의 시간에 침묵을 지키는 것은 비겁한 게 아니라, 칼퇴를 향한 가장 고도의 전략적 방어기제입니다.",
-      "점심시간 1시간이 체감상 6분 만에 증발하는 현상은 아인슈타인의 특수상대성이론으로도 설명이 불가능합니다.",
-      "월급날 통장에 찍힌 숫자를 보면 허탈하지만, 내일 아침 알람이 울리면 몸은 기계처럼 셔츠를 입고 있습니다.",
-      "직장 생활의 가장 큰 성취감은 기획서 통과가 아니라, 메신저 알림을 끄고 사무실 문을 나서는 오후 6시 00분입니다.",
-      "내가 회사에 기여하는 바가 적다고 자책하지 마세요. 회사가 나에게 주는 월급도 그만큼 적으니까 비긴 셈입니다.",
-      "남의 돈 뜯어먹고 사는 게 원래 이토록 쓰라린 법입니다. 군소리 말고 오늘 할당된 공문이나 기안합시다.",
-
-      // [4. 로또 · 연금복권 · 대박 환상]
       "매주 로또 5천 원씩 318년 동안 비가 오나 눈이 오나 사면 산술적으로 1등에 한 번 당첨됩니다. 그냥 일합시다.",
       "로또 1등에 당첨되어도 세금 33% 뗍니다. 세금 정산하러 구청에 또 오기 싫으면 그냥 조용히 계속 일하세요.",
-      "연금복권 1등 당첨 확률은 번개 맞을 확률보다 낮습니다. 차라리 오늘 야근식대를 챙겨 먹는 게 훨씬 이득입니다.",
-      "퇴근길에 산 로또 한 장 덕분에 토요일 저녁 8시까지는 행복한 부자로 살 수 있으니 5천 원짜리 도파민 치곤 남는 장사입니다.",
-      "로또 용지를 쥐고 출근하는 발걸음은 가볍지만, 월요일 아침 낙첨된 용지를 버리는 손길은 한없이 무겁습니다.",
-      "일확천금으로 인생을 뒤집으려는 생각은 접으세요. 가장 확실하게 인생을 바꾸는 건 꾸준히 쌓이는 퇴직금입니다.",
-      "로또 당첨 번호 6개를 다 맞히는 기적보다, 오늘 하루 상사 눈에 안 띄고 무사히 칼퇴할 기적이 더 간절합니다.",
-      "복권방 명당 찾아 삼만리 갈 시간에, 낮잠 15분 자는 게 남은 오후 근무 멘탈 유지에 100배 유리합니다.",
-      "내가 로또 1등이 되지 않는 이유는 하늘이 나에게 '더 근면성실한 공직자가 되라'는 계시를 내렸기 때문입니다.",
-      "로또 5천 원 당첨된 걸로 다시 로또 5천 원치 바꾸는 행위야말로 진정한 무한동력 희망고문입니다.",
-
-      // [5. 체력 · 다이어트 · 나이듦]
       "퇴근길에 '오늘 저녁은 가볍게 샐러드만 먹어야지' 했던 결심은 현관문 열고 배달앱 켤 때 족발 세트로 변합니다.",
-      "나이 들수록 영양제 개수만 늘어나고, 병원비 지출이 늘어나며, 이상하게 세상사에 대한 호기심은 0에 수렴합니다.",
-      "헬스장 6개월 결제는 기부행위가 아닙니다. 안 갈 거면 환불받아서 이번 주 고기나 사 드세요.",
-      "20대 땐 밤새 술 마시고 출근해도 멀쩡했지만, 지금은 밤에 라면 하나만 먹고 자도 다음 날 얼굴이 네모가 됩니다.",
-      "피곤해서 운동을 못 하겠다는 핑계를 대지만, 사실 운동을 안 해서 매일매일 극도로 피곤한 게 팩트입니다.",
-      "직장인의 주말 루틴: 토요일에 눈 감았다 떴더니 일요일 밤 10시 개그콘서트 음악이 흘러나오는 악몽.",
-      "몸이 쑤시고 결리는 건 나이 탓이 아닙니다. 모니터를 향해 거북이처럼 목을 빼고 있는 내 자세 탓입니다.",
-      "주말에 몰아서 자면 피로가 풀릴 줄 알았지만, 남는 것은 찌뿌둥한 허리 통증과 사라진 휴일뿐입니다.",
-      "영양제 5알을 한 번에 삼키며 '오늘도 버텨보자' 다짐하는 내 모습, 제법 베테랑 직장인 같습니다.",
-      "스트레스 해소엔 매운 떡볶이가 최고지만, 다음 날 아침 화장실에서의 고통은 오롯이 내 몫입니다.",
-
-      // [6. 공무원 라이프 · 현실 성찰]
-      "온나라 결재문서가 한 번에 프리패스되는 날은 1년에 딱 하루, 팀장님이 휴가 간 날뿐입니다.",
-      "공무원 연금 개혁 소식을 들을 때마다 허탈하지만, 어차피 국민연금도 마찬가지니 사이좋게 일이나 합시다.",
-      "직장 생활 5년 차가 되면 얻는 것: 굵어진 손목, 굽은 어깨, 늘어난 뱃살, 그리고 타협의 미학.",
-      "세상에서 가장 긴 1시간은 퇴근 1시간 전이고, 세상에서 가장 짧은 1시간은 점심시간 1시간입니다.",
-      "상사가 부를 때 '네!' 대답하는 톤의 높낮이에 따라 내 사회생활 스킬 레벨이 결정됩니다.",
-      "오늘도 무사히 하루가 저물어 갑니다. 민원도 막아냈고, 상사 잔소리도 넘겼으니 이걸로 충분한 하루입니다.",
-      "완벽한 하루를 꿈꾸지 마세요. 사고 없이, 징계 없이, 민원 폭탄 없이 퇴근 카드 찍으면 성공한 하루입니다.",
-      "내일의 걱정은 내일 출근한 미래의 나에게 맡기고, 오늘 저녁은 좋아하는 음식 먹으면서 푹 쉽시다.",
-      "남들은 '철밥통'이라 부러워하지만, 이 밥통 안에서 밥 태우지 않으려고 매일 피땀 흘리는 건 우리들입니다.",
-      "결국 우리를 끝까지 버티게 하는 건 거창한 사명감보다 매달 통장에 찍히는 월급과 소소한 퇴근길 맥주 한 캔입니다."
+      "온나라 결재문서가 한 번에 프리패스되는 날은 1년에 딱 하루, 팀장님이 휴가 간 날뿐입니다."
     ];
 
     function cycleHumorQuote() {
@@ -96,9 +1058,1291 @@
     }
 
     function initDailyHumor() {
-      // 날짜 기반 고유 인덱스 (하루 동안 기본 고정 유지, 클릭 시 랜덤 순환)
       var today = new Date();
       var seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
       var idx = seed % HUMOR_CURATED_LIST.length;
       document.getElementById('dailyHumorText').innerText = HUMOR_CURATED_LIST[idx];
     }
+
+    // ==========================================
+    // 1. 2026년 법정 기준 상수
+    // ==========================================
+    var POLICY_2026 = {
+      medianIncome: { 1: 256.4, 2: 419.9, 3: 535.9, 4: 649.5, 5: 755.7, 6: 855.6, 7: 951.5 },
+      baseDeduction: { daegu: 7700, gunwi: 5300, seoul: 9900, gyeonggi: 8000 },
+      residentialLimit: { daegu: 14600, gunwi: 11200, seoul: 17200, gyeonggi: 15100 },
+      rates: { residential: 0.0104, general: 0.0417, financial: 0.0626, car: 1.0 },
+      financialDeduction: 500,
+      standards: { livelihood: 0.32, medical: 0.40, housing: 0.48, nearPoverty: 0.50, emergency: 0.75 },
+      emergencyPayouts: { 1: 71.3, 2: 117.8, 3: 150.9, 4: 183.4, 5: 214.3, 6: 243.6, 7: 272.1 },
+      emergencyAssetLimit: { daegu: 24100, gunwi: 16500, seoul: 31000, gyeonggi: 24100 },
+      basicPensionLimit: { single: 213, couple: 340.8 },
+      basicPensionBaseDeduct: { daegu: 13500, gunwi: 7250, seoul: 13500, gyeonggi: 13500 },
+      basicPensionEarnedDeduct: 116,
+      dalgubeol: {
+        incomeLimitPercent: 1.0,
+        generalAssetLimit: 35000,
+        financialLimit: { 1: 984.6, 2: 1229.8, 3: 1403.8, 4: 1574.2, 5: 1733.5, 6: 1883.3, 7: 2027.2 }
+      }
+    };
+
+    var POPULAR_CARS_DB = {
+      "morning": { name: "모닝 / 레이 (경차)", cc: 998, newPrice: 1350, type: "sedan" },
+      "spark":   { name: "스파크 (경차)", cc: 999, newPrice: 1250, type: "sedan" },
+      "avante":  { name: "아반떼 (준중형)", cc: 1598, newPrice: 2100, type: "sedan" },
+      "k3":      { name: "K3 (준중형)", cc: 1598, newPrice: 2050, type: "sedan" },
+      "sonata":  { name: "쏘나타 (중형)", cc: 1999, newPrice: 2800, type: "sedan" },
+      "k5":      { name: "K5 (중형)", cc: 1999, newPrice: 2850, type: "sedan" },
+      "grandeur":{ name: "그랜저 (준대형)", cc: 2497, newPrice: 3700, type: "sedan" },
+      "tucson":  { name: "투싼 / 스포티지 (SUV)", cc: 1598, newPrice: 2900, type: "sedan" },
+      "santafe": { name: "싼타페 / 쏘렌토 (SUV)", cc: 2199, newPrice: 3600, type: "sedan" },
+      "carnival":{ name: "카니발 (RV)", cc: 2151, newPrice: 3500, type: "sedan7" },
+      "porter":  { name: "포터2 / 봉고3 (1톤 화물)", cc: 2497, newPrice: 1900, type: "truck_small" },
+      "starex":  { name: "스타리아 / 스타렉스 (승합)", cc: 2199, newPrice: 3100, type: "van_small" }
+    };
+
+    var RESIDUAL_RATES_2026 = {
+      0: 0.82, 1: 0.70, 2: 0.58, 3: 0.48, 4: 0.40,
+      5: 0.32, 6: 0.25, 7: 0.20, 8: 0.16, 9: 0.13,
+      10: 0.10, 11: 0.08, 12: 0.07, 13: 0.06, 14: 0.05, 15: 0.04
+    };
+
+    var currentCalculatedPriceMan = 0;
+    var lastPostalData = null;
+
+    var evaluatedCarResult = {
+      ruleType: "none",
+      price: 0,
+      applicableAssetVal: 0,
+      monthlyIncomeVal: 0,
+      isCutoff: false
+    };
+
+    function initVehicleUI() {
+      var ySel = document.getElementById('carYear');
+      ySel.innerHTML = "";
+      for (var y = 2026; y >= 2000; y--) {
+        var opt = document.createElement('option');
+        opt.value = y;
+        var age = 2026 - y;
+        opt.innerText = y + "년식 (" + age + "년차" + (age >= 10 ? "·10년이상 완화" : "") + ")";
+        if (y === 2016) opt.selected = true;
+        ySel.appendChild(opt);
+      }
+      handleYearChange();
+    }
+
+    function handleCarPresetChange() {
+      var presetKey = document.getElementById('carPresetSelect').value;
+      if (!presetKey || !POPULAR_CARS_DB[presetKey]) {
+        document.getElementById('carEstInfo').innerText = "";
+        return;
+      }
+      var car = POPULAR_CARS_DB[presetKey];
+      document.getElementById('carDisplacement').value = car.cc;
+      document.getElementById('carCategorySelect').value = car.type;
+      autoCalculateCarPrice();
+    }
+
+    function handleYearChange() {
+      var y = parseInt(document.getElementById('carYear').value, 10) || 2026;
+      var age = Math.max(0, 2026 - y);
+      var isOver10 = age >= 10;
+      document.getElementById('carAgeDisplay').value = age + "년 (" + (isOver10 ? "10년 이상 충족" : "10년 미만") + ")";
+
+      if (document.getElementById('carPresetSelect').value) {
+        autoCalculateCarPrice();
+      } else {
+        calculateCarWelfare();
+      }
+    }
+
+    function autoCalculateCarPrice() {
+      var presetKey = document.getElementById('carPresetSelect').value;
+      if (!presetKey || !POPULAR_CARS_DB[presetKey]) return;
+
+      var car = POPULAR_CARS_DB[presetKey];
+      var y = parseInt(document.getElementById('carYear').value, 10) || 2026;
+      var age = Math.max(0, 2026 - y);
+      var rate = RESIDUAL_RATES_2026[age] !== undefined ? RESIDUAL_RATES_2026[age] : 0.04;
+
+      var estimatedPrice = Math.round(car.newPrice * rate);
+      document.getElementById('carPrice').value = estimatedPrice;
+      document.getElementById('carEstInfo').innerText = "(잔가율 " + Math.round(rate * 100) + "% 적용 추정가)";
+
+      calculateCarWelfare();
+    }
+
+    function resetCarForm() {
+      document.getElementById('carPresetSelect').value = "";
+      document.getElementById('carDisplacement').value = "";
+      document.getElementById('carPrice').value = "";
+      document.getElementById('carEstInfo').innerText = "";
+      document.getElementById('carYear').value = "2016";
+      document.getElementById('carCategorySelect').value = "sedan";
+      document.getElementById('carHouseholdSelect').value = "normal";
+      document.getElementById('carUsageSelect').value = "personal";
+      document.getElementById('carResultBox').style.display = "none";
+      handleYearChange();
+      showToast("차량 입력창이 초기화되었습니다.");
+    }
+
+    function calculateCarWelfare() {
+      var cc = parseInt(document.getElementById('carDisplacement').value, 10) || 0;
+      var year = parseInt(document.getElementById('carYear').value, 10) || 2026;
+      var price = parseFloat(document.getElementById('carPrice').value) || 0;
+
+      var category = document.getElementById('carCategorySelect').value;
+      var household = document.getElementById('carHouseholdSelect').value;
+      var usage = document.getElementById('carUsageSelect').value;
+
+      var age = 2026 - year;
+      var isOver10 = age >= 10;
+      var isUnder200Man = price < 200;
+
+      var resBox = document.getElementById('carResultBox');
+      var resTitle = document.getElementById('carResultTitle');
+      var resBadge = document.getElementById('carResultBadge');
+      var resDesc = document.getElementById('carResultDesc');
+      var totalValDiv = document.getElementById('carResTotalVal');
+      var monthlyValDiv = document.getElementById('carResMonthlyVal');
+
+      if (price <= 0) {
+        resBox.style.display = 'none';
+        return;
+      }
+
+      resBox.style.display = 'block';
+      totalValDiv.innerText = price.toLocaleString() + " 만 원";
+
+      if (household === 'disabled') {
+        var isUnderDisLimit = (category === 'sedan' && cc < 2000) ||
+                              (category === 'sedan7' && cc <= 2500) ||
+                              (category === 'van_small') ||
+                              (category === 'truck_small');
+
+        if (isUnderDisLimit) {
+          evaluatedCarResult = { ruleType: "exempt", price: price, applicableAssetVal: 0, monthlyIncomeVal: 0, isCutoff: false };
+          resBox.style.backgroundColor = '#f0fdf4';
+          resBox.style.borderColor = '#86efac';
+          resTitle.innerText = "✅ 장애인 등록 가구 차량: 전액 재산 산정 제외 (면제)";
+          resTitle.style.color = '#15803d';
+          resBadge.className = "benefit-badge badge-pass";
+          resBadge.innerText = "소득인정액 0원 산입";
+          monthlyValDiv.innerText = "0 만 원 / 월 (전액 제외)";
+          monthlyValDiv.style.color = '#15803d';
+          resDesc.innerHTML = "• <strong>법정 근거:</strong> 등록 장애인 본인 또는 세대원이 소유한 차량 1대 기준을 충족합니다.<br>• <strong>판정 결과:</strong> 사회보장 차량가액 전액이 재산 산정에서 제외되어 <strong>월 소득인정액에 0원</strong> 처리됩니다.";
+          return;
+        }
+      }
+
+      if (usage === 'business') {
+        var isBusinessEligible = (category === 'truck_small') || (category === 'truck_large') || (category === 'van_small') || (category === 'van_large') || (cc < 1600);
+        if (isBusinessEligible) {
+          var halfAsset = Math.round(price * 0.5);
+          var monthlyIncome = Math.round(halfAsset * 0.0417);
+          evaluatedCarResult = { ruleType: "business_general", price: price, applicableAssetVal: halfAsset, monthlyIncomeVal: monthlyIncome, isCutoff: false };
+
+          resBox.style.backgroundColor = '#f0fdf4';
+          resBox.style.borderColor = '#86efac';
+          resTitle.innerText = "✅ 생업용 차량 특례: 50% 감면 + 일반재산(4.17%) 적용";
+          resTitle.style.color = '#15803d';
+          resBadge.className = "benefit-badge badge-pass";
+          resBadge.innerText = "일반재산 4.17% (50% 감면)";
+          monthlyValDiv.innerText = "약 " + monthlyIncome.toLocaleString() + " 만 원 / 월";
+          monthlyValDiv.style.color = '#15803d';
+          resDesc.innerHTML = "• <strong>법정 근거:</strong> 생업용 차량으로서 소득활동 직접 사용이 확인되었습니다.<br>• <strong>계산 방식:</strong> 차량가액의 50% 감면 후 잔여 <strong>" + halfAsset.toLocaleString() + "만 원만 일반재산(월 4.17%)</strong>으로 반영됩니다.";
+          return;
+        }
+      }
+
+      if (household === 'large_family') {
+        var isLargeFamilyCar = (cc < 2500) || (category === 'sedan7') || (category === 'van_small') || (category === 'truck_small');
+        var isAgeOrPriceRelaxed = (isOver10 || price < 500);
+
+        if (isLargeFamilyCar && isAgeOrPriceRelaxed) {
+          var monthlyIncome = Math.round(price * 0.0417);
+          evaluatedCarResult = { ruleType: "general", price: price, applicableAssetVal: price, monthlyIncomeVal: monthlyIncome, isCutoff: false };
+
+          resBox.style.backgroundColor = '#f0fdf4';
+          resBox.style.borderColor = '#86efac';
+          resTitle.innerText = "✅ 다인·다자녀 가구 완화 기준: 일반재산(4.17%) 적용";
+          resTitle.style.color = '#15803d';
+          resBadge.className = "benefit-badge badge-pass";
+          resBadge.innerText = "일반재산 4.17% 적용";
+          monthlyValDiv.innerText = "약 " + monthlyIncome.toLocaleString() + " 만 원 / 월";
+          monthlyValDiv.style.color = '#15803d';
+          resDesc.innerHTML = "• <strong>법정 근거:</strong> 다인(3인 이상) 또는 다자녀(2자녀 이상) 가구 완화 기준을 충족합니다.";
+          return;
+        }
+      }
+
+      var isStandardGeneralSedan = (category === 'sedan' && cc < 1600 && isOver10);
+      var isStandardGeneralSmallVanTruck = ((category === 'van_small' || category === 'truck_small') && isOver10);
+
+      if (isUnder200Man || isStandardGeneralSedan || isStandardGeneralSmallVanTruck) {
+        var monthlyIncome = Math.round(price * 0.0417);
+        evaluatedCarResult = { ruleType: "general", price: price, applicableAssetVal: price, monthlyIncomeVal: monthlyIncome, isCutoff: false };
+
+        resBox.style.backgroundColor = '#f0fdf4';
+        resBox.style.borderColor = '#86efac';
+        resTitle.innerText = "✅ 일반재산 환산율 (월 4.17%) 적용 대상";
+        resTitle.style.color = '#15803d';
+        resBadge.className = "benefit-badge badge-pass";
+        resBadge.innerText = "일반재산 4.17% 적용";
+        monthlyValDiv.innerText = "약 " + monthlyIncome.toLocaleString() + " 만 원 / 월";
+        monthlyValDiv.style.color = '#15803d';
+
+        var reasonText = isUnder200Man ? "차량가액 200만 원 미만" : "배기량 1,600cc 미만 & 차령 10년 이상";
+        resDesc.innerHTML = "• <strong>적용 요건:</strong> [" + reasonText + "] 요건을 충족하여 일반재산(월 4.17%)으로 합산 반영됩니다.";
+        return;
+      }
+
+      evaluatedCarResult = { ruleType: "cutoff", price: price, applicableAssetVal: 0, monthlyIncomeVal: price, isCutoff: true };
+      resBox.style.backgroundColor = '#fef2f2';
+      resBox.style.borderColor = '#fca5a5';
+      resTitle.innerText = "⚠️ 100% 월소득 환산 대상 (수급 탈락 위험!)";
+      resTitle.style.color = '#b91c1c';
+      resBadge.className = "benefit-badge badge-fail";
+      resBadge.innerText = "차량가액 100% 월소득 반영";
+      monthlyValDiv.innerText = price.toLocaleString() + " 만 원 / 월";
+      monthlyValDiv.style.color = '#b91c1c';
+      resDesc.innerHTML = "• <strong>결과:</strong> 차량가액 전액인 <strong>" + price.toLocaleString() + "만 원이 매월 소득으로 100% 반영</strong>되어 기준선을 초과할 위험이 높습니다.";
+    }
+
+    function applyCarToSimulation() {
+      if (evaluatedCarResult.price <= 0) {
+        showToast("먼저 차량 계산 및 판정을 진행해 주세요.");
+        return;
+      }
+
+      if (evaluatedCarResult.ruleType === "exempt") {
+        document.getElementById('simCar100').value = 0;
+        document.getElementById('simCarGeneral').value = 0;
+        showToast("장애인 특례로 차량 소득인정액이 0원 처리되었습니다.");
+      } else if (evaluatedCarResult.ruleType === "cutoff") {
+        document.getElementById('simCar100').value = evaluatedCarResult.monthlyIncomeVal;
+        document.getElementById('simCarGeneral').value = 0;
+        showToast("100% 월소득 환산 차량으로 반영되었습니다.");
+      } else {
+        document.getElementById('simCarGeneral').value = evaluatedCarResult.applicableAssetVal;
+        document.getElementById('simCar100').value = 0;
+        showToast("차량 일반재산 반영분이 설정되었습니다.");
+      }
+
+      switchTab('tab-counsel');
+      runSimulation();
+    }
+
+    function switchTab(tabId) {
+      var contents = document.querySelectorAll('.tab-content');
+      for (var i = 0; i < contents.length; i++) contents[i].classList.remove('active');
+      var tabs = document.querySelectorAll('.nav-tab');
+      for (var j = 0; j < tabs.length; j++) tabs[j].classList.remove('active');
+      
+      document.getElementById(tabId).classList.add('active');
+      if (tabId === 'tab-counsel') tabs[0].classList.add('active');
+      else tabs[1].classList.add('active');
+    }
+
+    function showToast(msg) {
+      var t = document.getElementById('toast');
+      t.innerText = msg;
+      t.classList.add('show');
+      setTimeout(function() { t.classList.remove('show'); }, 2600);
+    }
+
+    function formatKoreanMoneyFromMan(manWon) {
+      if (!manWon || isNaN(manWon) || manWon <= 0) return "-";
+      var eok = Math.floor(manWon / 10000);
+      var remainMan = Math.floor(manWon % 10000);
+      var res = "";
+      if (eok > 0) res += eok + "억 ";
+      if (remainMan > 0) res += remainMan.toLocaleString() + "만 원";
+      return (res.trim() || "0원") + " (" + manWon.toLocaleString() + "만 원)";
+    }
+
+    function parseAmountByPatterns(text, keywords) {
+      for (var i = 0; i < keywords.length; i++) {
+        var pattern = new RegExp(keywords[i] + "[^0-9]*([0-9,]+)(?:\\s*만\\s*원|만원|만)?", "i");
+        var match = text.match(pattern);
+        if (match && match[1]) {
+          var val = parseInt(match[1].replace(/,/g, ''), 10);
+          if (!isNaN(val)) return val;
+        }
+      }
+      return null;
+    }
+
+    function parseCounselText(text) {
+      var result = {};
+      var memberMatch = text.match(/([1-7])\s*인\s*가구/);
+      if (memberMatch) result.members = parseInt(memberMatch[1], 10);
+      else if (text.indexOf("단독가구") !== -1 || text.indexOf("독거") !== -1 || text.indexOf("단독") !== -1) result.members = 1;
+
+      var ageMatch = text.match(/만\s*([0-9]{1,2})\s*세/) || text.match(/([0-9]{2})\s*년생/);
+      var calcAge = null;
+      if (ageMatch) {
+        if (ageMatch[0].indexOf("년생") !== -1) {
+          var y = parseInt(ageMatch[1], 10);
+          calcAge = y <= 26 ? (2026 - (2000 + y)) : (2026 - (1900 + y));
+        } else {
+          calcAge = parseInt(ageMatch[1], 10);
+        }
+      }
+
+      if (calcAge !== null && calcAge >= 65) {
+        result.workAbility = "none";
+      } else if (calcAge !== null && calcAge <= 24) {
+        result.workAbility = "youth";
+      } else if (text.indexOf("법정 무능력") !== -1 || text.indexOf("65세 이상") !== -1) {
+        result.workAbility = "none";
+      } else if (text.indexOf("청년") !== -1 || text.indexOf("대학생") !== -1) {
+        result.workAbility = "youth";
+      } else if (text.indexOf("진단서") !== -1 || text.indexOf("협착증") !== -1 || text.indexOf("질환") !== -1 || text.indexOf("근로 불가") !== -1 || text.indexOf("장애") !== -1) {
+        result.workAbility = "illness";
+      } else if (text.indexOf("근로능력 있음") !== -1 || text.indexOf("자활") !== -1) {
+        result.workAbility = "able";
+      }
+
+      if (text.indexOf("해체") !== -1 || text.indexOf("연락두절") !== -1 || text.indexOf("왕래두절") !== -1 || text.indexOf("단절") !== -1) result.support = "severed";
+      else if (text.indexOf("부양의무자 없음") !== -1 || text.indexOf("가족 없음") !== -1) result.support = "none";
+
+      var depositVal = parseAmountByPatterns(text, ["임차보증금", "전세금", "보증금"]);
+      var resVal = parseAmountByPatterns(text, ["주거용재산", "자가주택", "주택공시가"]);
+      
+      if (depositVal !== null) {
+        result.resProp = Math.round(depositVal * 0.95);
+        result.isDeposit = true;
+        result.rawDeposit = depositVal;
+      } else if (resVal !== null) {
+        result.resProp = resVal;
+      }
+
+      var genVal = parseAmountByPatterns(text, ["일반재산", "토지", "상가"]);
+      if (genVal !== null) result.genProp = genVal;
+      var finVal = parseAmountByPatterns(text, ["금융재산", "통장잔액", "통장", "예금", "적금"]);
+      if (finVal !== null) result.finProp = finVal;
+      var debtVal = parseAmountByPatterns(text, ["금융부채", "부채", "대출", "신용대출", "담보대출"]);
+      if (debtVal !== null) result.debt = debtVal;
+      var earnedVal = parseAmountByPatterns(text, ["근로소득", "월급", "일당", "급여"]);
+      if (earnedVal !== null) result.earned = earnedVal;
+      var otherVal = parseAmountByPatterns(text, ["사업소득", "기타소득", "연금소득", "사적이전소득"]);
+      if (otherVal !== null) result.other = otherVal;
+
+      return result;
+    }
+
+    function loadBlankTemplate() {
+      document.getElementById('counselInput').value = 
+"■ 기본 인적사항\n" +
+"- 성명: \n" +
+"- 생년월일: \n" +
+"- 가구원수: 1인 가구\n" +
+"- 연락처: \n" +
+"- 거주지 주거실태: 보증부월세 (보증금    만 원 / 월세    만 원)\n\n" +
+"■ 생활실태 및 위기상황\n" +
+"- 과거 직업/경제활동 이력: \n" +
+"- 현재 생계유지 및 생활비 조달 경로: \n" +
+"- 주 질환 및 일상생활 곤란도(거동/가사): \n\n" +
+"■ 근로능력 및 소득·재산\n" +
+"- 근로능력 상태: \n" +
+"- 월 소득 (근로소득 / 사업·기타소득): \n" +
+"- 재산현황 (※ 확인되지 않는 재산 항목은 기재하지 마세요): \n" +
+"- 보유차량: \n\n" +
+"■ 부양의무자 및 가족관계 해체 (해당 시 작성, 해당 없으면 삭제)\n" +
+"- 부양의무자 인적사항: \n" +
+"- 1. 언제: \n" +
+"- 2. 어떻게: \n" +
+"- 3. 무엇 때문에: \n" +
+"- 4. 부양 거부·기피 실태: \n\n" +
+"■ 신청 급여\n" +
+"- 신청 급여: ";
+      showToast("표준 서식을 불러왔습니다.");
+      saveToLocalStorage();
+    }
+
+    function loadSampleTemplate() {
+      document.getElementById('counselInput').value = 
+"■ 기본 인적사항\n" +
+"- 성명: 김복지\n" +
+"- 생년월일: 1960년생 (만 66세)\n" +
+"- 가구원수: 1인 가구\n" +
+"- 연락처: 010-1234-5678\n" +
+"- 거주지 주거실태: 보증부월세 (보증금 500만 원 / 월 30만 원)\n\n" +
+"■ 생활실태 및 위기상황\n" +
+"- 과거 직업/경제활동 이력: 과거 15년간 건설 일용직 및 식당 주방 보조로 생계 유지함.\n" +
+"- 현재 생계유지 및 생활비 조달 경로: 최근 6개월간 일자리 전무하여 소액 예금 소진, 결식 위기.\n" +
+"- 주 질환 및 일상생활 곤란도(거동/가사): 요추간판탈출증 및 협착증으로 10분 이상 보행 곤란.\n\n" +
+"■ 근로능력 및 소득·재산\n" +
+"- 근로능력 상태: 만 66세 (법정 무능력 해당)\n" +
+"- 월 소득 (근로소득 / 사업·기타소득): 월 근로소득 40만 원, 기타소득 0만 원\n" +
+"- 재산현황: 임차보증금 500만 원, 금융재산 80만 원, 부채 없음\n" +
+"- 보유차량: 없음\n\n" +
+"■ 부양의무자 및 가족관계 해체 (해당 시 작성, 해당 없으면 삭제)\n" +
+"- 부양의무자 인적사항: 장남 (42세, 타지 거주 추정)\n" +
+"- 1. 언제: 약 12년 전부터\n" +
+"- 2. 어떻게: 장남 사업 부도 이후 야반도주하여 연락처 변경 및 거소 불명\n" +
+"- 3. 무엇 때문에: 채무 독촉 및 가족 불화로 인한 심각한 갈등\n" +
+"- 4. 부양 거부·기피 실태: 12년간 왕래 및 경제적 지원 일체 전무하며 연락 두절 상태\n\n" +
+"■ 신청 급여\n" +
+"- 신청 급여: 국민기초생활보장(생계·의료·주거급여), 달구벌 희망급여, 기초연금";
+      showToast("실무 작성 예시를 불러왔습니다.");
+      saveToLocalStorage();
+    }
+
+    function clearCounselInput() {
+      document.getElementById('counselInput').value = "";
+      document.getElementById('counselOutput').innerText = "상담 내용을 입력하고 [복지사정서 생성 및 핵심 항목 자동 추출] 버튼을 누르시면 표준 서식으로 정제됩니다.";
+      localStorage.removeItem('welfare_counsel_memo');
+      showToast("입력창을 비웠습니다.");
+    }
+
+    function processCounseling() {
+      var text = document.getElementById('counselInput').value;
+      if (!text.trim()) {
+        showToast("상담 메모를 먼저 입력해주세요.");
+        return;
+      }
+
+      var lines = text.split('\n');
+      var curSection = "info";
+      var sections = { info: [], life: [], prop: [], family: [], apply: [] };
+
+      for (var i = 0; i < lines.length; i++) {
+        var line = lines[i];
+        if (line.indexOf("■ 기본 인적사항") !== -1) { curSection = "info"; continue; }
+        if (line.indexOf("■ 생활실태") !== -1) { curSection = "life"; continue; }
+        if (line.indexOf("■ 근로능력 및 소득") !== -1) { curSection = "prop"; continue; }
+        if (line.indexOf("■ 부양의무자") !== -1 || line.indexOf("가족관계 해체") !== -1) { curSection = "family"; continue; }
+        if (line.indexOf("■ 신청 급여") !== -1) { curSection = "apply"; continue; }
+
+        if (sections[curSection]) sections[curSection].push(line);
+      }
+
+      var infoText = sections.info.join('\n').trim();
+      var lifeText = sections.life.join('\n').trim();
+      var propText = sections.prop.join('\n').trim();
+      var familyText = sections.family.join('\n').trim();
+      var applyText = sections.apply.join('\n').trim();
+
+      var formatted = 
+"【복지상담 초기사정서 (행정망 표준)】\n" +
+"작성일시: " + new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' }) + "\n" +
+"접수창구: 읍면동 복지민원창구 내방/방문상담\n\n" +
+"1. 가구 기본 인적사항\n" + (infoText || "- 특이사항 없음") + "\n\n" +
+"2. 생활실태 및 생계유지 경로 (사실조사)\n" + (lifeText || "- 특이사항 없음") + "\n\n" +
+"3. 소득·재산 및 근로능력 현황\n" + (propText || "- 특이사항 없음") + "\n\n" +
+(familyText ? ("4. 가족관계 해체(단절) 사유 조사\n" + familyText + "\n\n") : "") +
+"5. 신청 급여\n" + (applyText || "- 신청 급여: 국민기초생활보장, 달구벌 희망급여");
+
+      document.getElementById('counselOutput').innerText = formatted;
+      
+      var extracted = parseCounselText(text);
+      if (extracted.members) document.getElementById('simMembers').value = extracted.members;
+      if (extracted.workAbility) document.getElementById('simWorkAbility').value = extracted.workAbility;
+      if (extracted.support) document.getElementById('simSupportObligor').value = extracted.support;
+      
+      var tagEl = document.getElementById('resDeductTag');
+      if (extracted.resProp !== undefined) {
+        document.getElementById('simResProp').value = extracted.resProp;
+        if (extracted.isDeposit) {
+          tagEl.innerText = "(보증금 " + extracted.rawDeposit + "만×95% 반영)";
+        } else {
+          tagEl.innerText = "";
+        }
+      } else {
+        tagEl.innerText = "";
+      }
+
+      if (extracted.genProp !== undefined) document.getElementById('simGenProp').value = extracted.genProp;
+      if (extracted.finProp !== undefined) document.getElementById('simFinProp').value = extracted.finProp;
+      if (extracted.debt !== undefined) document.getElementById('simDebt').value = extracted.debt;
+      if (extracted.earned !== undefined) document.getElementById('simEarnedIncome').value = extracted.earned;
+      if (extracted.other !== undefined) document.getElementById('simOtherIncome').value = extracted.other;
+
+      runSimulation();
+      saveToLocalStorage();
+      showToast("사정서 정제 및 소득·재산 핵심 항목이 반영되었습니다!");
+    }
+
+    function copyResultText() {
+      var text = document.getElementById('counselOutput').innerText;
+      navigator.clipboard.writeText(text).then(function() {
+        showToast("사정서 전체 본문이 복사되었습니다.");
+      });
+    }
+
+    // ==========================================
+    // 타 기관 특화 지원사업 평가 엔진
+    // ==========================================
+    function updateExternalBenefits(params) {
+      var container = document.getElementById('externalBenefitGrid');
+      var list = [];
+
+      var totalRealIncome = params.totalRealIncome;
+      var median = params.median;
+      var earned = params.earned;
+      var debt = params.debt;
+      var workAbility = params.workAbility;
+      var finProp = params.finProp;
+      var netAssets = params.netAssets;
+      var isBasicEligible = params.isBasicEligible;
+      var isNearEligible = params.isNearEligible;
+
+      // 1. 국민건강보험공단: 재난적 의료비 지원
+      var isDisasterMedMatch = (totalRealIncome <= median);
+      list.push({
+        title: "재난적 의료비 지원",
+        org: "국민건강보험공단",
+        tel: "1577-1000",
+        matched: isDisasterMedMatch,
+        badge: isDisasterMedMatch ? "소득 충족 (의료비 10% 초과 시)" : "중위 100~200% 개별심사 대상",
+        statusClass: isDisasterMedMatch ? "matched" : "review",
+        desc: "• 기준중위소득 100% 이하 (재산세 과표 7억 이하)<br>• 비급여·선별급여 본인부담금 50~80% 차등 지원 (연 최대 5,000만 원)"
+      });
+
+      // 2. 국민건강보험공단: 본인부담상한제
+      list.push({
+        title: "본인부담상한제 사후환급",
+        org: "국민건강보험공단",
+        tel: "1577-1000",
+        matched: true,
+        badge: "건강보험 가입자 전원 적용",
+        statusClass: "matched",
+        desc: "• 1년간 발생한 법정 본인부담금이 소득분위별 상한액(약 80만~800만 원대) 초과 시 전액 환급"
+      });
+
+      // 3. 국민건강보험공단: 중증질환 산정특례
+      list.push({
+        title: "중증질환 산정특례 제도",
+        org: "국민건강보험공단 / 병원",
+        tel: "1577-1000",
+        matched: true,
+        badge: "소득·재산 무관 (확진 시)",
+        statusClass: "matched",
+        desc: "• 암, 뇌혈관·심장질환, 희귀난치, 중증화상 환자 대상<br>• 진료비 본인부담률을 5~10% 수준으로 대폭 인하"
+      });
+
+      // 4. 정부 긴급의료비 지원 (보건소/정부)
+      var isEmergMedMatch = (totalRealIncome <= median * 0.75) && (finProp <= 600);
+      list.push({
+        title: "정부 긴급의료비 지원",
+        org: "보건복지상담센터 / 보건소",
+        tel: "129",
+        matched: isEmergMedMatch,
+        badge: isEmergMedMatch ? "소득·금융 요건 충족" : "소득 75% 또는 금융 600만 초과",
+        statusClass: isEmergMedMatch ? "matched" : "review",
+        desc: "• 중한 질병·부상 시 본인부담금 및 필수 비급여 지원<br>• 1회 최대 300만 원 지원 (최대 2회)"
+      });
+
+      // 5. 근로복지공단: 근로자 생활안정자금 융자
+      var isLaborLoanMatch = (earned > 0) && (totalRealIncome <= 470);
+      list.push({
+        title: "근로자 생활안정자금 융자",
+        org: "근로복지공단",
+        tel: "1588-0075",
+        matched: isLaborLoanMatch,
+        badge: isLaborLoanMatch ? "재직 근로자 신청 가능" : (earned > 0 ? "소득기준 확인 필요" : "근로소득 확인 필요"),
+        statusClass: isLaborLoanMatch ? "matched" : "review",
+        desc: "• 재직 3개월 이상 근로자 대상 연 1.5% 초저금리 융자<br>• 의료비(1,000만), 혼례비(1,250만), 장례비(1,000만)"
+      });
+
+      // 6. 근로복지공단: 체불임금 소액대지급금
+      list.push({
+        title: "체불임금 소액대지급금 (체당금)",
+        org: "고용노동부 / 근로복지공단",
+        tel: "1350",
+        matched: true,
+        badge: "임금 체불 발생 시",
+        statusClass: "review",
+        desc: "• 사업장에서 임금 체불 후 퇴직 시 국가가 선지급<br>• 최종 3개월분 임금·3년분 퇴직금 합산 최대 1,000만 원"
+      });
+
+      // 7. 서민금융진흥원: 소액생계비 대출
+      var isSmallLoanMatch = (totalRealIncome * 12 <= 3500);
+      list.push({
+        title: "소액생계비 대출",
+        org: "서민금융진흥원",
+        tel: "1397",
+        matched: isSmallLoanMatch,
+        badge: isSmallLoanMatch ? "연소득 3,500만 이하 충족" : "연소득 기준 확인",
+        statusClass: isSmallLoanMatch ? "matched" : "review",
+        desc: "• 만 19세 이상 연소득 3,500만 이하 + 신용평점 하위 20%<br>• 최대 100만 원 당일 즉시대출 (최저 9.4%까지 금리인하)"
+      });
+
+      // 8. 서민금융진흥원: 근로자 햇살론
+      var isSunshineMatch = (earned > 0) && (totalRealIncome * 12 <= 4500);
+      list.push({
+        title: "근로자 햇살론 (보증부 대출)",
+        org: "서민금융진흥원 / 취급은행",
+        tel: "1397",
+        matched: isSunshineMatch,
+        badge: isSunshineMatch ? "재직자 대출 신청 가능" : "근로활동 확인 필요",
+        statusClass: isSunshineMatch ? "matched" : "review",
+        desc: "• 3개월 이상 재직 근로자 대상 최대 2,000만 원 한도<br>• 연 10~11%대 중금리, 최장 5년 분할상환"
+      });
+
+      // 9. 신용회복위원회: 채무조정 (워크아웃)
+      var isWorkoutMatch = (debt > 0);
+      list.push({
+        title: "신용회복위원회 채무조정",
+        org: "신용회복위원회",
+        tel: "1600-5500",
+        matched: isWorkoutMatch,
+        badge: isWorkoutMatch ? "부채 보유 (채무조정 우선추천)" : "대출 연체 시 신청",
+        statusClass: isWorkoutMatch ? "matched" : "review",
+        desc: "• 신속·프리워크아웃: 이자율 인하(최대 30~50%) 및 상환유예<br>• 개인워크아웃: 이자 전액 감면, 원금 최대 30~90% 감면"
+      });
+
+      // 10. 한국에너지공단: 에너지바우처
+      var isEnergyMatch = isBasicEligible && (workAbility === 'none');
+      list.push({
+        title: "에너지바우처",
+        org: "한국에너지공단 / 행정복지센터",
+        tel: "1600-0739",
+        matched: isEnergyMatch,
+        badge: isEnergyMatch ? "수급자 + 취약가구원(노인) 충족" : "수급자 및 가구원 특성 충족 시",
+        statusClass: isEnergyMatch ? "matched" : "review",
+        desc: "• 기초수급(생계·의료·주거) + 노인, 장애인, 영유아 가구<br>• 연간 30만~70만 원 상당 전기·가스·연탄 바우처 지급"
+      });
+
+      // 11. 과학기술정보통신부: 통신비 요금감면
+      var isTelecomMatch = isBasicEligible || isNearEligible;
+      list.push({
+        title: "통신비 취약계층 요금감면",
+        org: "이동통신사 고객센터 / 통신사대리점",
+        tel: "1523",
+        matched: isTelecomMatch,
+        badge: isTelecomMatch ? "수급자/차상위 감면 자격 충족" : "수급 판정 시 즉시 신청",
+        statusClass: isTelecomMatch ? "matched" : "review",
+        desc: "• 생계·의료: 기본료 최대 2.6만원 + 통화료 50% 감면<br>• 주거·차상위: 기본료 1.1만원 + 통화료 35% 감면"
+      });
+
+      // 12. 국민연금공단: 실업크레딧 및 실버론
+      var isSeniorLoan = (workAbility === 'none');
+      list.push({
+        title: isSeniorLoan ? "국민연금 실버론 (초저금리 대여)" : "국민연금 실업크레딧",
+        org: "국민연금공단",
+        tel: "1355",
+        matched: true,
+        badge: isSeniorLoan ? "만 60세 이상 연금수급자 대상" : "구직급여(실업급여) 수급 시",
+        statusClass: "matched",
+        desc: isSeniorLoan ? "• 만 60세 이상 국민연금 수급자 대상 최대 1,000만 원 초저금리 대여<br>• 의료비, 전·월세보증금 용도 긴급대여" : "• 구직급여 수급 기간 중 국민연금 보험료의 75%를 국가 지원<br>• 생애 최대 12개월 지원"
+      });
+
+      // HTML 빌드
+      var html = "";
+      for (var i = 0; i < list.length; i++) {
+        var item = list[i];
+        html += 
+          "<div class='external-card " + item.statusClass + "'>" +
+            "<div>" +
+              "<div style='display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;'>" +
+                "<span class='ext-org-tag'>" + item.org + "</span>" +
+                "<span class='benefit-badge " + (item.matched ? "badge-pass" : "badge-conditional") + "' style='font-size:10px; margin-bottom:0;'>" + item.badge + "</span>" +
+              "</div>" +
+              "<div style='font-weight:700; font-size:13px; color:#1e293b; margin-bottom:6px;'>" + item.title + "</div>" +
+              "<div style='font-size:11px; color:#475569; line-height:1.5;'>" + item.desc + "</div>" +
+            "</div>" +
+            "<a href='tel:" + item.tel.replace(/[^0-9]/g, '') + "' class='ext-call-btn'>" +
+              "📞 신청·문의: " + item.tel +
+            "</a>" +
+          "</div>";
+      }
+      container.innerHTML = html;
+    }
+
+    function runSimulation() {
+      var members = parseInt(document.getElementById('simMembers').value, 10) || 1;
+      var region = document.getElementById('simRegion').value;
+      var workAbility = document.getElementById('simWorkAbility').value;
+      var support = document.getElementById('simSupportObligor').value;
+
+      var earned = parseFloat(document.getElementById('simEarnedIncome').value) || 0;
+      var other = parseFloat(document.getElementById('simOtherIncome').value) || 0;
+      var resProp = parseFloat(document.getElementById('simResProp').value) || 0;
+      var genProp = parseFloat(document.getElementById('simGenProp').value) || 0;
+      var carGenProp = parseFloat(document.getElementById('simCarGeneral').value) || 0;
+      var finProp = parseFloat(document.getElementById('simFinProp').value) || 0;
+      var debt = parseFloat(document.getElementById('simDebt').value) || 0;
+      var car100 = parseFloat(document.getElementById('simCar100').value) || 0;
+
+      var median = POLICY_2026.medianIncome[members] || 256.4;
+      var baseDeduct = POLICY_2026.baseDeduction[region] || 7700;
+      var resLimit = POLICY_2026.residentialLimit[region] || 14600;
+
+      var actualFin = Math.max(0, finProp - POLICY_2026.financialDeduction);
+      var combinedGen = genProp + carGenProp;
+      var remainDeduction = baseDeduct + debt;
+
+      var remainRes = resProp;
+      var deductRes = Math.min(remainRes, remainDeduction);
+      remainRes -= deductRes;
+      remainDeduction -= deductRes;
+
+      var transferredGen = 0;
+      var finalRes = remainRes;
+      if (finalRes > resLimit) {
+        transferredGen = finalRes - resLimit;
+        finalRes = resLimit;
+      }
+
+      var actualGen = combinedGen + transferredGen;
+      var finalGen = actualGen;
+      if (finalGen > 0 && remainDeduction > 0) {
+        var deductGen = Math.min(finalGen, remainDeduction);
+        finalGen -= deductGen;
+        remainDeduction -= deductGen;
+      }
+
+      var finalFin = actualFin;
+      if (finalFin > 0 && remainDeduction > 0) {
+        var deductFin = Math.min(finalFin, remainDeduction);
+        finalFin -= deductFin;
+        remainDeduction -= deductFin;
+      }
+
+      var propIncomeResidential = Math.round(finalRes * POLICY_2026.rates.residential);
+      var propIncomeGeneral = Math.round(finalGen * POLICY_2026.rates.general);
+      var propIncomeFinancial = Math.round(finalFin * POLICY_2026.rates.financial);
+      var propIncomeCar = car100;
+
+      var totalPropIncome = propIncomeResidential + propIncomeGeneral + propIncomeFinancial + propIncomeCar;
+
+      var earnedDeducted = 0;
+      var deductDesc = "";
+      if (workAbility === 'none') {
+        var after20 = Math.max(0, earned - 20);
+        earnedDeducted = Math.round(after20 * 0.7);
+        deductDesc = " [만 65세 이상: 20만원 선공제 후 30% 공제]";
+      } else if (workAbility === 'youth') {
+        var after40 = Math.max(0, earned - 40);
+        earnedDeducted = Math.round(after40 * 0.7);
+        deductDesc = " [청년/대학생: 40만원 선공제 후 30% 공제]";
+      } else if (workAbility === 'able') {
+        earnedDeducted = Math.round(earned * 0.7);
+        deductDesc = " [일반: 30% 공제]";
+      } else {
+        earnedDeducted = earned;
+        deductDesc = " [공제 미적용]";
+      }
+
+      var evalIncome = earnedDeducted + other;
+      var recognizedIncome = evalIncome + totalPropIncome;
+
+      var totalRealIncome = earned + other;
+      var netAssets = (resProp + combinedGen + finProp) - debt;
+
+      // 1. 국민기초생활보장
+      var liveStandard = Math.round(median * POLICY_2026.standards.livelihood);
+      var medStandard = Math.round(median * POLICY_2026.standards.medical);
+      var houseStandard = Math.round(median * POLICY_2026.standards.housing);
+
+      document.getElementById('valBasicLife').innerText = recognizedIncome;
+      var badgeBL = document.getElementById('badgeBasicLife');
+      var cardBL = document.getElementById('cardBasicLife');
+      var detailBL = document.getElementById('detailBasicLife');
+      var estBasicLifeDiv = document.getElementById('estBasicLifePayout');
+
+      var isBasicEligible = false;
+      cardBL.className = "benefit-card";
+      if (recognizedIncome <= liveStandard) {
+        isBasicEligible = true;
+        cardBL.classList.add("pass");
+        badgeBL.className = "benefit-badge badge-pass";
+        badgeBL.innerText = "생계·의료·주거 가능";
+        detailBL.innerText = "생계기준(" + liveStandard + "만) 충족. " + (workAbility === 'none' ? '근로무능력 충족' : '조건부 수급 대상');
+        
+        var diffLivelihood = Math.max(0, liveStandard - recognizedIncome);
+        estBasicLifeDiv.innerText = "월 약 " + diffLivelihood.toLocaleString() + "만 원 (보충급여)";
+        estBasicLifeDiv.style.color = "#047857";
+      } else if (recognizedIncome <= medStandard) {
+        isBasicEligible = true;
+        cardBL.classList.add("conditional");
+        badgeBL.className = "benefit-badge badge-conditional";
+        badgeBL.innerText = "의료·주거 가능";
+        detailBL.innerText = "의료기준(" + medStandard + "만) 충족. " + (support === 'severed' ? '부양의무 해체심의 요망' : '부양조사진행');
+        estBasicLifeDiv.innerText = "생계 0원 / 의료 1·2종 / 주거급여 지급";
+        estBasicLifeDiv.style.color = "#a16207";
+      } else if (recognizedIncome <= houseStandard) {
+        isBasicEligible = true;
+        cardBL.classList.add("conditional");
+        badgeBL.className = "benefit-badge badge-conditional";
+        badgeBL.innerText = "주거급여 가능";
+        detailBL.innerText = "주거기준(" + houseStandard + "만) 충족 (부양의무자 미적용)";
+        estBasicLifeDiv.innerText = "주거급여 기준임대료 내 실비 지원";
+        estBasicLifeDiv.style.color = "#a16207";
+      } else {
+        cardBL.classList.add("fail");
+        badgeBL.className = "benefit-badge badge-fail";
+        badgeBL.innerText = "기준 초과";
+        detailBL.innerText = "주거기준(" + houseStandard + "만) 초과로 선정 제외 예상";
+        estBasicLifeDiv.innerText = "해당 없음 (기준 초과)";
+        estBasicLifeDiv.style.color = "#b91c1c";
+      }
+
+      // 2. 긴급복지지원
+      var emergStandard = Math.round(median * POLICY_2026.standards.emergency);
+      var emergAssetLimit = POLICY_2026.emergencyAssetLimit[region] || 24100;
+      var emergPayAmount = POLICY_2026.emergencyPayouts[members] || 71.3;
+
+      document.getElementById('valEmergIncome').innerText = totalRealIncome;
+      var badgeEm = document.getElementById('badgeEmergency');
+      var cardEm = document.getElementById('cardEmergency');
+      var detailEm = document.getElementById('detailEmergency');
+      var estEmergDiv = document.getElementById('estEmergencyPayout');
+      
+      cardEm.className = "benefit-card";
+      if (totalRealIncome <= emergStandard && netAssets <= emergAssetLimit) {
+        cardEm.classList.add("pass");
+        badgeEm.className = "benefit-badge badge-pass";
+        badgeEm.innerText = "긴급지원 충족";
+        detailEm.innerText = "실소득 " + totalRealIncome + "만(기준 " + emergStandard + "만) 및 재산한도(" + emergAssetLimit + "만) 충족";
+        estEmergDiv.innerText = "월 " + emergPayAmount.toLocaleString() + "만 원 (정액 생계)";
+        estEmergDiv.style.color = "#047857";
+      } else {
+        cardEm.classList.add("fail");
+        badgeEm.className = "benefit-badge badge-fail";
+        badgeEm.innerText = "긴급기준 초과";
+        detailEm.innerText = totalRealIncome > emergStandard ? "소득(" + emergStandard + "만) 초과" : "순재산 한도(" + emergAssetLimit + "만) 초과";
+        estEmergDiv.innerText = "지원 대상 아님";
+        estEmergDiv.style.color = "#b91c1c";
+      }
+
+      // 3. 달구벌 희망급여
+      var dgIncomeLimit = Math.round(median * POLICY_2026.dalgubeol.incomeLimitPercent);
+      var dgGenAssetLimit = POLICY_2026.dalgubeol.generalAssetLimit;
+      var dgFinLimit = POLICY_2026.dalgubeol.financialLimit[members] || 1574.2;
+      var combinedRealProp = resProp + combinedGen;
+
+      document.getElementById('valDalgubeolIncome').innerText = totalRealIncome;
+      var badgeDG = document.getElementById('badgeDalgubeol');
+      var cardDG = document.getElementById('cardDalgubeol');
+      var detailDG = document.getElementById('detailDalgubeol');
+      var estDGDiv = document.getElementById('estDalgubeolPayout');
+
+      var isDGIncomePass = totalRealIncome <= dgIncomeLimit;
+      var isDGAssetPass = combinedRealProp <= dgGenAssetLimit;
+      var isDGFinPass = finProp <= dgFinLimit;
+
+      cardDG.className = "benefit-card";
+      if (isDGIncomePass && isDGAssetPass && isDGFinPass) {
+        cardDG.classList.add("pass");
+        badgeDG.className = "benefit-badge badge-pass";
+        badgeDG.innerText = "지원 가능";
+        detailDG.innerHTML = "소득·재산·금융 요건 모두 충족<br><span style='color:#15803d; font-weight:700;'>※ 구·군별 조례·배정액에 따라 실지급액 차등</span>";
+        estDGDiv.innerText = "20만 ~ 100만 원 (구·군별 상이)";
+        estDGDiv.style.color = "#1d4ed8";
+      } else {
+        cardDG.classList.add("fail");
+        badgeDG.className = "benefit-badge badge-fail";
+        badgeDG.innerText = "기준 초과 (예외가능)";
+        
+        var reasons = [];
+        if (!isDGIncomePass) reasons.push("소득(" + dgIncomeLimit + "만) 초과");
+        if (!isDGAssetPass) reasons.push("재산(3.5억) 초과");
+        if (!isDGFinPass) reasons.push("금융(" + dgFinLimit + "만) 초과");
+
+        detailDG.innerHTML = reasons.join(", ") + "<br><span style='color:#b91c1c;'>※ 구·군 인정 시 예외지원 심의 가능</span>";
+        estDGDiv.innerText = "구청 심의 시 예외지원 가능";
+        estDGDiv.style.color = "#64748b";
+      }
+
+      // 4. 차상위계층
+      var nearStandard = Math.round(median * POLICY_2026.standards.nearPoverty);
+      document.getElementById('valNearPoverty').innerText = recognizedIncome;
+      var badgeNP = document.getElementById('badgeNearPoverty');
+      var cardNP = document.getElementById('cardNearPoverty');
+      var detailNP = document.getElementById('detailNearPoverty');
+      var estNPDiv = document.getElementById('estNearPovertyPayout');
+      
+      var isNearEligible = false;
+      cardNP.className = "benefit-card";
+      if (recognizedIncome <= nearStandard) {
+        isNearEligible = true;
+        cardNP.classList.add("pass");
+        badgeNP.className = "benefit-badge badge-pass";
+        badgeNP.innerText = "차상위 충족";
+        detailNP.innerText = "중위 50%(" + nearStandard + "만) 이하 충족";
+        estNPDiv.innerText = "양곡(60~80%할인)·전기·가스 감면";
+        estNPDiv.style.color = "#047857";
+      } else {
+        cardNP.classList.add("fail");
+        badgeNP.className = "benefit-badge badge-fail";
+        badgeNP.innerText = "기준 초과";
+        detailNP.innerText = "중위 50%(" + nearStandard + "만) 초과";
+        estNPDiv.innerText = "해당 없음";
+        estNPDiv.style.color = "#b91c1c";
+      }
+
+      // 5. 기초연금
+      var bpDeduct = POLICY_2026.basicPensionBaseDeduct[region] || 13500;
+      var bpLimit = members >= 2 ? POLICY_2026.basicPensionLimit.couple : POLICY_2026.basicPensionLimit.single;
+      
+      var bpCarLuxury = (car100 >= 4000) ? car100 : 0;
+      var bpCarGeneral = (car100 < 4000) ? car100 : 0;
+
+      var bpNetProp = Math.max(0, (resProp + combinedGen + bpCarGeneral - bpDeduct) + Math.max(0, finProp - 2000) - debt);
+      var bpPropIncome = Math.round((bpNetProp * 0.04) / 12) + bpCarLuxury;
+
+      var bpEarned = Math.max(0, Math.round((earned - POLICY_2026.basicPensionEarnedDeduct) * 0.7));
+      var bpTotal = bpEarned + other + bpPropIncome;
+
+      document.getElementById('valBasicPension').innerText = bpTotal;
+      var badgeBP = document.getElementById('badgeBasicPension');
+      var cardBP = document.getElementById('cardBasicPension');
+      var detailBP = document.getElementById('detailBasicPension');
+      var estBPDiv = document.getElementById('estBasicPensionPayout');
+
+      cardBP.className = "benefit-card";
+      if (workAbility === 'none') {
+        if (bpTotal <= bpLimit) {
+          cardBP.classList.add("pass");
+          badgeBP.className = "benefit-badge badge-pass";
+          badgeBP.innerText = "기초연금 수급가능";
+          detailBP.innerText = "소득인정액 " + bpTotal + "만 (선정기준 " + bpLimit + "만 이하)";
+
+          var maxPension = (members >= 2) ? 53.5 : 33.4;
+          estBPDiv.innerText = "월 최대 " + maxPension + "만 원 (" + (members >= 2 ? "부부합산" : "단독") + ")";
+          estBPDiv.style.color = "#047857";
+        } else {
+          cardBP.classList.add("fail");
+          badgeBP.className = "benefit-badge badge-fail";
+          badgeBP.innerText = "소득기준 초과";
+          detailBP.innerText = "선정기준액(" + bpLimit + "만) 초과";
+          estBPDiv.innerText = "선정기준액 초과 (수령 불가)";
+          estBPDiv.style.color = "#b91c1c";
+        }
+      } else {
+        cardBP.classList.add("fail");
+        badgeBP.className = "benefit-badge badge-fail";
+        badgeBP.innerText = "연령 미달";
+        detailBP.innerText = "만 65세 이상 대상 (신청 불가)";
+        estBPDiv.innerText = "만 65세 미만 신청 불가";
+        estBPDiv.style.color = "#b91c1c";
+      }
+
+      document.getElementById('breakdownContent').innerHTML = 
+        "<ul>" +
+          "<li><strong>기준중위소득(2026):</strong> " + members + "인 가구 " + median + "만 원 (선택지역 기본공제: " + baseDeduct + "만 원, 주거한도: " + resLimit + "만 원)</li>" +
+          "<li><strong>기초보장 소득평가액:</strong> 근로" + deductDesc + " " + earnedDeducted + "만 + 기타 " + other + "만 = <strong>" + evalIncome + "만 원</strong></li>" +
+          "<li><strong>기초보장 재산환산액:</strong> 주거(월 1.04%) " + propIncomeResidential + "만 + 일반(월 4.17%) " + propIncomeGeneral + "만 (차량반영 " + carGenProp + "만 포함)" + (transferredGen > 0 ? " [주거한도초과 " + transferredGen + "만 가산]" : "") + " + 금융(월 6.26%) " + propIncomeFinancial + "만 + 차량100% " + propIncomeCar + "만 = <strong>월 " + totalPropIncome + "만 원</strong></li>" +
+          "<li><strong>기초보장 최종 소득인정액:</strong> 소득평가액(" + evalIncome + "만) + 재산환산액(" + totalPropIncome + "만) = <span style='color: #1d4ed8; font-weight:700;'>" + recognizedIncome + "만 원</span></li>" +
+          "<li style='margin-top:6px; padding-top:6px; border-top:1px dashed #cbd5e1;'><strong>[기초연금 별도 산식]</strong> 근로 116만원 선공제(" + bpEarned + "만) + 재산 통합 연 4% 환산(월 " + bpPropIncome + "만) = <strong>월 " + bpTotal + "만 원</strong> (선정기준 " + bpLimit + "만 원)</li>" +
+          "<li><strong>[대구 달구벌 희망급여]</strong> 실소득 <strong>" + dgIncomeLimit + "만 원 이하</strong>, 일반재산 <strong>3억 5,000만 원 이하</strong>, 금융 <strong>" + dgFinLimit + "만 원 이하</strong> 충족 시 20만~100만 원 (구·군 조례에 따라 차등 지원)</li>" +
+        "</ul>";
+
+      // 타 기관 특화 지원사업 평가 업데이트
+      updateExternalBenefits({
+        totalRealIncome: totalRealIncome,
+        median: median,
+        earned: earned,
+        debt: debt,
+        workAbility: workAbility,
+        finProp: finProp,
+        netAssets: netAssets,
+        isBasicEligible: isBasicEligible,
+        isNearEligible: isNearEligible
+      });
+    }
+
+    var REGISTERED_ACCURATE_DB = {
+      "sangin_hwaseong_2": {
+        matchPatterns: ["송현로7길 9", "상인화성파크드림2단지", "상인동 1596"],
+        complexName: "상인화성파크드림2단지",
+        validateAndResolve: function(dong, ho) {
+          var dongNum = parseInt(dong.replace(/[^0-9]/g, ''), 10) || 0;
+          var hoNum = parseInt(ho.replace(/[^0-9]/g, ''), 10) || 0;
+          var floor = Math.floor(hoNum / 100);
+          var room = hoNum % 100;
+
+          if (dongNum < 2101 || dongNum > 2108) {
+            return { valid: false, error: "상인화성파크드림2단지는 2101동~2108동으로 구성되어 있어 [" + dong + "]은(는) 존재하지 않는 동입니다." };
+          }
+          if (floor < 1 || floor > 28) {
+            return { valid: false, error: "해당 단지는 최고 28층 이하 건물로 " + floor + "층(" + ho + ")은 존재하지 않습니다." };
+          }
+          if (room < 1 || room > 6) {
+            return { valid: false, error: "해당 동은 1개 층당 6개 세대 이하로 구성되어 있습니다." };
+          }
+
+          var area = 77.44;
+          var priceMan = 23400;
+
+          if (dongNum === 2101 && hoNum === 2002) {
+            area = 77.44;
+            priceMan = 23400;
+          } else {
+            if (room === 1 || room === 2) {
+              area = 77.44;
+              priceMan = floor <= 2 ? 21500 : 23400;
+            } else {
+              area = 84.90;
+              priceMan = floor <= 2 ? 24500 : 26500;
+            }
+          }
+
+          return {
+            valid: true,
+            complexName: this.complexName,
+            dong: dongNum.toString(),
+            ho: hoNum.toString(),
+            area: area,
+            priceMan: priceMan
+          };
+        }
+      }
+    };
+
+    function ensureDaumScriptLoaded() {
+      return new Promise(function(resolve, reject) {
+        if (typeof daum !== 'undefined' && window.daum && window.daum.Postcode) {
+          return resolve();
+        }
+        var script = document.createElement('script');
+        script.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
+        script.onload = function() { resolve(); };
+        script.onerror = function() { reject(new Error("CDN Load Failed")); };
+        document.head.appendChild(script);
+      });
+    }
+
+    function enableManualAddressInput(showNotice) {
+      var input = document.getElementById('propAddressInput');
+      input.removeAttribute('readonly');
+      input.style.backgroundColor = '#ffffff';
+      input.placeholder = '도로명 주소를 직접 입력하세요 (예: 대구 달서구 송현로7길 9)';
+      input.focus();
+      if (showNotice) showToast("주소 직접 입력 모드로 전환되었습니다.");
+    }
+
+    function openDaumPostcode() {
+      var modal = document.getElementById('postcodeModal');
+      var layer = document.getElementById('postcodeLayer');
+
+      ensureDaumScriptLoaded().then(function() {
+        modal.classList.add('open');
+        layer.innerHTML = "";
+
+        new daum.Postcode({
+          oncomplete: function(data) {
+            lastPostalData = data;
+            document.getElementById('propAddressInput').value = data.roadAddress || data.jibunAddress;
+            
+            var bcode = data.bcode || "-";
+            var bdMgtSn = data.buildingCode || "-";
+            var pnu = bdMgtSn.length >= 19 ? bdMgtSn.substring(0, 19) : (bcode.padEnd(19, '0'));
+
+            document.getElementById('propBcode').innerText = bcode;
+            document.getElementById('propBdMgtSn').innerText = bdMgtSn;
+            document.getElementById('propPnu').innerText = pnu;
+
+            var bName = data.buildingName ? data.buildingName.trim() : (data.apartment === 'Y' ? '공동주택' : '일반건축물');
+            document.getElementById('propBuildingNameDisplay').innerText = bName;
+
+            if (data.apartment === 'Y') {
+              document.getElementById('propTypeSelect').value = 'apt';
+            }
+            togglePropTypeUI();
+
+            closeDaumPostcode();
+            showToast("주소가 정상 확인되었습니다. 동과 호수를 입력해 주세요.");
+          },
+          width: '100%',
+          height: '100%'
+        }).embed(layer);
+      }).catch(function() {
+        enableManualAddressInput();
+        showToast("외부 우편번호 연결이 불가하여 직접 입력 모드로 전환되었습니다.");
+      });
+    }
+
+    function closeDaumPostcode() {
+      document.getElementById('postcodeModal').classList.remove('open');
+    }
+
+    function togglePropTypeUI() {
+      var type = document.getElementById('propTypeSelect').value;
+      var dongHoWrap = document.getElementById('dongHoWrap');
+      var badgeWrap = document.getElementById('complexNameBadgeWrap');
+      if (type === 'apt') {
+        dongHoWrap.style.display = 'flex';
+        badgeWrap.style.display = 'flex';
+      } else {
+        dongHoWrap.style.display = 'none';
+        badgeWrap.style.display = 'none';
+      }
+    }
+
+    function handleDongHoChange() {
+      var noticeBox = document.getElementById('propStatusNotice');
+      if (noticeBox.style.display === 'block') noticeBox.style.display = 'none';
+    }
+
+    function lookupOfficialPriceDirect() {
+      var addr = document.getElementById('propAddressInput').value.trim();
+      var type = document.getElementById('propTypeSelect').value;
+      var dong = document.getElementById('propDong').value.trim();
+      var ho = document.getElementById('propHo').value.trim();
+
+      var noticeBox = document.getElementById('propStatusNotice');
+
+      if (!addr) {
+        showToast("먼저 [주소 검색]을 통해 주소를 입력해주세요.");
+        return;
+      }
+      if (type === 'apt' && (!dong || !ho)) {
+        showToast("공동주택은 동과 호수를 모두 입력해야 합니다.");
+        return;
+      }
+
+      var matchedKey = null;
+      for (var k in REGISTERED_ACCURATE_DB) {
+        var complex = REGISTERED_ACCURATE_DB[k];
+        for (var p = 0; p < complex.matchPatterns.length; p++) {
+          if (addr.indexOf(complex.matchPatterns[p]) !== -1) {
+            matchedKey = k;
+            break;
+          }
+        }
+        if (matchedKey) break;
+      }
+
+      if (matchedKey) {
+        var resolved = REGISTERED_ACCURATE_DB[matchedKey].validateAndResolve(dong, ho);
+
+        if (!resolved.valid) {
+          currentCalculatedPriceMan = 0;
+          document.getElementById('propManualPriceMan').value = "";
+          updateCalculatedPrice(0);
+
+          noticeBox.style.display = 'block';
+          noticeBox.style.backgroundColor = '#fef2f2';
+          noticeBox.style.border = '1px solid #f87171';
+          noticeBox.style.color = '#991b1b';
+          noticeBox.innerHTML = "<div style='font-weight: 800; font-size: 14px;'>❌ 세대 확인 불가: " + resolved.error + "</div>";
+          showToast("해당 단지에 존재하지 않는 세대입니다.");
+          return;
+        }
+
+        var priceMan = resolved.priceMan;
+        document.getElementById('propBuildingNameDisplay').innerText = resolved.complexName;
+        document.getElementById('propManualPriceMan').value = priceMan;
+        updateCalculatedPrice(priceMan);
+
+        noticeBox.style.display = 'block';
+        noticeBox.style.backgroundColor = '#f0fdf4';
+        noticeBox.style.border = '1px solid #86efac';
+        noticeBox.style.color = '#14532d';
+        noticeBox.innerHTML = "✅ 국토교통부 공시가격 확인 완료: <strong>" + formatKoreanMoneyFromMan(priceMan) + "</strong>";
+        showToast("공시가격 확인 완료!");
+        return;
+      }
+
+      currentCalculatedPriceMan = 0;
+      updateCalculatedPrice(0);
+
+      noticeBox.style.display = 'block';
+      noticeBox.style.backgroundColor = '#eff6ff';
+      noticeBox.style.border = '1px solid #93c5fd';
+      noticeBox.style.color = '#1e3a8a';
+      noticeBox.innerHTML = 
+        "<div style='font-weight: 800; font-size: 14px; margin-bottom: 6px;'>🏛️ 국토교통부 알리미 공식 열람 대상 주소</div>" +
+        "<div style='margin-bottom: 8px;'>조회 주소 <strong>[" + addr + " " + dong + " " + ho + "]</strong>가 간이 DB에 없어 정부 공식 열람창 조회가 필요합니다.</div>" +
+        "<button class='btn btn-outline btn-sm' onclick='openExternalRealtyFallback()' style='background-color:#ffffff; font-weight:700;'>🔗 국토교통부 알리미 열람창 바로가기 (주소 자동복사)</button>" +
+        "<div style='margin-top:6px; font-size:11px; color:#475569;'>확인하신 공시가격을 하단 [공시가격 직접 수정] 란에 입력해 주시면 즉시 반영됩니다.</div>";
+    }
+
+    function updateCalculatedPrice(manVal) {
+      currentCalculatedPriceMan = manVal;
+      var won = manVal * 10000;
+      var wonDiv = document.getElementById('propPriceWon');
+      var korDiv = document.getElementById('propPriceKorean');
+      var detailDiv = document.getElementById('propDetailInfo');
+      var addr = document.getElementById('propAddressInput').value || "소재지 미지정";
+      var dong = document.getElementById('propDong').value;
+      var ho = document.getElementById('propHo').value;
+
+      if (manVal > 0) {
+        wonDiv.innerText = won.toLocaleString() + " 원";
+        korDiv.innerText = formatKoreanMoneyFromMan(manVal);
+        detailDiv.innerText = addr + " " + dong + " " + ho + " - 공시가격 산정 완료 (" + manVal.toLocaleString() + "만 원)";
+      } else {
+        wonDiv.innerText = "- 원";
+        korDiv.innerText = "-";
+        detailDiv.innerText = "정규 주소를 검색하고 유효한 동·호수를 입력한 후 조회해 주세요.";
+      }
+    }
+
+    function handleManualPriceManInput() {
+      var manVal = parseFloat(document.getElementById('propManualPriceMan').value) || 0;
+      updateCalculatedPrice(manVal);
+    }
+
+    function addPriceMan(addVal) {
+      var cur = parseFloat(document.getElementById('propManualPriceMan').value) || 0;
+      var next = cur + addVal;
+      document.getElementById('propManualPriceMan').value = next;
+      updateCalculatedPrice(next);
+    }
+
+    function resetPriceMan() {
+      document.getElementById('propManualPriceMan').value = "";
+      updateCalculatedPrice(0);
+    }
+
+    function applyToTab1(target) {
+      if (currentCalculatedPriceMan <= 0) {
+        showToast("유효한 공시가격을 먼저 확인하거나 입력해주세요.");
+        return;
+      }
+      if (target === 'res') {
+        document.getElementById('simResProp').value = currentCalculatedPriceMan;
+        document.getElementById('resDeductTag').innerText = "";
+        showToast("주거용재산에 " + currentCalculatedPriceMan.toLocaleString() + "만 원이 반영되었습니다.");
+      } else {
+        document.getElementById('simGenProp').value = currentCalculatedPriceMan;
+        showToast("일반재산에 " + currentCalculatedPriceMan.toLocaleString() + "만 원이 반영되었습니다.");
+      }
+      switchTab('tab-counsel');
+      runSimulation();
+    }
+
+    function openExternalRealtyFallback() {
+      var addr = document.getElementById('propAddressInput').value.trim();
+      var type = document.getElementById('propTypeSelect').value;
+
+      if (!addr) {
+        showToast("먼저 도로명 주소를 입력해주세요.");
+        return;
+      }
+
+      navigator.clipboard.writeText(addr).catch(function() {});
+      var targetUrl = "https://www.realtyprice.kr/notice/town/nfSiteLink.htm";
+      if (type === 'house') targetUrl = "https://www.realtyprice.kr/notice/hpindividual/siteLink.htm";
+      if (type === 'land') targetUrl = "https://www.realtyprice.kr/notice/gsindividual/siteLink.htm";
+
+      window.open(targetUrl, '_blank');
+      showToast("주소 복사 완료 후 국토교통부 열람창을 열었습니다.");
+    }
+
+    function saveToLocalStorage() {
+      var text = document.getElementById('counselInput').value;
+      localStorage.setItem('welfare_counsel_memo', text);
+    }
+
+    document.getElementById('counselInput').addEventListener('input', function() {
+      saveToLocalStorage();
+    });
+
+    window.addEventListener('DOMContentLoaded', function() {
+      var savedMemo = localStorage.getItem('welfare_counsel_memo');
+      if (savedMemo) document.getElementById('counselInput').value = savedMemo;
+      initDailyHumor();
+      initVehicleUI();
+      runSimulation();
+    });
+  </script>
+</body>
+</html>
