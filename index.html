@@ -529,19 +529,17 @@
 
     /* ==================== 인쇄(Print) CSS 설정 ==================== */
     @page {
-      /* 브라우저 상·하단 머리글/바닥글(페이지 타이틀, URL 등) 영역을 여백 0으로 강제 소거 */
       margin: 0;
     }
 
     @media print {
       body {
         background-color: #ffffff !important;
-        padding: 15mm 12mm 15mm 12mm !important; /* 문서 자체 패딩으로 여백 확보 */
+        padding: 15mm 12mm 15mm 12mm !important;
         font-size: 10.5pt !important;
         color: #000000 !important;
       }
       
-      /* 출력 시 프로그램 헤더, 배너, 탭, 버튼 등 웹 UI 완전 제거 */
       header,
       .header-title,
       .header-title h1,
@@ -560,7 +558,6 @@
         display: none !important;
       }
 
-      /* 1번 탭 사정서 및 결과 기본 인쇄 */
       #tab-counsel {
         display: block !important;
         visibility: visible !important;
@@ -633,7 +630,6 @@
         padding: 8px !important;
       }
 
-      /* 민원인 전용 구비서류 인쇄 모드 활성화 시 */
       body.print-doc-mode #tab-counsel,
       body.print-doc-mode #tab-vehicle,
       body.print-doc-mode .main-container > * {
@@ -759,6 +755,7 @@
           </div>
         </div>
 
+        <!-- 소득·재산 입력란 (모든 input 스타일을 흰색 기본 스타일로 통일) -->
         <div class="field-row" style="background-color: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1;">
           <div>
             <label>월 근로소득 (만원)</label>
@@ -778,7 +775,7 @@
           </div>
           <div>
             <label>차량 일반재산 반영분 (만원)</label>
-            <input type="number" id="simCarGeneral" value="0" min="0" oninput="runSimulation()" style="background-color: #f1f5f9;" title="2번 탭에서 자동 계산되어 연동됩니다">
+            <input type="number" id="simCarGeneral" value="0" min="0" oninput="runSimulation()" title="2번 탭에서 자동 계산되어 연동됩니다">
           </div>
           <div>
             <label>금융재산 (만원)</label>
@@ -790,7 +787,7 @@
           </div>
           <div>
             <label>100% 환산차량 (만원)</label>
-            <input type="number" id="simCar100" value="0" min="0" oninput="runSimulation()" style="background-color: #fef2f2; border-color: #fca5a5;" title="2번 탭에서 자동 판정됩니다">
+            <input type="number" id="simCar100" value="0" min="0" oninput="runSimulation()" title="2번 탭에서 자동 판정됩니다">
           </div>
         </div>
 
@@ -1226,7 +1223,7 @@
                 🏠 1번 탭 주거용재산 즉시 반영
               </button>
               <button class="btn btn-outline" style="flex: 1;" onclick="applyToTab1('gen')">
-                🏞️️ 1번 탭 일반재산 즉시 반영
+                🏞️ 1번 탭 일반재산 즉시 반영
               </button>
             </div>
           </div>
@@ -1832,7 +1829,6 @@
       });
     }
 
-    // 사정서 인쇄 함수 (인쇄 시 상단 타이틀 임시 제거)
     function safePrintDoc() {
       var originTitle = document.title;
       document.title = "";
@@ -1842,20 +1838,15 @@
       }, 1000);
     }
 
-    // ========================================================
-    // 상황별 구비서류 자동 선별 및 직접 편집 로직
-    // ========================================================
     function generateRequiredDocumentsArray(params) {
       var docList = [];
       var text = document.getElementById('counselInput').value;
 
-      // 1. 공통 기본 필수 서류
       docList.push("사회보장급여 신청서 (행정복지센터 비치, 창구 작성)");
       docList.push("신분증 (주민등록증, 운전면허증, 여권 중 택1)");
       docList.push("금융정보등제공동의서 (가구원 및 부양의무자 서명 필수)");
       docList.push("급여 입금용 통장 사본 (본인 명의 계좌)");
 
-      // 2. 주거 형태별 서류
       if (params.resProp > 0 || text.indexOf("월세") !== -1 || text.indexOf("전세") !== -1 || text.indexOf("보증금") !== -1) {
         if (text.indexOf("무료") !== -1 || text.indexOf("사용대차") !== -1) {
           docList.push("무료임대확인서 (사용대차) (친인척 등 주택 무상거주 시 소유자 확인)");
@@ -1864,7 +1855,6 @@
         }
       }
 
-      // 3. 소득 활동별 서류
       if (params.earned > 0) {
         docList.push("소득증빙 서류 (최근 3개월분 급여명세서 또는 임금통장 거래내역)");
       }
@@ -1872,7 +1862,6 @@
         docList.push("소득금액증명원 또는 휴·폐업사실증명 (세무서 또는 홈택스 발급)");
       }
 
-      // 4. 근로능력 및 건강 상태별 서류
       if (params.workAbility === 'illness' || text.indexOf("진단서") !== -1 || text.indexOf("협착증") !== -1 || text.indexOf("질환") !== -1 || text.indexOf("수술") !== -1) {
         docList.push("근로능력평가용 진단서 및 진료기록사본 (최근 2개월 이내 발급, ※ 정신질환·정신과는 최근 3개월 이상 진료기록지 필수)");
       }
@@ -1880,12 +1869,10 @@
         docList.push("복지카드 (장애인등록증) (장애인 특례 및 감면 혜택 적용)");
       }
 
-      // 5. 부채 보유 시
       if (params.debt > 0) {
         docList.push("금융거래확인서 및 부채증명원 (금융기관 발급, 원금·이자 연체 및 잔액 확인)");
       }
 
-      // 6. 가족관계 해체 사유 시
       if (params.support === 'severed') {
         docList.push("가족관계 해체 사유서 (장기간 연락·왕래 두절 경위 소명, 창구 양식)");
         docList.push("통장거래내역서 (최근 1년 이상 경제적 지원 단절 및 미지원 입증용)");
@@ -1949,7 +1936,6 @@
       printDocHtml += "</ul>";
       document.getElementById('printGuideDocList').innerHTML = printDocHtml;
 
-      // 브라우저 머리글(제목) 출력을 원천 차단하기 위해 타이틀 일시 제거
       var originTitle = document.title;
       document.title = "";
 
@@ -1974,7 +1960,6 @@
       var isBasicEligible = params.isBasicEligible;
       var isNearEligible = params.isNearEligible;
 
-      // 1. 국민건강보험공단: 재난적 의료비 지원
       var isDisasterMedMatch = (totalRealIncome <= median);
       list.push({
         title: "재난적 의료비 지원",
@@ -1986,7 +1971,6 @@
         desc: "• 기준중위소득 100% 이하 (재산세 과표 7억 이하)<br>• 비급여·선별급여 본인부담금 50~80% 차등 지원 (연 최대 5,000만 원)"
       });
 
-      // 2. 국민건강보험공단: 본인부담상한제
       list.push({
         title: "본인부담상한제 사후환급",
         org: "국민건강보험공단",
@@ -1997,7 +1981,6 @@
         desc: "• 1년간 발생한 법정 본인부담금이 소득분위별 상한액(약 80만~800만 원대) 초과 시 전액 환급"
       });
 
-      // 3. 국민건강보험공단: 중증질환 산정특례
       list.push({
         title: "중증질환 산정특례 제도",
         org: "국민건강보험공단 / 병원",
@@ -2008,7 +1991,6 @@
         desc: "• 암, 뇌혈관·심장질환, 희귀난치, 중증화상 환자 대상<br>• 진료비 본인부담률을 5~10% 수준으로 대폭 인하"
       });
 
-      // 4. 정부 긴급의료비 지원 (긴급지원 금융한도 연동)
       var emergFinLim = POLICY_2026.emergencyFinLimit[params.members] || 856.4;
       var isEmergMedMatch = (totalRealIncome <= median * 0.75) && (finProp <= emergFinLim);
       list.push({
@@ -2021,7 +2003,6 @@
         desc: "• 중한 질병·부상 시 본인부담금 및 필수 비급여 지원<br>• 1회 최대 300만 원 지원 (최대 2회)"
       });
 
-      // 5. 근로복지공단: 근로자 생활안정자금 융자
       var isLaborLoanMatch = (earned > 0) && (totalRealIncome <= 470);
       list.push({
         title: "근로자 생활안정자금 융자",
@@ -2033,7 +2014,6 @@
         desc: "• 재직 3개월 이상 근로자 대상 연 1.5% 초저금리 융자<br>• 의료비(1,000만), 혼례비(1,250만), 장례비(1,000만)"
       });
 
-      // 6. 근로복지공단: 체불임금 소액대지급금
       list.push({
         title: "체불임금 소액대지급금 (체당금)",
         org: "고용노동부 / 근로복지공단",
@@ -2044,7 +2024,6 @@
         desc: "• 사업장에서 임금 체불 후 퇴직 시 국가가 선지급<br>• 최종 3개월분 임금·3년분 퇴직금 합산 최대 1,000만 원"
       });
 
-      // 7. 서민금융진흥원: 소액생계비 대출
       var isSmallLoanMatch = (totalRealIncome * 12 <= 3500);
       list.push({
         title: "소액생계비 대출",
@@ -2056,7 +2035,6 @@
         desc: "• 만 19세 이상 연소득 3,500만 이하 + 신용평점 하위 20%<br>• 최대 100만 원 당일 즉시대출 (최저 9.4%까지 금리인하)"
       });
 
-      // 8. 서민금융진흥원: 근로자 햇살론
       var isSunshineMatch = (earned > 0) && (totalRealIncome * 12 <= 4500);
       list.push({
         title: "근로자 햇살론 (보증부 대출)",
@@ -2068,7 +2046,6 @@
         desc: "• 3개월 이상 재직 근로자 대상 최대 2,000만 원 한도<br>• 연 10~11%대 중금리, 최장 5년 분할상환"
       });
 
-      // 9. 신용회복위원회: 채무조정
       var isWorkoutMatch = (debt > 0);
       list.push({
         title: "신용회복위원회 채무조정",
@@ -2080,7 +2057,6 @@
         desc: "• 신속·프리워크아웃: 이자율 인하(최대 30~50%) 및 상환유예<br>• 개인워크아웃: 이자 전액 감면, 원금 최대 30~90% 감면"
       });
 
-      // 10. 한국에너지공단: 에너지바우처
       var isEnergyMatch = isBasicEligible && (workAbility === 'none');
       list.push({
         title: "에너지바우처",
@@ -2092,7 +2068,6 @@
         desc: "• 기초수급(생계·의료·주거) + 노인, 장애인, 영유아 가구<br>• 연간 30만~70만 원 상당 전기·가스·연탄 바우처 지급"
       });
 
-      // 11. 과학기술정보통신부: 통신비 요금감면
       var isTelecomMatch = isBasicEligible || isNearEligible;
       list.push({
         title: "통신비 취약계층 요금감면",
@@ -2104,7 +2079,6 @@
         desc: "• 생계·의료: 기본료 최대 2.6만원 + 통화료 50% 감면<br>• 주거·차상위: 기본료 1.1만원 + 통화료 35% 감면"
       });
 
-      // 12. 국민연금공단: 실업크레딧 및 실버론
       var isSeniorLoan = (workAbility === 'none');
       list.push({
         title: isSeniorLoan ? "국민연금 실버론 (초저금리 대여)" : "국민연금 실업크레딧",
@@ -2429,7 +2403,6 @@
           "<li><strong>[대구 달구벌 희망급여]</strong> 실소득 <strong>" + dgIncomeLimit + "만 원 이하</strong>, 일반재산 <strong>3억 5,000만 원 이하</strong>, 금융 <strong>" + dgFinLimit + "만 원 이하</strong> 충족 시 20만~100만 원 (구·군 조례에 따라 차등 지원)</li>" +
         "</ul>";
 
-      // 구비서류 자동 선별 목록 갱신
       updateRequiredDocuments({
         members: members,
         earned: earned,
@@ -2440,7 +2413,6 @@
         support: support
       });
 
-      // 타 기관 특화 지원사업 평가 업데이트
       updateExternalBenefits({
         members: members,
         totalRealIncome: totalRealIncome,
