@@ -4,11 +4,11 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>스마트 복지상담 &amp; 소득인정액 판정기 (행정안전부 AI 공통기반 호환 에디션)</title>
+  <title>스마트 복지상담 &amp; 소득인정액 판정기 (행정안전부 AI 공통기반 연계형)</title>
   
   <!-- ========================================================
        [공통 개발 규칙 2: 모델 비종속 아키텍처]
-       WASM 로컬 연산 및 행안부 AI 공통기반 연계 모델(Gemma, Llama, Solar 등) 지원
+       WASM 로컬 연산 및 행안부 AI 공통기반 연계 모델 지원
        ======================================================== -->
   <script type="module">
     import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
@@ -16,7 +16,6 @@
     env.allowLocalModels = false;
     env.useBrowserCache = true;
 
-    // 표준 모델 비종속 어댑터 (Model-Agnostic Interface)
     window.ModelAgnosticAdapter = {
       activeModel: 'wasm_tiny',
       wasmClassifier: null,
@@ -327,6 +326,8 @@
     .btn-outline:hover { background-color: #f1f5f9; color: #0f172a; }
     .btn-danger { background-color: #fee2e2; border-color: #fca5a5; color: #b91c1c; }
     .btn-danger:hover { background-color: #fecaca; }
+    .btn-happy { background-color: #047857; color: #ffffff; border-color: #047857; }
+    .btn-happy:hover { background-color: #065f46; }
 
     label {
       display: block;
@@ -396,6 +397,7 @@
       border-radius: 6px;
       overflow: hidden;
       margin-top: 6px;
+      margin-bottom: 14px;
     }
     .official-doc-table th {
       background: #f8fafc;
@@ -423,6 +425,21 @@
       background-color: #fef2f2;
       padding: 1px 4px;
       border-radius: 3px;
+    }
+
+    /* 행복e음 전산 규격 텍스트 미리보기 박스 */
+    .happyeum-preview-box {
+      background: #f8fafc;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 12px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #1e293b;
+      font-family: monospace, sans-serif;
+      max-height: 150px;
+      overflow-y: auto;
+      white-space: pre-wrap;
     }
 
     .matrix-grid {
@@ -507,7 +524,6 @@
 
   <div class="main-container">
 
-    <!-- 모델 비종속 툴바 & 원본보호 가공데이터 명시 -->
     <div class="gov-spec-toolbar">
       <div class="gov-model-select-group">
         <span>🔌 연결 AI 백엔드 모델:</span>
@@ -532,14 +548,14 @@
         <div class="step-num">1</div>
         <div>
           <div class="step-text-title">기초생활보장 법정 상담 서식 입력</div>
-          <div class="step-text-desc">인적·근로능력·소득·재산·부양의무자</div>
+          <div class="step-text-desc">자유 구술 또는 표준 서식 입력</div>
         </div>
       </div>
       <div class="step-flow-item active">
         <div class="step-num">2</div>
         <div>
           <div class="step-text-title">온디바이스 AI 위기·단절·결손 진단</div>
-          <div class="step-text-desc">신호등 위험도 &amp; 사정서 생성</div>
+          <div class="step-text-desc">신호등 위험도 &amp; 행복e음 상담일지 자동 정제</div>
         </div>
       </div>
       <div class="step-flow-item active">
@@ -577,23 +593,22 @@
           </div>
         </div>
         
-        <textarea id="counselInput" class="counsel-textarea" placeholder="상단의 [📋 표준 서식] 버튼을 누르면 법정 기초생활수급자 맞춤 상담 서식이 자동으로 채워집니다."></textarea>
+        <textarea id="counselInput" class="counsel-textarea" placeholder="민원인의 구술 기록을 편하게 입력하세요('아들이랑 연락 끊긴 지 10년 넘었고 보증금 2천에 통장 200만원 있고 일 못함...'). 온디바이스 AI가 행복e음 전산 등록용 공문서 서식으로 자동 정제합니다."></textarea>
         
         <div style="margin-top: 14px;">
           <button class="btn btn-primary" style="width: 100%; font-size: 15px; padding: 13px; font-weight: 800; background: linear-gradient(135deg, #1d4ed8, #2563eb); border-radius: 8px; box-shadow: 0 4px 10px rgba(29, 78, 216, 0.25);" onclick="processCounseling()">
-            ⚡ 1클릭 복지사정서 생성 &amp; 온디바이스 AI 모의판정 실행
+            ⚡ 1클릭 행복e음 사정서 생성 &amp; 온디바이스 AI 모의판정 실행
           </button>
         </div>
       </div>
 
-      <!-- 우측: 사정서 & 누락 방지 패널 -->
+      <!-- 우측: 사정서 & 행복e음 복사 패널 -->
       <div class="card">
         <div class="card-header">
           <div class="card-title">📋 [2단계] AI 분석 소견 &amp; 초기 사정표 (독립 산출물)</div>
           <div style="display: flex; gap: 6px;">
-            <button class="btn btn-outline btn-sm" onclick="exportArtifactJSON()" title="산출물을 독립 JSON 파일로 추출합니다">💾 산출물 추출</button>
-            <button class="btn btn-outline btn-sm" onclick="viewAuditTrailLog()">🔍 감사 증적(Trace)</button>
-            <button class="btn btn-outline btn-sm" onclick="copyResultText()">📄 복사</button>
+            <button class="btn btn-happy btn-sm" onclick="copyHappyEumDocument()" title="행복e음 상담이력에 바로 붙여넣을 수 있는 표준 텍스트를 복사합니다">📋 행복e음 상담일지 복사</button>
+            <button class="btn btn-outline btn-sm" onclick="exportArtifactJSON()">💾 JSON 추출</button>
             <button class="btn btn-outline btn-sm" onclick="window.print()">🖨️ 인쇄</button>
           </div>
         </div>
@@ -627,7 +642,7 @@
         </div>
 
         <div style="font-weight: 800; font-size: 13px; color: #1e3a8a; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
-          <span>📑 초기 복지상담 조사 사정서</span>
+          <span>📑 초기 복지상담 조사 사정표</span>
           <span style="font-size: 11px; color: #15803d; font-weight: 700;">● 하단 모의판정 자동 연동됨</span>
         </div>
         
@@ -657,6 +672,13 @@
             <td id="docActionInfo" style="color: #1d4ed8; font-weight: 700;">국민기초생활보장 맞춤형 급여 모의판정 진행</td>
           </tr>
         </table>
+
+        <!-- [신규] 행복e음 초기상담이력 전산 등록 규격 텍스트 뷰어 -->
+        <div style="font-weight: 800; font-size: 12.5px; color: #047857; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center;">
+          <span>💻 행복e음 상담이력 등록용 규격 텍스트 (자동 정제)</span>
+          <span style="font-size: 11px; color: #64748b;">상단 녹색 버튼 클릭 시 즉시 복사</span>
+        </div>
+        <div class="happyeum-preview-box" id="happyEumOutput">상담 메모를 입력하고 판정을 실행하면 행복e음 전산에 바로 붙여넣을 수 있는 공식 상담일지가 이곳에 자동으로 생성됩니다.</div>
       </div>
     </div>
 
@@ -768,7 +790,6 @@
           </div>
         </div>
 
-        <!-- 4. 차상위계층 판정 -->
         <div class="benefit-card" id="cardNearPoverty">
           <div>
             <span class="benefit-badge badge-fail" id="badgeNearPoverty">판정 대기</span>
@@ -834,6 +855,7 @@
     var currentRiskStatus = { detected: false, signals: [], auditLogs: [] };
     var currentMissingKeys = [];
     var lastGeneratedArtifact = null;
+    var currentHappyEumText = "";
 
     var SECTION_TEMPLATES = {
       household: "• 세대주 성명: 미기재 (만 00세, 1인 가구)",
@@ -944,11 +966,9 @@
       }
     };
 
-    // ==========================================
-    // [개선 완료] 자연어 무소득/수입없음 패턴 완벽 인식 검증 파서
-    // ==========================================
     function parseCounselTextWithValidation(text) {
       var res = {
+        name: null,
         members: null,
         age: null,
         workAbility: null,
@@ -963,7 +983,10 @@
         missingFields: []
       };
 
-      // 1. 가구원 / 인적사항 검증
+      // 1. 성명 및 인적사항
+      var mName = text.match(/성명\s*[:：]?\s*([가-힣a-zA-Z]{2,10})/) || text.match(/대상자\s*([가-힣a-zA-Z]{2,10})/);
+      if (mName) res.name = mName[1].trim();
+
       var mMem = text.match(/([1-7])\s*인\s*가구/) || text.match(/가구원\s*수\s*[:：]?\s*([1-7])/);
       if (mMem) res.members = parseInt(mMem[1], 10);
       else if (text.indexOf("단독") !== -1 || text.indexOf("1인") !== -1) res.members = 1;
@@ -979,16 +1002,16 @@
         }
       }
 
-      // 2. 건강상태 및 근로능력 검증
+      // 2. 건강상태 및 근로능력
       if (res.age && res.age >= 65) {
         res.workAbility = "none";
-        res.healthDesc = "만 65세 이상 노인특례 대상";
+        res.healthDesc = "만 65세 이상 노인 (법정 근로무능력자)";
       } else if (text.indexOf("근로무능력") !== -1 || text.indexOf("65세 이상") !== -1) {
         res.workAbility = "none";
         res.healthDesc = "법정 근로무능력자 해당";
       } else if (text.indexOf("협착증") !== -1 || text.indexOf("관절염") !== -1 || text.indexOf("디스크") !== -1 || text.indexOf("진단서") !== -1 || text.indexOf("질환") !== -1 || text.indexOf("일 못 하") !== -1) {
         res.workAbility = "illness";
-        res.healthDesc = "질환·부상 (근로능력평가 진단서 징구 대상)";
+        res.healthDesc = "만성질환/거동불편 (근로능력평가 진단서 징구 대상)";
       } else if (text.indexOf("근로능력 있음") !== -1 || text.indexOf("일반 근로") !== -1) {
         res.workAbility = "able";
         res.healthDesc = "건강상태 양호 (일반 근로능력자)";
@@ -996,18 +1019,17 @@
         res.missingFields.push({ key: "health", label: "건강상태 및 근로능력 유무" });
       }
 
-      // 3. 소득 사항 검증 (자연어 무소득/수입없음 패턴 완벽 인식)
+      // 3. 소득 사항
       var mEarned = text.match(/근로\s*(?:및|·)?\s*사업소득\s*[:：]?\s*([0-9,]+)/) ||
                     text.match(/(?:월\s*소득|월급|급여|수입|소득)[^\d\n]*([0-9,]+)\s*(?:만\s*원|만원|원)/);
 
-      // 소득이 없다는 다양한 자연어 표현 정규식
       var noIncomePattern = /(?:월\s*소득|소득|수입|월급|돈|벌이|일자리|직업)[^\n.]*(?:없|안\s*벌|못\s*벌|0|제로|전무|단절)|무직|실직|백수|근로\s*활동\s*없음|수입\s*일체\s*없음|소득\s*없음/;
 
       if (mEarned) {
         var num = parseInt(mEarned[1].replace(/,/g, ''), 10);
         res.earned = num > 10000 ? Math.round(num / 10000) : num;
       } else if (noIncomePattern.test(text)) {
-        res.earned = 0; // "월소득 없음", "소득 없다", "무직" 등 모두 정상 0원 인식
+        res.earned = 0;
       } else {
         res.missingFields.push({ key: "income", label: "근로·사업소득 내역" });
       }
@@ -1020,7 +1042,7 @@
         res.other = 0;
       }
 
-      // 4. 주거 형태 및 재산 검증
+      // 4. 주거 형태 및 재산
       var mRes = text.match(/보증금\s*([0-9,]+)\s*만\s*원/) ||
                  text.match(/보증금[^\d]*([0-9,]+)/) ||
                  text.match(/주거용재산[^\d]*([0-9,]+)/);
@@ -1043,7 +1065,7 @@
                   text.match(/빚이[^\d]*([0-9,]+)/);
       res.debt = mDebt ? (parseInt(mDebt[1].replace(/,/g, ''), 10) > 10000 ? Math.round(parseInt(mDebt[1].replace(/,/g, ''), 10)/10000) : parseInt(mDebt[1].replace(/,/g, ''), 10)) : 0;
 
-      // 5. 부양의무자 검증
+      // 5. 부양의무자
       if (text.indexOf("연락두절") !== -1 || text.indexOf("해체사유서") !== -1 || text.indexOf("연락 끊") !== -1 || text.indexOf("10년 전") !== -1 || text.indexOf("단절") !== -1) {
         res.support = "severed";
       } else if (text.indexOf("부양의무자 없음") !== -1 || text.indexOf("가족 없음") !== -1 || text.indexOf("자녀 없음") !== -1) {
@@ -1055,6 +1077,41 @@
       }
 
       return res;
+    }
+
+    // ==========================================
+    // [신규] 자연어 파싱 데이터 기반 행복e음 표준 상담일지 텍스트 자동 생성기
+    // ==========================================
+    function generateHappyEumText(parsed, signals) {
+      var today = new Date().toLocaleDateString('ko-KR');
+      var txt = `[행복e음 초기상담이력 전산등록 표준 서식]
+■ 상담일자: ${today}
+■ 대상자: ${parsed.name || "신청인 본인"} (${parsed.members || 1}인 가구, ${parsed.age ? "만 " + parsed.age + "세" : "연령 확인 요망"})
+
+1. 가구 인적사항 및 건강상태
+ - 가구구성: ${parsed.members || 1}인 단독가구 (실제 생계 및 주거 단독 운영)
+ - 건강상태: ${parsed.healthDesc || "특이 질환 미확인 (일반 근로능력)"}
+ - 근로능력: ${parsed.workAbility === 'none' ? "만 65세 이상 법정 근로무능력자" : (parsed.workAbility === 'illness' ? "질병·부상 근로무능력 판정 심사 필요" : "일반 근로능력자 (자활 대상)")}
+
+2. 소득 현황
+ - 근로·사업소득: 월 ${(parsed.earned || 0).toLocaleString()}만 원 ${(parsed.earned === 0 ? "(무소득 확인)" : "")}
+ - 이전소득: 월 ${(parsed.other || 0).toLocaleString()}만 원 (기초연금 또는 사적지원)
+
+3. 재산 현황
+ - 주거형태: 임차 거주 (보증금 ${(parsed.resProp || 0).toLocaleString()}만 원)
+ - 금융재산: 예금 등 약 ${(parsed.finProp || 0).toLocaleString()}만 원 (생활준비금 공제 범위 내)
+ - 부채현황: 대출금 ${(parsed.debt || 0).toLocaleString()}만 원
+ - 차량보유: 미보유 (100% 환산차량 없음)
+
+4. 부양의무자 조사 (의료급여 기준)
+ - 부양의무자 관계: 1촌 직계혈족(자녀/부모)
+ - 단절 실태: ${parsed.support === 'severed' ? "장기간 연락두절 및 왕래 단절 확인됨. 가족관계 해체사유서 징구 및 지방생활보장위원회 심의 상정 요망." : "부양의무자 일반 조사 대상"}
+
+5. 종합 상담 소견 및 처리계획
+ - 희망급여: 맞춤형 기초생활보장(생계·의료·주거) 및 긴급복지
+ ${signals.length > 0 ? " - 🚨 긴급위기징후 감지: " + signals.map(s => s.label).join(", ") + " -> 긴급지원 우선 연계 및 직권신청 검토." : " - 신청 절차 안내 및 구비서류 징구 후 행복e음 정식 사회보장급여 신청 접수 진행 예정."}`;
+
+      return txt;
     }
 
     async function processCounseling() {
@@ -1135,6 +1192,11 @@
 
       document.getElementById('docActionInfo').innerText = signals.length > 0 ? "🚨 긴급복지 우선 심사 및 안전망 즉각 연계" : (parsed.missingFields.length > 0 ? "⚠️ 누락 조사항목 보충 후 수급 자격 확정 필요" : "국민기초생활보장(생계·의료·주거) 모의판정 진행");
 
+      // 행복e음 전산 등록용 표준 서식 텍스트 렌더링
+      currentHappyEumText = generateHappyEumText(parsed, signals);
+      document.getElementById('happyEumOutput').innerText = currentHappyEumText;
+
+      // 3단계 모의계산기 인풋 필드 반영
       document.getElementById('simMembers').value = parsed.members || 1;
       document.getElementById('simWorkAbility').value = parsed.workAbility || 'able';
       document.getElementById('simSupportObligor').value = parsed.support || 'normal';
@@ -1154,6 +1216,7 @@
           compliance: "원본 자료 불변(Read-Only) 원칙 준수"
         },
         counselRawText: text,
+        happyEumDocumentText: currentHappyEumText,
         parsedAssessment: parsed,
         riskSignals: signals,
         simulatedResults: {
@@ -1165,10 +1228,21 @@
       };
 
       if (parsed.missingFields.length > 0) {
-        showToast("⚠️️ 필수 항목 " + parsed.missingFields.length + "건이 누락되었습니다.");
+        showToast("⚠ 필수 항목 " + parsed.missingFields.length + "건이 누락되었습니다.");
       } else {
-        showToast("사정표 작성 및 3단계 모의계산기에 수치가 성공적으로 반영되었습니다!");
+        showToast("행복e음 상담일지 정제 및 3단계 모의계산기 연동이 완료되었습니다!");
       }
+    }
+
+    // 행복e음 텍스트 클립보드 원클릭 복사 함수
+    function copyHappyEumDocument() {
+      if (!currentHappyEumText) {
+        showToast("먼저 복지사정서를 생성해 주세요.");
+        return;
+      }
+      navigator.clipboard.writeText(currentHappyEumText).then(() => {
+        showToast("📋 행복e음 상담일지 전문이 복사되었습니다! 전산망에 바로 붙여넣으세요.");
+      });
     }
 
     function exportArtifactJSON() {
@@ -1247,7 +1321,6 @@
       var finProp = parseFloat(document.getElementById('simFinProp').value) || 0;
       var debt = parseFloat(document.getElementById('simDebt').value) || 0;
 
-      // 1. 소득평가액 산정 (근로소득 공제)
       var earnedDeduct = 0;
       if (workAbility === 'none') {
         earnedDeduct = Math.max(0, (earned - 20) * 0.3 + 20);
@@ -1259,7 +1332,6 @@
       var finalEarned = Math.max(0, earned - earnedDeduct);
       var incomeVal = Math.round((finalEarned + other) * 10) / 10;
 
-      // 2. 재산의 소득환산액 산정
       var baseDeduct = POLICY_2026.baseDeduction[region] || 7700;
       var remainDeduct = baseDeduct;
 
@@ -1330,7 +1402,7 @@
         ePayout.innerText = "지원 불가";
       }
 
-      // 3. 달구벌
+      // 3. 지자체 자체급여
       document.getElementById('valDalgubeolIncome').innerText = totalRealIncome.toLocaleString();
       var dCard = document.getElementById('cardDalgubeol');
       var dBadge = document.getElementById('badgeDalgubeol');
@@ -1344,7 +1416,7 @@
         dBadge.innerText = "소득 초과";
       }
 
-      // 4. 차상위계층 판정 (버그 수정 완료)
+      // 4. 차상위계층
       document.getElementById('valNearPoverty').innerText = recognized.toLocaleString();
       var nCard = document.getElementById('cardNearPoverty');
       var nBadge = document.getElementById('badgeNearPoverty');
@@ -1447,8 +1519,10 @@
       document.getElementById('riskAlertBanner').style.display = 'none';
       document.getElementById('emergencyPriorityBadge').style.display = 'none';
       document.getElementById('missingAlertBox').style.display = 'none';
+      document.getElementById('happyEumOutput').innerText = "상담 메모를 입력하고 판정을 실행하면 행복e음 전산에 바로 붙여넣을 수 있는 공식 상담일지가 이곳에 자동으로 생성됩니다.";
       currentRiskStatus = { detected: false, signals: [], auditLogs: [] };
       lastGeneratedArtifact = null;
+      currentHappyEumText = "";
       showToast("입력창이 비워졌습니다.");
     }
 
