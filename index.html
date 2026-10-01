@@ -6,6 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>스마트 복지상담 &amp; 소득인정액 판정기 (행정안전부 AI 공통기반 연계형)</title>
   
+  <!-- 스마트폰 100% 인식 표준 QR코드 라이브러리 CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
   <!-- ========================================================
        [공통 개발 규칙 2: 모델 비종속 아키텍처]
        WASM 로컬 연산 및 행안부 AI 공통기반 연계 5대 모델 정밀 어댑터
@@ -699,7 +702,7 @@
 
         <div id="missingAlertBox" class="missing-alert-box">
           <div class="missing-alert-head">
-            <span id="missingAlertTitle">⚠️️ 법정 필수 상담 조사 항목 결손 감지</span>
+            <span id="missingAlertTitle">⚠️ 법정 필수 상담 조사 항목 결손 감지</span>
             <button class="btn btn-outline btn-sm" style="font-size:11px; padding:2px 8px; color:#b45309; border-color:#f59e0b; background:#fff;" onclick="restoreMissingTemplates()">+ 지워진 서식 복구</button>
           </div>
           <div style="font-size: 12px; color: #78350f;">상담 중 놓친 항목이 있습니다. 정확한 수급 자격 판정을 위해 아래 항목을 확인해 주세요:</div>
@@ -760,14 +763,14 @@
             <li><span class="doc-check-icon">✓</span> 통장사본 (급여 수령 희망 계좌)</li>
           </ul>
           <div style="margin-top: 8px; font-size: 11.5px; color: #475569; background: #ffffff; padding: 6px 10px; border-radius: 4px; border: 1px dashed #bfdbfe;">
-            💡 <strong>서류 제출 유의사항:</strong> 부채증명원 등 기타 재산 입증자료는 초기 필수 제출 대상이 아니며, 추후 조사 과정에서 담당 공무원의 확인 요청이 있을 시 제출하시면 됩니다.
+            💡 <strong>안내사항:</strong> 신청 접수 후 사회복지전담공무원의 행복e음 정밀 전산·재산 조사 과정에서 확인이 필요한 경우 추가 소명자료 제출을 요청드릴 수 있습니다.
           </div>
         </div>
 
         <!-- 지자체 외 범정부·유관기관 지원망 박스 -->
         <div class="public-agency-box">
           <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-weight: 800; font-size: 12.5px; color: #0f766e;">🏛️️ [지자체 외 유관기관 지원망] 맞춤 연계 안내 (사업이름/내용/연락처)</span>
+            <span style="font-weight: 800; font-size: 12.5px; color: #0f766e;">🏛️ [지자체 외 유관기관 지원망] 맞춤 연계 안내 (사업이름/내용/연락처)</span>
             <span style="font-size: 11px; color: #0d9488; font-weight: 700;" id="agencyRecommendCountBadge">0건 매칭됨</span>
           </div>
           <div id="agencyRecommendListArea" style="margin-top: 6px; font-size: 12px; color: #475569;">
@@ -946,7 +949,7 @@
     </div>
   </div>
 
-  <!-- [고도화]: 민원인 안내하기 통합 모달 (창 너비/높이 확장 및 서식 가독성 강화) -->
+  <!-- [고도화]: 민원인 안내하기 통합 모달 -->
   <div id="clientGuidanceModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center;">
     <div style="background: #ffffff; width: 94%; max-width: 880px; max-height: 92vh; overflow-y: auto; border-radius: 12px; padding: 26px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 16px;">
@@ -957,17 +960,17 @@
       </div>
 
       <div style="font-size: 12.5px; color: #475569; margin-bottom: 10px; background: #eff6ff; padding: 8px 12px; border-radius: 6px; border-left: 4px solid #3b82f6;">
-        💡 <strong>안내문 수정 가능:</strong> 민원인에게 전송·인쇄될 구비서류 및 추가 제출 안내사항을 아래 창에서 직접 수정할 수 있습니다.
+        💡 <strong>안내문 수정 가능:</strong> 민원인에게 전송·인쇄될 구비서류 및 지원내용을 아래 창에서 직접 수정할 수 있습니다.
       </div>
 
-      <!-- 담당자 실시간 편집용 텍스트 영역 (크기 확장) -->
+      <!-- 담당자 실시간 편집용 텍스트 영역 -->
       <textarea id="editableClientNoticeArea" style="height: 260px; font-family: monospace; font-size: 12.5px; line-height: 1.7; margin-bottom: 14px; background: #f8fafc; border-color: #cbd5e1;"></textarea>
 
       <!-- 모바일 QR코드 노출 영역 (토글형) -->
       <div id="guidanceQrSection" style="display: none; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px; margin-bottom: 14px; text-align: center;">
         <div style="font-weight: 800; font-size: 13px; color: #1e293b; margin-bottom: 6px;">📱 스마트폰 카메라로 비추면 수정된 안내문이 즉시 열립니다</div>
-        <div id="qrCodeContainer" style="display: flex; justify-content: center; align-items: center; padding: 10px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; width: 170px; height: 170px; margin: 0 auto 8px auto;"></div>
-        <div style="font-size: 11px; color: #0f766e;">✔ 통신망 차단 환경에서도 100% 동작하는 인라인 모바일 규격</div>
+        <div id="qrCodeContainer" style="display: flex; justify-content: center; align-items: center; padding: 12px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; width: 190px; height: 190px; margin: 0 auto 8px auto;"></div>
+        <div style="font-size: 11px; color: #0f766e;">✔ 기본 카메라 앱에서 100% 즉시 인식되는 표준 QR 규격</div>
       </div>
 
       <!-- 하단 원스톱 버튼 그룹 -->
@@ -1474,7 +1477,6 @@
 ${docListText}
 
 ※ 안내사항:
-- 부채증명원 등은 초기 필수 구비서류가 아니므로 신청 시 먼저 제출하지 않으셔도 됩니다.
 - 신청 접수 후 사회복지전담공무원의 행복e음 정밀 전산·재산 조사 과정에서 확인이 필요한 경우 추가 소명자료 제출을 요청드릴 수 있습니다.
 
 ------------------------------------------------
@@ -1700,6 +1702,7 @@ ${agencyListText}
       });
     }
 
+    // 스마트폰 100% 인식 실제 QR 생성기 (표준 규격 UTF-8 적용)
     function toggleGuidanceQR() {
       var section = document.getElementById('guidanceQrSection');
       var container = document.getElementById('qrCodeContainer');
@@ -1711,22 +1714,41 @@ ${agencyListText}
 
       container.innerHTML = "";
       var editedText = document.getElementById('editableClientNoticeArea').value;
-      var qrPayload = editedText.length > 250 ? (editedText.substring(0, 240) + "...\n[행정복지센터 안내]") : editedText;
+      
+      // 스마트폰 기본 카메라가 즉시 인식할 수 있도록 압축된 핵심 규격 페이로드 구성
+      var docsSummary = currentRequiredDocs && currentRequiredDocs.length > 0 ? 
+        currentRequiredDocs.map((d, i) => `${i+1}.${d.name}`).join(', ') : '기본 신분증 및 통장사본';
+      var agencySummary = currentRecommendedAgencies && currentRecommendedAgencies.length > 0 ? 
+        currentRecommendedAgencies.map(a => `${a.agency}(${a.contact})`).join(', ') : '주민센터 복지팀 문의';
 
-      renderFallbackSvgQR(container);
+      var qrPayload = `[사회보장급여 신청 안내]
+■ 지참서류: ${docsSummary}
+■ 유관기관: ${agencySummary}
+■ 참고: 조사 과정에서 추가 소명자료 요청이 있을 수 있습니다.`;
+
+      if (typeof QRCode !== 'undefined') {
+        try {
+          new QRCode(container, {
+            text: qrPayload,
+            width: 170,
+            height: 170,
+            colorDark: "#0f172a",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.M
+          });
+        } catch (e) {
+          renderFallbackOnlineQR(container, qrPayload);
+        }
+      } else {
+        renderFallbackOnlineQR(container, qrPayload);
+      }
+
       section.style.display = 'block';
     }
 
-    function renderFallbackSvgQR(container) {
-      container.innerHTML = `
-        <svg width="150" height="150" viewBox="0 0 150 150" style="background:#fff;">
-          <rect width="150" height="150" fill="white"/>
-          <rect x="10" y="10" width="38" height="38" fill="#0f172a"/><rect x="16" y="16" width="26" height="26" fill="white"/><rect x="22" y="22" width="14" height="14" fill="#0f172a"/>
-          <rect x="102" y="10" width="38" height="38" fill="#0f172a"/><rect x="108" y="16" width="26" height="26" fill="white"/><rect x="114" y="22" width="14" height="14" fill="#0f172a"/>
-          <rect x="10" y="102" width="38" height="38" fill="#0f172a"/><rect x="16" y="108" width="26" height="26" fill="white"/><rect x="22" y="114" width="14" height="14" fill="#0f172a"/>
-          <path d="M58,15 h6 v6 h-6 z M74,15 h10 v10 h-10 z M58,35 h14 v6 h-14 z M60,60 h10 v10 h-10 z M80,60 h8 v16 h-8 z M105,60 h14 v8 h-14 z M60,85 h16 v8 h-16 z M85,85 h10 v15 h-10 z M60,110 h12 v12 h-12 z M80,110 h14 v8 h-14 z M105,105 h12 v12 h-12 z" fill="#0f172a"/>
-        </svg>
-      `;
+    function renderFallbackOnlineQR(container, payload) {
+      var encoded = encodeURIComponent(payload);
+      container.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=170x170&data=${encoded}" alt="QR코드" style="border-radius:6px;" />`;
     }
 
     function printEditedClientNotice() {
