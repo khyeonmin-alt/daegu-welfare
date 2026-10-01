@@ -620,7 +620,6 @@
           <div style="display: flex; gap: 6px;">
             <button class="btn btn-happy btn-sm" onclick="copyHappyEumDocument()" title="행복e음 상담이력에 바로 붙여넣을 수 있는 표준 텍스트를 복사합니다">📋 행복e음 상담일지 복사</button>
             <button class="btn btn-outline btn-sm" onclick="exportArtifactJSON()">💾 JSON 추출</button>
-            <button class="btn btn-outline btn-sm" onclick="window.print()">🖨️ 인쇄</button>
           </div>
         </div>
 
@@ -858,31 +857,26 @@
   <div id="toast">알림</div>
 
   <script>
-    // 2026년도 전국 공통 정책 테이블
     var POLICY_2026 = {
       medianIncome: { 1: 256.4, 2: 419.9, 3: 535.9, 4: 649.5, 5: 755.7 },
-      // 전국 지역별 기본재산공제액 (만 원)
       baseDeduction: {
-        seoul: 9900,      // 특별·광역시(서울)
-        gyeonggi: 8000,   // 중소도시(경기·인천)
-        metro: 7700,      // 대도시(기타 광역시·세종)
-        rural: 5300       // 농어촌(그 외 시·군)
+        seoul: 9900,
+        gyeonggi: 8000,
+        metro: 7700,
+        rural: 5300
       },
-      // 주거급여 급지 매핑 (1급지: 서울, 2급지: 경기·인천, 3급지: 광역·세종, 4급지: 그 외)
       housingRegionTier: {
         seoul: 1,
         gyeonggi: 2,
         metro: 3,
         rural: 4
       },
-      // 주거급여 급지별 기준임대료 상한액 (만 원)
       housingStandardRent: {
         1: { 1: 34.1, 2: 38.2, 3: 45.5, 4: 52.7, 5: 54.8 },
         2: { 1: 26.8, 2: 30.1, 3: 35.9, 4: 41.5, 5: 43.1 },
         3: { 1: 21.6, 2: 24.2, 3: 28.8, 4: 33.3, 5: 34.6 },
         4: { 1: 17.8, 2: 19.4, 3: 23.0, 4: 26.5, 5: 27.6 }
       },
-      // 급여별 선정기준 비율
       standards: {
         livelihood: 0.32,
         medical: 0.40,
@@ -923,9 +917,6 @@
       }
     }
 
-    // ========================================================
-    // [FR-05 위기신호 전국 공통 표준 엔진]
-    // ========================================================
     var RiskSignalEngine = {
       riskDefinitions: {
         suicide: {
@@ -1205,7 +1196,7 @@
 
       if (parsed.missingFields.length > 0) {
         missingBox.style.display = "block";
-        missingTitle.innerText = "⚠️ 법정 필수 상담 조사 항목 [" + parsed.missingFields.length + "건] 결손 감지";
+        missingTitle.innerText = "⚠️️ 법정 필수 상담 조사 항목 [" + parsed.missingFields.length + "건] 결손 감지";
         var tagHtml = "";
         parsed.missingFields.forEach(function(f) {
           tagHtml += "<span class='missing-tag'>❌ " + f.label + "</span>";
@@ -1385,9 +1376,6 @@
       content.innerHTML = html;
     }
 
-    // ==========================================
-    // [전국 공통 룰 엔진 연산]
-    // ==========================================
     function runSimulation() {
       var members = parseInt(document.getElementById('simMembers').value, 10) || 1;
       var region = document.getElementById('simRegion').value;
