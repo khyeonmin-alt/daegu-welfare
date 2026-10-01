@@ -69,7 +69,7 @@
         
         return new Promise((resolve) => {
           setTimeout(() => {
-            const hasRisk = /(죽고|자살|때려|쫓겨|단전|유기|방치|월세\s*밀려|퇴거|학대)/.test(text);
+            const hasRisk = /(죽고|자살|때려|쫓겨|단전|유기|방치|월세\s*밀려|퇴거|학대|감금|폭행|성매매|고독사|시신)/.test(text);
             const dynamicScore = hasRisk ? (0.91 + (Math.random() * 0.06)) : (0.78 + (Math.random() * 0.08));
             const actualLatency = spec.latency + Math.floor(Math.random() * 50);
             resolve({
@@ -127,7 +127,7 @@
       flex-wrap: wrap;
     }
     .header-title h1 {
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 800;
       color: #0f172a;
       letter-spacing: -0.5px;
@@ -628,7 +628,7 @@
       </div>
     </div>
 
-    <!-- 3단계 시각적 프로세스 워크플로우 인디케이터 -->
+    <!-- 3단계 시각적 프로세스 워크플로우 인디케이터[cite: 1, 2] -->
     <div class="step-flow-bar">
       <div class="step-flow-item active">
         <div class="step-num">1</div>
@@ -653,15 +653,15 @@
       </div>
     </div>
 
-    <!-- FR-05: 온디바이스 실시간 위기신호 탐지 경고 배너 -->
+    <!-- 법정 신고의무 및 위기신호 탐지 경고 배너 -->
     <div id="riskAlertBanner" class="risk-alert-banner" style="display: none;">
       <div class="risk-alert-title">
         <span style="display: flex; align-items: center; gap: 8px;">
           <span style="font-size: 18px;">🚨</span>
-          <span id="riskAlertMainLabel">즉각적 개입 필요 위기 신호 감지</span>
+          <span id="riskAlertMainLabel">법정 신고의무 대상 및 즉각 개입 위기 포착</span>
           <span style="font-size: 11px; background: #be123c; color: #fff; padding: 2px 8px; border-radius: 12px; font-weight: 800;" id="riskAlertScoreBadge">신뢰도 92%</span>
         </span>
-        <button class="btn btn-danger btn-sm" onclick="openRiskActionModal()" style="font-weight: 800;">⚡ 법정 신고 및 의뢰공문 즉시 처리</button>
+        <button class="btn btn-danger btn-sm" onclick="openRiskActionModal()" style="font-weight: 800;">⚡ 법정 신고·기안문 즉시 처리</button>
       </div>
       <div id="riskAlertContent" style="background:#ffffff; border:1px solid #fecdd3; border-radius:6px; padding:10px 12px; font-size:12.5px; line-height:1.6;"></div>
     </div>
@@ -692,7 +692,7 @@
         </div>
       </div>
 
-      <!-- 우측: 2단계 사정표(좌) & 전산 상담일지(우) 분할 배치 카드 -->
+      <!-- 우측: 2단계 사정표(좌) & 전산 상담일지(우) 분할 배치 카드[cite: 1, 2] -->
       <div class="card">
         <div class="card-header">
           <div class="card-title">📋 [2단계] AI 분석 소견 &amp; 대민 안내 패널</div>
@@ -755,7 +755,7 @@
           </div>
         </div>
 
-        <!-- 민원인 맞춤 구비서류 자동 판정 안내 박스 -->
+        <!-- 민원인 맞춤 구비서류 자동 판정 안내 박스[cite: 1, 2] -->
         <div class="client-docs-box">
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <span style="font-weight: 800; font-size: 12.5px; color: #1e40af;">📄 [민원인 맞춤 구비서류 목록] 신청 시 지참할 서류</span>
@@ -770,7 +770,7 @@
           </div>
         </div>
 
-        <!-- 지자체 외 범정부·유관기관 지원망 박스 -->
+        <!-- 지자체 외 범정부·유관기관 지원망 박스[cite: 1, 2] -->
         <div class="public-agency-box">
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <span style="font-weight: 800; font-size: 12.5px; color: #0f766e;">🏛️ [지자체 외 유관기관 지원망] 맞춤 연계 안내 (사업이름/내용/연락처)</span>
@@ -783,7 +783,7 @@
       </div>
     </div>
 
-    <!-- [3단계] 전국 공통 법정 복지사업 모의판정 및 Trace 토글 -->
+    <!-- [3단계] 전국 공통 법정 복지사업 모의판정 및 Trace 토글[cite: 1, 2] -->
     <div class="card" style="border: 2px solid #cbd5e1;">
       <div class="card-header" style="background: #f8fafc; margin: -20px -20px 16px -20px; padding: 14px 20px; border-bottom: 2px solid #e2e8f0;">
         <div class="card-title" style="font-size: 16px; color: #1e3a8a;">
@@ -849,7 +849,7 @@
 
       <div id="calcTraceBox" class="calc-trace-box"></div>
 
-      <!-- 전국 공통 4대 법정 복지 사업 매트릭스 그리드 -->
+      <!-- 전국 공통 4대 법정 복지 사업 매트릭스 그리드[cite: 1, 2] -->
       <div class="matrix-grid">
         <div class="benefit-card" id="cardBasicLife">
           <div>
@@ -931,28 +931,34 @@
 
   </div>
 
-  <!-- 위기신호 대응 모달 -->
+  <!-- 위기신호 및 법정 신고의무 대응 통합 모달[cite: 1, 2] -->
   <div id="riskActionModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center;">
-    <div style="background: #ffffff; width: 90%; max-width: 720px; max-height: 88vh; overflow-y: auto; border-radius: 12px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+    <div style="background: #ffffff; width: 92%; max-width: 820px; max-height: 90vh; overflow-y: auto; border-radius: 12px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.25);">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #fecdd3; padding-bottom: 10px; margin-bottom: 14px;">
         <div style="font-weight: 800; font-size: 16px; color: #be123c; display: flex; align-items: center; gap: 8px;">
-          <span>🚨 법정 위기신호 대응 및 공문(기안문) 즉시 처리 (FR-05 전국망)</span>
+          <span>🚨 사회복지공무원 법정 신고의무 및 긴급 의뢰 공문 기안</span>
         </div>
         <button class="btn btn-outline btn-sm" onclick="closeRiskActionModal()">✕ 닫기</button>
       </div>
-      <div id="riskModalContent" style="font-size: 13px; line-height: 1.7; color: #334155; margin-bottom: 16px;"></div>
       
-      <div id="officialNoticeDraftArea" style="display:none; background:#f8fafc; border:1.5px solid #cbd5e1; border-radius:6px; padding:12px; font-family:monospace, sans-serif; font-size:11.5px; line-height:1.6; color:#0f172a; margin-bottom:14px; white-space:pre-wrap; max-height:220px; overflow-y:auto;"></div>
+      <div id="riskModalContent" style="font-size: 13px; line-height: 1.7; color: #334155; margin-bottom: 14px;"></div>
+      
+      <!-- 기관 발송용 표준 기안문 노출 영역 -->
+      <div style="margin-bottom: 6px; font-weight: 800; font-size: 12.5px; color: #1e3a8a; display: flex; justify-content: space-between; align-items: center;">
+        <span>📄 [행정기관 공문 기안문(안) - 대외공문]</span>
+        <button class="btn btn-outline btn-sm" onclick="copyOfficialNoticeText()" style="font-size: 11px; color:#4338ca; border-color:#a5b4fc;">📋 공문 전체 복사</button>
+      </div>
+      <div id="officialNoticeDraftArea" style="background:#f8fafc; border:1.5px solid #cbd5e1; border-radius:6px; padding:12px; font-family:monospace, sans-serif; font-size:11.5px; line-height:1.65; color:#0f172a; margin-bottom:14px; white-space:pre-wrap; max-height:260px; overflow-y:auto;"></div>
 
-      <div style="display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap;">
-        <button class="btn btn-outline" onclick="closeRiskActionModal()">닫기</button>
-        <button class="btn btn-indigo" onclick="generateAndShowOfficialNotice()">📄 법정 위기의뢰 공문 초안 생성</button>
+      <div style="display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; border-top: 1px solid #e2e8f0; padding-top: 12px;">
+        <button class="btn btn-outline" onclick="closeRiskActionModal()">창 닫기</button>
+        <button class="btn btn-indigo" onclick="copyOfficialNoticeText()">📋 공문 복사하기</button>
         <button class="btn btn-primary" onclick="applyRiskEmergencyIntervention()">⚡ 긴급복지 직권우선신청 연계</button>
       </div>
     </div>
   </div>
 
-  <!-- [고도화]: 민원인 안내하기 통합 모달 -->
+  <!-- 민원인 안내하기 통합 모달[cite: 1, 2] -->
   <div id="clientGuidanceModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center;">
     <div style="background: #ffffff; width: 94%; max-width: 880px; max-height: 92vh; overflow-y: auto; border-radius: 12px; padding: 26px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 16px;">
@@ -969,7 +975,7 @@
       <!-- 담당자 실시간 편집용 텍스트 영역 -->
       <textarea id="editableClientNoticeArea" style="height: 260px; font-family: monospace; font-size: 12.5px; line-height: 1.7; margin-bottom: 14px; background: #f8fafc; border-color: #cbd5e1;"></textarea>
 
-      <!-- 모바일 QR코드 노출 영역 (토글형) -->
+      <!-- 모바일 QR코드 노출 영역[cite: 1, 2] -->
       <div id="guidanceQrSection" style="display: none; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px; margin-bottom: 14px; text-align: center;">
         <div style="font-weight: 800; font-size: 13px; color: #1e293b; margin-bottom: 6px;">📱 스마트폰 카메라로 비추면 수정된 안내문이 즉시 열립니다</div>
         <div id="qrCodeContainer" style="display: flex; justify-content: center; align-items: center; padding: 12px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; width: 190px; height: 190px; margin: 0 auto 8px auto;"></div>
@@ -1197,47 +1203,98 @@
       }
     };
 
+    // =========================================================================
+    // ★ [공무원 법정 신고의무 7종 및 긴급복지 위기신호 정밀 감지 엔진]
+    // =========================================================================
     var RiskSignalEngine = {
       riskDefinitions: {
-        suicide: {
-          label: "자살·자해 위험",
-          keywords: /(?:스스로\s*목숨|자살|자해|극단적\s*선택|죽어\s*버리|목숨을\s*끊|유서\s*남기|세상\s*떠나고\s*싶|약먹고\s*죽|죽고\s*싶)/,
-          statute: "자살예방법 제13조 (발견 시 조치의무)",
-          agencies: [{ name: "자살예방 상담전화", call: "109" }, { name: "정신건강복지센터", call: "1577-0199" }],
-          threshold: 0.75
-        },
         childAbuse: {
-          label: "아동학대·방임 정황",
-          keywords: /(아이\s*방치|밥을\s*안\s*줘|애를\s*때려|아이\s*상처가\s*많|학교를\s*안\s*보내|아이를\s*혼자\s*두)/,
-          statute: "아동학대처벌법 제10조 (복지공무원 신고의무)",
+          label: "아동학대·방임 의심",
+          dutyType: "statutory",
+          statute: "아동학대범죄의 처벌 등에 관한 특례법 제10조 제2항 (신고의무)",
+          keywords: /(?:아이\s*방치|밥을\s*안\s*줘|애를\s*때려|아이\s*상처|학교를\s*안\s*보내|아이를\s*혼자\s*두|멍자국|아동\s*학대|아동\s*방임|자녀\s*폭행)/,
+          recipient: "관할 경찰서장 (112) / 시·군·구 아동학대전담공무원 / 관할 아동보호전문기관장 귀하",
           agencies: [{ name: "경찰청 긴급신고", call: "112" }, { name: "아동보호전문기관", call: "1391" }],
           threshold: 0.70
         },
         elderAbuse: {
-          label: "노인학대·방임 정황",
-          keywords: /(어르신\s*방치|노인\s*폭행|부모\s*감금|통장\s*빼앗|연금\s*갈취|식사\s*굶겨|노인\s*학대|보호자\s*유기)/,
-          statute: "노인복지법 제39조의6 (사회복지전담공무원 신고의무)",
-          agencies: [{ name: "노인보호전문기관", call: "1577-1389" }, { name: "경찰청", call: "112" }],
+          label: "노인학대·방임·유기",
+          dutyType: "statutory",
+          statute: "노인복지법 제39조의6 제2항 (신고의무)",
+          keywords: /(?:어르신\s*방치|노인\s*폭행|부모\s*감금|통장\s*빼앗|연금\s*갈취|식사\s*굶겨|노인\s*학대|보호자\s*유기|노모\s*방치|부모\s*유기)/,
+          recipient: "관할 경찰서장 (112) / 관할 노인보호전문기관장 귀하",
+          agencies: [{ name: "노인보호전문기관", call: "1577-1389" }, { name: "경찰청 긴급신고", call: "112" }],
+          threshold: 0.70
+        },
+        disabledAbuse: {
+          label: "장애인학대 및 성범죄·착취",
+          dutyType: "statutory",
+          statute: "장애인복지법 제59조의4 제2항 (신고의무)",
+          keywords: /(?:장애인\s*폭행|장애인\s*학대|장애인\s*착취|임금\s*갈취|장애인\s*성범죄|수급비\s*가로채|장애인\s*감금|장애수당\s*갈취)/,
+          recipient: "관할 경찰서장 (112) / 장애인권익옹호기관장 귀하",
+          agencies: [{ name: "장애인권익옹호기관", call: "1644-8295" }, { name: "경찰청", call: "112" }],
           threshold: 0.70
         },
         domesticViolence: {
-          label: "가정폭력 정황",
-          keywords: /(배우자\s*폭행|남편한테\s*맞|집기\s*부수|지속적\s*협박|폭행\s*피신|접근금지\s*신청)/,
-          statute: "가정폭력방지법 제4조 (임시보호 긴급지원)",
-          agencies: [{ name: "여성긴급전화", call: "1366" }, { name: "경찰청", call: "112" }],
+          label: "가정폭력 피해",
+          dutyType: "statutory",
+          statute: "가정폭력방지 및 피해자보호 등에 관한 법률 제4조의4 (신고의무)",
+          keywords: /(?:배우자\s*폭행|남편한테\s*맞|집기\s*부수|지속적\s*협박|폭행\s*피신|접근금지|가정\s*폭력|아내\s*폭행|신체적\s*위협)/,
+          recipient: "관할 경찰서장 (112) / 여성긴급피난처 및 상담소장 귀하",
+          agencies: [{ name: "여성긴급전화", call: "1366" }, { name: "경찰청 긴급신고", call: "112" }],
           threshold: 0.70
+        },
+        devDisabledAbuse: {
+          label: "발달장애인 유기·방임·학대",
+          dutyType: "statutory",
+          statute: "발달장애인 권리보장 및 지원에 관한 법률 제16조 (신고의무)",
+          keywords: /(?:발달장애인\s*유기|발달장애\s*방치|발달장애\s*학대|지적장애인\s*방임|자폐\s*방치|발달장애\s*감금)/,
+          recipient: "관할 경찰서장 (112) / 지역발달장애인지원센터장 귀하",
+          agencies: [{ name: "중앙/지역발달장애인지원센터", call: "1522-2882" }, { name: "경찰청", call: "112" }],
+          threshold: 0.70
+        },
+        childSexTrafficking: {
+          label: "성매매 피해 아동·청소년",
+          dutyType: "statutory",
+          statute: "청소년성보호법 제34조 제2항 (신고의무)",
+          keywords: /(?:성매매\s*강요|조건만남\s*강요|청소년\s*성착취|아동\s*성매매|성매매\s*알선|가출청소년\s*성착취|성매수)/,
+          recipient: "관할 경찰서장 (112) 및 시·도경찰청 여성청소년수사대장 귀하",
+          agencies: [{ name: "경찰청 긴급신고", call: "112" }, { name: "청소년상담전화", call: "1388" }],
+          threshold: 0.70
+        },
+        lonelyDeathRisk: {
+          label: "고독사 고위험군",
+          dutyType: "statutory",
+          statute: "고독사 예방 및 관리에 관한 법률 제10조 (발견 시 조치의무)",
+          keywords: /(?:고독사\s*위험|사회적\s*고립|시신\s*방치\s*우려|인적\s*교류\s*전무|방문\s*두절|식사\s*중단|쓰레기\s*방치|원룸\s*고립|악취\s*발생)/,
+          recipient: "행정복지센터 찾아가는복지팀장 및 관할 종합사회복지관장 귀하",
+          agencies: [{ name: "보건복지상담센터", call: "129" }, { name: "정신건강복지센터", call: "1577-0199" }],
+          threshold: 0.65
+        },
+        suicide: {
+          label: "자살·자해 위험",
+          dutyType: "statutory",
+          statute: "자살예방법 제13조 (발견 시 조치의무)",
+          keywords: /(?:스스로\s*목숨|자살|자해|극단적\s*선택|죽어\s*버리|목숨을\s*끊|유서\s*남기|세상\s*떠나고\s*싶|약먹고\s*죽|죽고\s*싶)/,
+          recipient: "관할 경찰서장 (112) / 정신건강복지센터장 귀하",
+          agencies: [{ name: "자살예방 상담전화", call: "109" }, { name: "정신건강복지센터", call: "1577-0199" }],
+          threshold: 0.75
         },
         housingCrisis: {
           label: "주거위기 (강제퇴거·월세연체)",
-          keywords: /(쫓겨날\s*위기|방을\s*빼라|강제\s*퇴거|월세\s*밀려|명도\s*소송|노숙\s*위기|갈\s*곳이\s*없|퇴거)/,
+          dutyType: "emergency",
           statute: "긴급복지지원법 제2조 (주거위기 긴급지원)",
+          keywords: /(?:쫓겨날\s*위기|방을\s*빼라|강제\s*퇴거|월세\s*밀려|명도\s*소송|노숙\s*위기|갈\s*곳이\s*없|퇴거)/,
+          recipient: "LH 관할 주거복지지사장 및 시·군·구 복지정책과장 귀하",
           agencies: [{ name: "LH 긴급주거지원", call: "1600-1004" }, { name: "보건복지상담센터", call: "129" }],
           threshold: 0.65
         },
         utilityCutoff: {
           label: "에너지 빈곤 (단전·단수·단가스)",
-          keywords: /(전기\s*끊김|단전|단수|수도\s*끊김|가스\s*끊김|난방\s*중단|공과금\s*체납)/,
+          dutyType: "emergency",
           statute: "사회보장급여법 제11조 (복지사각지대 발굴 연계)",
+          keywords: /(?:전기\s*끊김|단전|단수|수도\s*끊김|가스\s*끊김|난방\s*중단|공과금\s*체납)/,
+          recipient: "한국전력공사 지사장 / 시·군·구 수도사업소장 귀하",
           agencies: [{ name: "한국전력공사", call: "123" }, { name: "복지로 위기가구 신고", call: "129" }],
           threshold: 0.65
         }
@@ -1272,9 +1329,11 @@
               detectedList.push({
                 type: key,
                 label: def.label,
+                dutyType: def.dutyType,
                 score: confScore,
                 evidence: matchedSentence,
                 statute: def.statute,
+                recipient: def.recipient,
                 agencies: def.agencies,
                 inferenceBackend: inferRes.model,
                 timestamp: new Date().toISOString()
@@ -1485,9 +1544,9 @@
 4. 범정부 타 공공기관·공단 연계 안내 내역
  ${agencyText}
 
-5. 종합 상담 소견 및 처리계획
+5. 종합 상담 소견 및 법정 조치계획
  - 희망급여: 맞춤형 기초생활보장(생계·의료·주거) 및 긴급복지
- ${signals.length > 0 ? " - 🚨 긴급위기징후 감지: " + signals.map(s => s.label).join(", ") + " -> 긴급지원 우선 연계 및 직권신청 검토." : " - 신청 절차 안내 및 구비서류 징구 후 행복e음 정식 사회보장급여 신청 접수 진행 예정."}`;
+ ${signals.length > 0 ? " - 🚨 법정 신고의무 및 위기신호 감지: [" + signals.map(s => s.label).join(", ") + "] -> 관련 수사기관·전문기관 대외공문 발송 및 긴급개입 직권신청 상정." : " - 신청 절차 안내 및 구비서류 징구 후 행복e음 정식 사회보장급여 신청 접수 진행 예정."}`;
     }
 
     function generateClientNoticeDocument(parsed, docs, agencies) {
@@ -1524,37 +1583,66 @@ ${agencyListText}
 ================================================`;
     }
 
+    // =========================================================================
+    // ★ [법정 신고의무 대상 다중 수신처 맞춤형 행정 기안문(공문) 자동 생성]
+    // =========================================================================
     function generateOfficialNoticeDraft(parsed, signals) {
       var today = new Date().toLocaleDateString('ko-KR');
-      var topSig = signals[0] || { label: "복합 위기", statute: "사회보장급여법 제11조", evidence: "위기 정황" };
-      var recipient = "관할 경찰서장 / 아동보호전문기관장 / 정신건강복지센터장 귀하";
       
+      if (!signals || signals.length === 0) {
+        return `[행정기관 대외공문 기안문(안)]
+문서번호: 복지지원과-${Date.now().toString().slice(-4)}
+시행일자: ${today}
+수    신: 관할 유관기관장 귀하
+제    목: 복지상담 가구에 대한 사후관리 및 연계 협조
+
+1. 당 행정복지센터 복지상담 결과 특이 법정 신고의무 사안은 식별되지 않았습니다.
+2. 필요 시 사례관리 및 일반 공적급여 신청 연계를 진행합니다. 끝.`;
+      }
+
+      var topSig = signals[0];
+      var recipient = topSig.recipient || "관할 경찰서장 (112) / 전문보호기관장 귀하";
+      var statutesList = signals.map((s, idx) => `   ${String.fromCharCode(97 + idx)}. ${s.statute}`).join("\n");
+      var evidencesList = signals.map(s => `[${s.label}] "${s.evidence}"`).join("\n    ");
+
       return `[행정기관 공문 기안문(안) - 대외공문]
 문서번호: 복지지원과-긴급의뢰-${Date.now().toString().slice(-4)}
 시행일자: ${today}
 수    신: ${recipient}
-참    조: 위기가구 발굴전담팀장
-제    목: 긴급 위기신호 감지 가구에 대한 현장개입 및 보호의뢰 협조 요청
+참    조: 사건전담팀장 / 위기가구발굴전담팀장
+제    목: 법정 신고의무 대상 위기포착 가구에 대한 긴급 현장개입 및 수사의뢰 협조 요청
 
 1. 관련 법령:
-   가. ${topSig.statute}
-   나. 긴급복지지원법 제2조 및 사회보장급여법 제11조
+${statutesList}
+   ※ 사회복지사업법 및 개별 법률상 사회복지전담공무원의 직무상 즉각 신고의무 준수
 
 2. 귀 기관의 무궁한 발전을 기원합니다.
 
-3. 당 행정복지센터 복지상담 과정에서 다음과 같은 중대한 위기상황이 포착되었기에, 신속한 현장 안전확인 및 긴급개입을 의뢰하오니 적극 협조하여 주시기 바랍니다.
+3. 당 행정복지센터 복지상담 과정에서 다음과 같이 법률에 규정된 중대한 학대·범죄·위기 정황이 포착되었기에, 신속한 현장 안전확인, 긴급 임시조치 및 보호개입을 의뢰하오니 적극 협조하여 주시기 바랍니다.
 
 -  다      음  -
-가. 대상자 인적사항: ${parsed.name || "신청인 본인"} (${parsed.householdDesc || (parsed.members || 1) + "인 가구"}, ${parsed.age ? "만 " + parsed.age + "세" : "연령 미상"})
-나. 위기식별 유형: ${signals.map(s => s.label).join(", ")}
-다. 구체적 위험 정황:
-    "${signals.map(s => s.evidence).join(" / ")}"
-라. 행정복지센터 긴급조치 사항:
-    - 긴급생계지원 직권우선신청 검토 및 사례관리 상정
-    - 1촌 직계가족 단절 심의 및 지방생활보장위원회 긴급구제 안건 상정 예정
-마. 요청사항: 즉각적 신체 안전확인, 현장 동행방문 및 전문기관 상담 연계
+가. 대상자 인적사항:
+    - 성명: ${parsed.name || "신청인 본인"} (${parsed.householdDesc || (parsed.members || 1) + "인 가구"}, ${parsed.age ? "만 " + parsed.age + "세" : "연령 확인 요망"})
+    - 주거실태: ${parsed.housingType} (월세: ${parsed.rentFee || 0}만 원)
 
-붙임: 초기 복지상담 사정표 및 위기징후 분석결과 1부.  끝.
+나. 위기식별 유형 및 법정 분류:
+    ${signals.map(s => "• " + s.label + " (신뢰도 " + Math.round(s.score * 100) + "%)").join("\n    ")}
+
+다. 구체적 위험 정황(포착 진술):
+    ${evidencesList}
+
+라. 행정복지센터 자체 긴급조치 사항:
+    - 긴급복지지원법에 따른 긴급생계·주거지원 직권 우선신청 상정
+    - 위기가구 전담 사례관리 대상자 긴급 등록 및 가정방문 안전망 구축
+    - 의료급여 1촌 직계가족 단절 심의 및 지방생활보장위원회 긴급구제 안건 상정
+
+마. 협조 요청사항:
+    - 대상자 신체 안전확인 및 가해자 분리·임시보호 조치
+    - 사법경찰관 또는 전문상담원 현장 동행방문 및 전문 조사 진행
+    - 조치 결과 및 추가 개입 필요사항에 대한 행정복지센터 회신 요청
+
+붙임: 1. 초기 복지상담 사정표 사본 1부.
+      2. 위기징후 진술 녹취 요약서 1부.  끝.
 
 행 정 복 지 센 터 장  (직인생략)`;
     }
@@ -1623,7 +1711,7 @@ ${agencyListText}
         (parsed.support === 'severed' ? "해체사유서 징구 및 지생보 심의 대상" : (parsed.support === 'none' ? "부양의무자 없음 (면제 대상)" : "부양의무자 일반 조사 대상")) :
         "<span class='missing-text'>[미기재] 부양의무자 확인 요망</span>";
 
-      document.getElementById('docActionInfo').innerText = signals.length > 0 ? "🚨 긴급복지 우선 심사 및 안전망 즉각 연계" : (parsed.missingFields.length > 0 ? "⚠️ 누락 조사항목 보충 후 수급 자격 확정 필요" : "국민기초 맞춤형 급여 모의판정 진행");
+      document.getElementById('docActionInfo').innerText = signals.length > 0 ? "🚨 법정 신고의무·위기개입 및 안전망 즉시 연계" : (parsed.missingFields.length > 0 ? "⚠️ 누락 조사항목 보충 후 수급 자격 확정 필요" : "국민기초 맞춤형 급여 모의판정 진행");
 
       currentHappyEumText = generateHappyEumText(parsed, signals, currentRecommendedAgencies);
       document.getElementById('happyEumOutput').innerText = currentHappyEumText;
@@ -1661,7 +1749,7 @@ ${agencyListText}
         calculationDetails: lastCalcResult
       };
 
-      showToast("사정표, 전산 상담일지 및 대민 안내 데이터가 일괄 완성되었습니다.");
+      showToast("사정표, 전산 상담일지 및 법정 공문 데이터가 일괄 완성되었습니다.");
     }
 
     function renderClientDocs(docs) {
@@ -2046,22 +2134,23 @@ ${agencyListText}
       priorityBadge.style.display = 'inline-block';
 
       var topSignal = signals[0];
-      document.getElementById('riskAlertMainLabel').innerText = "[" + signals.map(s => s.label).join(", ") + "] 즉각 개입 위기신호 포착";
+      var statutoryCount = signals.filter(s => s.dutyType === 'statutory').length;
+      var alertPrefix = statutoryCount > 0 ? "⚖️ [법정 신고의무 대상]" : "🚨 [긴급복지 개입]";
+      
+      document.getElementById('riskAlertMainLabel').innerText = `${alertPrefix} ${signals.map(s => s.label).join(", ")}`;
       document.getElementById('riskAlertScoreBadge').innerText = "최고 신뢰도 " + Math.round(topSignal.score * 100) + "%";
 
       var html = "";
       signals.forEach(function(sig, idx) {
         html += "<div style='margin-bottom:" + (idx === signals.length - 1 ? "0" : "8px") + "; padding-bottom:" + (idx === signals.length - 1 ? "0" : "8px") + "; border-bottom:" + (idx === signals.length - 1 ? "none" : "1px dashed #fecdd3") + ";'>";
-        html += "<div><strong>⚠️ [" + sig.label + "] 감지 구술:</strong> \"" + sig.evidence + "\"</div>";
-        html += "<div style='font-size:11.5px; color:#be123c; margin-top:2px;'>• 법령 근거: " + sig.statute + "</div>";
+        html += "<div><strong>⚠️ [" + sig.label + "] 포착 진술:</strong> \"" + sig.evidence + "\"</div>";
+        html += "<div style='font-size:11.5px; color:#be123c; margin-top:2px;'>• 법적 근거: " + sig.statute + "</div>";
+        html += "<div style='font-size:11px; color:#1e40af;'>• 수신 및 신고처: " + sig.recipient + "</div>";
         html += "</div>";
       });
       content.innerHTML = html;
     }
 
-    // ========================================================
-    // 4대 법정 복지사업별 심층 상담·조사 표준 서식
-    // ========================================================
     var PRESETS = {
       // 1. 국민기초생활보장 표준 상담조사서식
       basicLife: `[기초생활보장 맞춤형급여 상담·조사 표준서식]
@@ -2202,11 +2291,13 @@ ${agencyListText}
       if (!currentRiskStatus.signals || currentRiskStatus.signals.length === 0) return;
       var modal = document.getElementById('riskActionModal');
       var container = document.getElementById('riskModalContent');
-      document.getElementById('officialNoticeDraftArea').style.display = 'none';
+      var draftArea = document.getElementById('officialNoticeDraftArea');
 
+      var statutoryList = currentRiskStatus.signals.filter(s => s.dutyType === 'statutory');
+      
       var html = "<div style='background:#fff1f2; border:1px solid #fecdd3; padding:12px; border-radius:6px; margin-bottom:14px;'>";
-      html += "<strong style='color:#9f1239;'>[사회복지전담공무원 법정 조치의무 및 긴급개입 요령]</strong><br>";
-      html += "<span style='font-size:12px; color:#475569;'>• 본 시스템에서 감지된 위기신호는 사회복지사업법 및 개별 법률상 <strong>즉각 신고의무</strong> 또는 <strong>긴급복지 직권우선신청 대상</strong>입니다.<br>• 하단의 <strong>[법정 위기의뢰 공문 초안 생성]</strong> 버튼을 누르면 경찰서·전문기관에 발송할 대외 공문이 즉시 조립됩니다.</span>";
+      html += "<strong style='color:#9f1239; font-size:13.5px;'>[사회복지전담공무원 법정 신고의무 및 긴급조치 요령]</strong><br>";
+      html += "<span style='font-size:12px; color:#475569;'>• 사회복지공무원은 직무상 학대·범죄 정황 인지 시 <strong>수사기관(112) 또는 전담부서에 즉시 신고할 법정 의무</strong>가 있습니다.<br>• 아래 작성된 대외 공문 초안을 복사하여 내부 기안 및 해당 기관(경찰서, 보호기관 등)에 즉시 발송 처리하십시오.</span>";
       html += "</div>";
 
       currentRiskStatus.signals.forEach(function(sig) {
@@ -2215,8 +2306,9 @@ ${agencyListText}
         html += "<div style='font-weight:800; font-size:13.5px; color:#9f1239;'>🚨 " + sig.label + "</div>";
         html += "<span style='font-size:11px; background:#fee2e2; color:#b91c1c; font-weight:800; padding:2px 8px; border-radius:10px;'>신뢰도 " + Math.round(sig.score * 100) + "%</span>";
         html += "</div>";
-        html += "<div style='font-size:12px; color:#334155; margin:6px 0; background:#ffffff; padding:6px 8px; border-radius:4px; border:1px solid #e2e8f0;'><strong>포착 문장:</strong> \"" + sig.evidence + "\"</div>";
+        html += "<div style='font-size:12px; color:#334155; margin:6px 0; background:#ffffff; padding:6px 8px; border-radius:4px; border:1px solid #e2e8f0;'><strong>포착 진술:</strong> \"" + sig.evidence + "\"</div>";
         html += "<div style='font-size:11.5px; color:#1e40af;'><strong>법적 근거:</strong> " + sig.statute + "</div>";
+        html += "<div style='font-size:11.5px; color:#047857; margin-top:2px;'><strong>대외 수신처:</strong> " + sig.recipient + "</div>";
         html += "<div style='margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;'>";
         sig.agencies.forEach(function(ag) {
           html += "<a href='tel:" + ag.call + "' class='btn btn-outline btn-sm' style='font-size:11px; font-weight:700; color:#1d4ed8; border-color:#93c5fd;'>📞 " + ag.name + " (" + ag.call + ")</a>";
@@ -2225,15 +2317,17 @@ ${agencyListText}
       });
 
       container.innerHTML = html;
+      draftArea.innerText = currentOfficialNoticeDraftText;
       modal.style.display = 'flex';
     }
 
-    function generateAndShowOfficialNotice() {
-      var draftArea = document.getElementById('officialNoticeDraftArea');
-      draftArea.style.display = 'block';
-      draftArea.innerText = currentOfficialNoticeDraftText;
+    function copyOfficialNoticeText() {
+      if (!currentOfficialNoticeDraftText) {
+        showToast("생성된 공문 초안이 없습니다.");
+        return;
+      }
       navigator.clipboard.writeText(currentOfficialNoticeDraftText).then(() => {
-        showToast("📄 법정 위기의뢰서 공문 초안이 클립보드에 복사되었습니다.");
+        showToast("📄 법정 신고 및 의뢰 공문 기안문 전문이 클립보드에 복사되었습니다!");
       });
     }
 
