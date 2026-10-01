@@ -628,7 +628,7 @@
       </div>
     </div>
 
-    <!-- 3단계 시각적 프로세스 워크플로우 인디케이터[cite: 1, 2] -->
+    <!-- 3단계 시각적 프로세스 워크플로우 인디케이터 -->
     <div class="step-flow-bar">
       <div class="step-flow-item active">
         <div class="step-num">1</div>
@@ -692,7 +692,7 @@
         </div>
       </div>
 
-      <!-- 우측: 2단계 사정표(좌) & 전산 상담일지(우) 분할 배치 카드[cite: 1, 2] -->
+      <!-- 우측: 2단계 사정표(좌) & 전산 상담일지(우) 분할 배치 카드 -->
       <div class="card">
         <div class="card-header">
           <div class="card-title">📋 [2단계] AI 분석 소견 &amp; 대민 안내 패널</div>
@@ -755,7 +755,7 @@
           </div>
         </div>
 
-        <!-- 민원인 맞춤 구비서류 자동 판정 안내 박스[cite: 1, 2] -->
+        <!-- 민원인 맞춤 구비서류 자동 판정 안내 박스 -->
         <div class="client-docs-box">
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <span style="font-weight: 800; font-size: 12.5px; color: #1e40af;">📄 [민원인 맞춤 구비서류 목록] 신청 시 지참할 서류</span>
@@ -770,7 +770,7 @@
           </div>
         </div>
 
-        <!-- 지자체 외 범정부·유관기관 지원망 박스[cite: 1, 2] -->
+        <!-- 지자체 외 범정부·유관기관 지원망 박스 -->
         <div class="public-agency-box">
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <span style="font-weight: 800; font-size: 12.5px; color: #0f766e;">🏛️ [지자체 외 유관기관 지원망] 맞춤 연계 안내 (사업이름/내용/연락처)</span>
@@ -783,7 +783,7 @@
       </div>
     </div>
 
-    <!-- [3단계] 전국 공통 법정 복지사업 모의판정 및 Trace 토글[cite: 1, 2] -->
+    <!-- [3단계] 전국 공통 법정 복지사업 모의판정 및 Trace 토글 -->
     <div class="card" style="border: 2px solid #cbd5e1;">
       <div class="card-header" style="background: #f8fafc; margin: -20px -20px 16px -20px; padding: 14px 20px; border-bottom: 2px solid #e2e8f0;">
         <div class="card-title" style="font-size: 16px; color: #1e3a8a;">
@@ -849,7 +849,7 @@
 
       <div id="calcTraceBox" class="calc-trace-box"></div>
 
-      <!-- 전국 공통 4대 법정 복지 사업 매트릭스 그리드[cite: 1, 2] -->
+      <!-- 전국 공통 4대 법정 복지 사업 매트릭스 그리드 -->
       <div class="matrix-grid">
         <div class="benefit-card" id="cardBasicLife">
           <div>
@@ -931,7 +931,7 @@
 
   </div>
 
-  <!-- 위기신호 및 법정 신고의무 대응 통합 모달[cite: 1, 2] -->
+  <!-- 위기신호 및 법정 신고의무 대응 통합 모달 -->
   <div id="riskActionModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center;">
     <div style="background: #ffffff; width: 92%; max-width: 820px; max-height: 90vh; overflow-y: auto; border-radius: 12px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.25);">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #fecdd3; padding-bottom: 10px; margin-bottom: 14px;">
@@ -958,7 +958,7 @@
     </div>
   </div>
 
-  <!-- 민원인 안내하기 통합 모달[cite: 1, 2] -->
+  <!-- 민원인 안내하기 통합 모달 -->
   <div id="clientGuidanceModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center;">
     <div style="background: #ffffff; width: 94%; max-width: 880px; max-height: 92vh; overflow-y: auto; border-radius: 12px; padding: 26px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 16px;">
@@ -975,7 +975,7 @@
       <!-- 담당자 실시간 편집용 텍스트 영역 -->
       <textarea id="editableClientNoticeArea" style="height: 260px; font-family: monospace; font-size: 12.5px; line-height: 1.7; margin-bottom: 14px; background: #f8fafc; border-color: #cbd5e1;"></textarea>
 
-      <!-- 모바일 QR코드 노출 영역[cite: 1, 2] -->
+      <!-- 모바일 QR코드 노출 영역 -->
       <div id="guidanceQrSection" style="display: none; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px; margin-bottom: 14px; text-align: center;">
         <div style="font-weight: 800; font-size: 13px; color: #1e293b; margin-bottom: 6px;">📱 스마트폰 카메라로 비추면 수정된 안내문이 즉시 열립니다</div>
         <div id="qrCodeContainer" style="display: flex; justify-content: center; align-items: center; padding: 12px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; width: 190px; height: 190px; margin: 0 auto 8px auto;"></div>
@@ -1077,7 +1077,7 @@
 
       var badge = document.getElementById('dlpStatusBadge');
       if (wasMasked) {
-        badge.innerHTML = "🛡️ PII 자동 감지: <strong>민감정보 마스킹 완료</strong>";
+        badge.innerHTML = "🛡️️ PII 자동 감지: <strong>민감정보 마스킹 완료</strong>";
         badge.style.background = "#fef3c7";
         badge.style.color = "#92400e";
         badge.style.borderColor = "#fcd34d";
@@ -1203,9 +1203,6 @@
       }
     };
 
-    // =========================================================================
-    // ★ [공무원 법정 신고의무 7종 및 긴급복지 위기신호 정밀 감지 엔진]
-    // =========================================================================
     var RiskSignalEngine = {
       riskDefinitions: {
         childAbuse: {
@@ -1369,6 +1366,9 @@
       return Math.round(total);
     }
 
+    // ========================================================
+    // ★ [버그 완벽 수정]: 정규식 및 파싱 로직 정밀화
+    // ========================================================
     function parseCounselTextWithValidation(text) {
       var res = {
         name: null,
@@ -1389,12 +1389,15 @@
         missingFields: []
       };
 
+      // 1. 성명 파싱
       var mName = text.match(/(?:성명|대상자|신청인|민원인)\s*[:：]?\s*([가-힣a-zA-Z]{2,10})/) ||
                   text.match(/([가-힣]{2,4})\s*(?:씨|님|어르신)/);
       if (mName) res.name = mName[1].trim();
 
+      // 2. 가구원수 판정 ('혼자 산다', '홀로 산다', '홀몸' 등 완벽 대응)
       var mMem = text.match(/([1-7])\s*인\s*가구/) || text.match(/가구원\s*수\s*[:：]?\s*([1-7])/);
       var twoPersonPatterns = /(홀\s*어머니|어머니랑|어머니와|엄마랑|모친과|모친이랑|아들과\s*둘이|자녀와\s*단둘|딸이랑\s*둘이|남편과\s*둘이|배우자와\s*둘이|모자가구|모녀가구|부자가구|부녀가구|2명\s*거주|둘이\s*살|부부\s*2인)/;
+      var singlePatterns = /(단독|1인|혼자\s*살|혼자\s*산다|홀로\s*살|홀로\s*산다|독거|혼자\s*거주|홀몸|혼자)/;
 
       if (mMem) {
         res.members = parseInt(mMem[1], 10);
@@ -1412,20 +1415,15 @@
         res.householdDesc = "본인 및 자녀 " + cnt + "명 동거 (" + res.members + "인 가구)";
       } else if (twoPersonPatterns.test(text)) {
         res.members = 2;
-        if (/홀\s*어머니|모친|엄마/.test(text)) {
-          res.householdDesc = "신청인 본인 및 모친 동거 (2인 가구)";
-        } else if (/아들|딸|자녀/.test(text)) {
-          res.householdDesc = "신청인 본인 및 자녀 동거 (2인 가구)";
-        } else {
-          res.householdDesc = "2인 동거 가구";
-        }
-      } else if (/단독|1인|혼자\s*살|독거/.test(text)) {
+        res.householdDesc = "2인 동거 가구";
+      } else if (singlePatterns.test(text)) {
         res.members = 1;
         res.householdDesc = "1인 단독 가구";
       } else {
         res.missingFields.push({ key: "household", label: "가구원수 및 인적사항" });
       }
 
+      // 3. 연령 계산 (만 58세 등 정확 추출)
       var mAge = text.match(/만\s*([0-9]{1,2})\s*세/) || text.match(/([0-9]{1,2})\s*세/) || text.match(/([0-9]{2})\s*년생/);
       if (mAge) {
         if (mAge[0].indexOf("년생") !== -1) {
@@ -1436,18 +1434,19 @@
         }
       }
 
+      // 4. 근로능력 및 건강상태 (나이 조건 우선 판정: 65세 미만인데 질환 있으면 'illness'로 분기)
       if (res.age && res.age >= 65) {
         res.workAbility = "none";
         res.healthDesc = "만 65세 이상 노인 (법정 근로무능력자)";
-      } else if (/근로무능력|65세\s*이상/.test(text)) {
-        res.workAbility = "none";
-        res.healthDesc = "법정 근로무능력자 해당";
-      } else if (/협착증|관절염|디스크|진단서|수술|입원|치료\s*중|일\s*못\s*하|거동/.test(text)) {
+      } else if (/협착증|관절염|디스크|진단서|수술|입원|치료\s*중|일\s*못\s*하|거동|질병|부상/.test(text)) {
         res.workAbility = "illness";
         res.healthDesc = "만성질환/거동불편 (근로능력평가 심사 대상)";
       } else if (res.age && res.age <= 24) {
         res.workAbility = "youth";
         res.healthDesc = "만 24세 이하 청년특례 대상 (40만+30% 공제)";
+      } else if (/근로무능력/.test(text) && (!res.age || res.age < 65)) {
+        res.workAbility = "illness";
+        res.healthDesc = "질병·부상 등으로 인한 근로무능력 심사 대상";
       } else if (/일반\s*근로|근로능력\s*있음|알바|아르바이트|식당|공장|배달|직장|보조/.test(text)) {
         res.workAbility = "able";
         res.healthDesc = "일반 근로능력자 (자활사업 참여 대상)";
@@ -1455,6 +1454,7 @@
         res.missingFields.push({ key: "health", label: "건강상태 및 근로능력 유무" });
       }
 
+      // 5. 소득 파싱
       var noIncomePattern = /(?:소득|수입|월급|벌이|일자리|급여)[^\n.]*(?:없|안\s*벌|못\s*벌|0원|0만|제로|전무|단절)|실직|무직|소득\s*전무/;
       var mEarned = text.match(/(?:근로|사업)?\s*소득\s*[:：]?\s*([0-9,.]+\s*(?:억|만\s*원|만원|원)?)/) ||
                     text.match(/(?:월급|급여|수입|알바비|벌고\s*있|소득이)[^\d\n]*([0-9,.]+\s*(?:억|만\s*원|만원|원))/);
@@ -1470,14 +1470,19 @@
       var mOther = text.match(/(?:공적이전소득|기초연금|국민연금|이전소득)[^\d]*([0-9,.]+\s*(?:억|만\s*원|만원|원)?)/);
       res.other = mOther ? parseKoreanCurrency(mOther[1]) : 0;
 
+      // 6. 주거 형태 및 재산 ('자가 200만원' 등 실제 기재 금액 동적 파싱)
       var ownHousePattern = /(자가|본인명의\s*집|본인명의\s*주택|소유\s*주택|아파트\s*소유)/;
       var freeRentPattern = /(무료임차|사용대차|친척집\s*무상|무상거주)/;
 
       if (ownHousePattern.test(text)) {
         res.housingType = "자가";
         res.rentFee = 0;
-        var mOwnVal = text.match(/(?:집값|주택가액|시세|공시가|부동산|주택공시지가)[^\d]*([0-9,.]+\s*(?:억|만\s*원|만원|원)?)/);
-        res.resProp = mOwnVal ? parseKoreanCurrency(mOwnVal[1]) : 6500;
+        var mOwnVal = text.match(/(?:자가|집값|주택가액|시세|공시가|부동산|주택공시지가|집|주택)[^\d]*([0-9,.]+\s*(?:억|만\s*원|만원|원)?)/);
+        if (mOwnVal) {
+          res.resProp = parseKoreanCurrency(mOwnVal[1]);
+        } else {
+          res.resProp = 0; // 명시된 금액이 없으면 0원 처리 (6500 고정 제거)
+        }
       } else if (freeRentPattern.test(text)) {
         res.housingType = "무료임차";
         res.resProp = 0;
@@ -1495,12 +1500,14 @@
         res.rentFee = mRent ? parseKoreanCurrency(mRent[1]) : 0;
       }
 
+      // 7. 금융재산 및 부채
       var mFin = text.match(/(?:금융재산|통장|예금|잔액|잔고)[^\d]*([0-9,.]+\s*(?:억|만\s*원|만원|원)?)/);
       res.finProp = mFin ? parseKoreanCurrency(mFin[1]) : 0;
 
       var mDebt = text.match(/(?:부채|대출|빚)[^\d]*([0-9,.]+\s*(?:억|만\s*원|만원|원)?)/);
       res.debt = mDebt ? parseKoreanCurrency(mDebt[1]) : 0;
 
+      // 8. 부양의무자
       if (/연락두절|해체사유서|연락\s*끊|단절|생사\s*모름/.test(text)) {
         res.support = "severed";
       } else if (/부양의무자\s*없음|가족\s*없음|연고\s*없음/.test(text)) {
@@ -1583,9 +1590,6 @@ ${agencyListText}
 ================================================`;
     }
 
-    // =========================================================================
-    // ★ [법정 신고의무 대상 다중 수신처 맞춤형 행정 기안문(공문) 자동 생성]
-    // =========================================================================
     function generateOfficialNoticeDraft(parsed, signals) {
       var today = new Date().toLocaleDateString('ko-KR');
       
@@ -1691,11 +1695,22 @@ ${statutesList}
         (memLabel + " (" + (parsed.age ? "만 " + parsed.age + "세" : "연령 확인 요망") + ") | 건강: " + (parsed.healthDesc || "양호")) :
         "<span class='missing-text'>[미기재] 가구원수 확인 요망</span>";
 
-      document.getElementById('docWorkAbilityInfo').innerHTML = parsed.workAbility !== null ?
-        (parsed.workAbility === 'none' ? "만 65세 이상 노인특례 적용" : (parsed.workAbility === 'youth' ? "만 24세 이하 청년특례 적용" : (parsed.workAbility === 'illness' ? "근로무능력자 판정 심사 대상" : "일반 근로능력자 (30% 공제)"))) :
-        "<span class='missing-text'>[미기재] 근로능력 대상 확인 요망</span>";
+      // 근로능력 표기 분기 (연령 및 사정 결과 완벽 동기화)
+      var workAbilityText = "";
+      if (parsed.workAbility === 'none') {
+        workAbilityText = "만 65세 이상 노인특례 적용 (근로무능력)";
+      } else if (parsed.workAbility === 'illness') {
+        workAbilityText = "질병·부상 근로무능력 판정 심사 대상";
+      } else if (parsed.workAbility === 'youth') {
+        workAbilityText = "만 24세 이하 청년특례 적용 (40만+30% 공제)";
+      } else if (parsed.workAbility === 'able') {
+        workAbilityText = "일반 근로능력자 (30% 기본공제/자활)";
+      } else {
+        workAbilityText = "<span class='missing-text'>[미기재] 근로능력 대상 확인 요망</span>";
+      }
+      document.getElementById('docWorkAbilityInfo').innerHTML = workAbilityText;
 
-      document.getElementById('docIncomeInfo').innerHTML = parsed.earned !== null ?
+      document.getElementById('docIncomeInfo').innerHTML = parsed.earned !== null ? 
         ("월 " + parsed.earned.toLocaleString() + "만 원 (근로 " + (parsed.earned === 0 ? "0만(무소득)" : parsed.earned + "만") + " / 이전 " + (parsed.other || 0) + "만)") :
         "<span class='missing-text'>[미기재] 소득 유무 확인 요망</span>";
 
@@ -1703,11 +1718,11 @@ ${statutesList}
         `자가 (${(parsed.resProp || 0).toLocaleString()}만 원)` :
         (parsed.housingType === "무료임차" ? "무료임차" : `보증금 ${(parsed.resProp || 0).toLocaleString()}만 (월세 ${(parsed.rentFee || 0)}만)`);
 
-      document.getElementById('docAssetInfo').innerHTML = parsed.resProp !== null ?
+      document.getElementById('docAssetInfo').innerHTML = parsed.resProp !== null ? 
         (housingDescText + " | 금융 " + (parsed.finProp || 0).toLocaleString() + "만 | 부채 " + (parsed.debt || 0).toLocaleString() + "만") :
         "<span class='missing-text'>[미기재] 주거형태/재산 확인 요망</span>";
 
-      document.getElementById('docSeverInfo').innerHTML = parsed.support !== null ?
+      document.getElementById('docSeverInfo').innerHTML = parsed.support !== null ? 
         (parsed.support === 'severed' ? "해체사유서 징구 및 지생보 심의 대상" : (parsed.support === 'none' ? "부양의무자 없음 (면제 대상)" : "부양의무자 일반 조사 대상")) :
         "<span class='missing-text'>[미기재] 부양의무자 확인 요망</span>";
 
@@ -2293,8 +2308,6 @@ ${statutesList}
       var container = document.getElementById('riskModalContent');
       var draftArea = document.getElementById('officialNoticeDraftArea');
 
-      var statutoryList = currentRiskStatus.signals.filter(s => s.dutyType === 'statutory');
-      
       var html = "<div style='background:#fff1f2; border:1px solid #fecdd3; padding:12px; border-radius:6px; margin-bottom:14px;'>";
       html += "<strong style='color:#9f1239; font-size:13.5px;'>[사회복지전담공무원 법정 신고의무 및 긴급조치 요령]</strong><br>";
       html += "<span style='font-size:12px; color:#475569;'>• 사회복지공무원은 직무상 학대·범죄 정황 인지 시 <strong>수사기관(112) 또는 전담부서에 즉시 신고할 법정 의무</strong>가 있습니다.<br>• 아래 작성된 대외 공문 초안을 복사하여 내부 기안 및 해당 기관(경찰서, 보호기관 등)에 즉시 발송 처리하십시오.</span>";
@@ -2308,7 +2321,7 @@ ${statutesList}
         html += "</div>";
         html += "<div style='font-size:12px; color:#334155; margin:6px 0; background:#ffffff; padding:6px 8px; border-radius:4px; border:1px solid #e2e8f0;'><strong>포착 진술:</strong> \"" + sig.evidence + "\"</div>";
         html += "<div style='font-size:11.5px; color:#1e40af;'><strong>법적 근거:</strong> " + sig.statute + "</div>";
-        html += "<div style='font-size:11.5px; color:#047857; margin-top:2px;'><strong>대외 수신처:</strong> " + sig.recipient + "</div>";
+        html += "<div style='font-size:11px; color:#047857; margin-top:2px;'><strong>대외 수신처:</strong> " + sig.recipient + "</div>";
         html += "<div style='margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;'>";
         sig.agencies.forEach(function(ag) {
           html += "<a href='tel:" + ag.call + "' class='btn btn-outline btn-sm' style='font-size:11px; font-weight:700; color:#1d4ed8; border-color:#93c5fd;'>📞 " + ag.name + " (" + ag.call + ")</a>";
