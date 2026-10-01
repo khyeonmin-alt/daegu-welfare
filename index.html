@@ -441,7 +441,6 @@
       white-space: pre-wrap;
     }
 
-    /* 공단 연계 전용 패널 */
     .public-agency-box {
       background: #f0fdfa;
       border: 1.5px solid #99f6e4;
@@ -624,7 +623,7 @@
           </div>
         </div>
         
-        <textarea id="counselInput" class="counsel-textarea" placeholder="민원인의 구술 기록을 편하게 입력하세요('아들이랑 연락 끊긴 지 10년 넘었고 보증금 2천에 통장 200만원 있고 일 못함... 병원비 빚이 많고 월세 밀림'). 온디바이스 AI가 지자체 급여뿐 아니라 공단(건보·법률구조·LH 등) 사업까지 자동 매칭합니다."></textarea>
+        <textarea id="counselInput" class="counsel-textarea" placeholder="민원인의 구술 기록을 편하게 입력하세요('홀어머니랑 살고 있음', '자가, 본인명의 집 있고 일 못함...', '아들이랑 연락 끊긴 지 10년 됨'). AI가 가구원수, 주거형태, 공단 연계망까지 자동으로 사정표에 반영합니다."></textarea>
         
         <div style="margin-top: 14px;">
           <button class="btn btn-primary" style="width: 100%; font-size: 15px; padding: 13px; font-weight: 800; background: linear-gradient(135deg, #1d4ed8, #2563eb); border-radius: 8px; box-shadow: 0 4px 10px rgba(29, 78, 216, 0.25);" onclick="processCounseling()">
@@ -776,7 +775,7 @@
       <div class="field-row" style="background-color: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1;">
         <div><label>월 근로·사업소득 (만원)</label><input type="number" id="simEarnedIncome" value="0" min="0" oninput="runSimulation()"></div>
         <div><label>공적·사적이전소득 (만원)</label><input type="number" id="simOtherIncome" value="0" min="0" oninput="runSimulation()"></div>
-        <div><label>주거용재산(보증금 등) (만원)</label><input type="number" id="simResProp" value="0" min="0" oninput="runSimulation()"></div>
+        <div><label>주거용재산(보증금/주택가액) (만원)</label><input type="number" id="simResProp" value="0" min="0" oninput="runSimulation()"></div>
         <div><label>실제 지출 월세 (만원)</label><input type="number" id="simRentFee" value="30" min="0" oninput="runSimulation()"></div>
         <div><label>금융재산 (만원)</label><input type="number" id="simFinProp" value="0" min="0" oninput="runSimulation()"></div>
         <div><label>금융부채 (만원)</label><input type="number" id="simDebt" value="0" min="0" oninput="runSimulation()"></div>
@@ -926,10 +925,10 @@
     var currentRecommendedAgencies = [];
 
     var SECTION_TEMPLATES = {
-      household: "• 세대주 성명: 미기재 (만 00세, 1인 가구)",
+      household: "• 세대주 성명: 미기재 (만 00세, 가구원수 확인 요망)",
       health: "• 건강상태 및 질병: 만성질환 여부 확인 필요 (진단서 필요 여부)\n• 근로능력 유무: 근로능력 평가 대상 확인 요망",
       income: "• 근로 및 사업소득: 0원 (소득활동 유무 확인)\n• 공적/사적이전소득: 0원 (기초연금 또는 가족지원금 확인)",
-      property: "• 주거 형태: 월세/자가/무료임차 확인 요망 (보증금 0만 원 / 월세 0만 원)\n• 금융재산: 예금/통장잔액 0만 원 | 부채: 대출금 0만 원",
+      property: "• 주거 형태: 월세/자가/무료임차 확인 요망 (보증금 0만 원 / 월세 0만 원 / 자가 가액 0만 원)\n• 금융재산: 예금/통장잔액 0만 원 | 부채: 대출금 0만 원",
       obligor: "• 부양의무자 현황: 1촌 직계혈족(부모/자녀) 확인 요망\n• 부양 기피 및 단절 여부: 연락두절/해체사유서 필요 여부 확인"
     };
 
@@ -949,9 +948,6 @@
       }
     }
 
-    // ========================================================
-    // [공공기관·공단 연계 추천 엔진]: 건보공단, 법률구조공단, LH, 신복위 등
-    // ========================================================
     var PublicAgencyMatcher = {
       rules: [
         {
@@ -1110,10 +1106,14 @@
       }
     };
 
+    // ========================================================
+    // [구술 파싱 엔진 고도화]: 홀어머니 동거(2인가구) 및 자가/본인명의 집 감지 반영
+    // ========================================================
     function parseCounselTextWithValidation(text) {
       var res = {
         name: null,
         members: null,
+        householdDesc: null,
         age: null,
         workAbility: null,
         healthDesc: null,
@@ -1121,6 +1121,7 @@
         other: null,
         resProp: null,
         rentFee: null,
+        housingType: "월세", // 기본값
         genProp: 0,
         finProp: null,
         debt: null,
@@ -1132,10 +1133,27 @@
       var mName = text.match(/성명\s*[:：]?\s*([가-힣a-zA-Z]{2,10})/) || text.match(/대상자\s*([가-힣a-zA-Z]{2,10})/);
       if (mName) res.name = mName[1].trim();
 
+      // [신규 고도화]: 가구원수 감지 (홀어머니, 모자, 부자 동거 정황 등 포함)
       var mMem = text.match(/([1-7])\s*인\s*가구/) || text.match(/가구원\s*수\s*[:：]?\s*([1-7])/);
-      if (mMem) res.members = parseInt(mMem[1], 10);
-      else if (text.indexOf("단독") !== -1 || text.indexOf("1인") !== -1) res.members = 1;
-      else res.missingFields.push({ key: "household", label: "가구원수 및 인적사항" });
+      var twoPersonPatterns = /(홀\s*어머니|어머니랑|어머니와|엄마랑|모친과|모친이랑|아들과\s*둘이|자녀와\s*단둘|딸이랑\s*둘이|남편과\s*둘이|배우자와\s*둘이|모자가구|모녀가구|부자가구|부녀가구|2명\s*거주|둘이\s*살)/;
+
+      if (mMem) {
+        res.members = parseInt(mMem[1], 10);
+      } else if (twoPersonPatterns.test(text)) {
+        res.members = 2; // 홀어머니랑 살고 있음 -> 2인 가구 자동 감지
+        if (/홀\s*어머니|모친|엄마/.test(text)) {
+          res.householdDesc = "신청인 본인 및 모친 동거 (2인 가구)";
+        } else if (/아들|딸|자녀/.test(text)) {
+          res.householdDesc = "신청인 본인 및 자녀 동거 (2인 가구)";
+        } else {
+          res.householdDesc = "2인 가구 동거 거주";
+        }
+      } else if (text.indexOf("단독") !== -1 || text.indexOf("1인") !== -1 || text.indexOf("혼자") !== -1) {
+        res.members = 1;
+        res.householdDesc = "1인 단독 가구";
+      } else {
+        res.missingFields.push({ key: "household", label: "가구원수 및 인적사항" });
+      }
 
       var mAge = text.match(/만\s*([0-9]{1,2})\s*세/) || text.match(/([0-9]{2})\s*년생/);
       if (mAge) {
@@ -1187,25 +1205,46 @@
         res.other = 0;
       }
 
-      // 4. 주거 형태 및 재산
-      var mRes = text.match(/보증금\s*([0-9,]+)\s*만\s*원/) ||
-                 text.match(/보증금[^\d]*([0-9,]+)/) ||
-                 text.match(/주거용재산[^\d]*([0-9,]+)/);
-      if (mRes) {
-        var num3 = parseInt(mRes[1].replace(/,/g, ''), 10);
-        res.resProp = num3 > 10000 ? Math.round(num3 / 10000) : num3;
-      } else if (text.indexOf("자가") !== -1 || text.indexOf("무료임차") !== -1) {
-        res.resProp = 0;
-      } else {
-        res.missingFields.push({ key: "property", label: "주거형태(보증금) 및 재산" });
-      }
+      // 4. [신규 고도화]: 주거 형태 및 재산 (자가, 본인명의 집 정밀 인식)
+      var ownHousePattern = /(자가|본인명의\s*집|본인명의\s*주택|본인명의\s*아파트|자가\s*주택|소유\s*주택|내\s*집)/;
+      var freeRentPattern = /(무료임차|사용대차|친척집\s*무상|지인집\s*거주)/;
 
-      var mRent = text.match(/월세\s*([0-9,]+)\s*만\s*원/) || text.match(/월세[^\d]*([0-9,]+)/);
-      if (mRent) {
-        var numRent = parseInt(mRent[1].replace(/,/g, ''), 10);
-        res.rentFee = numRent > 1000 ? Math.round(numRent / 10000) : numRent;
-      } else {
+      if (ownHousePattern.test(text)) {
+        res.housingType = "자가";
         res.rentFee = 0;
+        // 주택 공시가격/시세 추출 시도 (예: 집값 1억, 주택 8,000만원 등)
+        var mOwnVal = text.match(/(?:집값|주택가액|시세|공시가|부동산)[^\d]*([0-9,]+)\s*(?:만\s*원|만원|원|억)/);
+        if (mOwnVal) {
+          var valRaw = parseInt(mOwnVal[1].replace(/,/g, ''), 10);
+          if (mOwnVal[0].indexOf("억") !== -1) valRaw = valRaw * 10000;
+          res.resProp = valRaw;
+        } else {
+          res.resProp = 0; // 미기재 시 0만원 기본
+        }
+      } else if (freeRentPattern.test(text)) {
+        res.housingType = "무료임차";
+        res.resProp = 0;
+        res.rentFee = 0;
+      } else {
+        // 임차(월세/전세)
+        var mRes = text.match(/보증금\s*([0-9,]+)\s*만\s*원/) ||
+                   text.match(/보증금[^\d]*([0-9,]+)/) ||
+                   text.match(/주거용재산[^\d]*([0-9,]+)/);
+        if (mRes) {
+          var num3 = parseInt(mRes[1].replace(/,/g, ''), 10);
+          res.resProp = num3 > 10000 ? Math.round(num3 / 10000) : num3;
+          res.housingType = "월세/전세 임차";
+        } else {
+          res.missingFields.push({ key: "property", label: "주거형태(보증금/자가 여부) 및 재산" });
+        }
+
+        var mRent = text.match(/월세\s*([0-9,]+)\s*만\s*원/) || text.match(/월세[^\d]*([0-9,]+)/);
+        if (mRent) {
+          var numRent = parseInt(mRent[1].replace(/,/g, ''), 10);
+          res.rentFee = numRent > 1000 ? Math.round(numRent / 10000) : numRent;
+        } else {
+          res.rentFee = 0;
+        }
       }
 
       var mFin = text.match(/금융재산[^\d]*([0-9,]+)/) ||
@@ -1238,18 +1277,23 @@
         agencies.map(a => `• ${a.agency} [${a.program}]: ${a.actionGuide}`).join("\n ") : 
         "• 특이 공단 연계 수요 미식별 (필요시 추가 안내)";
 
+      var housingInfoStr = parsed.housingType === "자가" ? 
+        `자가 주택 보유 (본인명의 집, 주택가액 ${(parsed.resProp || 0).toLocaleString()}만 원 / 월세 지출 없음)` :
+        (parsed.housingType === "무료임차" ? "무료임차 거주 (월세·보증금 부담 없음)" : `임차 거주 (보증금 ${(parsed.resProp || 0).toLocaleString()}만 원 / 월세 ${(parsed.rentFee || 0).toLocaleString()}만 원)`);
+
       var txt = `[행복e음 초기상담이력 전산등록 표준 서식]
 ■ 상담일자: ${today}
-■ 대상자: ${parsed.name || "신청인 본인"} (${parsed.members || 1}인 가구, ${parsed.age ? "만 " + parsed.age + "세" : "연령 확인 요망"})
+■ 대상자: ${parsed.name || "신청인 본인"} (${parsed.householdDesc || (parsed.members || 1) + "인 가구"}, ${parsed.age ? "만 " + parsed.age + "세" : "연령 확인 요망"})
 
 1. 가구 인적사항 및 건강상태
- - 가구구성: ${parsed.members || 1}인 단독가구 (실제 생계 및 주거 단독 운영)
+ - 가구구성: ${parsed.householdDesc || (parsed.members || 1) + "인 가구"}
  - 건강상태: ${parsed.healthDesc || "특이 질환 미확인 (일반 근로능력)"}
  - 근로능력: ${parsed.workAbility === 'none' ? "만 65세 이상 법정 근로무능력자" : (parsed.workAbility === 'illness' ? "질병·부상 근로무능력 판정 심사 필요" : "일반 근로능력자 (자활 대상)")}
 
-2. 소득 및 재산 현황
+2. 소득 및 주거·재산 현황
  - 근로·사업소득: 월 ${(parsed.earned || 0).toLocaleString()}만 원 ${(parsed.earned === 0 ? "(무소득 확인)" : "")} / 이전소득: 월 ${(parsed.other || 0).toLocaleString()}만 원
- - 주거/금융재산: 보증금 ${(parsed.resProp || 0).toLocaleString()}만 원 (월세 ${(parsed.rentFee || 0).toLocaleString()}만) / 금융 ${(parsed.finProp || 0).toLocaleString()}만 / 부채 ${(parsed.debt || 0).toLocaleString()}만
+ - 주거형태: ${housingInfoStr}
+ - 금융 및 부채: 금융재산 약 ${(parsed.finProp || 0).toLocaleString()}만 원 / 금융부채 약 ${(parsed.debt || 0).toLocaleString()}만 원
 
 3. 부양의무자 실태 (의료급여 기준)
  - 단절 실태: ${parsed.support === 'severed' ? "장기간 연락두절 및 왕래 단절 확인됨. 가족관계 해체사유서 징구 및 지방생활보장위원회 심의 상정 요망." : (parsed.support === 'none' ? "부양의무자 없음" : "부양의무자 일반 조사 대상")}
@@ -1323,8 +1367,9 @@
         severDesc.innerText = "부양의무자 관련 내용이 누락되었습니다. 의료급여 신청 시 확인 필수.";
       }
 
+      var memLabel = parsed.householdDesc ? parsed.householdDesc : (parsed.members + "인 가구");
       document.getElementById('docApplicantInfo').innerHTML = parsed.members !== null ? 
-        (parsed.members + "인 가구 (" + (parsed.age ? "만 " + parsed.age + "세" : "단독") + ") | 건강: " + (parsed.healthDesc || "양호")) :
+        (memLabel + " (" + (parsed.age ? "만 " + parsed.age + "세" : "연령 확인 요망") + ") | 건강: " + (parsed.healthDesc || "양호")) :
         "<span class='missing-text'>[미기재] 가구원수 및 인적사항 확인 요망</span>";
 
       document.getElementById('docWorkAbilityInfo').innerHTML = parsed.workAbility !== null ?
@@ -1335,9 +1380,18 @@
         ("월 " + parsed.earned.toLocaleString() + "만 원 (근로 " + (parsed.earned === 0 ? "0만(무소득 확인)" : parsed.earned + "만") + " / 이전소득 " + (parsed.other || 0) + "만)") :
         "<span class='missing-text'>[미기재] 근로 및 사업소득 유무 확인 요망</span>";
 
+      var housingDescText = "";
+      if (parsed.housingType === "자가") {
+        housingDescText = "주거형태: 자가(본인명의 집, " + (parsed.resProp || 0).toLocaleString() + "만 원)";
+      } else if (parsed.housingType === "무료임차") {
+        housingDescText = "주거형태: 무료임차";
+      } else if (parsed.resProp !== null) {
+        housingDescText = "주거보증금 " + parsed.resProp.toLocaleString() + "만 원 (월세 " + (parsed.rentFee || 0) + "만)";
+      }
+
       document.getElementById('docAssetInfo').innerHTML = parsed.resProp !== null ?
-        ("주거보증금 " + parsed.resProp.toLocaleString() + "만 원 (월세 " + (parsed.rentFee || 0) + "만) | 금융 " + (parsed.finProp || 0).toLocaleString() + "만 원 | 부채 " + (parsed.debt || 0).toLocaleString() + "만 원") :
-        "<span class='missing-text'>[미기재] 주거형태(월세보증금/자가) 확인 요망</span>";
+        (housingDescText + " | 금융 " + (parsed.finProp || 0).toLocaleString() + "만 원 | 부채 " + (parsed.debt || 0).toLocaleString() + "만 원") :
+        "<span class='missing-text'>[미기재] 주거형태(자가/보증금) 확인 요망</span>";
 
       document.getElementById('docSeverInfo').innerHTML = parsed.support !== null ?
         (parsed.support === 'severed' ? "가족관계 해체사유서 징구 및 지생보 심의 대상" : (parsed.support === 'none' ? "부양의무자 없음 (면제 대상)" : "부양의무자 일반 소득·재산조사 대상")) :
@@ -1348,6 +1402,7 @@
       currentHappyEumText = generateHappyEumText(parsed, signals, currentRecommendedAgencies);
       document.getElementById('happyEumOutput').innerText = currentHappyEumText;
 
+      // 3단계 시뮬레이터 인풋 자동 반영
       document.getElementById('simMembers').value = parsed.members || 1;
       document.getElementById('simWorkAbility').value = parsed.workAbility || 'able';
       document.getElementById('simSupportObligor').value = parsed.support || 'normal';
@@ -1383,7 +1438,7 @@
       if (parsed.missingFields.length > 0) {
         showToast("⚠️ 필수 항목 " + parsed.missingFields.length + "건이 누락되었습니다.");
       } else {
-        showToast("행복e음 상담일지 정제 및 공단 연계망 매칭이 완료되었습니다!");
+        showToast("행복e음 상담일지 정제 및 가구원/주거형태 자동 반영이 완료되었습니다!");
       }
     }
 
