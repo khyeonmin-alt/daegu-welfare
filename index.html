@@ -685,9 +685,10 @@
           <div id="counselCharCounter" style="position: absolute; bottom: 10px; right: 15px; font-size: 11px; color: #94a3b8; background: rgba(255,255,255,0.85); padding: 2px 6px; border-radius: 4px;">0자</div>
         </div>
         
+        <!-- [수정]: 1클릭 단어 제거 및 문구 변경 -->
         <div style="margin-top: 14px;">
           <button class="btn btn-primary" style="width: 100%; font-size: 15px; padding: 13px; font-weight: 800; background: linear-gradient(135deg, #1d4ed8, #2563eb); border-radius: 8px; box-shadow: 0 4px 10px rgba(29, 78, 216, 0.25);" onclick="processCounseling()">
-            ⚡ 1클릭 행복e음 사정서 생성 &amp; 민원인 모바일 안내 일괄 완성
+            ⚡ 행복e음 사정서 생성 &amp; 민원인 안내 일괄 생성
           </button>
         </div>
       </div>
@@ -1623,7 +1624,7 @@ ${agencyListText}
         (parsed.support === 'severed' ? "해체사유서 징구 및 지생보 심의 대상" : (parsed.support === 'none' ? "부양의무자 없음 (면제 대상)" : "부양의무자 일반 조사 대상")) :
         "<span class='missing-text'>[미기재] 부양의무자 확인 요망</span>";
 
-      document.getElementById('docActionInfo').innerText = signals.length > 0 ? "🚨 긴급복지 우선 심사 및 안전망 즉각 연계" : (parsed.missingFields.length > 0 ? "⚠️ 누락 조사항목 보충 후 수급 자격 확정 필요" : "국민기초 맞춤형 급여 모의판정 진행");
+      document.getElementById('docActionInfo').innerText = signals.length > 0 ? "🚨 긴급복지 우선 심사 및 안전망 즉각 연계" : (parsed.missingFields.length > 0 ? "⚠️️ 누락 조사항목 보충 후 수급 자격 확정 필요" : "국민기초 맞춤형 급여 모의판정 진행");
 
       currentHappyEumText = generateHappyEumText(parsed, signals, currentRecommendedAgencies);
       document.getElementById('happyEumOutput').innerText = currentHappyEumText;
@@ -2060,7 +2061,7 @@ ${agencyListText}
     }
 
     // ========================================================
-    // ★ [핵심 개편]: 4대 법정 복지사업별 심층 상담·조사 표준 서식
+    // 4대 법정 복지사업별 심층 상담·조사 표준 서식
     // ========================================================
     var PRESETS = {
       // 1. 국민기초생활보장 표준 상담조사서식
@@ -2145,7 +2146,7 @@ ${agencyListText}
 • 주거 지원: LH 긴급주거지원 공공임대 연계 의뢰
 • 안전 조치: 경찰청/자살예방센터 현장 안전확인 및 위기의뢰 공문 기안`,
 
-      // 4. 기초연금 표준 상담조사서식
+      // 4. 기초연금 표준 상담조사서식 (종합 판정 소견 삭제 반영)
       basicPension: `[기초연금 신청 및 노인가구 자산조사 표준서식]
 
 1. 신청인 기본 인적사항 및 연령 확인
@@ -2164,11 +2165,7 @@ ${agencyListText}
 • 주택 가액: 공시지가 6,500만 원 (대도시 공제 1.35억 / 중소도시 8,500만 원 이하로 전액 기본공제 범위 내)
 • 금융재산: 농협 예금 잔액 130만 원 (기본공제 2,000만 원 이내로 금융환산액 0원)
 • 금융부채: 담보대출 없음 (0원)
-• 자동차: 미보유
-
-4. 종합 판정 소견
-• 판정 예상: 소득인정액 0원으로 선정기준액(단독 213만 원 이하) 절대 충족
-• 예상 수급액: 기초연금 단독가구 기준 월 최대 약 33.4만 원 전액 지급 예상`
+• 자동차: 미보유`
     };
 
     function loadPreset(key) {
