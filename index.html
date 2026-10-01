@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>스마트 복지상담 &amp; 소득인정액 판정기 (행정안전부 AI 공통기반 연계형)</title>
+  <title>복지완성 pro (행정안전부 AI 공통기반 연계형)</title>
   
   <!-- 스마트폰 100% 인식 표준 QR코드 라이브러리 CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -127,7 +127,7 @@
       flex-wrap: wrap;
     }
     .header-title h1 {
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 800;
       color: #0f172a;
       letter-spacing: -0.5px;
@@ -592,7 +592,7 @@
 
   <header>
     <div class="header-title">
-      <h1>스마트 복지상담 &amp; 소득인정액 판정기</h1>
+      <h1>복지완성 pro</h1>
       <span class="header-org-badge">행정안전부 AI 공통기반 연계형</span>
       <span class="header-ai-status" id="headerAiBadge">🔒 모델 비종속 AI 활성 (WASM / 행안부 5대 모델 준비)</span>
     </div>
@@ -676,7 +676,7 @@
             <button class="btn btn-outline btn-sm" onclick="loadPreset('nearPoverty')" style="font-weight:800; color:#047857; border-color:#6ee7b7;">🎁 차상위(서식)</button>
             <button class="btn btn-danger btn-sm" onclick="loadPreset('emergency')" style="font-weight:800;">🚨 긴급복지(서식)</button>
             <button class="btn btn-outline btn-sm" onclick="loadPreset('basicPension')" style="font-weight:800; color:#7c3aed; border-color:#c4b5fd;">👵 기초연금(서식)</button>
-            <button class="btn btn-outline btn-sm" onclick="clearCounselInput()">🧹 자연어상담(초기화)</button>
+            <button class="btn btn-outline btn-sm" onclick="clearCounselInput()">🧹 자연어상담</button>
           </div>
         </div>
         
@@ -685,7 +685,6 @@
           <div id="counselCharCounter" style="position: absolute; bottom: 10px; right: 15px; font-size: 11px; color: #94a3b8; background: rgba(255,255,255,0.85); padding: 2px 6px; border-radius: 4px;">0자</div>
         </div>
         
-        <!-- [수정]: 1클릭 단어 제거 및 문구 변경 -->
         <div style="margin-top: 14px;">
           <button class="btn btn-primary" style="width: 100%; font-size: 15px; padding: 13px; font-weight: 800; background: linear-gradient(135deg, #1d4ed8, #2563eb); border-radius: 8px; box-shadow: 0 4px 10px rgba(29, 78, 216, 0.25);" onclick="processCounseling()">
             ⚡ 행복e음 사정서 생성 &amp; 민원인 안내 일괄 생성
@@ -1624,7 +1623,7 @@ ${agencyListText}
         (parsed.support === 'severed' ? "해체사유서 징구 및 지생보 심의 대상" : (parsed.support === 'none' ? "부양의무자 없음 (면제 대상)" : "부양의무자 일반 조사 대상")) :
         "<span class='missing-text'>[미기재] 부양의무자 확인 요망</span>";
 
-      document.getElementById('docActionInfo').innerText = signals.length > 0 ? "🚨 긴급복지 우선 심사 및 안전망 즉각 연계" : (parsed.missingFields.length > 0 ? "⚠️️ 누락 조사항목 보충 후 수급 자격 확정 필요" : "국민기초 맞춤형 급여 모의판정 진행");
+      document.getElementById('docActionInfo').innerText = signals.length > 0 ? "🚨 긴급복지 우선 심사 및 안전망 즉각 연계" : (parsed.missingFields.length > 0 ? "⚠️ 누락 조사항목 보충 후 수급 자격 확정 필요" : "국민기초 맞춤형 급여 모의판정 진행");
 
       currentHappyEumText = generateHappyEumText(parsed, signals, currentRecommendedAgencies);
       document.getElementById('happyEumOutput').innerText = currentHappyEumText;
@@ -1646,7 +1645,7 @@ ${agencyListText}
 
       lastGeneratedArtifact = {
         meta: {
-          app: "스마트 복지상담 판정기",
+          app: "복지완성 pro",
           exportDate: new Date().toISOString(),
           backendModel: document.getElementById('llmModelSelector').value,
           compliance: "원본 자료 불변(Read-Only) 원칙 준수"
@@ -2146,7 +2145,7 @@ ${agencyListText}
 • 주거 지원: LH 긴급주거지원 공공임대 연계 의뢰
 • 안전 조치: 경찰청/자살예방센터 현장 안전확인 및 위기의뢰 공문 기안`,
 
-      // 4. 기초연금 표준 상담조사서식 (종합 판정 소견 삭제 반영)
+      // 4. 기초연금 표준 상담조사서식
       basicPension: `[기초연금 신청 및 노인가구 자산조사 표준서식]
 
 1. 신청인 기본 인적사항 및 연령 확인
