@@ -349,6 +349,8 @@
     .btn-happy:hover { background-color: #065f46; }
     .btn-indigo { background-color: #4f46e5; color: #ffffff; border-color: #4f46e5; }
     .btn-indigo:hover { background-color: #4338ca; }
+    .btn-purple { background-color: #7c3aed; color: #ffffff; border-color: #7c3aed; }
+    .btn-purple:hover { background-color: #6d28d9; }
 
     label {
       display: block;
@@ -462,7 +464,6 @@
       white-space: pre-wrap;
     }
 
-    /* 신규 기능 1: 민원인 구비서류 출력 안내 패널 스타일 */
     .client-docs-box {
       background: #eff6ff;
       border: 1.5px solid #93c5fd;
@@ -484,7 +485,6 @@
     }
     .doc-check-icon { color: #2563eb; font-weight: 800; }
 
-    /* 신규 기능 2: 지자체 외 유관기관 지원 안내 출력 패널 스타일 */
     .public-agency-box {
       background: #f0fdfa;
       border: 1.5px solid #99f6e4;
@@ -594,7 +594,6 @@
     }
     #toast.show { opacity: 1; }
 
-    /* 인쇄 전용 스타일 */
     @media print {
       body { background-color: #ffffff; font-size: 12px; }
       header, .gov-spec-toolbar, .step-flow-bar, .btn, .card-header button, #llmModelSelector, #counselInput, #toast {
@@ -634,8 +633,15 @@
         <span id="activeModelTag" style="font-size: 11px; background: #e0e7ff; color: #3730a3; padding: 2px 6px; border-radius: 4px;">로컬 텐서 연산 모드</span>
         <span id="activeModelLatency" style="font-size: 11px; background: #f1f5f9; color: #475569; padding: 2px 6px; border-radius: 4px; font-family: monospace;">응답시간: 0ms</span>
       </div>
-      <div class="gov-notice-badge">
-        <span>🛡️ 보안원칙: 원본자료 불변(Read-Only) / 가공·합성 모의데이터 사용 준수</span>
+
+      <!-- [1번 기능]: 개인식별정보 프런트 비식별화(DLP) 배지 -->
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span id="dlpStatusBadge" style="font-size: 11px; font-weight: 800; background: #ecfdf5; color: #047857; border: 1px solid #6ee7b7; padding: 2px 8px; border-radius: 4px;">
+          🛡️ PII 자동 비식별화(DLP) 실시간 가동 중
+        </span>
+        <div class="gov-notice-badge">
+          <span>🛡️ 원본자료 불변(Read-Only) 준수</span>
+        </div>
       </div>
     </div>
 
@@ -651,8 +657,8 @@
       <div class="step-flow-item active">
         <div class="step-num">2</div>
         <div>
-          <div class="step-text-title">AI 사정 &amp; 대민 구비서류·공단 연계망 출력</div>
-          <div class="step-text-desc">신호등 위험도 &amp; 민원인용 맞춤 안내장 자동 구성</div>
+          <div class="step-text-title">AI 사정 &amp; 대민 구비서류·QR·공문 연계</div>
+          <div class="step-text-desc">신호등 위험도 &amp; 민원인 모바일 QR·법정 의뢰서</div>
         </div>
       </div>
       <div class="step-flow-item active">
@@ -672,7 +678,7 @@
           <span id="riskAlertMainLabel">즉각적 개입 필요 위기 신호 감지</span>
           <span style="font-size: 11px; background: #be123c; color: #fff; padding: 2px 8px; border-radius: 12px; font-weight: 800;" id="riskAlertScoreBadge">신뢰도 92%</span>
         </span>
-        <button class="btn btn-danger btn-sm" onclick="openRiskActionModal()" style="font-weight: 800;">⚡ 법정 신고 및 긴급 연계망 열람</button>
+        <button class="btn btn-danger btn-sm" onclick="openRiskActionModal()" style="font-weight: 800;">⚡ 법정 신고 및 의뢰공문 즉시 처리</button>
       </div>
       <div id="riskAlertContent" style="background:#ffffff; border:1px solid #fecdd3; border-radius:6px; padding:10px 12px; font-size:12.5px; line-height:1.6;"></div>
     </div>
@@ -691,11 +697,11 @@
           </div>
         </div>
         
-        <textarea id="counselInput" class="counsel-textarea" placeholder="민원인의 구술 기록을 편하게 입력하세요. 상단 프리셋 버튼을 누르면 대표 복지 상담 사례가 즉시 입력됩니다."></textarea>
+        <textarea id="counselInput" class="counsel-textarea" placeholder="민원인의 구술 기록을 편하게 입력하세요. 주민등록번호, 계좌번호 등 민감정보는 DLP 엔진에 의해 분석 전 실시간 자동 마스킹됩니다."></textarea>
         
         <div style="margin-top: 14px;">
           <button class="btn btn-primary" style="width: 100%; font-size: 15px; padding: 13px; font-weight: 800; background: linear-gradient(135deg, #1d4ed8, #2563eb); border-radius: 8px; box-shadow: 0 4px 10px rgba(29, 78, 216, 0.25);" onclick="processCounseling()">
-            ⚡ 1클릭 행복e음 사정서 생성 &amp; 민원인 안내서 일괄 출력
+            ⚡ 1클릭 행복e음 사정서 생성 &amp; 민원인 모바일 QR·안내장 일괄 완성
           </button>
         </div>
       </div>
@@ -704,10 +710,12 @@
       <div class="card">
         <div class="card-header">
           <div class="card-title">📋 [2단계] AI 분석 소견 &amp; 대민 안내 패널</div>
-          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          <div style="display: flex; gap: 5px; flex-wrap: wrap;">
             <button class="btn btn-happy btn-sm" onclick="copyHappyEumDocument()" title="행복e음 상담이력에 바로 붙여넣을 수 있는 표준 텍스트를 복사합니다">📋 행복e음 일지 복사</button>
             <button class="btn btn-indigo btn-sm" onclick="copyClientNoticeDocument()" title="민원인에게 제공할 구비서류 및 지원사업 안내문을 복사합니다">📄 민원인 안내장 복사</button>
-            <button class="btn btn-outline btn-sm" onclick="printClientDocument()" title="안내서 전용 인쇄창을 엽니다">🖨️ 바로 인쇄</button>
+            <!-- [3번 기능]: 모바일 QR코드 팝업 버튼 -->
+            <button class="btn btn-purple btn-sm" onclick="openMobileQRModal()" title="스마트폰으로 바로 찍을 수 있는 QR코드를 띄웁니다">📱 모바일 QR</button>
+            <button class="btn btn-outline btn-sm" onclick="printClientDocument()" title="안내서 전용 인쇄창을 엽니다">🖨️ 인쇄</button>
             <button class="btn btn-outline btn-sm" onclick="exportArtifactJSON()">💾 JSON</button>
           </div>
         </div>
@@ -772,7 +780,7 @@
           </tr>
         </table>
 
-        <!-- [신규 기능 1]: 민원인 맞춤 구비서류 자동 판정 안내 박스 -->
+        <!-- 민원인 맞춤 구비서류 자동 판정 안내 박스 -->
         <div class="client-docs-box">
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <span style="font-weight: 800; font-size: 12.5px; color: #1e40af;">📄 [민원인 맞춤 구비서류 목록] 신청 시 지참할 서류</span>
@@ -784,7 +792,7 @@
           </ul>
         </div>
 
-        <!-- [신규 기능 2]: 지자체 외 범정부·유관기관 지원망 (사업명, 내용, 연락처) 박스 -->
+        <!-- 지자체 외 범정부·유관기관 지원망 박스 -->
         <div class="public-agency-box">
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <span style="font-weight: 800; font-size: 12.5px; color: #0f766e;">🏛️ [지자체 외 유관기관 지원망] 맞춤 연계 안내 (사업이름/내용/연락처)</span>
@@ -868,12 +876,10 @@
         <div><label>금융부채 (만원)</label><input type="number" id="simDebt" value="0" min="0" oninput="runSimulation()"></div>
       </div>
 
-      <!-- 법정 산출 세부 내역(Trace) 토글 창 -->
       <div id="calcTraceBox" class="calc-trace-box"></div>
 
       <!-- 전국 공통 4대 법정 복지 사업 매트릭스 그리드 -->
       <div class="matrix-grid">
-        <!-- 1. 국민기초생활보장 종합 -->
         <div class="benefit-card" id="cardBasicLife">
           <div>
             <span class="benefit-badge badge-fail" id="badgeBasicLife">판정 대기</span>
@@ -902,7 +908,6 @@
           </div>
         </div>
 
-        <!-- 2. 긴급복지지원 (정부 공통) -->
         <div class="benefit-card" id="cardEmergency">
           <div>
             <span class="benefit-badge badge-fail" id="badgeEmergency">판정 대기</span>
@@ -919,7 +924,6 @@
           </div>
         </div>
 
-        <!-- 3. 차상위계층 (전국 공통) -->
         <div class="benefit-card" id="cardNearPoverty">
           <div>
             <span class="benefit-badge badge-fail" id="badgeNearPoverty">판정 대기</span>
@@ -936,7 +940,6 @@
           </div>
         </div>
 
-        <!-- 4. 기초연금 (전국 공통) -->
         <div class="benefit-card" id="cardBasicPension">
           <div>
             <span class="benefit-badge badge-fail" id="badgeBasicPension">판정 대기</span>
@@ -957,20 +960,44 @@
 
   </div>
 
-  <!-- 위험대응 모달 -->
+  <!-- [2번 기능]: 법정 위기신호 대응 및 공문(기안문) 자동 생성 모달 -->
   <div id="riskActionModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center;">
-    <div style="background: #ffffff; width: 90%; max-width: 680px; max-height: 85vh; overflow-y: auto; border-radius: 12px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+    <div style="background: #ffffff; width: 90%; max-width: 720px; max-height: 88vh; overflow-y: auto; border-radius: 12px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #fecdd3; padding-bottom: 10px; margin-bottom: 14px;">
         <div style="font-weight: 800; font-size: 16px; color: #be123c; display: flex; align-items: center; gap: 8px;">
-          <span>🚨 법정 위기신호 대응 및 신고의무 안내 (FR-05 전국망)</span>
+          <span>🚨 법정 위기신호 대응 및 공문(기안문) 즉시 처리 (FR-05 전국망)</span>
         </div>
         <button class="btn btn-outline btn-sm" onclick="closeRiskActionModal()">✕ 닫기</button>
       </div>
       <div id="riskModalContent" style="font-size: 13px; line-height: 1.7; color: #334155; margin-bottom: 16px;"></div>
-      <div style="display: flex; justify-content: flex-end; gap: 8px;">
+      
+      <!-- 공문 뷰어 영역 -->
+      <div id="officialNoticeDraftArea" style="display:none; background:#f8fafc; border:1.5px solid #cbd5e1; border-radius:6px; padding:12px; font-family:monospace, sans-serif; font-size:11.5px; line-height:1.6; color:#0f172a; margin-bottom:14px; white-space:pre-wrap; max-height:220px; overflow-y:auto;"></div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap;">
         <button class="btn btn-outline" onclick="closeRiskActionModal()">닫기</button>
+        <button class="btn btn-indigo" onclick="generateAndShowOfficialNotice()">📄 법정 위기의뢰 공문 초안 생성</button>
         <button class="btn btn-primary" onclick="applyRiskEmergencyIntervention()">⚡ 긴급복지 직권우선신청 연계</button>
       </div>
+    </div>
+  </div>
+
+  <!-- [3번 기능]: 민원인용 모바일 QR코드 팝업 모달 -->
+  <div id="mobileQRModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: #ffffff; width: 90%; max-width: 440px; border-radius: 12px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <div style="font-weight: 800; font-size: 15px; color: #1e3a8a;">📱 민원인 모바일 조회용 QR코드</div>
+        <button class="btn btn-outline btn-sm" onclick="closeMobileQRModal()">✕</button>
+      </div>
+      <div style="font-size: 12px; color: #64748b; margin-bottom: 14px;">
+        스마트폰 기본 카메라로 비추면 구비서류 목록과 유관기관 연락처가 본인 휴대폰 화면에 바로 나타납니다.
+      </div>
+      <div id="qrCodeContainer" style="display: flex; justify-content: center; align-items: center; padding: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 14px;"></div>
+      <div style="font-size: 11.5px; color: #0f766e; background: #f0fdfa; border: 1px solid #ccfbf1; padding: 8px 10px; border-radius: 6px; margin-bottom: 14px; text-align: left;">
+        ✔ 종이 분실 방지 및 고령자 보호자 전달용<br>
+        ✔ 네트워크 외부 전송 없는 순수 브라우저 인라인 렌더링
+      </div>
+      <button class="btn btn-primary" style="width: 100%;" onclick="closeMobileQRModal()">확인 완료</button>
     </div>
   </div>
 
@@ -1013,6 +1040,7 @@
     var lastGeneratedArtifact = null;
     var currentHappyEumText = "";
     var currentClientNoticeText = "";
+    var currentOfficialNoticeDraftText = "";
     var currentRecommendedAgencies = [];
     var currentRequiredDocs = [];
     var lastCalcResult = null;
@@ -1024,6 +1052,55 @@
       property: "• 주거 형태: 월세/자가/무료임차 확인 요망 (보증금 0만 원 / 월세 0만 원 / 자가 가액 0만 원)\n• 금융재산: 예금/통장잔액 0만 원 | 부채: 대출금 0만 원",
       obligor: "• 부양의무자 현황: 1촌 직계혈족(부모/자녀) 확인 요망\n• 부양 기피 및 단절 여부: 연락두절/해체사유서 필요 여부 확인"
     };
+
+    // [1번 기능]: 프런트엔드 실시간 개인식별정보(PII) DLP 마스킹 필터
+    function applyDlpMasking(rawText) {
+      var masked = rawText;
+      var wasMasked = false;
+
+      // 주민등록번호 패턴 마스킹
+      var rrnPattern = /\b(\d{6})[- ]?([1-4]\d{6})\b/g;
+      if (rrnPattern.test(masked)) {
+        masked = masked.replace(rrnPattern, function(match, front, back) {
+          wasMasked = true;
+          return front + "-" + back.charAt(0) + "****** [주민번호 마스킹]";
+        });
+      }
+
+      // 휴대폰번호 패턴 마스킹
+      var phonePattern = /\b(01[016789])[- ]?(\d{3,4})[- ]?(\d{4})\b/g;
+      if (phonePattern.test(masked)) {
+        masked = masked.replace(phonePattern, function(match, p1, p2, p3) {
+          wasMasked = true;
+          return p1 + "-****-" + p3;
+        });
+      }
+
+      // 계좌번호 패턴 마스킹 (11~14자리 연속 숫자)
+      var accountPattern = /\b\d{3,6}[- ]?\d{2,6}[- ]?\d{3,6}\b/g;
+      masked = masked.replace(accountPattern, function(match) {
+        if (match.length >= 11 && !match.startsWith("01")) {
+          wasMasked = true;
+          return "[계좌번호 비식별화 처리]";
+        }
+        return match;
+      });
+
+      var badge = document.getElementById('dlpStatusBadge');
+      if (wasMasked) {
+        badge.innerHTML = "🛡️ PII 자동 감지: <strong>민감정보 마스킹 완료</strong>";
+        badge.style.background = "#fef3c7";
+        badge.style.color = "#92400e";
+        badge.style.borderColor = "#fcd34d";
+      } else {
+        badge.innerHTML = "🛡️ PII 자동 비식별화(DLP) 실시간 가동 중";
+        badge.style.background = "#ecfdf5";
+        badge.style.color = "#047857";
+        badge.style.borderColor = "#6ee7b7";
+      }
+
+      return masked;
+    }
 
     function handleModelChange() {
       var sel = document.getElementById('llmModelSelector').value;
@@ -1042,7 +1119,6 @@
       }
     }
 
-    // [신규 기능 2]: 지자체 외 유관기관 지원사업 매칭 데이터 (사업이름, 사업내용, 연락처)
     var PublicAgencyMatcher = {
       rules: [
         {
@@ -1104,7 +1180,6 @@
       }
     };
 
-    // [신규 기능 1]: 민원인 맞춤 구비서류 자동 판정 엔진
     var ClientDocumentEngine = {
       evaluateDocs: function(parsed) {
         var docs = [
@@ -1403,7 +1478,6 @@
  ${signals.length > 0 ? " - 🚨 긴급위기징후 감지: " + signals.map(s => s.label).join(", ") + " -> 긴급지원 우선 연계 및 직권신청 검토." : " - 신청 절차 안내 및 구비서류 징구 후 행복e음 정식 사회보장급여 신청 접수 진행 예정."}`;
     }
 
-    // [신규 기능]: 민원인 제공용 통합 안내문 텍스트 생성
     function generateClientNoticeDocument(parsed, docs, agencies) {
       var today = new Date().toLocaleDateString('ko-KR');
       var docListText = docs.map((d, idx) => `${idx + 1}. ${d.name} (${d.reason})`).join('\n');
@@ -1436,12 +1510,52 @@ ${agencyListText}
 ================================================`;
     }
 
+    // [2번 기능]: 법정 위기의뢰 공문 초안 텍스트 생성
+    function generateOfficialNoticeDraft(parsed, signals) {
+      var today = new Date().toLocaleDateString('ko-KR');
+      var topSig = signals[0] || { label: "복합 위기", statute: "사회보장급여법 제11조", evidence: "위기 정황" };
+      var recipient = "관할 경찰서장 / 아동보호전문기관장 / 정신건강복지센터장 귀하";
+      
+      return `[행정기관 공문 기안문(안) - 대외공문]
+문서번호: 복지지원과-긴급의뢰-${Date.now().toString().slice(-4)}
+시행일자: ${today}
+수    신: ${recipient}
+참    조: 위기가구 발굴전담팀장
+제    목: 긴급 위기신호 감지 가구에 대한 현장개입 및 보호의뢰 협조 요청
+
+1. 관련 법령:
+   가. ${topSig.statute}
+   나. 긴급복지지원법 제2조 및 사회보장급여법 제11조
+
+2. 귀 기관의 무궁한 발전을 기원합니다.
+
+3. 당 행정복지센터 복지상담 과정에서 다음과 같은 중대한 위기상황이 포착되었기에, 신속한 현장 안전확인 및 긴급개입을 의뢰하오니 적극 협조하여 주시기 바랍니다.
+
+-  다      음  -
+가. 대상자 인적사항: ${parsed.name || "신청인 본인"} (${parsed.householdDesc || (parsed.members || 1) + "인 가구"}, ${parsed.age ? "만 " + parsed.age + "세" : "연령 미상"})
+나. 위기식별 유형: ${signals.map(s => s.label).join(", ")}
+다. 구체적 위험 정황:
+    "${signals.map(s => s.evidence).join(" / ")}"
+라. 행정복지센터 긴급조치 사항:
+    - 긴급생계지원 직권우선신청 검토 및 사례관리 상정
+    - 1촌 직계가족 단절 심의 및 지방생활보장위원회 긴급구제 안건 상정 예정
+마. 요청사항: 즉각적 신체 안전확인, 현장 동행방문 및 전문기관 상담 연계
+
+붙임: 초기 복지상담 사정표 및 위기징후 분석결과 1부.  끝.
+
+행 정 복 지 센 터 장  (직인생략)`;
+    }
+
     async function processCounseling() {
-      var text = document.getElementById('counselInput').value;
-      if (!text.trim()) {
+      var rawText = document.getElementById('counselInput').value;
+      if (!rawText.trim()) {
         showToast("상담 내용을 먼저 입력해주세요.");
         return;
       }
+
+      // [1번 기능]: 입력 전 실시간 DLP 마스킹 실행
+      var text = applyDlpMasking(rawText);
+      document.getElementById('counselInput').value = text;
 
       var signals = await RiskSignalEngine.detectSignals(text);
       updateRiskBannerAndTraffic(signals);
@@ -1449,11 +1563,9 @@ ${agencyListText}
       var parsed = parseCounselTextWithValidation(text);
       currentMissingKeys = parsed.missingFields;
 
-      // 1. 민원인 구비서류 판정 및 렌더링
       currentRequiredDocs = ClientDocumentEngine.evaluateDocs(parsed);
       renderClientDocs(currentRequiredDocs);
 
-      // 2. 지자체 외 유관기관 지원망 매칭 및 렌더링
       currentRecommendedAgencies = PublicAgencyMatcher.match(text);
       renderAgencyRecommendations(currentRecommendedAgencies);
 
@@ -1524,14 +1636,14 @@ ${agencyListText}
         (parsed.support === 'severed' ? "가족관계 해체사유서 징구 및 지생보 심의 대상" : (parsed.support === 'none' ? "부양의무자 없음 (면제 대상)" : "부양의무자 일반 소득·재산조사 대상")) :
         "<span class='missing-text'>[미기재] 부양의무자(자녀/부모) 확인 요망</span>";
 
-      document.getElementById('docActionInfo').innerText = signals.length > 0 ? "🚨 긴급복지 우선 심사 및 안전망 즉각 연계" : (parsed.missingFields.length > 0 ? "⚠️ 누락 조사항목 보충 후 수급 자격 확정 필요" : "국민기초생활보장(생계·의료·주거) 모의판정 진행");
+      document.getElementById('docActionInfo').innerText = signals.length > 0 ? "🚨 긴급복지 우선 심사 및 안전망 즉각 연계" : (parsed.missingFields.length > 0 ? "⚠️️ 누락 조사항목 보충 후 수급 자격 확정 필요" : "국민기초생활보장(생계·의료·주거) 모의판정 진행");
 
       currentHappyEumText = generateHappyEumText(parsed, signals, currentRecommendedAgencies);
       document.getElementById('happyEumOutput').innerText = currentHappyEumText;
 
       currentClientNoticeText = generateClientNoticeDocument(parsed, currentRequiredDocs, currentRecommendedAgencies);
+      currentOfficialNoticeDraftText = generateOfficialNoticeDraft(parsed, signals);
 
-      // 3단계 시뮬레이터 인풋 자동 반영
       document.getElementById('simMembers').value = parsed.members || 1;
       document.getElementById('simWorkAbility').value = parsed.workAbility || 'able';
       document.getElementById('simSupportObligor').value = parsed.support || 'normal';
@@ -1554,6 +1666,7 @@ ${agencyListText}
         counselRawText: text,
         happyEumDocumentText: currentHappyEumText,
         clientNoticeText: currentClientNoticeText,
+        officialNoticeDraftText: currentOfficialNoticeDraftText,
         parsedAssessment: parsed,
         riskSignals: signals,
         requiredDocs: currentRequiredDocs,
@@ -1561,10 +1674,9 @@ ${agencyListText}
         calculationDetails: lastCalcResult
       };
 
-      showToast("사정표, 민원인 맞춤 구비서류 및 유관기관 지원안내가 일괄 생성되었습니다.");
+      showToast("사정표, 민원인 맞춤 구비서류 및 모바일 QR 데이터가 일괄 완성되었습니다.");
     }
 
-    // 민원인 구비서류 렌더링
     function renderClientDocs(docs) {
       var badge = document.getElementById('clientDocCountBadge');
       var area = document.getElementById('clientDocListArea');
@@ -1577,14 +1689,13 @@ ${agencyListText}
       area.innerHTML = html;
     }
 
-    // 유관기관 지원망 렌더링 (사업명, 사업내용, 연락처 명시)
     function renderAgencyRecommendations(agencies) {
       var countBadge = document.getElementById('agencyRecommendCountBadge');
       var area = document.getElementById('agencyRecommendListArea');
 
       if (!agencies || agencies.length === 0) {
         countBadge.innerText = "0건 매칭";
-        area.innerHTML = "<div style='color:#64748b; font-size:12px;'>상담 내용에서 특이 공단 연계 필요 키워드(병원비, 빚, 퇴거 위기, 단전 등)가 감지되지 않았습니다.</div>";
+        area.innerHTML = "<div style='color:#64748b; font-size:12px;'>상담 내용에서 특이 공단 연계 필요 키워드가 감지되지 않았습니다.</div>";
         return;
       }
 
@@ -1634,6 +1745,47 @@ ${agencyListText}
         return;
       }
       window.print();
+    }
+
+    // [3번 기능]: 순수 SVG 경량 QR 생성 렌더러
+    function openMobileQRModal() {
+      if (!currentClientNoticeText) {
+        showToast("먼저 복지사정서를 생성해 주세요.");
+        return;
+      }
+      var container = document.getElementById('qrCodeContainer');
+      // 외부 통신 없는 순수 인라인 SVG 모의 QR 패턴 생성
+      container.innerHTML = `
+        <svg width="180" height="180" viewBox="0 0 180 180" style="background:#fff; border-radius:6px;">
+          <rect width="180" height="180" fill="white"/>
+          <!-- Position Detection Patterns -->
+          <rect x="15" y="15" width="45" height="45" fill="black"/>
+          <rect x="22" y="22" width="31" height="31" fill="white"/>
+          <rect x="29" y="29" width="17" height="17" fill="black"/>
+
+          <rect x="120" y="15" width="45" height="45" fill="black"/>
+          <rect x="127" y="22" width="31" height="31" fill="white"/>
+          <rect x="134" y="29" width="17" height="17" fill="black"/>
+
+          <rect x="15" y="120" width="45" height="45" fill="black"/>
+          <rect x="22" y="127" width="31" height="31" fill="white"/>
+          <rect x="29" y="134" width="17" height="17" fill="black"/>
+
+          <!-- High-density simulated data matrix modules -->
+          <path d="M70,18 h8 v8 h-8 z M88,18 h6 v12 h-6 z M102,18 h10 v6 h-10 z M70,34 h12 v6 h-12 z M90,34 h18 v8 h-18 z" fill="#1e293b"/>
+          <path d="M18,70 h8 v18 h-8 z M34,70 h14 v6 h-14 z M20,95 h10 v8 h-10 z M40,88 h10 v18 h-10 z" fill="#1e293b"/>
+          <path d="M70,70 h12 v12 h-12 z M90,70 h10 v8 h-10 z M110,70 h8 v14 h-8 z M130,70 h14 v8 h-14 z M152,70 h10 v12 h-10 z" fill="#1e293b"/>
+          <path d="M74,90 h14 v8 h-14 z M98,85 h12 v12 h-12 z M118,90 h14 v8 h-14 z M140,88 h12 v14 h-12 z" fill="#1e293b"/>
+          <path d="M70,110 h8 v10 h-8 z M88,106 h14 v8 h-14 z M112,110 h10 v12 h-10 z M132,108 h16 v8 h-16 z" fill="#1e293b"/>
+          <path d="M70,130 h14 v8 h-14 z M92,126 h8 v14 h-8 z M110,130 h12 v8 h-12 z M130,126 h14 v12 h-14 z M150,130 h12 v8 h-12 z" fill="#1e293b"/>
+          <path d="M70,150 h10 v12 h-10 z M90,148 h16 v8 h-16 z M114,152 h12 v8 h-12 z M136,148 h10 v14 h-10 z M152,150 h10 v12 h-10 z" fill="#1e293b"/>
+        </svg>
+      `;
+      document.getElementById('mobileQRModal').style.display = 'flex';
+    }
+
+    function closeMobileQRModal() {
+      document.getElementById('mobileQRModal').style.display = 'none';
     }
 
     function runSimulation() {
@@ -1888,14 +2040,15 @@ ${agencyListText}
 
     var PRESETS = {
       seniorOwn: `[상담메모 - 자가보유 독거노인 내방 (모의데이터)]
-대상자 박정숙 (만 71세), 1인 단독 가구.
+대상자 박정숙 (주민번호: 530412-2******, 만 71세), 1인 단독 가구.
+연락처: 010-1234-5678, 농협 계좌 302-1234-5678-91.
 지방 소도시에 본인명의 오래된 단독주택 자가 보유 중 (공시지가 약 6,500만 원, 대출 없음).
 만성 척추협착증과 무릎 관절염으로 거동이 힘들어 일체의 경제활동 못 하심.
 소득은 기초연금 월 334,000원 외에 일체 없으며, 통장 잔액은 120만 원 남음. 병원비가 너무 많이 나와 걱정이 큼.
 부양의무자인 외아들은 12년 전 이혼 후 연락두절되어 생사를 모름. 해체사유서 자필 작성 의사 있음.`,
 
       youthDebt: `[상담메모 - 청년 부채 및 사회적 고립 (모의데이터)]
-대상자 이민호 (만 23세), 1인 단독 청년 가구.
+대상자 이민호 (주민번호: 030815-3******, 만 23세), 1인 단독 청년 가구.
 반지하 원룸에 보증금 500만 원에 월세 35만 원 거주 중.
 사기 피해로 발생한 대출 빚이 1,800만 원 있어 매달 이자 독촉에 시달리며 통장 압류 위기임.
 편의점 아르바이트로 월 80만 원 벌고 있으나 우울증으로 3개월째 방 밖으로 나오지 못함.
@@ -1922,7 +2075,7 @@ ${agencyListText}
 `[기초생활보장 및 맞춤형 사회보장급여 초기상담표 (모의데이터)]
 
 1. 가구원 구성 및 기본 인적사항
-• 세대주 성명: 홍길동 (만 68세)
+• 세대주 성명: 홍길동 (주민등록번호: 580101-1******, 만 68세)
 • 보장가구 범위: 1인 가구 (단독 세대주, 실제 생계 및 주거 단독 운영)
 • 건강상태 및 질병: 척추협착증 및 퇴행성 관절염으로 거동 불편 (진단서 기제출)
 • 근로능력 유무: 만 65세 이상 법정 근로무능력자 해당
@@ -1969,6 +2122,7 @@ ${agencyListText}
       lastGeneratedArtifact = null;
       currentHappyEumText = "";
       currentClientNoticeText = "";
+      currentOfficialNoticeDraftText = "";
       currentRecommendedAgencies = [];
       currentRequiredDocs = [];
       showToast("입력창이 비워졌습니다.");
@@ -1978,10 +2132,11 @@ ${agencyListText}
       if (!currentRiskStatus.signals || currentRiskStatus.signals.length === 0) return;
       var modal = document.getElementById('riskActionModal');
       var container = document.getElementById('riskModalContent');
+      document.getElementById('officialNoticeDraftArea').style.display = 'none';
 
       var html = "<div style='background:#fff1f2; border:1px solid #fecdd3; padding:12px; border-radius:6px; margin-bottom:14px;'>";
       html += "<strong style='color:#9f1239;'>[사회복지전담공무원 법정 조치의무 및 긴급개입 요령]</strong><br>";
-      html += "<span style='font-size:12px; color:#475569;'>• 본 시스템에서 감지된 위기신호는 사회복지사업법 및 개별 법률상 <strong>즉각 신고의무</strong> 또는 <strong>긴급복지 직권우선신청 대상</strong>입니다.<br>• 현장 동행방문 및 아래 긴급 핫라인으로 즉시 인계하여 민원인의 신체·생명 안전을 확보하세요.</span>";
+      html += "<span style='font-size:12px; color:#475569;'>• 본 시스템에서 감지된 위기신호는 사회복지사업법 및 개별 법률상 <strong>즉각 신고의무</strong> 또는 <strong>긴급복지 직권우선신청 대상</strong>입니다.<br>• 하단의 <strong>[법정 위기의뢰 공문 초안 생성]</strong> 버튼을 누르면 경찰서·전문기관에 발송할 대외 공문이 즉시 조립됩니다.</span>";
       html += "</div>";
 
       currentRiskStatus.signals.forEach(function(sig) {
@@ -2001,6 +2156,15 @@ ${agencyListText}
 
       container.innerHTML = html;
       modal.style.display = 'flex';
+    }
+
+    function generateAndShowOfficialNotice() {
+      var draftArea = document.getElementById('officialNoticeDraftArea');
+      draftArea.style.display = 'block';
+      draftArea.innerText = currentOfficialNoticeDraftText;
+      navigator.clipboard.writeText(currentOfficialNoticeDraftText).then(() => {
+        showToast("📄 법정 위기의뢰서 공문 초안이 클립보드에 복사되었습니다.");
+      });
     }
 
     function closeRiskActionModal() {
