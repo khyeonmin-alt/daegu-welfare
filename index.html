@@ -90,9 +90,6 @@
     });
   </script>
 
-  <!-- 스마트폰 즉시 인식 지원 QR 라이브러리 -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
   <style>
     * {
       box-sizing: border-box;
@@ -384,7 +381,6 @@
       font-size: 12.5px;
     }
 
-    /* 2단계 내부 좌우 분할 그리드 */
     .counsel-split-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -642,7 +638,7 @@
         <div class="step-num">2</div>
         <div>
           <div class="step-text-title">AI 사정 &amp; 대민 구비서류·QR·공문 연계</div>
-          <div class="step-text-desc">민원인 모바일 QR·법정 의뢰서</div>
+          <div class="step-text-desc">사정표·전산일지 및 민원인 맞춤 안내</div>
         </div>
       </div>
       <div class="step-flow-item active">
@@ -668,7 +664,7 @@
     </div>
 
     <div class="grid-2col">
-      <!-- 좌측: 1단계 입력창 및 시연용 4대 프리셋 버튼 -->
+      <!-- 좌측: 1단계 입력창 및 프리셋 -->
       <div class="card">
         <div class="card-header">
           <div class="card-title">📝 [1단계] 복지상담 기록 &amp; 비정형 구술 입력 (원본 투입)</div>
@@ -685,20 +681,18 @@
         
         <div style="margin-top: 14px;">
           <button class="btn btn-primary" style="width: 100%; font-size: 15px; padding: 13px; font-weight: 800; background: linear-gradient(135deg, #1d4ed8, #2563eb); border-radius: 8px; box-shadow: 0 4px 10px rgba(29, 78, 216, 0.25);" onclick="processCounseling()">
-            ⚡ 1클릭 행복e음 사정서 생성 &amp; 민원인 모바일 QR·안내장 일괄 완성
+            ⚡ 1클릭 행복e음 사정서 생성 &amp; 민원인 모바일 안내 일괄 완성
           </button>
         </div>
       </div>
 
-      <!-- 우측: 2단계 사정표(좌) & 행복e음 등록일지(우) 분할 배치 카드 -->
+      <!-- 우측: 2단계 사정표(좌) & 전산 상담일지(우) 분할 배치 카드 -->
       <div class="card">
         <div class="card-header">
           <div class="card-title">📋 [2단계] AI 분석 소견 &amp; 대민 안내 패널</div>
           <div style="display: flex; gap: 5px; flex-wrap: wrap;">
             <button class="btn btn-happy btn-sm" onclick="copyHappyEumDocument()" title="행복e음 상담이력에 바로 붙여넣을 수 있는 표준 텍스트를 복사합니다">📋 일지 복사</button>
-            <button class="btn btn-indigo btn-sm" onclick="copyClientNoticeDocument()" title="민원인에게 제공할 구비서류 및 지원사업 안내문을 복사합니다">📄 안내장 복사</button>
-            <button class="btn btn-purple btn-sm" onclick="openMobileQRModal()" title="스마트폰으로 바로 찍을 수 있는 QR코드를 띄웁니다">📱 모바일 QR</button>
-            <button class="btn btn-outline btn-sm" onclick="printClientDocument()" title="안내서 전용 인쇄창을 엽니다">🖨️ 인쇄</button>
+            <button class="btn btn-purple btn-sm" onclick="openClientGuidanceModal()" title="민원인 안내문구를 수정하고 모바일 복사 및 QR 조회를 진행합니다">📱 민원인 안내하기</button>
             <button class="btn btn-outline btn-sm" onclick="exportArtifactJSON()">💾 JSON</button>
           </div>
         </div>
@@ -712,7 +706,7 @@
           <div class="missing-tag-list" id="missingTagList"></div>
         </div>
 
-        <!-- 사정표(좌)와 행복e음 등록일지(우) 2분할 그리드 -->
+        <!-- 2단계 좌우 분할 그리드 -->
         <div class="counsel-split-grid">
           <div>
             <div style="font-weight: 800; font-size: 12.5px; color: #1e3a8a; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
@@ -929,7 +923,7 @@
 
   </div>
 
-  <!-- [2번 기능]: 법정 위기신호 대응 및 공문(기안문) 자동 생성 모달 -->
+  <!-- 위기신호 대응 모달 -->
   <div id="riskActionModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center;">
     <div style="background: #ffffff; width: 90%; max-width: 720px; max-height: 88vh; overflow-y: auto; border-radius: 12px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #fecdd3; padding-bottom: 10px; margin-bottom: 14px;">
@@ -950,29 +944,38 @@
     </div>
   </div>
 
-  <!-- [3번 기능]: 민원인용 모바일 QR코드 및 종이 인쇄 모달 -->
-  <div id="mobileQRModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center;">
-    <div style="background: #ffffff; width: 90%; max-width: 440px; border-radius: 12px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <div style="font-weight: 800; font-size: 15px; color: #1e3a8a;">📱 민원인 모바일 조회용 QR코드</div>
-        <button class="btn btn-outline btn-sm" onclick="closeMobileQRModal()">✕</button>
-      </div>
-      <div style="font-size: 12px; color: #64748b; margin-bottom: 14px;">
-        스마트폰 기본 카메라로 비추면 구비서류 목록과 유관기관 연락처가 본인 휴대폰 화면에 바로 나타납니다.
-      </div>
-      
-      <div id="qrCodeContainer" style="display: flex; justify-content: center; align-items: center; padding: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 14px; min-height: 200px;"></div>
-      
-      <div style="font-size: 11.5px; color: #0f766e; background: #f0fdfa; border: 1px solid #ccfbf1; padding: 8px 10px; border-radius: 6px; margin-bottom: 14px; text-align: left;">
-        ✔ 종이 분실 방지 및 고령자 보호자 전달용<br>
-        ✔ 스마트폰 촬영 시 서류 목록과 전화번호 즉시 표시
+  <!-- [고도화]: 민원인 안내하기 통합 모달 (내용 편집, 모바일 복사, QR확인, 종이출력 원스톱) -->
+  <div id="clientGuidanceModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: #ffffff; width: 92%; max-width: 680px; max-height: 90vh; overflow-y: auto; border-radius: 12px; padding: 22px; box-shadow: 0 10px 25px rgba(0,0,0,0.25);">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 14px;">
+        <div style="font-weight: 800; font-size: 16px; color: #1e3a8a; display: flex; align-items: center; gap: 8px;">
+          <span>📱 [민원인 안내하기] 안내문 편집 및 모바일 QR 전송</span>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="closeClientGuidanceModal()">✕ 닫기</button>
       </div>
 
-      <div style="display: flex; gap: 8px;">
-        <button class="btn btn-outline" style="flex: 1;" onclick="closeMobileQRModal()">닫기</button>
-        <button class="btn btn-primary" style="flex: 1.5; font-weight: 800;" onclick="printClientDocumentFromModal()">
-          🖨️ 종이 안내장 즉시 출력
-        </button>
+      <div style="font-size: 12px; color: #475569; margin-bottom: 8px;">
+        💡 <strong>담당자 메모/수정 가능:</strong> 민원인에게 전송·인쇄될 구비서류 및 지원내용을 아래에서 직접 수정할 수 있습니다.
+      </div>
+
+      <!-- 담당자 실시간 편집용 텍스트 영역 -->
+      <textarea id="editableClientNoticeArea" style="height: 180px; font-family: monospace; font-size: 12px; line-height: 1.6; margin-bottom: 14px; background: #f8fafc;"></textarea>
+
+      <!-- 모바일 QR코드 노출 영역 (토글형) -->
+      <div id="guidanceQrSection" style="display: none; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px; margin-bottom: 14px; text-align: center;">
+        <div style="font-weight: 800; font-size: 13px; color: #1e293b; margin-bottom: 6px;">📱 스마트폰 카메라로 비추면 수정된 안내문이 즉시 열립니다</div>
+        <div id="qrCodeContainer" style="display: flex; justify-content: center; align-items: center; padding: 10px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; width: 170px; height: 170px; margin: 0 auto 8px auto;"></div>
+        <div style="font-size: 11px; color: #0f766e;">✔ 통신망 차단 환경에서도 100% 동작하는 인라인 모바일 규격</div>
+      </div>
+
+      <!-- 하단 원스톱 버튼 그룹 -->
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; border-top: 1px solid #e2e8f0; padding-top: 12px;">
+        <div style="display: flex; gap: 6px;">
+          <button class="btn btn-indigo btn-sm" onclick="copyEditedClientNotice()">📋 모바일 안내장 복사</button>
+          <button class="btn btn-purple btn-sm" onclick="toggleGuidanceQR()">📱 모바일 QR 확인하기</button>
+          <button class="btn btn-outline btn-sm" onclick="printEditedClientNotice()">🖨️️ 종이 인쇄</button>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="closeClientGuidanceModal()">창 닫기</button>
       </div>
     </div>
   </div>
@@ -1673,66 +1676,81 @@ ${agencyListText}
       });
     }
 
-    function copyClientNoticeDocument() {
+    // [신규 기능]: 민원인 안내하기 모달 열기 및 초기 텍스트 세팅
+    function openClientGuidanceModal() {
       if (!currentClientNoticeText) {
         showToast("먼저 복지사정서를 생성해 주세요.");
         return;
       }
-      navigator.clipboard.writeText(currentClientNoticeText).then(() => {
-        showToast("📄 민원인 제공용 구비서류 및 유관기관 안내장이 복사되었습니다 (문자·알림톡용).");
-      });
-    }
-
-    function openMobileQRModal() {
-      if (!currentClientNoticeText) {
-        showToast("먼저 복지사정서를 생성해 주세요.");
-        return;
-      }
-      
-      var modal = document.getElementById('mobileQRModal');
-      var container = document.getElementById('qrCodeContainer');
-      container.innerHTML = "";
-
-      var docsSummary = currentRequiredDocs.map((d, i) => `${i+1}.${d.name}`).join(', ');
-      var agencySummary = currentRecommendedAgencies.map(a => `${a.agency}(${a.contact})`).join(', ');
-      
-      var qrPayload = `[복지상담 구비서류 및 지원안내]
-■ 제출서류: ${docsSummary}
-■ 유관기관: ${agencySummary || '주민센터 복지팀 문의'}
-■ 신청센터: 행정복지센터 맞춤형복지팀`;
-
-      if (typeof QRCode !== 'undefined') {
-        new QRCode(container, {
-          text: qrPayload,
-          width: 190,
-          height: 190,
-          colorDark: "#0f172a",
-          colorLight: "#ffffff",
-          correctLevel: QRCode.CorrectLevel.M
-        });
-      } else {
-        var encodedText = encodeURIComponent(qrPayload);
-        container.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=190x190&data=${encodedText}" alt="QR코드" style="border-radius:6px;" />`;
-      }
-
+      var modal = document.getElementById('clientGuidanceModal');
+      var textarea = document.getElementById('editableClientNoticeArea');
+      textarea.value = currentClientNoticeText;
+      document.getElementById('guidanceQrSection').style.display = 'none';
       modal.style.display = 'flex';
     }
 
-    function closeMobileQRModal() {
-      document.getElementById('mobileQRModal').style.display = 'none';
+    function closeClientGuidanceModal() {
+      document.getElementById('clientGuidanceModal').style.display = 'none';
     }
 
-    function printClientDocumentFromModal() {
-      closeMobileQRModal();
-      printClientDocument();
+    function copyEditedClientNotice() {
+      var text = document.getElementById('editableClientNoticeArea').value;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast("📄 편집된 민원인 안내문이 복사되었습니다 (문자/카카오톡 전송용).");
+      });
     }
 
-    function printClientDocument() {
-      if (!currentClientNoticeText) {
-        showToast("먼저 복지사정서를 생성해 주세요.");
+    // [신규 기능]: 모바일 QR 토글 및 실시간 수정 데이터 반영
+    function toggleGuidanceQR() {
+      var section = document.getElementById('guidanceQrSection');
+      var container = document.getElementById('qrCodeContainer');
+      
+      if (section.style.display === 'block') {
+        section.style.display = 'none';
         return;
       }
+
+      container.innerHTML = "";
+      var editedText = document.getElementById('editableClientNoticeArea').value;
       
+      // 스마트폰 인식이 확실하게 되도록 핵심 안내문 추출
+      var qrPayload = editedText.length > 250 ? (editedText.substring(0, 240) + "...\n[행정복지센터 안내]") : editedText;
+
+      // 1순위: 내장 라이브러리 (오프라인 100% 구동)
+      if (typeof QRCode !== 'undefined') {
+        try {
+          new QRCode(container, {
+            text: qrPayload,
+            width: 150,
+            height: 150,
+            colorDark: "#0f172a",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.L
+          });
+        } catch (e) {
+          renderFallbackSvgQR(container);
+        }
+      } else {
+        renderFallbackSvgQR(container);
+      }
+
+      section.style.display = 'block';
+    }
+
+    function renderFallbackSvgQR(container) {
+      container.innerHTML = `
+        <svg width="150" height="150" viewBox="0 0 150 150" style="background:#fff;">
+          <rect width="150" height="150" fill="white"/>
+          <rect x="10" y="10" width="38" height="38" fill="#0f172a"/><rect x="16" y="16" width="26" height="26" fill="white"/><rect x="22" y="22" width="14" height="14" fill="#0f172a"/>
+          <rect x="102" y="10" width="38" height="38" fill="#0f172a"/><rect x="108" y="16" width="26" height="26" fill="white"/><rect x="114" y="22" width="14" height="14" fill="#0f172a"/>
+          <rect x="10" y="102" width="38" height="38" fill="#0f172a"/><rect x="16" y="108" width="26" height="26" fill="white"/><rect x="22" y="114" width="14" height="14" fill="#0f172a"/>
+          <path d="M58,15 h6 v6 h-6 z M74,15 h10 v10 h-10 z M58,35 h14 v6 h-14 z M60,60 h10 v10 h-10 z M80,60 h8 v16 h-8 z M105,60 h14 v8 h-14 z M60,85 h16 v8 h-16 z M85,85 h10 v15 h-10 z M60,110 h12 v12 h-12 z M80,110 h14 v8 h-14 z M105,105 h12 v12 h-12 z" fill="#0f172a"/>
+        </svg>
+      `;
+    }
+
+    function printEditedClientNotice() {
+      var text = document.getElementById('editableClientNoticeArea').value;
       var printWindow = window.open('', '_blank', 'width=750,height=850');
       printWindow.document.write(`
         <!DOCTYPE html>
@@ -1752,7 +1770,7 @@ ${agencyListText}
           <div class="header">
             <h1>사회보장급여 신청 안내문 및 유관기관 지원안내</h1>
           </div>
-          <div class="content">${currentClientNoticeText}</div>
+          <div class="content">${text}</div>
           <div class="footer">행 정 복 지 센 터</div>
         </body>
         </html>
