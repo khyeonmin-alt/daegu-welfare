@@ -69,7 +69,7 @@
         
         return new Promise((resolve) => {
           setTimeout(() => {
-            const hasRisk = /(죽고|자살|때려|쫓겨|단전|유기|방치|월세\s*밀려)/.test(text);
+            const hasRisk = /(죽고|자살|때려|쫓겨|단전|유기|방치|월세\s*밀려|퇴거|학대)/.test(text);
             const dynamicScore = hasRisk ? (0.91 + (Math.random() * 0.06)) : (0.78 + (Math.random() * 0.08));
             const actualLatency = spec.latency + Math.floor(Math.random() * 50);
             resolve({
@@ -667,21 +667,21 @@
     </div>
 
     <div class="grid-2col">
-      <!-- 좌측: 1단계 입력창 및 서식 프리셋 버튼군 (개선) -->
+      <!-- 좌측: 1단계 입력창 및 4대 법정 복지사업 서식 프리셋 버튼군 -->
       <div class="card">
         <div class="card-header">
           <div class="card-title">📝 [1단계] 복지상담 기록 &amp; 비정형 구술 입력 (원본 투입)</div>
           <div style="display: flex; gap: 5px; flex-wrap: wrap;">
-            <button class="btn btn-outline btn-sm" onclick="loadPreset('basicLife')" style="font-weight:800; color:#1d4ed8; border-color:#93c5fd;">📋 기초생활보장</button>
-            <button class="btn btn-outline btn-sm" onclick="loadPreset('nearPoverty')" style="font-weight:800; color:#047857; border-color:#6ee7b7;">🎁 차상위</button>
-            <button class="btn btn-danger btn-sm" onclick="loadPreset('emergency')" style="font-weight:800;">🚨 긴급복지</button>
-            <button class="btn btn-outline btn-sm" onclick="loadPreset('basicPension')" style="font-weight:800; color:#7c3aed; border-color:#c4b5fd;">👵 기초연금</button>
-            <button class="btn btn-outline btn-sm" onclick="clearCounselInput()">🧹 자연어상담</button>
+            <button class="btn btn-outline btn-sm" onclick="loadPreset('basicLife')" style="font-weight:800; color:#1d4ed8; border-color:#93c5fd;">📋 기초생활보장(서식)</button>
+            <button class="btn btn-outline btn-sm" onclick="loadPreset('nearPoverty')" style="font-weight:800; color:#047857; border-color:#6ee7b7;">🎁 차상위(서식)</button>
+            <button class="btn btn-danger btn-sm" onclick="loadPreset('emergency')" style="font-weight:800;">🚨 긴급복지(서식)</button>
+            <button class="btn btn-outline btn-sm" onclick="loadPreset('basicPension')" style="font-weight:800; color:#7c3aed; border-color:#c4b5fd;">👵 기초연금(서식)</button>
+            <button class="btn btn-outline btn-sm" onclick="clearCounselInput()">🧹 자연어상담(초기화)</button>
           </div>
         </div>
         
         <div style="position: relative;">
-          <textarea id="counselInput" class="counsel-textarea" oninput="handleCounselInputChanged()" placeholder="민원인의 구술 기록을 편하게 입력하세요. 주민등록번호, 계좌번호 등 민감정보는 DLP 엔진에 의해 분석 전 실시간 자동 마스킹됩니다."></textarea>
+          <textarea id="counselInput" class="counsel-textarea" oninput="handleCounselInputChanged()" placeholder="민원인의 구술 기록을 편하게 입력하거나 상단의 사업별 서식을 불러와 항목을 수정하세요. 주민등록번호, 계좌번호 등 민감정보는 DLP 엔진에 의해 실시간 자동 마스킹됩니다."></textarea>
           <div id="counselCharCounter" style="position: absolute; bottom: 10px; right: 15px; font-size: 11px; color: #94a3b8; background: rgba(255,255,255,0.85); padding: 2px 6px; border-radius: 4px;">0자</div>
         </div>
         
@@ -1044,7 +1044,6 @@
       var masked = rawText;
       var wasMasked = false;
 
-      // 1. 주민등록번호 패턴 (생년월일 6자리 + 뒷자리 첫번째 성별코드)[cite: 2]
       var rrnPattern = /\b(\d{6})[- ]?([1-4]\d{6})\b/g;
       if (rrnPattern.test(masked)) {
         masked = masked.replace(rrnPattern, function(match, front, back) {
@@ -1053,7 +1052,6 @@
         });
       }
 
-      // 2. 전화번호 패턴[cite: 2]
       var phonePattern = /\b(01[016789]|02|0[3-6][1-5])[- ]?(\d{3,4})[- ]?(\d{4})\b/g;
       if (phonePattern.test(masked)) {
         masked = masked.replace(phonePattern, function(match, p1, p2, p3) {
@@ -1062,7 +1060,6 @@
         });
       }
 
-      // 3. 계좌번호 패턴[cite: 2]
       var accountPattern = /\b\d{3,6}[- ]?\d{2,6}[- ]?\d{3,6}\b/g;
       masked = masked.replace(accountPattern, function(match) {
         if (match.length >= 11 && !match.startsWith("01")) {
@@ -1232,7 +1229,7 @@
         },
         housingCrisis: {
           label: "주거위기 (강제퇴거·월세연체)",
-          keywords: /(쫓겨날\s*위기|방을\s*빼라|강제\s*퇴거|월세\s*밀려|명도\s*소송|노숙\s*위기|갈\s*곳이\s*없)/,
+          keywords: /(쫓겨날\s*위기|방을\s*빼라|강제\s*퇴거|월세\s*밀려|명도\s*소송|노숙\s*위기|갈\s*곳이\s*없|퇴거)/,
           statute: "긴급복지지원법 제2조 (주거위기 긴급지원)",
           agencies: [{ name: "LH 긴급주거지원", call: "1600-1004" }, { name: "보건복지상담센터", call: "129" }],
           threshold: 0.65
@@ -1292,7 +1289,6 @@
       }
     };
 
-    // [보조 유틸]: 억/만 단위 자연어 금액 문자열을 만 원 단위 정수로 정밀 변환
     function parseKoreanCurrency(textSnippet) {
       if (!textSnippet) return 0;
       var cleaned = textSnippet.replace(/,/g, '').trim();
@@ -1314,7 +1310,6 @@
       return Math.round(total);
     }
 
-    // [1단계 고도화]: 비정형 구술 정규식(Regex) 강화 파싱 엔진
     function parseCounselTextWithValidation(text) {
       var res = {
         name: null,
@@ -1335,14 +1330,12 @@
         missingFields: []
       };
 
-      // 1. 성명 파싱
       var mName = text.match(/(?:성명|대상자|신청인|민원인)\s*[:：]?\s*([가-힣a-zA-Z]{2,10})/) ||
                   text.match(/([가-힣]{2,4})\s*(?:씨|님|어르신)/);
       if (mName) res.name = mName[1].trim();
 
-      // 2. 가구원수 자동 파싱 및 덧셈 판정
       var mMem = text.match(/([1-7])\s*인\s*가구/) || text.match(/가구원\s*수\s*[:：]?\s*([1-7])/);
-      var twoPersonPatterns = /(홀\s*어머니|어머니랑|어머니와|엄마랑|모친과|모친이랑|아들과\s*둘이|자녀와\s*단둘|딸이랑\s*둘이|남편과\s*둘이|배우자와\s*둘이|모자가구|모녀가구|부자가구|부녀가구|2명\s*거주|둘이\s*살)/;
+      var twoPersonPatterns = /(홀\s*어머니|어머니랑|어머니와|엄마랑|모친과|모친이랑|아들과\s*둘이|자녀와\s*단둘|딸이랑\s*둘이|남편과\s*둘이|배우자와\s*둘이|모자가구|모녀가구|부자가구|부녀가구|2명\s*거주|둘이\s*살|부부\s*2인)/;
 
       if (mMem) {
         res.members = parseInt(mMem[1], 10);
@@ -1374,7 +1367,6 @@
         res.missingFields.push({ key: "household", label: "가구원수 및 인적사항" });
       }
 
-      // 3. 연령 계산 (2026년 기준)
       var mAge = text.match(/만\s*([0-9]{1,2})\s*세/) || text.match(/([0-9]{1,2})\s*세/) || text.match(/([0-9]{2})\s*년생/);
       if (mAge) {
         if (mAge[0].indexOf("년생") !== -1) {
@@ -1385,7 +1377,6 @@
         }
       }
 
-      // 4. 근로능력 및 특례 자동 판별
       if (res.age && res.age >= 65) {
         res.workAbility = "none";
         res.healthDesc = "만 65세 이상 노인 (법정 근로무능력자)";
@@ -1405,7 +1396,6 @@
         res.missingFields.push({ key: "health", label: "건강상태 및 근로능력 유무" });
       }
 
-      // 5. 소득 파싱 (무소득 키워드 및 금액 단위)
       var noIncomePattern = /(?:소득|수입|월급|벌이|일자리|급여)[^\n.]*(?:없|안\s*벌|못\s*벌|0원|0만|제로|전무|단절)|실직|무직|소득\s*전무/;
       var mEarned = text.match(/(?:근로|사업)?\s*소득\s*[:：]?\s*([0-9,.]+\s*(?:억|만\s*원|만원|원)?)/) ||
                     text.match(/(?:월급|급여|수입|알바비|벌고\s*있|소득이)[^\d\n]*([0-9,.]+\s*(?:억|만\s*원|만원|원))/);
@@ -1418,11 +1408,9 @@
         res.missingFields.push({ key: "income", label: "근로·사업소득 내역" });
       }
 
-      // 이전소득 (기초연금 등)
-      var mOther = text.match(/(?:공적이전소득|기초연금|이전소득)[^\d]*([0-9,.]+\s*(?:억|만\s*원|만원|원)?)/);
+      var mOther = text.match(/(?:공적이전소득|기초연금|국민연금|이전소득)[^\d]*([0-9,.]+\s*(?:억|만\s*원|만원|원)?)/);
       res.other = mOther ? parseKoreanCurrency(mOther[1]) : 0;
 
-      // 6. 주거 형태 및 주거용 재산
       var ownHousePattern = /(자가|본인명의\s*집|본인명의\s*주택|소유\s*주택|아파트\s*소유)/;
       var freeRentPattern = /(무료임차|사용대차|친척집\s*무상|무상거주)/;
 
@@ -1448,14 +1436,12 @@
         res.rentFee = mRent ? parseKoreanCurrency(mRent[1]) : 0;
       }
 
-      // 7. 금융재산 및 부채
       var mFin = text.match(/(?:금융재산|통장|예금|잔액|잔고)[^\d]*([0-9,.]+\s*(?:억|만\s*원|만원|원)?)/);
       res.finProp = mFin ? parseKoreanCurrency(mFin[1]) : 0;
 
       var mDebt = text.match(/(?:부채|대출|빚)[^\d]*([0-9,.]+\s*(?:억|만\s*원|만원|원)?)/);
       res.debt = mDebt ? parseKoreanCurrency(mDebt[1]) : 0;
 
-      // 8. 부양의무자 단절 정황
       if (/연락두절|해체사유서|연락\s*끊|단절|생사\s*모름/.test(text)) {
         res.support = "severed";
       } else if (/부양의무자\s*없음|가족\s*없음|연고\s*없음/.test(text)) {
@@ -1810,7 +1796,7 @@ ${agencyListText}
           <title>사회보장급여 신청 안내문</title>
           <style>
             body { font-family: -apple-system, "Malgun Gothic", "맑은 고딕", sans-serif; padding: 30px; font-size: 13px; line-height: 1.8; color: #111; }
-            .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 12px; margin-보톰: 20px; }
+            .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 12px; margin-bottom: 20px; }
             .header h1 { font-size: 20px; margin: 0 0 6px 0; }
             .content { white-space: pre-wrap; font-family: inherit; font-size: 13px; line-height: 1.7; }
             .footer { margin-top: 40px; text-align: center; font-weight: bold; border-top: 1px solid #ddd; padding-top: 15px; }
@@ -2073,33 +2059,116 @@ ${agencyListText}
       content.innerHTML = html;
     }
 
-    // 4대 법정 복지사업 특화 모의데이터 프리셋
+    // ========================================================
+    // ★ [핵심 개편]: 4대 법정 복지사업별 심층 상담·조사 표준 서식
+    // ========================================================
     var PRESETS = {
-      basicLife: `[상담메모 - 기초생활보장 수급 신청 내방]
-대상자 박철수 (만 58세), 1인 단독 가구.
-반지하 주택에 보증금 500만 원에 월세 25만 원 임차 거주 중.
-과거 허리디스크 수술 후 협착증 재발로 근로활동이 불가능하여 최근 2개월간 병원 치료 중이며 의사 진단서 제출함.
-현재 소득은 전무하여 0원이며, 통장 잔액은 45만 원뿐임.
-부양의무자인 장남은 10년 전 사업 실패 후 연락이 완전히 두절되어 생사를 모르는 상태로 가족관계 해체사유서 작성 의사 밝힘.`,
+      // 1. 국민기초생활보장 표준 상담조사서식
+      basicLife: `[기초생활보장 맞춤형급여 상담·조사 표준서식]
 
-      nearPoverty: `[상담메모 - 차상위계층 확인 및 감면 신청]
-대상자 이미선 (만 46세), 미취학 자녀 1명과 단둘이 거주하는 모자가구 (2인 가구).
-보증금 1,500만 원에 월세 35만 원 다세대주택 거주 중.
-파트타임 식당 보조로 월 140만 원의 근로소득이 있으나 생활비와 아이 병원비 지출로 생계 유지가 빠듯함.
-예금 잔액 220만 원, 생활비로 대출받은 금융부채 500만 원 있음.
-양곡 할인 및 공과금(전기, 도시가스) 감면 지원을 희망함.`,
+1. 가구원 구성 및 기본 인적사항
+• 세대주 성명: 홍길동 (만 58세)
+• 보장가구 범위: 1인 가구 (단독 세대주, 실제 생계 및 주거 단독 운영)
+• 건강상태 및 질병: 척추협착증 및 허리디스크로 거동 불편 (진단서 제출)
+• 근로능력 유무: 질병·부상으로 인한 근로무능력 판정 심사 대상
 
-      emergency: `[상담메모 - 긴급복지지원 긴급구제 요청]
-대상자 최영미 (만 44세), 초등학생 자녀 1명과 거주 (2인 가구).
-보증금 없는 월세 30만 원 원룸에 거주 중이나 월세가 4개월째 밀려 임대인으로부터 이번 주말까지 퇴거하지 않으면 짐을 빼겠다는 명도 통보를 받음.
-공과금 체납으로 지난주부터 단전 및 단수되어 생활이 불가능한 상태임.
-실직으로 수입이 전무(소득 0원)하여 당장 식료품을 살 돈조차 없고 통장 잔고 0원임. 극단적 선택 위기에 노출됨.`,
+2. 소득 사항 (소득평가액 산정)
+• 근로 및 사업소득: 0원 (질환으로 경제활동 불가, 무소득 상태)
+• 공적이전소득: 0원 (기초연금 또는 국민연금 수급 없음)
+• 재산 및 사적이전소득: 0원 (가족 및 친인척 정기 지원 일체 없음)
 
-      basicPension: `[상담메모 - 기초연금 및 노인복지상담]
-대상자 김정순 (만 72세), 1인 독거노인 단독 가구.
-지방 소도시에 본인명의 노후 단독주택 자가 보유 중 (주택공시지가 약 6,500만 원, 담보대출 없음).
-만성 퇴행성 관절염으로 거동이 불편하여 일체 경제활동 못 하심.
-현재 공적이전소득인 기초연금 월 334,000원 외에 근로소득은 일체 없으며, 통장 예금 잔액은 130만 원 남음.`
+3. 재산 현황 (재산의 소득환산액 산정)
+• 주거 형태: 월세 (보증금 500만 원 / 월세 25만 원)
+• 일반재산: 없음 (부동산, 분양권, 토지 등 미보유)
+• 금융재산: 예금 잔액 약 45만 원 (기본공제 생활준비금 500만원 이내)
+• 부채 내역: 병원비 치료용 대출 300만 원 (신용대출)
+• 자동차 보유: 미보유 (100% 환산차량 없음)
+
+4. 부양의무자 기준 (의료급여 중심 조사)
+• 부양의무자 현황: 장남 1명 (만 33세)
+• 부양 기피 및 단절 여부: 10년 전 사업 실패 후 가출, 연락두절 상태임.
+• 소명 자료: 가족관계 해체사유서 자필 작성 의사 밝힘 및 1년 이상 금융거래내역 증빙 가능
+
+5. 가구별 특성 및 신청 희망 급여
+• 신청 희망 급여: 생계급여, 의료급여, 주거급여 동시 신청
+• 타 제도 연계: 정부양곡 할인 신청, 에너지바우처 대상`,
+
+      // 2. 차상위계층 표준 상담조사서식
+      nearPoverty: `[차상위계층 확인 및 감면지원 상담·조사 표준서식]
+
+1. 가구원 구성 및 기본 인적사항
+• 세대주 성명: 이미선 (만 46세)
+• 보장가구 범위: 2인 가구 (본인 및 미취학 자녀 1명 동거 모자가구)
+• 건강상태 및 질병: 모녀 모두 특이 중증질환 없음 (통상 건강)
+• 근로능력 유무: 일반 근로능력자 (자활사업 및 파트타임 가능)
+
+2. 소득 사항 (기준 중위소득 50% 검토)
+• 근로 및 사업소득: 식당 보조 근로소득 월 140만 원 (30% 법정공제 적용)
+• 공적이전소득: 아동수당 월 10만 원 (소득 산정 제외분 외 이전소득 0원)
+• 재산 및 사적이전소득: 0원 (전 배우자 양육비 지원 단절됨)
+
+3. 재산 현황 (재산의 소득환산액 산정)
+• 주거 형태: 월세 (보증금 1,500만 원 / 월세 35만 원)
+• 일반재산: 없음 (비주거용 부동산 미보유)
+• 금융재산: 통장 잔액 220만 원 (생활준비금 500만원 공제 이내)
+• 부채 내역: 생활비 마이너스통장 대출 500만 원
+• 자동차 보유: 미보유
+
+4. 부양의무자 기준 (차상위계층 부양의무자 기준 미적용)
+• 부양의무자 현황: 친정 부모 사망 (부양의무자 기준 적용 제외 사업)
+
+5. 신청 희망 사업 및 감면 수요
+• 신청 희망: 차상위계층 확인서 발급, 차상위 자활급여
+• 연계 희망: 양곡 할인 80% 지원, 전기·도시가스·통신요금 법정 감면 패키지 신청`,
+
+      // 3. 긴급복지지원 표준 상담조사서식
+      emergency: `[긴급복지지원(선지원·사후조사) 위기상담 표준서식]
+
+1. 위기상황 사유 (긴급복지지원법 제2조 해당여부 확인)
+• 위기 사유: 주소득자 실직 및 중증질환으로 수입 전무 + 월세 4개월 연체로 강제퇴거(명도) 통보받음
+• 단전·단수: 공과금 체납으로 수도 및 전기 끊김 (에너지 빈곤 위기)
+• 심리 상태: 극단적 선택 위기 호소 (위기신호 즉각 개입 요망)
+
+2. 가구원 구성 및 인적사항
+• 세대주 성명: 최영미 (만 44세)
+• 보장가구 범위: 2인 가구 (본인 및 초등학생 자녀 1명)
+• 건강 및 근로: 실직 및 극심한 불안 상태로 경제활동 중단
+
+3. 긴급지원 소득 및 금융재산 기준 검토 (실소득 75% 이하)
+• 월 총실소득: 0원 (무소득 확인, 실소득 기준 충족)
+• 금융재산: 통장 잔고 0원 (긴급복지 금융재산 기준액 1인 822만 원 이하 절대 충족)
+• 주거 현황: 무보증 월세 30만 원 (월세 4달 밀려 주말 내 퇴거 강요받음)
+• 부채 내역: 사채 및 소액대출 200만 원
+
+4. 긴급 행정 조치 계획
+• 지원 요청: 긴급생계지원 (2인 가구 117.8만 원) 직권 우선신청
+• 주거 지원: LH 긴급주거지원 공공임대 연계 의뢰
+• 안전 조치: 경찰청/자살예방센터 현장 안전확인 및 위기의뢰 공문 기안`,
+
+      // 4. 기초연금 표준 상담조사서식
+      basicPension: `[기초연금 신청 및 노인가구 자산조사 표준서식]
+
+1. 신청인 기본 인적사항 및 연령 확인
+• 신청인 성명: 김정순 (만 72세)
+• 수급 대상 여부: 만 65세 이상 노인가구 요건 충족
+• 가구 형태: 1인 단독 노인가구 (독거노인)
+• 건강상태: 만성 퇴행성 관절염으로 거동 불편 (법정 근로무능력자)
+
+2. 소득 현황 (기초연금 소득인정액 산정)
+• 근로소득: 0원 (경제활동 일체 없음, 근로소득 기본공제 대상)
+• 공적이전소득: 국민연금 월 0원 (수급 이력 없음)
+• 사적이전소득: 0원 (자녀 지원 단절)
+
+3. 재산 현황 (주거재산 기본공제액 검토)
+• 주거 형태: 본인명의 노후 단독주택 자가 보유
+• 주택 가액: 공시지가 6,500만 원 (대도시 공제 1.35억 / 중소도시 8,500만 원 이하로 전액 기본공제 범위 내)
+• 금융재산: 농협 예금 잔액 130만 원 (기본공제 2,000만 원 이내로 금융환산액 0원)
+• 금융부채: 담보대출 없음 (0원)
+• 자동차: 미보유
+
+4. 종합 판정 소견
+• 판정 예상: 소득인정액 0원으로 선정기준액(단독 213만 원 이하) 절대 충족
+• 예상 수급액: 기초연금 단독가구 기준 월 최대 약 33.4만 원 전액 지급 예상`
     };
 
     function loadPreset(key) {
@@ -2130,7 +2199,7 @@ ${agencyListText}
       currentOfficialNoticeDraftText = "";
       currentRecommendedAgencies = [];
       currentRequiredDocs = [];
-      showToast("입력창이 비워졌습니다. 자연어 상담을 자유롭게 입력하세요.");
+      showToast("입력창이 비워졌습니다. 자유 구술을 입력하시거나 상단 서식을 선택하세요.");
     }
 
     function openRiskActionModal() {
