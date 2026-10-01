@@ -664,16 +664,16 @@
     </div>
 
     <div class="grid-2col">
-      <!-- 좌측: 1단계 입력창 및 프리셋 -->
+      <!-- 좌측: 1단계 입력창 및 서식 프리셋 버튼군 -->
       <div class="card">
         <div class="card-header">
           <div class="card-title">📝 [1단계] 복지상담 기록 &amp; 비정형 구술 입력 (원본 투입)</div>
           <div style="display: flex; gap: 5px; flex-wrap: wrap;">
-            <button class="btn btn-outline btn-sm" onclick="loadBlankTemplate()" style="font-weight:800; color:#1d4ed8; border-color:#93c5fd;">📋 표준 서식</button>
+            <button class="btn btn-outline btn-sm" onclick="loadBlankTemplate()" style="font-weight:800; color:#1d4ed8; border-color:#93c5fd;">📋 기초생활보장(표준서식)</button>
+            <button class="btn btn-danger btn-sm" onclick="loadEmergencyTemplate()" style="font-weight:800;">🚨 긴급복지(표준서식)</button>
             <button class="btn btn-outline btn-sm" onclick="loadPreset('seniorOwn')">👵 독거노인(자가·기초연금)</button>
             <button class="btn btn-outline btn-sm" onclick="loadPreset('youthDebt')">🧑 청년단독(부채·고립)</button>
-            <button class="btn btn-danger btn-sm" onclick="loadPreset('multiCrisis')">🚨 복합위기(퇴거·단전·폭행)</button>
-            <button class="btn btn-outline btn-sm" onclick="clearCounselInput()">🧹 비우기</button>
+            <button class="btn btn-outline btn-sm" onclick="clearCounselInput()">🧹 자연어 상담</button>
           </div>
         </div>
         
@@ -706,7 +706,6 @@
           <div class="missing-tag-list" id="missingTagList"></div>
         </div>
 
-        <!-- 2단계 좌우 분할 그리드 -->
         <div class="counsel-split-grid">
           <div>
             <div style="font-weight: 800; font-size: 12.5px; color: #1e3a8a; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
@@ -944,7 +943,7 @@
     </div>
   </div>
 
-  <!-- [고도화]: 민원인 안내하기 통합 모달 (내용 편집, 모바일 복사, QR확인, 종이출력 원스톱) -->
+  <!-- 민원인 안내하기 통합 모달 -->
   <div id="clientGuidanceModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); z-index: 1000; align-items: center; justify-content: center;">
     <div style="background: #ffffff; width: 92%; max-width: 680px; max-height: 90vh; overflow-y: auto; border-radius: 12px; padding: 22px; box-shadow: 0 10px 25px rgba(0,0,0,0.25);">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 14px;">
@@ -958,22 +957,19 @@
         💡 <strong>담당자 메모/수정 가능:</strong> 민원인에게 전송·인쇄될 구비서류 및 지원내용을 아래에서 직접 수정할 수 있습니다.
       </div>
 
-      <!-- 담당자 실시간 편집용 텍스트 영역 -->
       <textarea id="editableClientNoticeArea" style="height: 180px; font-family: monospace; font-size: 12px; line-height: 1.6; margin-bottom: 14px; background: #f8fafc;"></textarea>
 
-      <!-- 모바일 QR코드 노출 영역 (토글형) -->
       <div id="guidanceQrSection" style="display: none; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px; margin-bottom: 14px; text-align: center;">
         <div style="font-weight: 800; font-size: 13px; color: #1e293b; margin-bottom: 6px;">📱 스마트폰 카메라로 비추면 수정된 안내문이 즉시 열립니다</div>
         <div id="qrCodeContainer" style="display: flex; justify-content: center; align-items: center; padding: 10px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; width: 170px; height: 170px; margin: 0 auto 8px auto;"></div>
         <div style="font-size: 11px; color: #0f766e;">✔ 통신망 차단 환경에서도 100% 동작하는 인라인 모바일 규격</div>
       </div>
 
-      <!-- 하단 원스톱 버튼 그룹 -->
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; border-top: 1px solid #e2e8f0; padding-top: 12px;">
         <div style="display: flex; gap: 6px;">
           <button class="btn btn-indigo btn-sm" onclick="copyEditedClientNotice()">📋 모바일 안내장 복사</button>
           <button class="btn btn-purple btn-sm" onclick="toggleGuidanceQR()">📱 모바일 QR 확인하기</button>
-          <button class="btn btn-outline btn-sm" onclick="printEditedClientNotice()">🖨️️ 종이 인쇄</button>
+          <button class="btn btn-outline btn-sm" onclick="printEditedClientNotice()">🖨 종이 인쇄</button>
         </div>
         <button class="btn btn-outline btn-sm" onclick="closeClientGuidanceModal()">창 닫기</button>
       </div>
@@ -1676,7 +1672,6 @@ ${agencyListText}
       });
     }
 
-    // [신규 기능]: 민원인 안내하기 모달 열기 및 초기 텍스트 세팅
     function openClientGuidanceModal() {
       if (!currentClientNoticeText) {
         showToast("먼저 복지사정서를 생성해 주세요.");
@@ -1700,7 +1695,6 @@ ${agencyListText}
       });
     }
 
-    // [신규 기능]: 모바일 QR 토글 및 실시간 수정 데이터 반영
     function toggleGuidanceQR() {
       var section = document.getElementById('guidanceQrSection');
       var container = document.getElementById('qrCodeContainer');
@@ -1712,11 +1706,8 @@ ${agencyListText}
 
       container.innerHTML = "";
       var editedText = document.getElementById('editableClientNoticeArea').value;
-      
-      // 스마트폰 인식이 확실하게 되도록 핵심 안내문 추출
       var qrPayload = editedText.length > 250 ? (editedText.substring(0, 240) + "...\n[행정복지센터 안내]") : editedText;
 
-      // 1순위: 내장 라이브러리 (오프라인 100% 구동)
       if (typeof QRCode !== 'undefined') {
         try {
           new QRCode(container, {
@@ -2024,15 +2015,14 @@ ${agencyListText}
 
     var PRESETS = {
       seniorOwn: `[상담메모 - 자가보유 독거노인 내방 (모의데이터)]
-대상자 박정숙 (주민번호: [주민번호 마스킹], 만 71세), 1인 단독 가구.
-연락처: 010-1234-5678, 농협 계좌 302-1234-5678-91.
+대상자 박정숙 (만 71세), 1인 단독 가구.
 지방 소도시에 본인명의 오래된 단독주택 자가 보유 중 (공시지가 약 6,500만 원, 대출 없음).
 만성 척추협착증과 무릎 관절염으로 거동이 힘들어 일체의 경제활동 못 하심.
 소득은 기초연금 월 334,000원 외에 일체 없으며, 통장 잔액은 120만 원 남음. 병원비가 너무 많이 나와 걱정이 큼.
 부양의무자인 외아들은 12년 전 이혼 후 연락두절되어 생사를 모름. 해체사유서 자필 작성 의사 있음.`,
 
       youthDebt: `[상담메모 - 청년 부채 및 사회적 고립 (모의데이터)]
-대상자 이민호 (주민번호: [주민번호 마스킹], 만 23세), 1인 단독 청년 가구.
+대상자 이민호 (만 23세), 1인 단독 청년 가구.
 반지하 원룸에 보증금 500만 원에 월세 35만 원 거주 중.
 사기 피해로 발생한 대출 빚이 1,800만 원 있어 매달 이자 독촉에 시달리며 통장 압류 위기임.
 편의점 아르바이트로 월 80만 원 벌고 있으나 우울증으로 3개월째 방 밖으로 나오지 못함.
@@ -2059,7 +2049,7 @@ ${agencyListText}
 `[기초생활보장 및 맞춤형 사회보장급여 초기상담표 (모의데이터)]
 
 1. 가구원 구성 및 기본 인적사항
-• 세대주 성명: 홍길동 (주민등록번호: [주민번호 마스킹], 만 68세)
+• 세대주 성명: 홍길동 (만 68세)
 • 보장가구 범위: 1인 가구 (단독 세대주, 실제 생계 및 주거 단독 운영)
 • 건강상태 및 질병: 척추협착증 및 퇴행성 관절염으로 거동 불편 (진단서 기제출)
 • 근로능력 유무: 만 65세 이상 법정 근로무능력자 해당
@@ -2091,6 +2081,11 @@ ${agencyListText}
       processCounseling();
     }
 
+    function loadEmergencyTemplate() {
+      loadPreset('multiCrisis');
+      showToast("긴급복지지원(복합위기) 표준 서식이 입력되었습니다.");
+    }
+
     function clearCounselInput() {
       document.getElementById('counselInput').value = "";
       document.getElementById('riskAlertBanner').style.display = 'none';
@@ -2109,7 +2104,7 @@ ${agencyListText}
       currentOfficialNoticeDraftText = "";
       currentRecommendedAgencies = [];
       currentRequiredDocs = [];
-      showToast("입력창이 비워졌습니다.");
+      showToast("입력창이 비워졌습니다. 자연어 상담을 자유롭게 입력하세요.");
     }
 
     function openRiskActionModal() {
