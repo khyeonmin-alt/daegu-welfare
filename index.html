@@ -384,6 +384,19 @@
       font-size: 12.5px;
     }
 
+    /* 2단계 내부 좌우 분할 그리드 */
+    .counsel-split-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    @media (max-width: 1200px) {
+      .counsel-split-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .official-doc-table {
       width: 100%;
       border-collapse: collapse;
@@ -392,27 +405,41 @@
       border-radius: 6px;
       overflow: hidden;
       margin-top: 6px;
-      margin-bottom: 14px;
     }
     .official-doc-table th {
       background: #f8fafc;
       color: #334155;
       font-weight: 700;
-      font-size: 12px;
+      font-size: 11.5px;
       text-align: left;
-      padding: 8px 12px;
+      padding: 8px 10px;
       border-bottom: 1px solid #e2e8f0;
       border-right: 1px solid #e2e8f0;
-      width: 26%;
+      width: 32%;
     }
     .official-doc-table td {
-      padding: 8px 12px;
-      font-size: 12px;
+      padding: 8px 10px;
+      font-size: 11.5px;
       color: #0f172a;
       border-bottom: 1px solid #e2e8f0;
     }
     .official-doc-table tr:last-child th,
     .official-doc-table tr:last-child td { border-bottom: none; }
+
+    .happyeum-split-box {
+      background: #f8fafc;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 11px;
+      line-height: 1.6;
+      color: #1e293b;
+      font-family: monospace, sans-serif;
+      margin-top: 6px;
+      height: 255px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
 
     .missing-text {
       color: #dc2626 !important;
@@ -420,20 +447,6 @@
       background-color: #fef2f2;
       padding: 1px 4px;
       border-radius: 3px;
-    }
-
-    .happyeum-preview-box {
-      background: #f8fafc;
-      border: 1.5px solid #cbd5e1;
-      border-radius: 6px;
-      padding: 12px;
-      font-size: 12px;
-      line-height: 1.6;
-      color: #1e293b;
-      font-family: monospace, sans-serif;
-      max-height: 120px;
-      overflow-y: auto;
-      white-space: pre-wrap;
     }
 
     .client-docs-box {
@@ -655,7 +668,7 @@
     </div>
 
     <div class="grid-2col">
-      <!-- 좌측: 입력창 및 시연용 4대 프리셋 버튼 -->
+      <!-- 좌측: 1단계 입력창 및 시연용 4대 프리셋 버튼 -->
       <div class="card">
         <div class="card-header">
           <div class="card-title">📝 [1단계] 복지상담 기록 &amp; 비정형 구술 입력 (원본 투입)</div>
@@ -677,13 +690,13 @@
         </div>
       </div>
 
-      <!-- 우측: 사정서, 민원인 맞춤 구비서류, 지자체 외 유관기관 지원망 패널 (요청하신 신호등 카드 영역 제거됨) -->
+      <!-- 우측: 2단계 사정표(좌) & 행복e음 등록일지(우) 분할 배치 카드 -->
       <div class="card">
         <div class="card-header">
           <div class="card-title">📋 [2단계] AI 분석 소견 &amp; 대민 안내 패널</div>
           <div style="display: flex; gap: 5px; flex-wrap: wrap;">
-            <button class="btn btn-happy btn-sm" onclick="copyHappyEumDocument()" title="행복e음 상담이력에 바로 붙여넣을 수 있는 표준 텍스트를 복사합니다">📋 행복e음 일지 복사</button>
-            <button class="btn btn-indigo btn-sm" onclick="copyClientNoticeDocument()" title="민원인에게 제공할 구비서류 및 지원사업 안내문을 복사합니다">📄 민원인 안내장 복사</button>
+            <button class="btn btn-happy btn-sm" onclick="copyHappyEumDocument()" title="행복e음 상담이력에 바로 붙여넣을 수 있는 표준 텍스트를 복사합니다">📋 일지 복사</button>
+            <button class="btn btn-indigo btn-sm" onclick="copyClientNoticeDocument()" title="민원인에게 제공할 구비서류 및 지원사업 안내문을 복사합니다">📄 안내장 복사</button>
             <button class="btn btn-purple btn-sm" onclick="openMobileQRModal()" title="스마트폰으로 바로 찍을 수 있는 QR코드를 띄웁니다">📱 모바일 QR</button>
             <button class="btn btn-outline btn-sm" onclick="printClientDocument()" title="안내서 전용 인쇄창을 엽니다">🖨️ 인쇄</button>
             <button class="btn btn-outline btn-sm" onclick="exportArtifactJSON()">💾 JSON</button>
@@ -699,37 +712,49 @@
           <div class="missing-tag-list" id="missingTagList"></div>
         </div>
 
-        <div style="font-weight: 800; font-size: 13px; color: #1e3a8a; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
-          <span>📑 초기 복지상담 조사 사정표</span>
-          <span style="font-size: 11px; color: #15803d; font-weight: 700;">● 하단 모의판정 자동 연동됨</span>
+        <!-- 사정표(좌)와 행복e음 등록일지(우) 2분할 그리드 -->
+        <div class="counsel-split-grid">
+          <div>
+            <div style="font-weight: 800; font-size: 12.5px; color: #1e3a8a; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
+              <span>📑 초기 복지상담 사정표</span>
+              <span style="font-size: 10.5px; color: #15803d; font-weight: 700;">● 하단 모의판정 연동</span>
+            </div>
+            <table class="official-doc-table">
+              <tr>
+                <th>1. 가구원/건강</th>
+                <td id="docApplicantInfo">1인 가구 (단독) | 건강 양호</td>
+              </tr>
+              <tr>
+                <th>2. 근로능력</th>
+                <td id="docWorkAbilityInfo">근로능력 평가 대상</td>
+              </tr>
+              <tr>
+                <th>3. 월 소득</th>
+                <td id="docIncomeInfo">월 0만 원 (무소득)</td>
+              </tr>
+              <tr>
+                <th>4. 주거/재산</th>
+                <td id="docAssetInfo">주거재산 0만 | 금융 0만</td>
+              </tr>
+              <tr>
+                <th>5. 부양의무</th>
+                <td id="docSeverInfo">단절 사유 없음 (일반조사)</td>
+              </tr>
+              <tr>
+                <th>행정 소견</th>
+                <td id="docActionInfo" style="color: #1d4ed8; font-weight: 700;">맞춤형 급여 모의판정</td>
+              </tr>
+            </table>
+          </div>
+
+          <div>
+            <div style="font-weight: 800; font-size: 12.5px; color: #047857; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
+              <span>💻 행복e음 상담일지 (전산 등록용)</span>
+              <span style="font-size: 10.5px; color: #64748b;">상단 버튼으로 즉시 복사</span>
+            </div>
+            <div class="happyeum-split-box" id="happyEumOutput">상담 메모를 입력하고 판정을 실행하면 행복e음 전산에 바로 붙여넣을 수 있는 공식 상담일지가 이곳에 자동으로 생성됩니다.</div>
+          </div>
         </div>
-        
-        <table class="official-doc-table">
-          <tr>
-            <th>1. 가구원 및 건강상태</th>
-            <td id="docApplicantInfo">1인 가구 (단독 거주) | 건강상태 양호 (일반 근로능력)</td>
-          </tr>
-          <tr>
-            <th>2. 근로능력 유무</th>
-            <td id="docWorkAbilityInfo">근로능력 평가 대상 (18세~64세 일반)</td>
-          </tr>
-          <tr>
-            <th>3. 월 소득 사항</th>
-            <td id="docIncomeInfo">월 0만 원 (근로 0만 / 공적이전 0만)</td>
-          </tr>
-          <tr>
-            <th>4. 주거 형태 및 재산</th>
-            <td id="docAssetInfo">주거재산 0만 원 | 금융 0만 원 | 부채 0만 원</td>
-          </tr>
-          <tr>
-            <th>5. 부양의무자 조사</th>
-            <td id="docSeverInfo">단절 사유 없음 (의료급여 일반 소득·재산조사 대상)</td>
-          </tr>
-          <tr>
-            <th>행정 조치 소견</th>
-            <td id="docActionInfo" style="color: #1d4ed8; font-weight: 700;">국민기초생활보장 맞춤형 급여 모의판정 진행</td>
-          </tr>
-        </table>
 
         <!-- 민원인 맞춤 구비서류 자동 판정 안내 박스 -->
         <div class="client-docs-box">
@@ -753,13 +778,6 @@
             상담 내용 분석 시 건보공단, 법률구조공단, LH 등 지자체 외 기관 지원사업이 자동으로 추천됩니다.
           </div>
         </div>
-
-        <!-- 행복e음 초기상담이력 전산 등록 규격 텍스트 뷰어 -->
-        <div style="font-weight: 800; font-size: 12.5px; color: #047857; margin-top: 14px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center;">
-          <span>💻 행복e음 상담이력 등록용 규격 텍스트 (자동 정제)</span>
-          <span style="font-size: 11px; color: #64748b;">상단 녹색 버튼 클릭 시 즉시 복사</span>
-        </div>
-        <div class="happyeum-preview-box" id="happyEumOutput">상담 메모를 입력하고 판정을 실행하면 행복e음 전산에 바로 붙여넣을 수 있는 공식 상담일지가 이곳에 자동으로 생성됩니다.</div>
       </div>
     </div>
 
@@ -1540,29 +1558,29 @@ ${agencyListText}
       var memLabel = parsed.householdDesc ? parsed.householdDesc : (parsed.members + "인 가구");
       document.getElementById('docApplicantInfo').innerHTML = parsed.members !== null ? 
         (memLabel + " (" + (parsed.age ? "만 " + parsed.age + "세" : "연령 확인 요망") + ") | 건강: " + (parsed.healthDesc || "양호")) :
-        "<span class='missing-text'>[미기재] 가구원수 및 인적사항 확인 요망</span>";
+        "<span class='missing-text'>[미기재] 가구원수 확인 요망</span>";
 
       document.getElementById('docWorkAbilityInfo').innerHTML = parsed.workAbility !== null ?
         (parsed.workAbility === 'none' ? "만 65세 이상 노인특례 적용" : (parsed.workAbility === 'youth' ? "만 24세 이하 청년특례 적용" : (parsed.workAbility === 'illness' ? "근로무능력자 판정 심사 대상" : "일반 근로능력자 (30% 공제)"))) :
-        "<span class='missing-text'>[미기재] 근로능력평가 대상 확인 요망</span>";
+        "<span class='missing-text'>[미기재] 근로능력 대상 확인 요망</span>";
 
       document.getElementById('docIncomeInfo').innerHTML = parsed.earned !== null ?
-        ("월 " + parsed.earned.toLocaleString() + "만 원 (근로 " + (parsed.earned === 0 ? "0만(무소득 확인)" : parsed.earned + "만") + " / 이전소득 " + (parsed.other || 0) + "만)") :
-        "<span class='missing-text'>[미기재] 근로 및 사업소득 유무 확인 요망</span>";
+        ("월 " + parsed.earned.toLocaleString() + "만 원 (근로 " + (parsed.earned === 0 ? "0만(무소득)" : parsed.earned + "만") + " / 이전 " + (parsed.other || 0) + "만)") :
+        "<span class='missing-text'>[미기재] 소득 유무 확인 요망</span>";
 
       var housingDescText = parsed.housingType === "자가" ? 
-        `자가 주택 (${(parsed.resProp || 0).toLocaleString()}만 원)` :
-        (parsed.housingType === "무료임차" ? "무료임차 거주" : `보증금 ${(parsed.resProp || 0).toLocaleString()}만 원 (월세 ${(parsed.rentFee || 0)}만)`);
+        `자가 (${(parsed.resProp || 0).toLocaleString()}만 원)` :
+        (parsed.housingType === "무료임차" ? "무료임차" : `보증금 ${(parsed.resProp || 0).toLocaleString()}만 (월세 ${(parsed.rentFee || 0)}만)`);
 
       document.getElementById('docAssetInfo').innerHTML = parsed.resProp !== null ?
-        (housingDescText + " | 금융 " + (parsed.finProp || 0).toLocaleString() + "만 원 | 부채 " + (parsed.debt || 0).toLocaleString() + "만 원") :
-        "<span class='missing-text'>[미기재] 주거형태(자가/보증금) 확인 요망</span>";
+        (housingDescText + " | 금융 " + (parsed.finProp || 0).toLocaleString() + "만 | 부채 " + (parsed.debt || 0).toLocaleString() + "만") :
+        "<span class='missing-text'>[미기재] 주거형태/재산 확인 요망</span>";
 
       document.getElementById('docSeverInfo').innerHTML = parsed.support !== null ?
-        (parsed.support === 'severed' ? "가족관계 해체사유서 징구 및 지생보 심의 대상" : (parsed.support === 'none' ? "부양의무자 없음 (면제 대상)" : "부양의무자 일반 소득·재산조사 대상")) :
-        "<span class='missing-text'>[미기재] 부양의무자(자녀/부모) 확인 요망</span>";
+        (parsed.support === 'severed' ? "해체사유서 징구 및 지생보 심의 대상" : (parsed.support === 'none' ? "부양의무자 없음 (면제 대상)" : "부양의무자 일반 조사 대상")) :
+        "<span class='missing-text'>[미기재] 부양의무자 확인 요망</span>";
 
-      document.getElementById('docActionInfo').innerText = signals.length > 0 ? "🚨 긴급복지 우선 심사 및 안전망 즉각 연계" : (parsed.missingFields.length > 0 ? "⚠️ 누락 조사항목 보충 후 수급 자격 확정 필요" : "국민기초생활보장(생계·의료·주거) 모의판정 진행");
+      document.getElementById('docActionInfo').innerText = signals.length > 0 ? "🚨 긴급복지 우선 심사 및 안전망 즉각 연계" : (parsed.missingFields.length > 0 ? "⚠️ 누락 조사항목 보충 후 수급 자격 확정 필요" : "국민기초 맞춤형 급여 모의판정 진행");
 
       currentHappyEumText = generateHappyEumText(parsed, signals, currentRecommendedAgencies);
       document.getElementById('happyEumOutput').innerText = currentHappyEumText;
@@ -1600,7 +1618,7 @@ ${agencyListText}
         calculationDetails: lastCalcResult
       };
 
-      showToast("사정표, 민원인 맞춤 구비서류 및 모바일 QR 데이터가 일괄 완성되었습니다.");
+      showToast("사정표, 전산 상담일지 및 대민 안내 데이터가 일괄 완성되었습니다.");
     }
 
     function renderClientDocs(docs) {
