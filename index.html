@@ -436,9 +436,29 @@
       line-height: 1.6;
       color: #1e293b;
       font-family: monospace, sans-serif;
-      max-height: 150px;
+      max-height: 140px;
       overflow-y: auto;
       white-space: pre-wrap;
+    }
+
+    /* 공단 연계 전용 패널 */
+    .public-agency-box {
+      background: #f0fdfa;
+      border: 1.5px solid #99f6e4;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-top: 14px;
+    }
+    .agency-card-item {
+      background: #ffffff;
+      border: 1px solid #ccfbf1;
+      border-radius: 6px;
+      padding: 10px;
+      margin-top: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
     }
 
     .matrix-grid {
@@ -528,7 +548,7 @@
       <span class="header-ai-status" id="headerAiBadge">🔒 모델 비종속 AI 활성 (WASM / 행안부 공통기반 준비)</span>
     </div>
     <div style="font-size: 12px; color: #64748b; font-weight: 600;">
-      '27년 행정안전부 AI 공통기반 이관 대응 설계 (전국 공통 표준 복지사업 전용)
+      '27년 행정안전부 AI 공통기반 이관 대응 설계 (전국 공통 복지 &amp; 공공기관 연계망)
     </div>
   </header>
 
@@ -564,8 +584,8 @@
       <div class="step-flow-item active">
         <div class="step-num">2</div>
         <div>
-          <div class="step-text-title">온디바이스 AI 위기·단절·결손 진단</div>
-          <div class="step-text-desc">신호등 위험도 &amp; 행복e음 상담일지 자동 정제</div>
+          <div class="step-text-title">온디바이스 AI 위기진단 &amp; 공공기관 연계</div>
+          <div class="step-text-desc">신호등 위험도 &amp; 공단 지원사업 자동 매칭</div>
         </div>
       </div>
       <div class="step-flow-item active">
@@ -604,11 +624,11 @@
           </div>
         </div>
         
-        <textarea id="counselInput" class="counsel-textarea" placeholder="민원인의 구술 기록을 편하게 입력하세요('아들이랑 연락 끊긴 지 10년 넘었고 보증금 2천에 통장 200만원 있고 일 못함...'). 온디바이스 AI가 행복e음 전산 등록용 공문서 서식으로 자동 정제합니다."></textarea>
+        <textarea id="counselInput" class="counsel-textarea" placeholder="민원인의 구술 기록을 편하게 입력하세요('아들이랑 연락 끊긴 지 10년 넘었고 보증금 2천에 통장 200만원 있고 일 못함... 병원비 빚이 많고 월세 밀림'). 온디바이스 AI가 지자체 급여뿐 아니라 공단(건보·법률구조·LH 등) 사업까지 자동 매칭합니다."></textarea>
         
         <div style="margin-top: 14px;">
           <button class="btn btn-primary" style="width: 100%; font-size: 15px; padding: 13px; font-weight: 800; background: linear-gradient(135deg, #1d4ed8, #2563eb); border-radius: 8px; box-shadow: 0 4px 10px rgba(29, 78, 216, 0.25);" onclick="processCounseling()">
-            ⚡ 1클릭 행복e음 사정서 생성 &amp; 온디바이스 AI 모의판정 실행
+            ⚡ 1클릭 행복e음 사정서 생성 &amp; 공단 연계망 모의판정 실행
           </button>
         </div>
       </div>
@@ -683,8 +703,19 @@
           </tr>
         </table>
 
+        <!-- [신규 기능]: 범정부 공공기관·공단 연계 추천 영역 -->
+        <div class="public-agency-box">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 800; font-size: 12.5px; color: #0f766e;">🏛️ 타 공공기관·공단 연계 복지망 자동 추천</span>
+            <span style="font-size: 11px; color: #0d9488; font-weight: 700;" id="agencyRecommendCountBadge">0건 매칭됨</span>
+          </div>
+          <div id="agencyRecommendListArea" style="margin-top: 6px; font-size: 12px; color: #475569;">
+            상담 내용 분석 시 건강보험공단(재난적의료비), 법률구조공단, LH주거지원 등 연계 가능한 공단 사업이 이곳에 자동으로 추천됩니다.
+          </div>
+        </div>
+
         <!-- 행복e음 초기상담이력 전산 등록 규격 텍스트 뷰어 -->
-        <div style="font-weight: 800; font-size: 12.5px; color: #047857; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center;">
+        <div style="font-weight: 800; font-size: 12.5px; color: #047857; margin-top: 14px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center;">
           <span>💻 행복e음 상담이력 등록용 규격 텍스트 (자동 정제)</span>
           <span style="font-size: 11px; color: #64748b;">상단 녹색 버튼 클릭 시 즉시 복사</span>
         </div>
@@ -892,6 +923,7 @@
     var currentMissingKeys = [];
     var lastGeneratedArtifact = null;
     var currentHappyEumText = "";
+    var currentRecommendedAgencies = [];
 
     var SECTION_TEMPLATES = {
       household: "• 세대주 성명: 미기재 (만 00세, 1인 가구)",
@@ -916,6 +948,61 @@
         showToast(`행정안전부 AI 공통기반 [${sel.toUpperCase()}] 모델 어댑터로 전환되었습니다.`);
       }
     }
+
+    // ========================================================
+    // [공공기관·공단 연계 추천 엔진]: 건보공단, 법률구조공단, LH, 신복위 등
+    // ========================================================
+    var PublicAgencyMatcher = {
+      rules: [
+        {
+          id: "nhis_medical",
+          agency: "국민건강보험공단",
+          program: "재난적 의료비 지원사업",
+          triggerRegex: /(병원비|의료비|치료비|수술|입원|투병|협착증|디스크|약값)/,
+          desc: "과도한 중증·입원 의료비 지출 시 본인부담금의 50~80% 지원 (연간 최대 5,000만 원)",
+          contact: "1577-1000",
+          actionGuide: "관할 건보공단 지사에 퇴원 전 또는 퇴원 후 180일 이내 신청 안내"
+        },
+        {
+          id: "klac_legal",
+          agency: "대한법률구조공단",
+          program: "무료 법률구조 및 개인회생·파산 지원",
+          triggerRegex: /(빚|부채|대출|소송|차압|압류|명도|강제집행|파산|사기|협박)/,
+          desc: "취약계층 대상 민사·가사 소송대리 및 무료 개인회생·파산면책 원스톱 지원",
+          contact: "132",
+          actionGuide: "가까운 법률구조공단 출장소 방문상담(국번없이 132) 예약 안내"
+        },
+        {
+          id: "lh_housing",
+          agency: "LH (한국토지주택공사)",
+          program: "주거취약계층 긴급주거지원 (매입·전세임대)",
+          triggerRegex: /(쫓겨|퇴거|월세\s*밀려|방을\s*빼|갈\s*곳이\s*없|노숙|고시원|비주택)/,
+          desc: "퇴거 위기 가구 대상 시세 30~50% 수준의 공공임대주택 긴급 즉시 입주 연계",
+          contact: "1600-1004",
+          actionGuide: "지자체 추천서 발급 후 LH 관할 주거복지지사에 긴급입주 추천서 발송"
+        },
+        {
+          id: "ccrs_finance",
+          agency: "신용회복위원회 / 서민금융진흥원",
+          program: "채무조정(신용회복) & 소액생계비 대출",
+          triggerRegex: /(연체|이자|신용불량|빚이|돌려막기|통장\s*압류)/,
+          desc: "연체 채무 원금 감면(최대 90%), 상환유예 및 긴급 소액생계비 즉시대출 지원",
+          contact: "1397",
+          actionGuide: "서민금융통합지원센터(1397) 안내 및 채무조정 상담 연계"
+        }
+      ],
+
+      match: function(text) {
+        var matched = [];
+        for (var i = 0; i < this.rules.length; i++) {
+          var rule = this.rules[i];
+          if (rule.triggerRegex.test(text)) {
+            matched.push(rule);
+          }
+        }
+        return matched;
+      }
+    };
 
     var RiskSignalEngine = {
       riskDefinitions: {
@@ -1145,8 +1232,12 @@
       return res;
     }
 
-    function generateHappyEumText(parsed, signals) {
+    function generateHappyEumText(parsed, signals, agencies) {
       var today = new Date().toLocaleDateString('ko-KR');
+      var agencyText = (agencies && agencies.length > 0) ? 
+        agencies.map(a => `• ${a.agency} [${a.program}]: ${a.actionGuide}`).join("\n ") : 
+        "• 특이 공단 연계 수요 미식별 (필요시 추가 안내)";
+
       var txt = `[행복e음 초기상담이력 전산등록 표준 서식]
 ■ 상담일자: ${today}
 ■ 대상자: ${parsed.name || "신청인 본인"} (${parsed.members || 1}인 가구, ${parsed.age ? "만 " + parsed.age + "세" : "연령 확인 요망"})
@@ -1156,19 +1247,15 @@
  - 건강상태: ${parsed.healthDesc || "특이 질환 미확인 (일반 근로능력)"}
  - 근로능력: ${parsed.workAbility === 'none' ? "만 65세 이상 법정 근로무능력자" : (parsed.workAbility === 'illness' ? "질병·부상 근로무능력 판정 심사 필요" : "일반 근로능력자 (자활 대상)")}
 
-2. 소득 현황
- - 근로·사업소득: 월 ${(parsed.earned || 0).toLocaleString()}만 원 ${(parsed.earned === 0 ? "(무소득 확인)" : "")}
- - 이전소득: 월 ${(parsed.other || 0).toLocaleString()}만 원 (기초연금 또는 사적지원)
+2. 소득 및 재산 현황
+ - 근로·사업소득: 월 ${(parsed.earned || 0).toLocaleString()}만 원 ${(parsed.earned === 0 ? "(무소득 확인)" : "")} / 이전소득: 월 ${(parsed.other || 0).toLocaleString()}만 원
+ - 주거/금융재산: 보증금 ${(parsed.resProp || 0).toLocaleString()}만 원 (월세 ${(parsed.rentFee || 0).toLocaleString()}만) / 금융 ${(parsed.finProp || 0).toLocaleString()}만 / 부채 ${(parsed.debt || 0).toLocaleString()}만
 
-3. 재산 현황
- - 주거형태: 임차 거주 (보증금 ${(parsed.resProp || 0).toLocaleString()}만 원 / 월세 ${(parsed.rentFee || 0).toLocaleString()}만 원)
- - 금융재산: 예금 등 약 ${(parsed.finProp || 0).toLocaleString()}만 원 (생활준비금 공제 범위 내)
- - 부채현황: 대출금 ${(parsed.debt || 0).toLocaleString()}만 원
- - 차량보유: 미보유 (100% 환산차량 없음)
-
-4. 부양의무자 조사 (의료급여 기준)
- - 부양의무자 관계: 1촌 직계혈족(자녀/부모)
+3. 부양의무자 실태 (의료급여 기준)
  - 단절 실태: ${parsed.support === 'severed' ? "장기간 연락두절 및 왕래 단절 확인됨. 가족관계 해체사유서 징구 및 지방생활보장위원회 심의 상정 요망." : (parsed.support === 'none' ? "부양의무자 없음" : "부양의무자 일반 조사 대상")}
+
+4. 범정부 타 공공기관·공단 연계 안내 내역
+ ${agencyText}
 
 5. 종합 상담 소견 및 처리계획
  - 희망급여: 맞춤형 기초생활보장(생계·의료·주거) 및 긴급복지
@@ -1190,13 +1277,17 @@
       var parsed = parseCounselTextWithValidation(text);
       currentMissingKeys = parsed.missingFields;
 
+      // 공공기관·공단 연계 추천 실행
+      currentRecommendedAgencies = PublicAgencyMatcher.match(text);
+      renderAgencyRecommendations(currentRecommendedAgencies);
+
       var missingBox = document.getElementById('missingAlertBox');
       var missingTagList = document.getElementById('missingTagList');
       var missingTitle = document.getElementById('missingAlertTitle');
 
       if (parsed.missingFields.length > 0) {
         missingBox.style.display = "block";
-        missingTitle.innerText = "⚠️️ 법정 필수 상담 조사 항목 [" + parsed.missingFields.length + "건] 결손 감지";
+        missingTitle.innerText = "⚠️ 법정 필수 상담 조사 항목 [" + parsed.missingFields.length + "건] 결손 감지";
         var tagHtml = "";
         parsed.missingFields.forEach(function(f) {
           tagHtml += "<span class='missing-tag'>❌ " + f.label + "</span>";
@@ -1254,7 +1345,7 @@
 
       document.getElementById('docActionInfo').innerText = signals.length > 0 ? "🚨 긴급복지 우선 심사 및 안전망 즉각 연계" : (parsed.missingFields.length > 0 ? "⚠️ 누락 조사항목 보충 후 수급 자격 확정 필요" : "국민기초생활보장(생계·의료·주거) 모의판정 진행");
 
-      currentHappyEumText = generateHappyEumText(parsed, signals);
+      currentHappyEumText = generateHappyEumText(parsed, signals, currentRecommendedAgencies);
       document.getElementById('happyEumOutput').innerText = currentHappyEumText;
 
       document.getElementById('simMembers').value = parsed.members || 1;
@@ -1280,6 +1371,7 @@
         happyEumDocumentText: currentHappyEumText,
         parsedAssessment: parsed,
         riskSignals: signals,
+        recommendedAgencies: currentRecommendedAgencies,
         simulatedResults: {
           recognizedIncome: document.getElementById('valBasicLife').innerText,
           emergencyStatus: document.getElementById('badgeEmergency').innerText,
@@ -1291,8 +1383,38 @@
       if (parsed.missingFields.length > 0) {
         showToast("⚠️ 필수 항목 " + parsed.missingFields.length + "건이 누락되었습니다.");
       } else {
-        showToast("행복e음 상담일지 정제 및 모의판정 연동이 완료되었습니다!");
+        showToast("행복e음 상담일지 정제 및 공단 연계망 매칭이 완료되었습니다!");
       }
+    }
+
+    function renderAgencyRecommendations(agencies) {
+      var countBadge = document.getElementById('agencyRecommendCountBadge');
+      var area = document.getElementById('agencyRecommendListArea');
+
+      if (!agencies || agencies.length === 0) {
+        countBadge.innerText = "0건 매칭";
+        area.innerHTML = "<div style='color:#64748b; font-size:12px;'>상담 내용에서 특이 공단 연계 필요 키워드(병원비, 빚, 퇴거 위기 등)가 감지되지 않았습니다.</div>";
+        return;
+      }
+
+      countBadge.innerText = agencies.length + "건 맞춤 매칭";
+      var html = "";
+      agencies.forEach(function(ag) {
+        html += "<div class='agency-card-item'>";
+        html += "  <div style='flex:1;'>";
+        html += "    <div style='display:flex; align-items:center; gap:6px;'>";
+        html += "      <span style='font-weight:800; color:#0f766e; font-size:12.5px;'>" + ag.agency + "</span>";
+        html += "      <span style='font-size:11px; background:#ccfbf1; color:#0f766e; padding:1px 6px; border-radius:4px; font-weight:700;'>" + ag.program + "</span>";
+        html += "    </div>";
+        html += "    <div style='font-size:11.5px; color:#334155; margin-top:2px;'>" + ag.desc + "</div>";
+        html += "    <div style='font-size:11px; color:#2563eb; margin-top:1px;'>💡 <strong>안내요령:</strong> " + ag.actionGuide + "</div>";
+        html += "  </div>";
+        html += "  <div>";
+        html += "    <a href='tel:" + ag.contact + "' class='btn btn-outline btn-sm' style='font-size:11px; font-weight:700; color:#0f766e; border-color:#99f6e4; background:#f0fdfa;'>📞 " + ag.contact + "</a>";
+        html += "  </div>";
+        html += "</div>";
+      });
+      area.innerHTML = html;
     }
 
     function copyHappyEumDocument() {
@@ -1388,7 +1510,6 @@
       var finProp = parseFloat(document.getElementById('simFinProp').value) || 0;
       var debt = parseFloat(document.getElementById('simDebt').value) || 0;
 
-      // 1. 근로소득 공제 계산
       var earnedDeduct = 0;
       if (workAbility === 'none') {
         earnedDeduct = Math.max(0, (earned - 20) * 0.3 + 20);
@@ -1400,7 +1521,6 @@
       var finalEarned = Math.max(0, earned - earnedDeduct);
       var incomeVal = Math.round((finalEarned + other) * 10) / 10;
 
-      // 2. 재산의 소득환산액 산정
       var baseDeduct = POLICY_2026.baseDeduction[region] || 7700;
       var remainDeduct = baseDeduct;
 
@@ -1423,7 +1543,6 @@
       var propertyMonthly = (resAfter * 0.0104) + (finAfter * 0.0626);
       var recognized = Math.round((incomeVal + propertyMonthly) * 10) / 10;
 
-      // 3. 전국 공통 급여별 선정기준액 산정
       var median = POLICY_2026.medianIncome[members] || 256.4;
       var liveStd = Math.round(median * POLICY_2026.standards.livelihood * 10) / 10;
       var medStd = Math.round(median * POLICY_2026.standards.medical * 10) / 10;
@@ -1432,7 +1551,6 @@
       var nearStd = Math.round(median * POLICY_2026.standards.nearPoverty * 10) / 10;
       var emergStd = Math.round(median * POLICY_2026.standards.emergency * 10) / 10;
 
-      // 4. 주거급여 급지별 기준임대료 계산
       var tier = POLICY_2026.housingRegionTier[region] || 3;
       var maxRentLimit = (POLICY_2026.housingStandardRent[tier] && POLICY_2026.housingStandardRent[tier][members]) ? 
                          POLICY_2026.housingStandardRent[tier][members] : 21.6;
@@ -1444,7 +1562,6 @@
       var isHousePass = recognized <= houseStd;
       var isEduPass = recognized <= eduStd;
 
-      // 1. 국민기초생활보장 카드
       document.getElementById('valBasicLife').innerText = recognized.toLocaleString();
       var bCard = document.getElementById('cardBasicLife');
       var bBadge = document.getElementById('badgeBasicLife');
@@ -1475,7 +1592,6 @@
 
       hPayout.innerText = isHousePass ? ("월 " + estimatedHousingPayout.toLocaleString() + "만 원 (상한 " + maxRentLimit + "만)") : "월 0만 원 (기준 초과)";
 
-      // 2. 긴급복지지원 카드
       var totalRealIncome = earned + other;
       document.getElementById('valEmergIncome').innerText = totalRealIncome.toLocaleString();
       var eCard = document.getElementById('cardEmergency');
@@ -1500,7 +1616,6 @@
         ePayout.innerText = "지원 불가";
       }
 
-      // 3. 차상위계층
       document.getElementById('valNearPoverty').innerText = recognized.toLocaleString();
       var nCard = document.getElementById('cardNearPoverty');
       var nBadge = document.getElementById('badgeNearPoverty');
@@ -1519,7 +1634,6 @@
         nBadge.innerText = "기준 초과 (탈락)";
       }
 
-      // 4. 기초연금
       var bpIncome = Math.round((earned * 0.7 + other) * 10) / 10;
       document.getElementById('valBasicPension').innerText = bpIncome.toLocaleString();
       var pCard = document.getElementById('cardBasicPension');
@@ -1616,9 +1730,12 @@
       document.getElementById('emergencyPriorityBadge').style.display = 'none';
       document.getElementById('missingAlertBox').style.display = 'none';
       document.getElementById('happyEumOutput').innerText = "상담 메모를 입력하고 판정을 실행하면 행복e음 전산에 바로 붙여넣을 수 있는 공식 상담일지가 이곳에 자동으로 생성됩니다.";
+      document.getElementById('agencyRecommendListArea').innerHTML = "상담 내용 분석 시 건강보험공단(재난적의료비), 법률구조공단, LH주거지원 등 연계 가능한 공단 사업이 이곳에 자동으로 추천됩니다.";
+      document.getElementById('agencyRecommendCountBadge').innerText = "0건 매칭됨";
       currentRiskStatus = { detected: false, signals: [], auditLogs: [] };
       lastGeneratedArtifact = null;
       currentHappyEumText = "";
+      currentRecommendedAgencies = [];
       showToast("입력창이 비워졌습니다.");
     }
 
