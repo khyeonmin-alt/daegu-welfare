@@ -1303,14 +1303,36 @@
       var mName = text.match(/성명\s*[:：]?\s*([가-힣a-zA-Z]{2,10})/) || text.match(/대상자\s*([가-힣a-zA-Z]{2,10})/);
       if (mName) res.name = mName[1].trim();
 
+      // [개선된 가구원수 자동 파싱 및 연산 엔진]
       var mMem = text.match(/([1-7])\s*인\s*가구/) || text.match(/가구원\s*수\s*[:：]?\s*([1-7])/);
-      var twoPersonPatterns = /(홀\s*어머니|어머니랑|어머니와|엄마랑|모친과|아들과\s*둘이|자녀와\s*단둘|딸이랑\s*둘이|배우자와\s*둘이|모자가구|부자가구|둘이\s*살)/;
+      var twoPersonPatterns = /(홀\s*어머니|어머니랑|어머니와|엄마랑|모친과|모친이랑|아들과\s*둘이|자녀와\s*단둘|딸이랑\s*둘이|남편과\s*둘이|배우자와\s*둘이|모자가구|모녀가구|부자가구|부녀가구|2명\s*거주|둘이\s*살)/;
 
       if (mMem) {
         res.members = parseInt(mMem[1], 10);
+        res.householdDesc = res.members + "인 가구";
       } else if (twoPersonPatterns.test(text)) {
         res.members = 2;
-        res.householdDesc = "2인 가구 동거 거주";
+        if (/홀\s*어머니|모친|엄마/.test(text)) {
+          res.householdDesc = "본인 및 모친 동거 (2인 가구)";
+        } else if (/아들|딸|자녀/.test(text)) {
+          res.householdDesc = "본인 및 자녀 동거 (2인 가구)";
+        } else {
+          res.householdDesc = "본인 및 배우자 동거 (2인 가구)";
+        }
+      } else if (/(배우자|남편|아내|처)/.test(text) && /(자녀|아이|아들|딸)/.test(text)) {
+        // "배우자와 자녀 1명" -> 본인(1) + 배우자(1) + 자녀수(N)
+        var childCount = 1;
+        var mChild = text.match(/(?:자녀|아이|아들|딸)\s*([1-5])\s*명/);
+        if (mChild) {
+          childCount = parseInt(mChild[1], 10);
+        }
+        res.members = 1 + 1 + childCount;
+        res.householdDesc = "본인, 배우자 및 자녀 " + childCount + "명 동거 (" + res.members + "인 가구)";
+      } else if (/(?:자녀|아이|아들|딸)\s*([1-5])\s*명/.test(text)) {
+        var cMatch = text.match(/(?:자녀|아이|아들|딸)\s*([1-5])\s*명/);
+        var cCount = parseInt(cMatch[1], 10);
+        res.members = 1 + cCount;
+        res.householdDesc = "본인 및 자녀 " + cCount + "명 동거 (" + res.members + "인 가구)";
       } else if (text.indexOf("단독") !== -1 || text.indexOf("1인") !== -1 || text.indexOf("혼자") !== -1) {
         res.members = 1;
         res.householdDesc = "1인 단독 가구";
@@ -1713,7 +1735,6 @@ ${agencyListText}
       }
 
       container.innerHTML = "";
-      var editedText = document.getElementById('editableClientNoticeArea').value;
       
       // 스마트폰 기본 카메라가 즉시 인식할 수 있도록 압축된 핵심 규격 페이로드 구성
       var docsSummary = currentRequiredDocs && currentRequiredDocs.length > 0 ? 
