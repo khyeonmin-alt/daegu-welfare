@@ -309,7 +309,7 @@
         </div>
         
         <div style="position: relative;">
-          <textarea id="counselInput" class="counsel-textarea" oninput="handleCounselInputChanged()" placeholder="민원인의 구술 기록을 편하게 입력하거나 상단의 사업별 버튼을 눌러 양식을 불러오세요. '월세 4달 밀렸다'와 같은 연체 표현도 임차료와 정확히 분리되어 안전하게 판정됩니다."></textarea>
+          <textarea id="counselInput" class="counsel-textarea" oninput="handleCounselInputChanged()" placeholder="민원인의 구술 기록을 편하게 입력하거나 상단의 사업별 버튼을 눌러 양식을 불러오세요. 미언급된 항목은 임의로 추정하지 않고 사정표에 [미기재]로 정확히 분류됩니다."></textarea>
           <div id="counselCharCounter" style="position: absolute; bottom: 10px; right: 15px; font-size: 11px; color: #94a3b8; background: rgba(255,255,255,0.85); padding: 2px 6px; border-radius: 4px;">0자</div>
         </div>
         
@@ -353,19 +353,19 @@
               </tr>
               <tr>
                 <th>2. 근로능력</th>
-                <td id="docWorkAbilityInfo">근로능력 평가 대상</td>
+                <td id="docWorkAbilityInfo"><span class="missing-text">[미기재] 근로능력 대상 확인 요망</span></td>
               </tr>
               <tr>
                 <th>3. 월 소득</th>
-                <td id="docIncomeInfo">월 0만 원 (무소득)</td>
+                <td id="docIncomeInfo"><span class="missing-text">[미기재] 근로 및 사업소득 확인 요망</span></td>
               </tr>
               <tr>
                 <th>4. 주거/재산</th>
-                <td id="docAssetInfo">주거재산 0만 | 금융 0만</td>
+                <td id="docAssetInfo"><span class="missing-text">[미기재] 주거형태 및 재산 확인 요망</span></td>
               </tr>
               <tr>
                 <th>5. 부양의무</th>
-                <td id="docSeverInfo">단절 사유 없음 (일반조사)</td>
+                <td id="docSeverInfo"><span class="missing-text">[미기재] 부양의무자 확인 요망</span></td>
               </tr>
               <tr>
                 <th>행정 소견</th>
@@ -452,7 +452,7 @@
           <label>근로유형 및 공제특례</label>
           <select id="simWorkAbility" onchange="runSimulation()">
             <option value="none">법정 근로무능력 (만 65세 이상, 중증장애 등)</option>
-            <option value="youth">청년 (만 24세 이하: 40만원 선공제+30%)</option>
+            <option value="youth">청년 (만 24세 이하: 40만원 선공제+30%)[cite: 1, 2]</option>
             <option value="able">일반 근로능력자 (기본 30%)</option>
             <option value="illness">질병·부상 심사 대상 (근로활동 없음)</option>
           </select>
@@ -990,9 +990,6 @@
       return Math.round(total);
     }
 
-    // ========================================================
-    // ★ [오류 전면 수정]: 연체 개월과 월세 구분, 가구원·건강 엄격 판정, 법정 근로무능력자 다각화
-    // ========================================================
     function parseCounselTextWithValidation(text) {
       var res = {
         name: null,
@@ -1018,10 +1015,10 @@
                   text.match(/([가-힣]{2,4})\s*(?:씨|님|어르신)/);
       if (mName) res.name = mName[1].trim();
 
-      // 2. 가구원수 판정 (임의 1인 가구 간주 방지 - 언급이 없으면 결손 처리)
+      // 2. 가구원수 판정
       var mMem = text.match(/([1-7])\s*인\s*가구/) || text.match(/가구원\s*수\s*[:：]?\s*([1-7])/);
       var twoPersonPatterns = /(홀\s*어머니|어머니랑|어머니와|엄마랑|모친과|모친이랑|아들과\s*둘이|자녀와\s*단둘|딸이랑\s*둘이|남편과\s*둘이|배우자와\s*둘이|모자가구|모녀가구|부자가구|부녀가구|2명\s*거주|둘이\s*살|부부\s*2인)/;
-      var singlePatterns = /(단독\s*가구|단독\s*세대|1인\s*단독|1인\s*가구|혼자\s*살|혼자\s*산다|홀로\s*살|홀로\s*산다|독거노인|독거|혼자\s*거주|홀몸)/;
+      var singlePatterns = /(단독\s*가구|단독\s*세대|1인\s*단독|1인\s*가구|혼자\s*살|혼자\s*산다|홀로\s*살|홀로\s*산다|독거노인|독거|혼자\s*거주|홀몸|혼자\s*살고\s*있음|혼자\s*있음|혼자)/;
 
       if (mMem) {
         res.members = parseInt(mMem[1], 10);
@@ -1044,7 +1041,6 @@
         res.members = 1;
         res.householdDesc = "1인 단독 가구";
       } else {
-        // [수정] 혼자 산다는 명시적 표현이 없으면 절대 1인 가구로 임의 확정하지 않음
         res.members = null;
         res.householdDesc = null;
         res.missingFields.push({ key: "household", label: "가구원수 및 인적사항" });
@@ -1061,7 +1057,7 @@
         }
       }
 
-      // 4. [국민기초생활보장법 시행령 제7조] 법정 근로무능력자 및 건강상태 정밀 판정
+      // 4. 근로무능력자 및 건강상태 판정
       var severeDisabilityPattern = /(중증장애|심한\s*장애|장애\s*정도\s*심한|장애인연금|장애\s*1급|장애\s*2급|장애\s*3급|뇌병변|지적장애|자폐성장애|지체장애\s*중증)/;
       var pregnancyCarePattern = /(임산부|임신\s*중|분만\s*후\s*6개월|출산\s*직후|미취학\s*자녀\s*양육|영유아\s*양육|중증환자\s*간병|와상\s*간병|가족\s*간병)/;
       var studentMinorPattern = /(초등학생|중학생|고등학생|재학\s*중|만\s*18세\s*미만|미성년자)/;
@@ -1089,7 +1085,6 @@
         res.workAbility = "able";
         res.healthDesc = "일반 근로능력자 (자활사업 참여 대상)";
       } else {
-        // [수정] 건강상태 언급이 전혀 없을 경우 '양호'로 임의 기재하지 않고 결손 처리
         res.workAbility = null;
         res.healthDesc = null;
         if (activeLoadedPresetType !== 'nearPoverty' && activeLoadedPresetType !== 'emergency' && activeLoadedPresetType !== 'basicPension') {
@@ -1113,13 +1108,10 @@
       var mOther = text.match(/(?:공적이전소득|기초연금|국민연금|이전소득)[^\d]*([0-9,.]+\s*(?:억|만\s*원|만원|원)?)/);
       res.other = mOther ? parseKoreanCurrency(mOther[1]) : 0;
 
-      // 6. 주거 형태 및 재산 (★ '월세 4달 밀렸다'를 월세 4만원으로 오인식하지 않도록 철저 분리)
+      // 6. 주거 형태 및 재산
       var ownHousePattern = /(자가|본인명의\s*집|본인명의\s*주택|소유\s*주택|단독주택\s*자가)/;
       var freeRentPattern = /(무료임차|사용대차|친척집\s*무상|무상거주)/;
-
-      // 순수 월세 금액 패턴: '월세 30만원', '월세 30만 원', '월세: 25만' 등 명확한 금액단위만 캡처
       var rentFeeExactPattern = /(?:실제\s*지출\s*월세|월세\s*[:：]?|매달\s*월세|월세로)\s*([0-9,.]+)\s*(?:만\s*원|만원)/;
-      // 보증금 패턴
       var depositPattern = /보증금[^\d]*([0-9,.]+\s*(?:억|만\s*원|만원|원)?)/;
 
       if (ownHousePattern.test(text)) {
@@ -1136,12 +1128,10 @@
         var mDeposit = text.match(depositPattern);
         res.resProp = mDeposit ? parseKoreanCurrency(mDeposit[1]) : 0;
 
-        // 월세 금액 추출 ('4달 밀려' 등 기간 표현 배제)
         var mRentFee = text.match(rentFeeExactPattern);
         if (mRentFee) {
           res.rentFee = parseKoreanCurrency(mRentFee[1]);
         } else {
-          // '보증금 없는 월세 30만 원' 등 변칙 대응
           var mFallbackRent = text.match(/월세[^\d\n]*([0-9,.]+)\s*(?:만\s*원|만원)/);
           res.rentFee = mFallbackRent ? parseKoreanCurrency(mFallbackRent[1]) : 0;
         }
@@ -1408,7 +1398,80 @@ ${statutesList}
         missingBox.style.display = "none";
       }
 
-      // 3단계 입력창에 파싱값 전달
+      var isExempt = (activeLoadedPresetType === 'nearPoverty' || activeLoadedPresetType === 'emergency' || activeLoadedPresetType === 'basicPension');
+
+      // 1. 가구원 / 건강
+      var applicantText = "";
+      if (parsed.members !== null) {
+        var healthPart = parsed.healthDesc ? parsed.healthDesc : "<span class='missing-text'>[미기재] 건강 확인 요망</span>";
+        applicantText = (parsed.householdDesc || parsed.members + "인 가구") + " (" + (parsed.age ? "만 " + parsed.age + "세" : "연령 미기재") + ") | 건강: " + healthPart;
+      } else {
+        applicantText = "<span class='missing-text'>[미기재] 가구원수 및 인적사항 확인 요망</span>";
+      }
+      document.getElementById('docApplicantInfo').innerHTML = applicantText;
+
+      // 2. 근로능력
+      var workAbilityText = "";
+      if (isExempt) {
+        workAbilityText = "<span style='color:#64748b; font-weight:700;'>해당없음</span>";
+      } else if (parsed.workAbility === 'none') {
+        workAbilityText = "법정 근로무능력자 (" + (parsed.healthDesc || "노인·중증장애 등") + ")";
+      } else if (parsed.workAbility === 'illness') {
+        workAbilityText = "질병·부상 근로무능력 판정 심사 대상";
+      } else if (parsed.workAbility === 'youth') {
+        workAbilityText = "만 24세 이하 청년특례 적용 (40만+30% 공제)";
+      } else if (parsed.workAbility === 'able') {
+        workAbilityText = "일반 근로능력자 (30% 기본공제/자활)";
+      } else {
+        workAbilityText = "<span class='missing-text'>[미기재] 근로능력 대상 확인 요망</span>";
+      }
+      document.getElementById('docWorkAbilityInfo').innerHTML = workAbilityText;
+
+      // 3. 월 소득
+      var incomeText = "";
+      if (parsed.earned !== null) {
+        incomeText = "월 " + (parsed.earned + (parsed.other || 0)).toLocaleString() + "만 원 (근로 " + (parsed.earned === 0 ? "0만(무소득)" : parsed.earned.toLocaleString() + "만") + " / 이전 " + (parsed.other || 0).toLocaleString() + "만)";
+      } else {
+        incomeText = "<span class='missing-text'>[미기재] 근로 및 사업소득 확인 요망</span>";
+      }
+      document.getElementById('docIncomeInfo').innerHTML = incomeText;
+
+      // 4. 주거 / 재산
+      var assetText = "";
+      if (parsed.resProp !== null) {
+        var housingDesc = parsed.housingType === "자가" ?
+          "자가 (" + parsed.resProp.toLocaleString() + "만 원)" :
+          (parsed.housingType === "무료임차" ? "무료임차" : "보증금 " + parsed.resProp.toLocaleString() + "만 (월세 " + (parsed.rentFee || 0) + "만)");
+        
+        var finText = parsed.finProp !== null ? "금융 " + parsed.finProp.toLocaleString() + "만" : "금융 0만";
+        var debtText = parsed.debt !== null ? "부채 " + parsed.debt.toLocaleString() + "만" : "부채 0만";
+        assetText = housingDesc + " | " + finText + " | " + debtText;
+      } else {
+        assetText = "<span class='missing-text'>[미기재] 주거형태 및 재산 확인 요망</span>";
+      }
+      document.getElementById('docAssetInfo').innerHTML = assetText;
+
+      // 5. 부양의무
+      var supportText = "";
+      if (isExempt) {
+        supportText = "<span style='color:#64748b; font-weight:700;'>해당없음 (부양의무 기준 미적용)</span>";
+      } else if (parsed.support === 'severed') {
+        supportText = "해체사유서 징구 및 지생보 심의 대상";
+      } else if (parsed.support === 'none') {
+        supportText = "부양의무자 없음 (면제 대상)";
+      } else if (parsed.support === 'normal') {
+        supportText = "부양의무자 일반 조사 대상";
+      } else {
+        supportText = "<span class='missing-text'>[미기재] 부양의무자 확인 요망</span>";
+      }
+      document.getElementById('docSeverInfo').innerHTML = supportText;
+
+      // 행정 소견
+      document.getElementById('docActionInfo').innerText = signals.length > 0 ?
+        "🚨 법정 신고의무·위기개입 및 안전망 즉시 연계" :
+        (parsed.missingFields.length > 0 ? "⚠️ 필수 조사항목 보충 후 수급 자격 확정 필요" : "국민기초 맞춤형 급여 모의판정 진행");
+
+      // 3단계 시뮬레이터 연동
       document.getElementById('simMembers').value = parsed.members || 1;
       document.getElementById('simWorkAbility').value = parsed.workAbility || 'able';
       document.getElementById('simSupportObligor').value = parsed.support || 'normal';
@@ -1419,8 +1482,10 @@ ${statutesList}
       document.getElementById('simFinProp').value = parsed.finProp || 0;
       document.getElementById('simDebt').value = parsed.debt || 0;
 
-      syncStep3ToStep2();
       runSimulation();
+
+      currentHappyEumText = generateHappyEumText(parsed, signals, currentRecommendedAgencies);
+      document.getElementById('happyEumOutput').innerText = currentHappyEumText;
 
       currentClientNoticeText = generateClientNoticeDocument(parsed, currentRequiredDocs, currentRecommendedAgencies);
       currentOfficialNoticeDraftText = generateOfficialNoticeDraft(parsed, signals);
@@ -1575,7 +1640,7 @@ ${statutesList}
           <title>사회보장급여 신청 안내문</title>
           <style>
             body { font-family: -apple-system, "Malgun Gothic", "맑은 고딕", sans-serif; padding: 30px; font-size: 13px; line-height: 1.8; color: #111; }
-            .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 12px; margin-margin: 20px; }
+            .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 12px; margin-bottom: 20px; }
             .header h1 { font-size: 20px; margin: 0 0 6px 0; }
             .content { white-space: pre-wrap; font-family: inherit; font-size: 13px; line-height: 1.7; }
             .footer { margin-top: 40px; text-align: center; font-weight: bold; border-top: 1px solid #ddd; padding-top: 15px; }
@@ -1969,10 +2034,10 @@ ${statutesList}
       document.getElementById('missingAlertBox').style.display = 'none';
       document.getElementById('calcTraceBox').style.display = 'none';
       document.getElementById('docApplicantInfo').innerHTML = "<span class='missing-text'>[미기재] 가구원수 및 건강 확인 요망</span>";
-      document.getElementById('docWorkAbilityInfo').innerText = "근로능력 평가 대상";
-      document.getElementById('docIncomeInfo').innerText = "월 0만 원 (무소득)";
-      document.getElementById('docAssetInfo').innerText = "주거재산 0만 | 금융 0만";
-      document.getElementById('docSeverInfo').innerText = "단절 사유 없음 (일반조사)";
+      document.getElementById('docWorkAbilityInfo').innerHTML = "<span class='missing-text'>[미기재] 근로능력 대상 확인 요망</span>";
+      document.getElementById('docIncomeInfo').innerHTML = "<span class='missing-text'>[미기재] 근로 및 사업소득 확인 요망</span>";
+      document.getElementById('docAssetInfo').innerHTML = "<span class='missing-text'>[미기재] 주거형태 및 재산 확인 요망</span>";
+      document.getElementById('docSeverInfo').innerHTML = "<span class='missing-text'>[미기재] 부양의무자 확인 요망</span>";
       document.getElementById('happyEumOutput').innerText = "상담 메모를 입력하고 판정을 실행하면 행복e음 전산에 바로 붙여넣을 수 있는 공식 상담일지가 이곳에 자동으로 생성됩니다.";
       document.getElementById('agencyRecommendListArea').innerHTML = "상담 내용 분석 시 건보공단, 법률구조공단, LH 등 지자체 외 기관 지원사업이 자동으로 추천됩니다.";
       document.getElementById('agencyRecommendCountBadge').innerText = "0건 매칭됨";
