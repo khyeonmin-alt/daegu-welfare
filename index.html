@@ -25,7 +25,6 @@
       --warning-border: #fde68a;
       --success: #059669;
       --success-bg: #ecfdf5;
-      --emergency-accent: #b45309;
       --radius: 8px;
     }
 
@@ -96,7 +95,6 @@
     .btn-happy { background: #047857; color: #fff; }
     .btn-happy:hover { background: #065f46; }
     .btn-indigo { background: #4338ca; color: #fff; }
-    .btn-indigo:hover { background: #3730a3; }
 
     .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     @media (max-width: 1024px) { .grid-2col { grid-template-columns: 1fr; } }
@@ -137,7 +135,6 @@
       white-space: pre-wrap; max-height: 280px; overflow-y: auto; margin-top: 10px;
     }
 
-    /* 4대 급여 간이 모의판정 카드 타일 */
     .live-benefit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
     .live-benefit-card {
       border: 1.5px solid var(--border); border-radius: 8px; padding: 12px; background: #fff;
@@ -198,7 +195,6 @@
 
   <div class="container">
     
-    <!-- 4단계 탭 바 -->
     <div class="nav-tabs">
       <button class="tab-btn active" id="btnTab1" onclick="switchTab('tab1', this)">
         <span>1. 상담 기록 &amp; 비정형 구술</span>
@@ -227,7 +223,7 @@
             <button class="btn btn-outline" onclick="loadPreset('basicLife')" style="color:#1d4ed8; font-weight:800; border-color:#bfdbfe;">📋 기초생활</button>
             <button class="btn btn-outline" onclick="loadPreset('nearPoverty')" style="color:#047857; font-weight:800; border-color:#a7f3d0;">🎁 차상위</button>
             <button class="btn btn-danger" onclick="loadPreset('emergency')" style="font-weight:800;">🚨 긴급복지</button>
-            <button class="btn btn-outline" onclick="loadPreset('basicPension')" style="color:#7c3aed; font-weight:800; border-color:#ddd6fe;">👵 노인연금</button>
+            <button class="btn btn-outline" onclick="loadPreset('basicPension')" style="color:#7c3aed; font-weight:800; border-color:#ddd6fe;">👵 노인연금 (부양·근로 제외)</button>
             <button class="btn btn-outline" onclick="clearCounselInput()" style="font-weight:800; border-color:#94a3b8; color:#0f172a;">🧹 자연어 상담</button>
           </div>
         </div>
@@ -241,7 +237,7 @@
         </div>
 
         <div class="textarea-wrapper">
-          <textarea id="counselInput" class="counsel-textarea" oninput="handleCounselInputChanged()" placeholder="민원인의 구술 기록을 편하게 입력하세요.&#10;예) 이름 : 홍길동, 소득0원, 소득없음, 소득 없음, 전세 2000만원, 사용대차(무상거주), [22]세 등 어떤 표현이든 완벽하게 자동 판독합니다."></textarea>
+          <textarea id="counselInput" class="counsel-textarea" oninput="handleCounselInputChanged()" placeholder="민원인의 구술 기록을 편하게 입력하세요.&#10;예) 이름 : 홍길동, 전세 2000만원, 사용대차(무상거주), 소득0원, 소득없음 등 어떤 표현이든 완벽하게 자동 분석합니다."></textarea>
           <div id="counselCharCounter" class="char-counter">0자</div>
         </div>
 
@@ -256,7 +252,6 @@
     <!-- [2단계 패널] 사정표 + 4대급여 판정 -->
     <div id="tab2" class="tab-panel">
       
-      <!-- 긴급복지 위기사유 배너 -->
       <div id="emergencyAlertBanner" class="emergency-alert-banner">
         <div class="emergency-alert-title">
           <span>🚨 [긴급복지지원 위기사유 감지] 긴급생계·주거비 선지원 검토 요망</span>
@@ -265,7 +260,6 @@
         <div style="font-size: 12.5px; color: #78350f; line-height: 1.6;" id="emergencyAlertDesc"></div>
       </div>
 
-      <!-- 공무원 법정 신고의무 공문 기안문 -->
       <div id="dutyAlertSection" class="official-notice-box">
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <div style="display:flex; align-items:center; gap:8px;">
@@ -281,7 +275,6 @@
       </div>
 
       <div class="grid-2col">
-        <!-- 좌측: 사정표 + 4대 급여 판정 -->
         <div>
           <div class="card" style="margin-bottom: 14px;">
             <div class="card-header">
@@ -316,7 +309,6 @@
             </table>
           </div>
 
-          <!-- 4대 급여 판정 카드 (선정 초록색/탈락 회색화) -->
           <div class="card" style="margin-bottom: 0;">
             <div class="card-header" style="margin-bottom: 8px;">
               <div class="card-title">📊 4대 급여 모의판정 결과</div>
@@ -356,7 +348,6 @@
           </div>
         </div>
 
-        <!-- 우측: 행복e음 상담이력 -->
         <div class="card" style="margin-bottom: 0;">
           <div class="card-header">
             <div class="card-title">💻 행복e음 상담이력 (전산등록 표준 서식)</div>
@@ -409,7 +400,7 @@
               [사회보장급여 신청 안내 및 맞춤형 필수 구비서류 확인서]
             </div>
             <div style="font-size: 12px; color: #475569; margin-bottom: 12px;">
-              • 신청인: <strong id="printApplicantName">홍길동</strong> 님 귀하 | 상담일자: <span id="printCurrentDate">2026. 10. 2.</span><br>
+              • 신청인: <strong id="printApplicantName">신청인 본인</strong> 님 귀하 | 상담일자: <span id="printCurrentDate">2026. 10. 2.</span><br>
               • 아래 표시된 서류를 지참하시어 관할 행정복지센터 복지상담창구에 제출하여 주시기 바랍니다.
             </div>
             <ul id="clientDocListArea" style="list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 13px;"></ul>
@@ -421,7 +412,7 @@
 
         <div class="card">
           <div class="card-header">
-            <div class="card-title">🏛️️ [유관기관 지원망] 맞춤 연계 사업 안내</div>
+            <div class="card-title">🏛️ [유관기관 지원망] 맞춤 연계 사업 안내</div>
             <span class="badge" style="background:#ccfbf1; color:#0f766e;" id="agencyRecommendCountBadge">0건 매칭</span>
           </div>
           <div id="agencyRecommendListArea" style="display: flex; flex-direction: column; gap: 10px; max-height: 520px; overflow-y: auto;"></div>
@@ -483,7 +474,7 @@
 • 재산 및 사적이전소득: 0원 (가족 및 친인척 정기 지원 일체 없음)
 
 3. 재산 현황 (재산의 소득환산액 산정)
-• 주거 형태: 월세 (보증금 [ 5천만원 ] / 월세 [ 25 ]만 원)
+• 주거 형태: 월세 (보증금 [ 500 ]만 원 / 월세 [ 25 ]만 원)
 • 일반재산: 없음 (부동산, 분양권, 토지 등 미보유)
 • 금융재산: 예금 잔액 약 [ 45 ]만 원 (기본공제 생활준비금 500만원 이내)
 • 부채 내역: 병원비 치료용 대출 [ 300 ]만 원 (신용대출)
@@ -640,35 +631,40 @@
     let currentMissingFields = [];
     let currentParsedData = {};
     let currentOfficialNoticeDraft = "";
+    let parseDebounceTimer = null;
 
-    function switchTab(tabId, btnElem) {
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-      document.querySelectorAll('.nav-tabs .tab-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById(tabId).classList.add('active');
-      if (btnElem) btnElem.classList.add('active');
+    function safeSetText(id, text) {
+      const el = document.getElementById(id);
+      if (el) el.innerText = text;
     }
 
-    function attemptNavigateToStep2() {
-      processCounseling();
-      if (currentMissingFields && currentMissingFields.length > 0) {
-        const modal = document.getElementById('missingConfirmModal');
-        const listContainer = document.getElementById('modalMissingList');
-        listContainer.innerHTML = currentMissingFields.map(f => `• <strong>${f.label}</strong> 누락`).join('<br>');
-        modal.style.display = 'flex';
-      } else {
-        switchTab('tab2', document.getElementById('btnTab2'));
-        showToast("행복e음 전산서식이 생성되었습니다.");
+    function safeSetHtml(id, html) {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = html;
+    }
+
+    function switchTab(tabId, btnElem) {
+      try {
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+        const target = document.getElementById(tabId);
+        if (target) target.classList.add('active');
+        if (btnElem) btnElem.classList.add('active');
+      } catch (e) {
+        console.error("Tab switch error:", e);
       }
     }
 
     function forceNavigateToStep2() {
-      document.getElementById('missingConfirmModal').style.display = 'none';
+      const modal = document.getElementById('missingConfirmModal');
+      if (modal) modal.style.display = 'none';
       switchTab('tab2', document.getElementById('btnTab2'));
       showToast("누락 항목 확인 후 2단계로 진행했습니다.");
     }
 
     function insertMissingAndCloseModal() {
-      document.getElementById('missingConfirmModal').style.display = 'none';
+      const modal = document.getElementById('missingConfirmModal');
+      if (modal) modal.style.display = 'none';
       insertAllMissingTemplates();
     }
 
@@ -681,6 +677,8 @@
     function renderMissingTags() {
       const box = document.getElementById('missingAlertBox');
       const tagList = document.getElementById('missingTagList');
+      if (!box || !tagList) return;
+
       if (currentMissingFields.length > 0) {
         box.style.display = 'block';
         tagList.innerHTML = currentMissingFields.map(f => `
@@ -697,6 +695,7 @@
     function insertAllMissingTemplates() {
       if (currentMissingFields.length === 0) return;
       const memo = document.getElementById('counselInput');
+      if (!memo) return;
       let appendText = "\n\n[추가 필수 확인 사항]";
       currentMissingFields.forEach(f => {
         if (MISSING_FIELD_TEMPLATES[f.key]) {
@@ -713,45 +712,72 @@
 
     function loadPreset(key) {
       activePreset = key;
-      document.getElementById('counselInput').value = PRESETS[key];
-      handleCounselInputChanged();
-      processCounseling();
-      showToast(`표준 프리셋이 로드되었습니다.`);
+      const memo = document.getElementById('counselInput');
+      if (memo && PRESETS[key]) {
+        memo.value = PRESETS[key];
+        handleCounselInputChanged();
+        processCounseling();
+        showToast(`표준 프리셋이 로드되었습니다.`);
+      }
     }
 
     function clearCounselInput() {
       activePreset = null;
-      document.getElementById('counselInput').value = "";
+      const memo = document.getElementById('counselInput');
+      if (memo) memo.value = "";
       handleCounselInputChanged();
       currentMissingFields = [];
       renderMissingTags();
       resetViews();
-      document.getElementById('dutyAlertSection').style.display = 'none';
-      document.getElementById('emergencyAlertBanner').style.display = 'none';
+      const duty = document.getElementById('dutyAlertSection');
+      if (duty) duty.style.display = 'none';
+      const emerg = document.getElementById('emergencyAlertBanner');
+      if (emerg) emerg.style.display = 'none';
       showToast("자연어 상담 입력창이 준비되었습니다.");
     }
 
     function resetViews() {
-      document.getElementById('docApplicantInfo').innerHTML = `<span class="missing-text">[미기재] 성명 및 연령 확인 요망</span>`;
-      document.getElementById('docHouseholdInfo').innerHTML = `<span class="missing-text">[미기재] 가구원수 확인 요망</span>`;
-      document.getElementById('docWorkAbilityInfo').innerHTML = `<span class="missing-text">[미기재] 건강상태 및 근로능력 확인 요망</span>`;
-      document.getElementById('docIncomeInfo').innerHTML = `<span class="missing-text">[미기재] 소득 확인 요망</span>`;
-      document.getElementById('docAssetInfo').innerHTML = `<span class="missing-text">[미기재] 주거형태 및 재산 확인 요망</span>`;
-      document.getElementById('docSeverInfo').innerHTML = `<span class="missing-text">[미기재] 부양의무자 확인 요망</span>`;
-      document.getElementById('happyEumOutput').innerText = "상담 내용을 입력하고 판정을 실행하면 행복e음 전산등록 표준 서식이 실시간 생성됩니다.";
+      safeSetHtml('docApplicantInfo', `<span class="missing-text">[미기재] 성명 및 연령 확인 요망</span>`);
+      safeSetHtml('docHouseholdInfo', `<span class="missing-text">[미기재] 가구원수 확인 요망</span>`);
+      safeSetHtml('docWorkAbilityInfo', `<span class="missing-text">[미기재] 건강상태 및 근로능력 확인 요망</span>`);
+      safeSetHtml('docIncomeInfo', `<span class="missing-text">[미기재] 소득 확인 요망</span>`);
+      safeSetHtml('docAssetInfo', `<span class="missing-text">[미기재] 주거형태 및 재산 확인 요망</span>`);
+      safeSetHtml('docSeverInfo', `<span class="missing-text">[미기재] 부양의무자 확인 요망</span>`);
+      safeSetText('happyEumOutput', "상담 내용을 입력하고 판정을 실행하면 행복e음 전산등록 표준 서식이 실시간 생성됩니다.");
       
-      document.getElementById('liveIncomeRecognized').innerText = "0";
-      document.getElementById('liveRealIncome').innerText = "0";
+      safeSetText('liveIncomeRecognized', "0");
+      safeSetText('liveRealIncome', "0");
       updateLiveCard('liveCardBasicLife', 'liveEstBasicLife', false, "판정 대기");
       updateLiveCard('liveCardEmergency', 'liveEstEmergency', false, "판정 대기");
       updateLiveCard('liveCardNearPoverty', 'liveEstNearPoverty', false, "판정 대기");
       updateLiveCard('liveCardBasicPension', 'liveEstBasicPension', false, "판정 대기");
+
+      const ids = ['simEarnedIncome', 'simOtherIncome', 'simResProp', 'simRentFee', 'simFinProp', 'simDebt'];
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = 0;
+      });
+
+      safeSetText('clientDocCountBadge', "총 0종");
+      safeSetHtml('clientDocListArea', "<li style='color:#94a3b8;'>상담 내용이 입력되지 않았습니다.</li>");
+      safeSetText('agencyRecommendCountBadge', "0건 매칭");
+      safeSetHtml('agencyRecommendListArea', `
+        <div style="padding:14px; background:#f8fafc; border:1px solid var(--border); border-radius:6px; color:#64748b; font-size:12px;">
+          상담 내용에서 유관기관 연계 키워드가 감지되지 않았습니다.
+        </div>
+      `);
     }
 
     function handleCounselInputChanged() {
-      const val = document.getElementById('counselInput').value;
-      document.getElementById('counselCharCounter').innerText = val.length + "자";
-      processCounseling();
+      const el = document.getElementById('counselInput');
+      if (!el) return;
+      const val = el.value;
+      safeSetText('counselCharCounter', val.length + "자");
+
+      if (parseDebounceTimer) clearTimeout(parseDebounceTimer);
+      parseDebounceTimer = setTimeout(() => {
+        processCounseling();
+      }, 200);
     }
 
     function unbracket(str) {
@@ -759,26 +785,22 @@
       return str.replace(/[\[\]\(\)\{\}]/g, '').trim();
     }
 
-    // [완전 수정] 0원, 무소득, 천만원, 억 단위를 오차 없이 만원 단위로 환산하는 정밀 파서
     function parseWon(text) {
       if (!text) return null;
       let clean = text.replace(/,/g, '').replace(/[\[\]\(\)\{\}]/g, '').trim();
 
-      // 명시적 0원 또는 무소득 감지
       if (/^0\s*(원|만|만원)?$/.test(clean) \vert{}\vert{} /^(없음\vert{}없고\vert{}0\vert{}무소득\vert{}단절\vert{}전무\vert{}제로)$/.test(clean)) {
         return 0;
       }
 
       let total = 0;
 
-      // 억 단위
       let eokMatch = clean.match(/([0-9.]+)\s*억/);
       if (eokMatch) {
         total += parseFloat(eokMatch[1]) * 10000;
         clean = clean.replace(/([0-9.]+)\s*억/, '');
       }
 
-      // 천만 단위
       let cheonManMatch = clean.match(/([0-9.]+)\s*천\s*만/);
       if (cheonManMatch) {
         total += parseFloat(cheonManMatch[1]) * 1000;
@@ -791,14 +813,12 @@
         }
       }
 
-      // 만원 단위
-      let manMatch = clean.match(/([0-9.]+)\s*만/);
+      let manMatch = clean.match(/([0-9.]+)\s*만\s*원?/) || clean.match(/([0-9.]+)\s*만/);
       if (manMatch) {
         total += parseFloat(manMatch[1]);
-        clean = clean.replace(/([0-9.]+)\s*만/, '');
+        clean = clean.replace(/([0-9.]+)\s*만\s*원?/, '');
       }
 
-      // 순수 숫자 (원 단위 직접 입력 시)
       if (total === 0) {
         let numOnly = clean.match(/([0-9]+)/);
         if (numOnly) {
@@ -813,167 +833,169 @@
       return null;
     }
 
-    // [완전 수정] 상담 텍스트 분석 (소득0원, 소득없음, 소득 없음 등 완벽 판정)
     function processCounseling() {
-      const text = document.getElementById('counselInput').value;
-      if (!text.trim()) {
-        resetViews();
-        return;
-      }
+      try {
+        const memoEl = document.getElementById('counselInput');
+        if (!memoEl) return;
+        const text = memoEl.value;
+        if (!text.trim()) {
+          resetViews();
+          return;
+        }
 
-      const isPensionMode = (activePreset === 'basicPension') || /(기초연금|노인연금)/.test(text);
+        const isPensionMode = (activePreset === 'basicPension') || /(기초연금|노인연금)/.test(text);
+        currentMissingFields = [];
 
-      currentMissingFields = [];
-
-      // 1. 성명 및 이름
-      let name = null;
-      let mName = text.match(/(?:성명|이름|대상자|신청인|민원인)\s*[:：•\s]*[\[\(]?\s*([가-힣a-zA-Z]{2,6})\s*[\]\)]?/) ||
-                 text.match(/([가-힣]{2,4})\s*(?:씨|님|어르신)/);
-      if (mName) {
-        name = unbracket(mName[1]);
-      } else {
-        currentMissingFields.push({ key: 'name', label: '대상자 성명' });
-      }
-
-      // 2. 연령
-      let age = null;
-      let mAge = text.match(/(?:만\s*)?[\[\(\{]\s*([0-9]{1,2})\s*[\]\}\)]\s*세?/) ||
-                 text.match(/만\s*([0-9]{1,2})\s*세/) ||
-                 text.match(/(?:연령|나이)\s*[:：•\s]*[\[\(\{]?\s*([0-9]{1,2})\s*[\]\}\)]?\s*세?/) ||
-                 text.match(/([0-9]{1,2})\s*세/) ||
-                 text.match(/([0-9]{2})\s*년생/);
-      if (mAge) {
-        if (mAge[0].includes("년생")) {
-          let y = parseInt(mAge[1], 10);
-          age = y <= 26 ? (2026 - (2000 + y)) : (2026 - (1900 + y));
+        // 1. 성명 및 이름
+        let name = null;
+        let mName = text.match(/(?:성명|이름|대상자|신청인|민원인)\s*[:：•\s]*[\[\(]?\s*([가-힣a-zA-Z]{2,6})\s*[\]\)]?/) ||
+                   text.match(/([가-힣]{2,4})\s*(?:씨|님|어르신)/);
+        if (mName) {
+          name = unbracket(mName[1]);
         } else {
-          age = parseInt(mAge[1], 10);
+          currentMissingFields.push({ key: 'name', label: '대상자 성명' });
         }
-      } else {
-        currentMissingFields.push({ key: 'age', label: '대상자 연령' });
-      }
 
-      // 3. 가구원수
-      let members = null;
-      let mMem = text.match(/[\[\(\{]?\s*([1-7])\s*[\]\}\)]?\s*인\s*가구/) ||
-                 text.match(/가구원\s*수\s*[:：]?\s*[\[\(\{]?\s*([1-7])\s*[\]\}\)]?/);
-      if (mMem) {
-        members = parseInt(mMem[1], 10);
-      } else if (/(단독\s*가구|단독\s*세대|혼자\s*살|독거|홀로)/.test(text)) {
-        members = 1;
-      } else if (/(모자가구|부자가구|둘이\s*살|부부)/.test(text)) {
-        members = 2;
-      } else {
-        currentMissingFields.push({ key: 'household', label: '가구원수' });
-      }
-
-      // 4. [완벽 수정] 소득 파싱 - 소득0원, 소득없음, 소득 없음, 월소득 등 모든 패턴 완벽 처리
-      let earned = null;
-      let other = 0;
-
-      // 명시적인 무소득 표현 체크
-      let hasExplicitZeroPattern = /(?:월\s*소득|근로\s*및\s*사업\s*소득|근로소득|사업소득|소득|수입|벌이|급여|월급)\s*[:：•\s]*[\[\(\{]?\s*(?:0원|0만|0|없음|없고|없다|무소득|단절|전무|제로)\b/i.test(text) ||
-                                  /(?:소득\s*0\s*원|소득\s*없음|소득없음|수입\s*0\s*원|수입없음|벌이없음|무소득\s*확인|실직\s*상태|무직)/i.test(text);
-
-      // 금액이 명시된 소득 패턴 추출
-      let mEarned = text.match(/(?:월\s*소득|근로\s*및\s*사업|근로소득|사업소득|월소득|급여|수입|알바비|벌이)?\s*소득\s*[:：•\s]*([\[\(\{]?[0-9,.\s]+(?:억\vert{}천만\vert{}천\s*만\vert{}만\s*원\vert{}만원\vert{}원)?[\]\}\)]?)/) ||
-                    text.match(/(?:월급|급여|수입|알바비|벌고\s*있)[^\d\n:]*[:：•\s]*([\[\(\{]?[0-9,.\s]+(?:억\vert{}천만\vert{}천\s*만\vert{}만\s*원\vert{}만원\vert{}원)?[\]\}\)]?)/);
-
-      if (hasExplicitZeroPattern && (!mEarned || /0|없/.test(mEarned[1]))) {
-        earned = 0; // 명시적 무소득
-      } else if (mEarned) {
-        let parsedVal = parseWon(mEarned[1]);
-        earned = (parsedVal !== null) ? parsedVal : (hasExplicitZeroPattern ? 0 : null);
-      } else if (hasExplicitZeroPattern) {
-        earned = 0;
-      }
-
-      // earned가 명확히 0이거나 양수이면 소득 확인된 것임 (0은 null이 아님!)
-      if (earned === null) {
-        currentMissingFields.push({ key: 'income', label: '소득 내역' });
-      }
-
-      let mOther = text.match(/(?:공적이전소득|이전소득|아동수당|국민연금|연금)\s*[:：•\s]*([\[\(\{]?[0-9,.\s]+(?:억\vert{}천만\vert{}만\s*원\vert{}만원\vert{}원)?[\]\}\)]?)/);
-      if (mOther) other = parseWon(mOther[1]) || 0;
-
-      // 5. 주거 및 재산 파싱
-      let housingType = null;
-      let resProp = null;
-      let rentFee = 0;
-      let finProp = null;
-      let debt = null;
-
-      let isFreeRent = /(사용대차|무료임차|무상거주|친척집\s*무상|지인집\s*무상)/.test(text);
-      let isJeonse = /(전세|전세보증금)/.test(text);
-      let isMonthly = /(월세|월세방|임차)/.test(text);
-      let isOwn = /(자가|본인명의\s*주택|소유\s*주택|자가\s*보유)/.test(text);
-
-      let mDeposit = text.match(/(?:보증금|전세금|전세)\s*[:：•\s]*([\[\(\{]?[0-9,.\s]+(?:억\vert{}천만\vert{}천\s*만\vert{}만\s*원\vert{}만원\vert{}천원)?[\]\}\)]?)/) ||
-                     text.match(/보증금[^\d]*([\[\(\{]?[0-9,.\s]+(?:억\vert{}천만\vert{}천\s*만\vert{}만\s*원\vert{}만원\vert{}천원)?[\]\}\)]?)/) ||
-                     text.match(/전세[^\d]*([\[\(\{]?[0-9,.\s]+(?:억\vert{}천만\vert{}천\s*만\vert{}만\s*원\vert{}만원\vert{}천원)?[\]\}\)]?)/);
-
-      let mRent = text.match(/월세[^\d\n]*([\[\(\{]?[0-9,.\s]+(?:억\vert{}천만\vert{}만\s*원\vert{}만원)?[\]\}\)]?)/);
-
-      if (isFreeRent) {
-        housingType = "사용대차 (무상거주)";
-        resProp = 0;
-        rentFee = 0;
-      } else if (isJeonse) {
-        housingType = "전세";
-        resProp = mDeposit ? parseWon(mDeposit[1]) : 0;
-        rentFee = 0;
-      } else if (isOwn) {
-        housingType = "자가";
-        let mOwn = text.match(/(?:공시지가|집값|주택가액|시세)[^\d]*([\[\(\{]?[0-9,.\s]+(?:억\vert{}천만\vert{}만\s*원\vert{}만원\vert{}원)?[\]\}\)]?)/);
-        resProp = mOwn ? parseWon(mOwn[1]) : 0;
-      } else if (isMonthly || mDeposit || mRent) {
-        housingType = "월세 임차";
-        resProp = mDeposit ? parseWon(mDeposit[1]) : 0;
-        rentFee = mRent ? parseWon(mRent[1]) : 0;
-      } else {
-        currentMissingFields.push({ key: 'property', label: '주거 및 재산' });
-      }
-
-      let mFin = text.match(/(?:금융재산|통장|예금|잔액)[^\d]*([\[\(\{]?[0-9,.\s]+(?:억\vert{}천만\vert{}만\s*원\vert{}만원\vert{}원)?[\]\}\)]?)/);
-      finProp = mFin ? parseWon(mFin[1]) : (text.includes("통장 잔고 0원") ? 0 : null);
-
-      let mDebt = text.match(/(?:부채|대출|빚)[^\d]*([\[\(\{]?[0-9,.\s]+(?:억\vert{}천만\vert{}만\s*원\vert{}만원\vert{}원)?[\]\}\)]?)/);
-      debt = mDebt ? parseWon(mDebt[1]) : 0;
-
-      // 6. 건강/근로능력
-      let workAbility = "able";
-      let healthDesc = null;
-      if (!isPensionMode) {
-        if (/(척추|디스크|협착증|질병|수술|입원|장애|거동불편)/.test(text)) {
-          workAbility = "illness";
-          healthDesc = "만성질환·부상 거동불편 (근로무능력 판정 심사 대상)";
-        } else if (age && age >= 65) {
-          workAbility = "none";
-          healthDesc = "만 65세 이상 노인 (법정 근로무능력자)";
+        // 2. 연령
+        let age = null;
+        let mAge = text.match(/(?:만\s*)?[\[\(\{]\s*([0-9]{1,2})\s*[\]\}\)]\s*세?/) ||
+                   text.match(/만\s*([0-9]{1,2})\s*세/) ||
+                   text.match(/(?:연령|나이)\s*[:：•\s]*[\[\(\{]?\s*([0-9]{1,2})\s*[\]\}\)]?\s*세?/) ||
+                   text.match(/([0-9]{1,2})\s*세/) ||
+                   text.match(/([0-9]{2})\s*년생/);
+        if (mAge) {
+          if (mAge[0].includes("년생")) {
+            let y = parseInt(mAge[1], 10);
+            age = y <= 26 ? (2026 - (2000 + y)) : (2026 - (1900 + y));
+          } else {
+            age = parseInt(mAge[1], 10);
+          }
         } else {
-          healthDesc = "일반 근로능력자 (자활 대상)";
+          currentMissingFields.push({ key: 'age', label: '대상자 연령' });
         }
-      }
 
-      // 7. 부양의무자
-      let support = "normal";
-      if (!isPensionMode) {
-        if (/(연락두절|단절|해체사유서|생사모름)/.test(text)) {
-          support = "severed";
-        } else if (/(가족\s*없음|부양의무자\s*없음)/.test(text)) {
-          support = "none";
+        // 3. 가구원수
+        let members = null;
+        let mMem = text.match(/[\[\(\{]?\s*([1-7])\s*[\]\}\)]?\s*인\s*가구/) ||
+                   text.match(/가구원\s*수\s*[:：]?\s*[\[\(\{]?\s*([1-7])\s*[\]\}\)]?/);
+        if (mMem) {
+          members = parseInt(mMem[1], 10);
+        } else if (/(단독\s*가구|단독\s*세대|혼자\s*살|독거|홀로)/.test(text)) {
+          members = 1;
+        } else if (/(모자가구|부자가구|둘이\s*살|부부)/.test(text)) {
+          members = 2;
+        } else {
+          currentMissingFields.push({ key: 'household', label: '가구원수' });
         }
+
+        // 4. 월소득
+        let earned = null;
+        let other = 0;
+
+        let hasExplicitZeroPattern = /(?:월\s*소득|근로\s*및\s*사업\s*소득|근로소득|사업소득|소득|수입|벌이|급여|월급)\s*[:：•\s]*[\[\(\{]?\s*(?:0원|0만|0|없음|없고|없다|무소득|단절|전무|제로)\b/i.test(text) ||
+                                    /(?:소득\s*0\s*원|소득\s*없음|소득없음|수입\s*0\s*원|수입없음|벌이없음|무소득\s*확인|실직\s*상태|무직)/i.test(text);
+
+        let mEarned = text.match(/(?:월\s*소득|근로\s*및\s*사업|근로소득|사업소득|월소득|급여|수입|알바비|벌이)?\s*소득\s*[:：•\s]*([\[\(\{]?[0-9,.\s]+(?:억\vert{}천만\vert{}천\s*만\vert{}만\s*원\vert{}만원\vert{}원)?[\]\}\)]?)/) ||
+                      text.match(/(?:월급|급여|수입|알바비|벌고\s*있)[^\d\n:]*[:：•\s]*([\[\(\{]?[0-9,.\s]+(?:억\vert{}천만\vert{}천\s*만\vert{}만\s*원\vert{}만원\vert{}원)?[\]\}\)]?)/);
+
+        if (hasExplicitZeroPattern && (!mEarned || /0|없/.test(mEarned[1]))) {
+          earned = 0;
+        } else if (mEarned) {
+          let parsedVal = parseWon(mEarned[1]);
+          earned = (parsedVal !== null) ? parsedVal : (hasExplicitZeroPattern ? 0 : null);
+        } else if (hasExplicitZeroPattern) {
+          earned = 0;
+        }
+
+        if (earned === null) {
+          currentMissingFields.push({ key: 'income', label: '소득 내역' });
+        }
+
+        let mOther = text.match(/(?:공적이전소득|이전소득|아동수당|국민연금|연금)\s*[:：•\s]*([\[\(\{]?[0-9,.\s]+(?:억\vert{}천만\vert{}만\s*원\vert{}만원\vert{}원)?[\]\}\)]?)/);
+        if (mOther) other = parseWon(mOther[1]) || 0;
+
+        // 5. 주거 및 재산
+        let housingType = null;
+        let resProp = null;
+        let rentFee = 0;
+        let finProp = null;
+        let debt = null;
+
+        let isFreeRent = /(사용대차|무료임차|무상거주|친척집\s*무상|지인집\s*무상)/.test(text);
+        let isJeonse = /(전세|전세보증금)/.test(text);
+        let isMonthly = /(월세|월세방|임차)/.test(text);
+        let isOwn = /(자가|본인명의\s*주택|소유\s*주택|자가\s*보유)/.test(text);
+
+        let mDeposit = text.match(/(?:보증금|전세금|전세)\s*[:：•\s]*([\[\(\{]?[0-9,.\s]+(?:억\vert{}천만\vert{}천\s*만\vert{}만\s*원\vert{}만원\vert{}천원)?[\]\}\)]?)/) ||
+                       text.match(/보증금[^\d]*([\[\(\{]?[0-9,.\s]+(?:억\vert{}천만\vert{}천\s*만\vert{}만\s*원\vert{}만원\vert{}천원)?[\]\}\)]?)/) ||
+                       text.match(/전세[^\d]*([\[\(\{]?[0-9,.\s]+(?:억\vert{}천만\vert{}천\s*만\vert{}만\s*원\vert{}만원\vert{}천원)?[\]\}\)]?)/);
+
+        let mRent = text.match(/월세[^\d\n]*([\[\(\{]?[0-9,.\s]+(?:억\vert{}천만\vert{}만\s*원\vert{}만원)?[\]\}\)]?)/);
+
+        if (isFreeRent) {
+          housingType = "사용대차 (무상거주)";
+          resProp = 0;
+          rentFee = 0;
+        } else if (isJeonse) {
+          housingType = "전세";
+          resProp = mDeposit ? parseWon(mDeposit[1]) : 0;
+          rentFee = 0;
+        } else if (isOwn) {
+          housingType = "자가";
+          let mOwn = text.match(/(?:공시지가|집값|주택가액|시세)[^\d]*([\[\(\{]?[0-9,.\s]+(?:억\vert{}천만\vert{}만\s*원\vert{}만원\vert{}원)?[\]\}\)]?)/);
+          resProp = mOwn ? parseWon(mOwn[1]) : 0;
+        } else if (isMonthly || mDeposit || mRent) {
+          housingType = "월세 임차";
+          resProp = mDeposit ? parseWon(mDeposit[1]) : 0;
+          rentFee = mRent ? parseWon(mRent[1]) : 0;
+        } else {
+          currentMissingFields.push({ key: 'property', label: '주거 및 재산' });
+        }
+
+        let mFin = text.match(/(?:금융재산|통장|예금|잔액)[^\d]*([\[\(\{]?[0-9,.\s]+(?:억\vert{}천만\vert{}만\s*원\vert{}만원\vert{}원)?[\]\}\)]?)/);
+        finProp = mFin ? parseWon(mFin[1]) : (text.includes("통장 잔고 0원") ? 0 : null);
+
+        let mDebt = text.match(/(?:부채|대출|빚)[^\d]*([\[\(\{]?[0-9,.\s]+(?:억\vert{}천만\vert{}만\s*원\vert{}만원\vert{}원)?[\]\}\)]?)/);
+        debt = mDebt ? parseWon(mDebt[1]) : 0;
+
+        // 6. 건강/근로능력
+        let workAbility = "able";
+        let healthDesc = null;
+        if (!isPensionMode) {
+          if (/(척추|디스크|협착증|질병|수술|입원|장애|거동불편)/.test(text)) {
+            workAbility = "illness";
+            healthDesc = "만성질환·부상 거동불편 (근로무능력 판정 심사 대상)";
+          } else if (age && age >= 65) {
+            workAbility = "none";
+            healthDesc = "만 65세 이상 노인 (법정 근로무능력자)";
+          } else {
+            healthDesc = "일반 근로능력자 (자활 대상)";
+          }
+        }
+
+        // 7. 부양의무자
+        let support = "normal";
+        if (!isPensionMode) {
+          if (/(연락두절|단절|해체사유서|생사모름)/.test(text)) {
+            support = "severed";
+          } else if (/(가족\s*없음|부양의무자\s*없음)/.test(text)) {
+            support = "none";
+          }
+        }
+
+        renderMissingTags();
+
+        currentParsedData = {
+          name, age, members, earned, other, housingType, resProp, rentFee, finProp, debt, workAbility, healthDesc, support, isPensionMode
+        };
+
+        detectEmergencyCrisisAndStatutoryDuty(text, currentParsedData);
+        renderVerifiedAssessment(currentParsedData);
+        syncToSimulator(currentParsedData);
+
+      } catch (err) {
+        console.error("Critical parse error:", err);
       }
-
-      renderMissingTags();
-
-      currentParsedData = {
-        name, age, members, earned, other, housingType, resProp, rentFee, finProp, debt, workAbility, healthDesc, support, isPensionMode
-      };
-
-      detectEmergencyCrisisAndStatutoryDuty(text, currentParsedData);
-      renderVerifiedAssessment(currentParsedData);
-      syncToSimulator(currentParsedData);
     }
 
     function detectEmergencyCrisisAndStatutoryDuty(text, p) {
@@ -990,33 +1012,36 @@
 
       const hasEmergencyCrisis = isUnemployed || isIllnessCrisis || isEvictionCrisis || isDomesticAbuse || isEnergyCrisis || isSuicideRisk;
 
-      if (hasEmergencyCrisis) {
-        emergencyBanner.style.display = 'block';
-        let crisisReasons = [];
-        if (isUnemployed) crisisReasons.push("주소득자 실직·폐업");
-        if (isIllnessCrisis) crisisReasons.push("중한 질병·부상");
-        if (isEvictionCrisis) crisisReasons.push("강제퇴거 위기");
-        if (isDomesticAbuse) crisisReasons.push("가정폭력·학대 피해");
-        if (isEnergyCrisis) crisisReasons.push("단전·단수 빈곤");
-        if (isSuicideRisk) crisisReasons.push("자살·자해 고위험군");
+      if (emergencyBanner) {
+        if (hasEmergencyCrisis) {
+          emergencyBanner.style.display = 'block';
+          let crisisReasons = [];
+          if (isUnemployed) crisisReasons.push("주소득자 실직·폐업");
+          if (isIllnessCrisis) crisisReasons.push("중한 질병·부상");
+          if (isEvictionCrisis) crisisReasons.push("강제퇴거 위기");
+          if (isDomesticAbuse) crisisReasons.push("가정폭력·학대 피해");
+          if (isEnergyCrisis) crisisReasons.push("단전·단수 빈곤");
+          if (isSuicideRisk) crisisReasons.push("자살·자해 고위험군");
 
-        document.getElementById('emergencyAlertDesc').innerHTML = `
-          상담 기록에서 <strong>긴급복지지원법 제2조 법정 위기사유 [${crisisReasons.join(', ')}]</strong>가 식별되었습니다.<br>
-          • <strong>권고 조치:</strong> <strong>선지원·사후조사 원칙</strong>에 따라 긴급생계지원(1인 71.3만원, 2인 117.8만원) 직권신청 여부를 검토하십시오.
-        `;
-      } else {
-        emergencyBanner.style.display = 'none';
+          safeSetHtml('emergencyAlertDesc', `
+            상담 기록에서 <strong>긴급복지지원법 제2조 법정 위기사유 [${crisisReasons.join(', ')}]</strong>가 식별되었습니다.<br>
+            • <strong>권고 조치:</strong> <strong>선지원·사후조사 원칙</strong>에 따라 긴급생계지원(1인 71.3만원, 2인 117.8만원) 직권신청 여부를 검토하십시오.
+          `);
+        } else {
+          emergencyBanner.style.display = 'none';
+        }
       }
 
       const hasSevereCrime = isDomesticAbuse || /(감금|갈취|성매매|성폭행)/.test(text);
-      if (hasSevereCrime) {
-        dutySection.style.display = 'block';
-        const today = new Date().toLocaleDateString('ko-KR');
-        const docNo = "복지-긴급-" + Date.now().toString().slice(-4);
-        const nameStr = p.name || "신청인 본인";
-        const ageStr = p.age ? `만 ${p.age}세` : "연령미상";
+      if (dutySection) {
+        if (hasSevereCrime) {
+          dutySection.style.display = 'block';
+          const today = new Date().toLocaleDateString('ko-KR');
+          const docNo = "복지-긴급-" + Date.now().toString().slice(-4);
+          const nameStr = p.name || "신청인 본인";
+          const ageStr = p.age ? `만 ${p.age}세` : "연령미상";
 
-        currentOfficialNoticeDraft = `[행정기관 대외공문 기안문(안) - 사회복지공무원 법정 신고의무 준수]
+          currentOfficialNoticeDraft = `[행정기관 대외공문 기안문(안) - 사회복지공무원 법정 신고의무 준수]
 문서번호: 행정복지센터-${docNo}
 시행일자: ${today}
 수    신: 관할 경찰서장 (112) 및 유관 전문보호기관장 귀하
@@ -1038,140 +1063,155 @@
 
 행 정 복 지 센 터 장  (직인생략)`;
 
-        draftContentArea.innerText = currentOfficialNoticeDraft;
-      } else {
-        dutySection.style.display = 'none';
-        currentOfficialNoticeDraft = "";
+          if (draftContentArea) draftContentArea.innerText = currentOfficialNoticeDraft;
+        } else {
+          dutySection.style.display = 'none';
+          currentOfficialNoticeDraft = "";
+        }
       }
     }
 
     function renderVerifiedAssessment(p) {
       if (p.name || p.age) {
-        document.getElementById('docApplicantInfo').innerText = `${p.name || "[미기재] 성명 미상"} (${p.age ? "만 " + p.age + "세" : "[미기재] 연령 확인 요망"})`;
+        safeSetText('docApplicantInfo', `${p.name || "[미기재] 성명 미상"} (${p.age ? "만 " + p.age + "세" : "[미기재] 연령 확인 요망"})`);
       } else {
-        document.getElementById('docApplicantInfo').innerHTML = `<span class="missing-text">[미기재] 대상자 성명 및 연령 확인 요망</span>`;
+        safeSetHtml('docApplicantInfo', `<span class="missing-text">[미기재] 대상자 성명 및 연령 확인 요망</span>`);
       }
 
       if (p.members) {
-        document.getElementById('docHouseholdInfo').innerText = `${p.members}인 가구 (${p.members === 1 ? "단독 세대" : "동거 가구"})`;
+        safeSetText('docHouseholdInfo', `${p.members}인 가구 (${p.members === 1 ? "단독 세대" : "동거 가구"})`);
       } else {
-        document.getElementById('docHouseholdInfo').innerHTML = `<span class="missing-text">[미기재] 가구원수 확인 요망</span>`;
+        safeSetHtml('docHouseholdInfo', `<span class="missing-text">[미기재] 가구원수 확인 요망</span>`);
       }
 
       const rowWork = document.getElementById('rowDocWorkAbility');
       const rowSever = document.getElementById('rowDocSever');
       if (p.isPensionMode) {
-        rowWork.style.display = 'none';
-        rowSever.style.display = 'none';
+        if (rowWork) rowWork.style.display = 'none';
+        if (rowSever) rowSever.style.display = 'none';
       } else {
-        rowWork.style.display = 'table-row';
-        rowSever.style.display = 'table-row';
-        document.getElementById('docWorkAbilityInfo').innerText = p.healthDesc || "확인 필요";
-        document.getElementById('docSeverInfo').innerText = p.support === 'severed' ? "장기 단절 (가족관계 해체사유서 징구 및 지생보 심의)" : (p.support === 'none' ? "부양의무자 없음" : "일반 조사 대상");
+        if (rowWork) rowWork.style.display = 'table-row';
+        if (rowSever) rowSever.style.display = 'table-row';
+        safeSetText('docWorkAbilityInfo', p.healthDesc || "확인 필요");
+        safeSetText('docSeverInfo', p.support === 'severed' ? "장기 단절 (가족관계 해체사유서 징구 및 지생보 심의)" : (p.support === 'none' ? "부양의무자 없음" : "일반 조사 대상"));
       }
 
-      // [소득 정확 표기] 0원이면 (무소득 확인) 표기, 금액이 있으면 해당 금액 표기
       if (p.earned !== null) {
-        document.getElementById('docIncomeInfo').innerText = `월 ${p.earned.toLocaleString()}만 원 ${p.earned === 0 ? "(무소득 확인)" : ""} / 이전소득: 월 ${(p.other || 0).toLocaleString()}만 원`;
+        safeSetText('docIncomeInfo', `월 ${p.earned.toLocaleString()}만 원 ${p.earned === 0 ? "(무소득 확인)" : ""} / 이전소득: 월 ${(p.other || 0).toLocaleString()}만 원`);
       } else {
-        document.getElementById('docIncomeInfo').innerHTML = `<span class="missing-text">[미기재] 소득 확인 요망</span>`;
+        safeSetHtml('docIncomeInfo', `<span class="missing-text">[미기재] 소득 확인 요망</span>`);
       }
 
       if (p.housingType) {
         let propStr = `${p.housingType} (보증금 ${(p.resProp || 0).toLocaleString()}만 / 월세 ${(p.rentFee || 0).toLocaleString()}만)`;
         let finStr = p.finProp !== null ? `금융 ${p.finProp.toLocaleString()}만` : `금융 [미기재]`;
         let debtStr = p.debt !== null ? `부채 ${p.debt.toLocaleString()}만` : `부채 0만`;
-        document.getElementById('docAssetInfo').innerText = `${propStr} | ${finStr} | ${debtStr}`;
+        safeSetText('docAssetInfo', `${propStr} | ${finStr} | ${debtStr}`);
       } else {
-        document.getElementById('docAssetInfo').innerHTML = `<span class="missing-text">[미기재] 주거 및 재산 확인 요망</span>`;
+        safeSetHtml('docAssetInfo', `<span class="missing-text">[미기재] 주거 및 재산 확인 요망</span>`);
       }
     }
 
     function syncToSimulator(p) {
-      if (p.members) document.getElementById('simMembers').value = p.members;
-      if (p.workAbility) document.getElementById('simWorkAbility').value = p.workAbility;
-      if (p.support) document.getElementById('simSupportObligor').value = p.support;
-      document.getElementById('simEarnedIncome').value = p.earned !== null ? p.earned : 0;
-      document.getElementById('simOtherIncome').value = p.other || 0;
-      document.getElementById('simResProp').value = p.resProp || 0;
-      document.getElementById('simRentFee').value = p.rentFee || 0;
-      document.getElementById('simFinProp').value = p.finProp || 0;
-      document.getElementById('simDebt').value = p.debt || 0;
+      const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val;
+      };
+
+      if (p.members) setVal('simMembers', p.members);
+      if (p.workAbility) setVal('simWorkAbility', p.workAbility);
+      if (p.support) setVal('simSupportObligor', p.support);
+      setVal('simEarnedIncome', p.earned !== null ? p.earned : 0);
+      setVal('simOtherIncome', p.other || 0);
+      setVal('simResProp', p.resProp || 0);
+      setVal('simRentFee', p.rentFee || 0);
+      setVal('simFinProp', p.finProp || 0);
+      setVal('simDebt', p.debt || 0);
+
       runSimulation();
     }
 
     function updateLiveCard(cardId, statusId, isPass, message) {
       const card = document.getElementById(cardId);
       const status = document.getElementById(statusId);
-      if (isPass) {
-        card.className = "live-benefit-card pass";
-      } else {
-        card.className = "live-benefit-card fail";
+      if (card) {
+        card.className = isPass ? "live-benefit-card pass" : "live-benefit-card fail";
       }
-      status.innerText = message;
+      if (status) {
+        status.innerText = message;
+      }
     }
 
     function runSimulation() {
-      const members = parseInt(document.getElementById('simMembers').value, 10) || 1;
-      const region = document.getElementById('simRegion').value;
-      const workAbility = document.getElementById('simWorkAbility').value;
-      const support = document.getElementById('simSupportObligor').value;
+      try {
+        const getNum = (id, def = 0) => {
+          const el = document.getElementById(id);
+          return el ? (parseFloat(el.value) || def) : def;
+        };
+        const getStr = (id, def = '') => {
+          const el = document.getElementById(id);
+          return el ? el.value : def;
+        };
 
-      const earned = parseFloat(document.getElementById('simEarnedIncome').value) || 0;
-      const other = parseFloat(document.getElementById('simOtherIncome').value) || 0;
-      const resProp = parseFloat(document.getElementById('simResProp').value) || 0;
-      const rentFee = parseFloat(document.getElementById('simRentFee').value) || 0;
-      const finProp = parseFloat(document.getElementById('simFinProp').value) || 0;
-      const debt = parseFloat(document.getElementById('simDebt').value) || 0;
+        const members = parseInt(getNum('simMembers', 1), 10) || 1;
+        const region = getStr('simRegion', 'metro');
+        const workAbility = getStr('simWorkAbility', 'able');
+        const support = getStr('simSupportObligor', 'normal');
 
-      let earnedDeduct = (workAbility === 'none' || workAbility === 'illness') ? Math.max(0, (earned - 20) * 0.3 + 20) : earned * 0.3;
-      let finalEarned = Math.max(0, earned - earnedDeduct);
-      let incomeVal = Math.round((finalEarned + other) * 10) / 10;
+        const earned = getNum('simEarnedIncome', 0);
+        const other = getNum('simOtherIncome', 0);
+        const resProp = getNum('simResProp', 0);
+        const rentFee = getNum('simRentFee', 0);
+        const finProp = getNum('simFinProp', 0);
+        const debt = getNum('simDebt', 0);
 
-      let baseDeduct = POLICY_2026.baseDeduction[region] || 7700;
-      let resAfter = Math.max(0, resProp - baseDeduct);
-      let netFin = Math.max(0, finProp - 500);
-      let finAfter = Math.max(0, netFin - debt);
+        let earnedDeduct = (workAbility === 'none' || workAbility === 'illness') ? Math.max(0, (earned - 20) * 0.3 + 20) : earned * 0.3;
+        let finalEarned = Math.max(0, earned - earnedDeduct);
+        let incomeVal = Math.round((finalEarned + other) * 10) / 10;
 
-      let propertyMonthly = Math.round((resAfter * 0.0104 + finAfter * 0.0626) * 10) / 10;
-      let recognized = Math.round((incomeVal + propertyMonthly) * 10) / 10;
+        let baseDeduct = POLICY_2026.baseDeduction[region] || 7700;
+        let resAfter = Math.max(0, resProp - baseDeduct);
+        let netFin = Math.max(0, finProp - 500);
+        let finAfter = Math.max(0, netFin - debt);
 
-      let median = POLICY_2026.medianIncome[members] || 256.4;
-      let liveStd = Math.round(median * POLICY_2026.standards.livelihood * 10) / 10;
-      let emergStd = Math.round(median * POLICY_2026.standards.emergency * 10) / 10;
+        let propertyMonthly = Math.round((resAfter * 0.0104 + finAfter * 0.0626) * 10) / 10;
+        let recognized = Math.round((incomeVal + propertyMonthly) * 10) / 10;
 
-      document.getElementById('liveIncomeRecognized').innerText = recognized.toLocaleString();
-      document.getElementById('liveRealIncome').innerText = (earned + other).toLocaleString();
+        let median = POLICY_2026.medianIncome[members] || 256.4;
+        let liveStd = Math.round(median * POLICY_2026.standards.livelihood * 10) / 10;
+        let emergStd = Math.round(median * POLICY_2026.standards.emergency * 10) / 10;
 
-      // 1. 생계급여
-      const isLivePass = recognized <= liveStd;
-      updateLiveCard('liveCardBasicLife', 'liveEstBasicLife', isLivePass, 
-        isLivePass ? `월 약 ${Math.max(0, Math.round(liveStd - recognized))}만 원 (선정)` : "기준 초과 (탈락)");
+        safeSetText('liveIncomeRecognized', recognized.toLocaleString());
+        safeSetText('liveRealIncome', (earned + other).toLocaleString());
 
-      // 2. 긴급복지
-      const isEmergPass = (earned + other) <= emergStd;
-      updateLiveCard('liveCardEmergency', 'liveEstEmergency', isEmergPass, 
-        isEmergPass ? `월 ${POLICY_2026.emergencyPayouts[members]}만 원 (선정)` : "소득 기준 초과");
+        const isLivePass = recognized <= liveStd;
+        updateLiveCard('liveCardBasicLife', 'liveEstBasicLife', isLivePass, 
+          isLivePass ? `월 약 ${Math.max(0, Math.round(liveStd - recognized))}만 원 (선정)` : "기준 초과 (탈락)");
 
-      // 3. 차상위
-      const isNearPass = recognized <= (median * 0.5);
-      updateLiveCard('liveCardNearPoverty', 'liveEstNearPoverty', isNearPass, 
-        isNearPass ? "수급 대상 (선정)" : "기준 초과 (탈락)");
+        const isEmergPass = (earned + other) <= emergStd;
+        updateLiveCard('liveCardEmergency', 'liveEstEmergency', isEmergPass, 
+          isEmergPass ? `월 ${POLICY_2026.emergencyPayouts[members]}만 원 (선정)` : "소득 기준 초과");
 
-      // 4. 기초연금
-      const isPensionPass = (currentParsedData.age && currentParsedData.age >= 65);
-      updateLiveCard('liveCardBasicPension', 'liveEstBasicPension', isPensionPass, 
-        isPensionPass ? "월 최대 33.4만 원 (선정)" : "연령 미달 (만 65세 미만)");
+        const isNearPass = recognized <= (median * 0.5);
+        updateLiveCard('liveCardNearPoverty', 'liveEstNearPoverty', isNearPass, 
+          isNearPass ? "수급 대상 (선정)" : "기준 초과 (탈락)");
 
-      document.getElementById('calcTraceBox').innerHTML = `
-        <strong>[2026년 법정 소득인정액 산출 상세 Trace]</strong><br>
-        1. 소득평가액: ${incomeVal}만 원 = 실제소득(${earned}만 - 공제 ${Math.round(earnedDeduct)}만) + 이전소득 ${other}만<br>
-        2. 재산환산액: ${propertyMonthly}만 원 = 주거환산(${Math.round(resAfter*0.0104)}만) + 금융환산(${Math.round(finAfter*0.0626)}만)<br>
-        3. 최종 소득인정액: <strong>${recognized}만 원</strong> (기준 중위소득 대비 ${(recognized/median*100).toFixed(1)}%)
-      `;
+        const isPensionPass = (currentParsedData.age && currentParsedData.age >= 65);
+        updateLiveCard('liveCardBasicPension', 'liveEstBasicPension', isPensionPass, 
+          isPensionPass ? "월 최대 33.4만 원 (선정)" : "연령 미달 (만 65세 미만)");
 
-      renderStep4ClientDocs(members, currentParsedData);
-      renderHappyEumDocument(currentParsedData, recognized, (earned + other));
+        safeSetHtml('calcTraceBox', `
+          <strong>[2026년 법정 소득인정액 산출 상세 Trace]</strong><br>
+          1. 소득평가액: ${incomeVal}만 원 = 실제소득(${earned}만 - 공제 ${Math.round(earnedDeduct)}만) + 이전소득 ${other}만<br>
+          2. 재산환산액: ${propertyMonthly}만 원 = 주거환산(${Math.round(resAfter*0.0104)}만) + 금융환산(${Math.round(finAfter*0.0626)}만)<br>
+          3. 최종 소득인정액: <strong>${recognized}만 원</strong> (기준 중위소득 대비 ${(recognized/median*100).toFixed(1)}%)
+        `);
+
+        renderStep4ClientDocs(members, currentParsedData);
+        renderHappyEumDocument(currentParsedData, recognized, (earned + other));
+      } catch (err) {
+        console.error("Simulation calculation error:", err);
+      }
     }
 
     function renderHappyEumDocument(p, recognized, realIncome) {
@@ -1219,12 +1259,12 @@
   ② 구비서류 징구: 신분증, 통장사본, ${p.housingType && p.housingType.includes('사용대차') ? '무료임대확인서(사용대차)' : '임대차계약서'}${p.workAbility === 'illness' && !p.isPensionMode ? ', 근로능력평가 진단서' : ''}${p.support === 'severed' && !p.isPensionMode ? ', 가족관계 해체사유서' : ''}
   ③ 전산 접수: 서류 보완 즉시 행복e음 정식 접수 등록`;
 
-      document.getElementById('happyEumOutput').innerText = doc;
+      safeSetText('happyEumOutput', doc);
     }
 
     function renderStep4ClientDocs(members, p) {
-      document.getElementById('printApplicantName').innerText = p.name || "신청인 본인";
-      document.getElementById('printCurrentDate').innerText = new Date().toLocaleDateString('ko-KR');
+      safeSetText('printApplicantName', p.name || "신청인 본인");
+      safeSetText('printCurrentDate', new Date().toLocaleDateString('ko-KR'));
 
       const docs = [
         { name: "사회보장급여(사회서비스이용권) 신청서", desc: "주민센터 창구 비치 서식" },
@@ -1246,23 +1286,22 @@
         docs.push({ name: "가족관계 해체사유서 및 1년 금융거래내역서", desc: "부양의무자와의 연락두절/왕래단절 소명 (지생보 심의용)" });
       }
 
-      document.getElementById('clientDocCountBadge').innerText = `총 ${docs.length}종 안내`;
-      document.getElementById('clientDocListArea').innerHTML = docs.map((d, i) => `
+      safeSetText('clientDocCountBadge', `총 ${docs.length}종 안내`);
+      safeSetHtml('clientDocListArea', docs.map((d, i) => `
         <li style="padding:6px 0; border-bottom:1px solid #f1f5f9;">
           <strong style="color:#1e40af;">${i + 1}. ${d.name}</strong><br>
           <span style="color:#64748b; font-size:12px; margin-left:14px;">- 제출 목적: ${d.desc}</span>
         </li>
-      `).join('');
+      `).join(''));
 
-      const rawCounselText = document.getElementById('counselInput').value;
+      const memoEl = document.getElementById('counselInput');
+      const rawCounselText = memoEl ? memoEl.value : "";
+      
       const matchedAgencies = AGENCY_RULES.filter(rule => rule.trigger.test(rawCounselText));
 
-      const agencyCountBadge = document.getElementById('agencyRecommendCountBadge');
-      const agencyArea = document.getElementById('agencyRecommendListArea');
-
       if (matchedAgencies.length > 0) {
-        agencyCountBadge.innerText = `${matchedAgencies.length}건 맞춤 매칭됨`;
-        agencyArea.innerHTML = matchedAgencies.map(ag => `
+        safeSetText('agencyRecommendCountBadge', `${matchedAgencies.length}건 맞춤 매칭됨`);
+        safeSetHtml('agencyRecommendListArea', matchedAgencies.map(ag => `
           <div style="background:#f0fdfa; border:1px solid #99f6e4; padding:12px; border-radius:6px; font-size:12.5px;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
               <strong style="color:#0f766e; font-size:13px;">${ag.agency} [${ag.program}]</strong>
@@ -1271,24 +1310,26 @@
             <div style="color:#334155; margin-top:4px;">• <strong>지원내용:</strong> ${ag.desc}</div>
             <div style="color:#2563eb; font-size:11.5px; margin-top:2px;">• <strong>신청방법:</strong> ${ag.guide}</div>
           </div>
-        `).join('');
+        `).join(''));
       } else {
-        agencyCountBadge.innerText = "0건 매칭";
-        agencyArea.innerHTML = `
+        safeSetText('agencyRecommendCountBadge', "0건 매칭");
+        safeSetHtml('agencyRecommendListArea', `
           <div style="padding:14px; background:#f8fafc; border:1px solid var(--border); border-radius:6px; color:#64748b; font-size:12px;">
-            상담 내용에서 특이 공단 연계 키워드(병원비, 채무, 퇴거, 에너지 등)가 감지되지 않았습니다.
+            상담 내용에서 특이 공단 연계 키워드가 감지되지 않았습니다.
           </div>
-        `;
+        `);
       }
     }
 
     function toggleCalcTrace() {
       const b = document.getElementById('calcTraceBox');
-      b.style.display = b.style.display === 'block' ? 'none' : 'block';
+      if (b) b.style.display = (b.style.display === 'block') ? 'none' : 'block';
     }
 
     function copyHappyEumDocument() {
-      const text = document.getElementById('happyEumOutput').innerText;
+      const el = document.getElementById('happyEumOutput');
+      const text = el ? el.innerText : '';
+      if (!text) return;
       navigator.clipboard.writeText(text).then(() => {
         showToast("📋 행복e음 상담일지가 복사되었습니다.");
       });
@@ -1306,6 +1347,7 @@
 
     function showToast(msg) {
       const t = document.getElementById('toast');
+      if (!t) return;
       t.innerText = msg;
       t.className = "show";
       setTimeout(() => { t.className = ""; }, 2200);
