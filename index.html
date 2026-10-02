@@ -801,8 +801,7 @@
     function parseWon(text) {
       if (!text) return null;
       let clean = text.replace(/,/g, '').replace(/[\[\]\(\)\{\}]/g, '').trim();
-
-      if (/^0\s*(원|만|만원)?$/.test(clean) \vert{}\vert{} /^(없음\vert{}없고\vert{}0\vert{}무소득\vert{}단절\vert{}전무\vert{}제로)$/.test(clean)) {
+    if (/^0\s*(원|만|만원)?$/.test(clean) || /^(없음|없고|0|무소득|단절|전무|제로)$/.test(clean)) {
         return 0;
       }
 
