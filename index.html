@@ -137,7 +137,6 @@
       white-space: pre-wrap; max-height: 280px; overflow-y: auto; margin-top: 10px;
     }
 
-    /* 4대 급여 간이 모의판정 카드 타일 */
     .live-benefit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
     .live-benefit-card {
       border: 1.5px solid var(--border); border-radius: 8px; padding: 12px; background: #fff;
@@ -198,7 +197,6 @@
 
   <div class="container">
     
-    <!-- 4단계 탭 바 -->
     <div class="nav-tabs">
       <button class="tab-btn active" id="btnTab1" onclick="switchTab('tab1', this)">
         <span>1. 상담 기록 &amp; 비정형 구술</span>
@@ -227,7 +225,7 @@
             <button class="btn btn-outline" onclick="loadPreset('basicLife')" style="color:#1d4ed8; font-weight:800; border-color:#bfdbfe;">📋 기초생활</button>
             <button class="btn btn-outline" onclick="loadPreset('nearPoverty')" style="color:#047857; font-weight:800; border-color:#a7f3d0;">🎁 차상위</button>
             <button class="btn btn-danger" onclick="loadPreset('emergency')" style="font-weight:800;">🚨 긴급복지</button>
-            <button class="btn btn-outline" onclick="loadPreset('basicPension')" style="color:#7c3aed; font-weight:800; border-color:#ddd6fe;">👵 노인연금</button>
+            <button class="btn btn-outline" onclick="loadPreset('basicPension')" style="color:#7c3aed; font-weight:800; border-color:#ddd6fe;">👵 노인연금 (부양·근로 제외)</button>
             <button class="btn btn-outline" onclick="clearCounselInput()" style="font-weight:800; border-color:#94a3b8; color:#0f172a;">🧹 자연어 상담</button>
           </div>
         </div>
@@ -241,7 +239,7 @@
         </div>
 
         <div class="textarea-wrapper">
-          <textarea id="counselInput" class="counsel-textarea" oninput="handleCounselInputChanged()" placeholder="민원인의 구술 기록을 편하게 입력하세요.&#10;예) 이름 : 홍길동, 소득0원, 소득없음, 소득 없음, 전세 2000만원, 사용대차(무상거주), [22]세 등 어떤 표현이든 완벽하게 자동 판독합니다."></textarea>
+          <textarea id="counselInput" class="counsel-textarea" oninput="handleCounselInputChanged()" placeholder="민원인의 구술 기록을 편하게 입력하세요.&#10;예) 이름 : 홍길동, 전세 2000만원, 사용대차(무상거주), 소득0원 등 다양한 표현을 정밀하게 자동 분석합니다."></textarea>
           <div id="counselCharCounter" class="char-counter">0자</div>
         </div>
 
@@ -275,7 +273,7 @@
           <button class="btn btn-indigo" onclick="copyOfficialNotice()">📋 대외공문 기안문 복사</button>
         </div>
         <div style="font-size:12.5px; color:#475569; margin-top:6px;">
-          학대·폭력 등 범죄 정황 인지 시 직무상 즉각 신고의무를 준수하기 위해 대외공문 기안문이 자동 생성되었습니다.
+          학대·폭력 등 범죄 혐의 인지 시 공무원의 직무상 즉각 신고의무를 준수하기 위해 대외공문 기안문이 자동 생성되었습니다.
         </div>
         <div id="officialNoticeContent" class="official-notice-text"></div>
       </div>
@@ -421,7 +419,7 @@
 
         <div class="card">
           <div class="card-header">
-            <div class="card-title">🏛️️ [유관기관 지원망] 맞춤 연계 사업 안내</div>
+            <div class="card-title">🏛️ [유관기관 지원망] 맞춤 연계 사업 안내</div>
             <span class="badge" style="background:#ccfbf1; color:#0f766e;" id="agencyRecommendCountBadge">0건 매칭</span>
           </div>
           <div id="agencyRecommendListArea" style="display: flex; flex-direction: column; gap: 10px; max-height: 520px; overflow-y: auto;"></div>
@@ -483,7 +481,7 @@
 • 재산 및 사적이전소득: 0원 (가족 및 친인척 정기 지원 일체 없음)
 
 3. 재산 현황 (재산의 소득환산액 산정)
-• 주거 형태: 월세 (보증금 [ 5천만원 ] / 월세 [ 25 ]만 원)
+• 주거 형태: 월세 (보증금 [ 500 ]만 원 / 월세 [ 25 ]만 원)
 • 일반재산: 없음 (부동산, 분양권, 토지 등 미보유)
 • 금융재산: 예금 잔액 약 [ 45 ]만 원 (기본공제 생활준비금 500만원 이내)
 • 부채 내역: 병원비 치료용 대출 [ 300 ]만 원 (신용대출)
@@ -648,7 +646,14 @@
       if (btnElem) btnElem.classList.add('active');
     }
 
+    // 2단계 이동 전 유효성 검사 (공란 상태 차단)
     function attemptNavigateToStep2() {
+      const rawText = document.getElementById('counselInput').value.trim();
+      if (!rawText) {
+        showToast("⚠️ 상담 내용을 먼저 입력해 주세요.");
+        return;
+      }
+
       processCounseling();
       if (currentMissingFields && currentMissingFields.length > 0) {
         const modal = document.getElementById('missingConfirmModal');
@@ -731,6 +736,7 @@
       showToast("자연어 상담 입력창이 준비되었습니다.");
     }
 
+    // [중요 수정] 공란일 때 3단계 시뮬레이터와 4단계 연계망까지 완전히 0으로 초기화
     function resetViews() {
       document.getElementById('docApplicantInfo').innerHTML = `<span class="missing-text">[미기재] 성명 및 연령 확인 요망</span>`;
       document.getElementById('docHouseholdInfo').innerHTML = `<span class="missing-text">[미기재] 가구원수 확인 요망</span>`;
@@ -746,6 +752,24 @@
       updateLiveCard('liveCardEmergency', 'liveEstEmergency', false, "판정 대기");
       updateLiveCard('liveCardNearPoverty', 'liveEstNearPoverty', false, "판정 대기");
       updateLiveCard('liveCardBasicPension', 'liveEstBasicPension', false, "판정 대기");
+
+      // 3단계 시뮬레이터 입력창 완전 0 리셋
+      document.getElementById('simEarnedIncome').value = 0;
+      document.getElementById('simOtherIncome').value = 0;
+      document.getElementById('simResProp').value = 0;
+      document.getElementById('simRentFee').value = 0;
+      document.getElementById('simFinProp').value = 0;
+      document.getElementById('simDebt').value = 0;
+
+      // 4단계 구비서류 및 연계망도 0건으로 리셋
+      document.getElementById('clientDocCountBadge').innerText = "총 0종";
+      document.getElementById('clientDocListArea').innerHTML = "<li style='color:#94a3b8;'>상담 내용이 입력되지 않았습니다.</li>";
+      document.getElementById('agencyRecommendCountBadge').innerText = "0건 매칭";
+      document.getElementById('agencyRecommendListArea').innerHTML = `
+        <div style="padding:14px; background:#f8fafc; border:1px solid var(--border); border-radius:6px; color:#64748b; font-size:12px;">
+          상담 내용에서 유관기관 연계 키워드가 감지되지 않았습니다.
+        </div>
+      `;
     }
 
     function handleCounselInputChanged() {
@@ -759,12 +783,12 @@
       return str.replace(/[\[\]\(\)\{\}]/g, '').trim();
     }
 
-    // [완전 수정] 0원, 무소득, 천만원, 억 단위를 오차 없이 만원 단위로 환산하는 정밀 파서
+    // [완전 수정] 500만원이 5로 왜곡되지 않고 0원/무소득도 정확히 판별하는 파서
     function parseWon(text) {
       if (!text) return null;
       let clean = text.replace(/,/g, '').replace(/[\[\]\(\)\{\}]/g, '').trim();
 
-      // 명시적 0원 또는 무소득 감지
+      // 명시적 0원, 무소득, 없음 등
       if (/^0\s*(원|만|만원)?$/.test(clean) \vert{}\vert{} /^(없음\vert{}없고\vert{}0\vert{}무소득\vert{}단절\vert{}전무\vert{}제로)$/.test(clean)) {
         return 0;
       }
@@ -778,27 +802,21 @@
         clean = clean.replace(/([0-9.]+)\s*억/, '');
       }
 
-      // 천만 단위
+      // 천만 단위 (예: 5천만원 -> 5000)
       let cheonManMatch = clean.match(/([0-9.]+)\s*천\s*만/);
       if (cheonManMatch) {
         total += parseFloat(cheonManMatch[1]) * 1000;
         clean = clean.replace(/([0-9.]+)\s*천\s*만/, '');
-      } else {
-        let cheonAlone = clean.match(/([0-9.]+)\s*천\s*원/);
-        if (cheonAlone) {
-          total += Math.round(parseFloat(cheonAlone[1]) * 1000 / 10000);
-          clean = clean.replace(/([0-9.]+)\s*천\s*원/, '');
-        }
       }
 
-      // 만원 단위
-      let manMatch = clean.match(/([0-9.]+)\s*만/);
+      // 만원 단위 (예: 500만원, 500만, 500)
+      let manMatch = clean.match(/([0-9.]+)\s*만\s*원?/) || clean.match(/([0-9.]+)\s*만/);
       if (manMatch) {
         total += parseFloat(manMatch[1]);
-        clean = clean.replace(/([0-9.]+)\s*만/, '');
+        clean = clean.replace(/([0-9.]+)\s*만\s*원?/, '');
       }
 
-      // 순수 숫자 (원 단위 직접 입력 시)
+      // 순수 숫자 (원 단위)
       if (total === 0) {
         let numOnly = clean.match(/([0-9]+)/);
         if (numOnly) {
@@ -813,7 +831,7 @@
       return null;
     }
 
-    // [완전 수정] 상담 텍스트 분석 (소득0원, 소득없음, 소득 없음 등 완벽 판정)
+    // 상담 텍스트 분석 엔진
     function processCounseling() {
       const text = document.getElementById('counselInput').value;
       if (!text.trim()) {
@@ -867,20 +885,18 @@
         currentMissingFields.push({ key: 'household', label: '가구원수' });
       }
 
-      // 4. [완벽 수정] 소득 파싱 - 소득0원, 소득없음, 소득 없음, 월소득 등 모든 패턴 완벽 처리
+      // 4. 월소득 판정 (소득0원, 소득없음 등)
       let earned = null;
       let other = 0;
 
-      // 명시적인 무소득 표현 체크
       let hasExplicitZeroPattern = /(?:월\s*소득|근로\s*및\s*사업\s*소득|근로소득|사업소득|소득|수입|벌이|급여|월급)\s*[:：•\s]*[\[\(\{]?\s*(?:0원|0만|0|없음|없고|없다|무소득|단절|전무|제로)\b/i.test(text) ||
                                   /(?:소득\s*0\s*원|소득\s*없음|소득없음|수입\s*0\s*원|수입없음|벌이없음|무소득\s*확인|실직\s*상태|무직)/i.test(text);
 
-      // 금액이 명시된 소득 패턴 추출
       let mEarned = text.match(/(?:월\s*소득|근로\s*및\s*사업|근로소득|사업소득|월소득|급여|수입|알바비|벌이)?\s*소득\s*[:：•\s]*([\[\(\{]?[0-9,.\s]+(?:억\vert{}천만\vert{}천\s*만\vert{}만\s*원\vert{}만원\vert{}원)?[\]\}\)]?)/) ||
                     text.match(/(?:월급|급여|수입|알바비|벌고\s*있)[^\d\n:]*[:：•\s]*([\[\(\{]?[0-9,.\s]+(?:억\vert{}천만\vert{}천\s*만\vert{}만\s*원\vert{}만원\vert{}원)?[\]\}\)]?)/);
 
       if (hasExplicitZeroPattern && (!mEarned || /0|없/.test(mEarned[1]))) {
-        earned = 0; // 명시적 무소득
+        earned = 0;
       } else if (mEarned) {
         let parsedVal = parseWon(mEarned[1]);
         earned = (parsedVal !== null) ? parsedVal : (hasExplicitZeroPattern ? 0 : null);
@@ -888,7 +904,6 @@
         earned = 0;
       }
 
-      // earned가 명확히 0이거나 양수이면 소득 확인된 것임 (0은 null이 아님!)
       if (earned === null) {
         currentMissingFields.push({ key: 'income', label: '소득 내역' });
       }
@@ -896,7 +911,7 @@
       let mOther = text.match(/(?:공적이전소득|이전소득|아동수당|국민연금|연금)\s*[:：•\s]*([\[\(\{]?[0-9,.\s]+(?:억\vert{}천만\vert{}만\s*원\vert{}만원\vert{}원)?[\]\}\)]?)/);
       if (mOther) other = parseWon(mOther[1]) || 0;
 
-      // 5. 주거 및 재산 파싱
+      // 5. 주거 및 재산 판정
       let housingType = null;
       let resProp = null;
       let rentFee = 0;
@@ -1070,7 +1085,6 @@
         document.getElementById('docSeverInfo').innerText = p.support === 'severed' ? "장기 단절 (가족관계 해체사유서 징구 및 지생보 심의)" : (p.support === 'none' ? "부양의무자 없음" : "일반 조사 대상");
       }
 
-      // [소득 정확 표기] 0원이면 (무소득 확인) 표기, 금액이 있으면 해당 금액 표기
       if (p.earned !== null) {
         document.getElementById('docIncomeInfo').innerText = `월 ${p.earned.toLocaleString()}만 원 ${p.earned === 0 ? "(무소득 확인)" : ""} / 이전소득: 월 ${(p.other || 0).toLocaleString()}만 원`;
       } else {
@@ -1276,7 +1290,7 @@
         agencyCountBadge.innerText = "0건 매칭";
         agencyArea.innerHTML = `
           <div style="padding:14px; background:#f8fafc; border:1px solid var(--border); border-radius:6px; color:#64748b; font-size:12px;">
-            상담 내용에서 특이 공단 연계 키워드(병원비, 채무, 퇴거, 에너지 등)가 감지되지 않았습니다.
+            상담 내용에서 특이 공단 연계 키워드가 감지되지 않았습니다.
           </div>
         `;
       }
