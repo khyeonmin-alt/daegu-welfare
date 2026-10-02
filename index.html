@@ -655,6 +655,19 @@
       }
     }
 
+    function attemptNavigateToStep2() {
+      if (currentMissingFields.length > 0) {
+        const modal = document.getElementById('missingConfirmModal');
+        const modalList = document.getElementById('modalMissingList');
+        if (modalList) {
+          modalList.innerHTML = currentMissingFields.map(f => `• ${f.label}`).join('<br>');
+        }
+        if (modal) modal.style.display = 'flex';
+      } else {
+        switchTab('tab2', document.getElementById('btnTab2'));
+      }
+    }
+
     function forceNavigateToStep2() {
       const modal = document.getElementById('missingConfirmModal');
       if (modal) modal.style.display = 'none';
@@ -717,7 +730,7 @@
         memo.value = PRESETS[key];
         handleCounselInputChanged();
         processCounseling();
-        showToast(`표준 프리셋이 로드되었습니다.`);
+        showToast("표준 프리셋이 로드되었습니다.");
       }
     }
 
