@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>이어봄 Pro (행정안전부 AI 공통기반 연계형)</title>
+  <title>복지완성 Pro (행정안전부 AI 공통기반 연계형)</title>
   
   <style>
     :root {
@@ -222,16 +222,31 @@
             <button class="btn btn-outline" onclick="loadPreset('basicLife')" style="color:#1d4ed8; font-weight:800; border-color:#bfdbfe;">📋 기초생활</button>
             <button class="btn btn-outline" onclick="loadPreset('nearPoverty')" style="color:#047857; font-weight:800; border-color:#a7f3d0;">🎁 차상위</button>
             <button class="btn btn-outline" onclick="loadPreset('emergency')" style="color:#b91c1c; font-weight:800; border-color:#fca5a5;">🚨 긴급복지</button>
-            <!-- 노인연금 -> 기초연금으로 수정 -->
             <button class="btn btn-outline" onclick="loadPreset('basicPension')" style="color:#7c3aed; font-weight:800; border-color:#ddd6fe;">👵 기초연금</button>
             <button class="btn btn-outline" onclick="clearCounselInput()" style="font-weight:800; border-color:#94a3b8; color:#0f172a;">🧹 자연어 상담</button>
             
-            <!-- 음성 녹음 파일 업로드 전용 숨김 인풋 및 버튼 추가 -->
-            <input type="file" id="audioUploadInput" accept="audio/*,.mp3,.m4a,.wav,.ogg" style="display: none;" onchange="handleAudioFileSelected(event)">
-            <button class="btn btn-outline" onclick="triggerAudioUpload()" style="color:#0284c7; font-weight:800; border-color:#bae6fd; background:#f0f9ff;" title="상담 녹음 파일(mp3, m4a 등)을 업로드합니다">
+            <!-- 스마트폰 녹음 포맷(m4a, mp3, wav, aac, caf 등) 전체 지원 인풋 -->
+            <input type="file" id="audioUploadInput" accept="audio/*,.m4a,.mp3,.wav,.aac,.amr,.caf" style="display: none;" onchange="handleAudioFileSelected(event)">
+            <button class="btn btn-outline" onclick="triggerAudioUpload()" style="color:#0284c7; font-weight:800; border-color:#bae6fd; background:#f0f9ff;" title="스마트폰 녹음 파일(m4a, mp3 등)을 업로드하여 확인합니다">
               🎙️ 상담 녹음파일 업로드
             </button>
           </div>
+        </div>
+
+        <!-- 업로드된 상담 녹음 파일 확인 패널 (플레이어 + 상태 표시) -->
+        <div id="audioPlayerPanel" style="display: none; background: #f0f9ff; border: 1.5px solid #bae6fd; border-radius: 8px; padding: 12px 16px; margin-bottom: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 16px;">🎧</span>
+              <strong id="audioFileName" style="color: #0369a1; font-size: 13px;">녹음파일.m4a</strong>
+              <span id="audioFileSize" style="font-size: 11px; color: #64748b; background: #e0f2fe; padding: 2px 6px; border-radius: 4px;">0 MB</span>
+              <span id="audioStatusBadge" style="font-size: 11px; font-weight: 700; color: #059669; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 2px 6px; border-radius: 4px;">
+                ⚡ 텍스트 변환 및 사정표 연동 완료
+              </span>
+            </div>
+            <button class="btn btn-outline" style="font-size: 11px; padding: 2px 8px; color: #64748b;" onclick="closeAudioPanel()">✕ 닫기</button>
+          </div>
+          <audio id="audioPreviewPlayer" controls style="width: 100%; height: 32px; outline: none;"></audio>
         </div>
 
         <div id="missingAlertBox" class="missing-box">
@@ -449,7 +464,7 @@
 
         <div class="card">
           <div class="card-header">
-            <div class="card-title">🏛️️ [유관기관 지원망] 맞춤 연계 사업 안내</div>
+            <div class="card-title">🏛️ [유관기관 지원망] 맞춤 연계 사업 안내</div>
             <span class="badge" style="background:#ccfbf1; color:#0f766e;" id="agencyRecommendCountBadge">0건 매칭</span>
           </div>
           <div id="agencyRecommendListArea" style="display: flex; flex-direction: column; gap: 10px; max-height: 520px; overflow-y: auto;"></div>
@@ -697,21 +712,95 @@
       if (btnElem) btnElem.classList.add('active');
     }
 
-    /* 음성 녹음 업로드 트리거 및 이벤트 핸들러 */
+    /* 상담 녹음 파일 업로드 트리거 */
     function triggerAudioUpload() {
       const fileInput = document.getElementById('audioUploadInput');
       if (fileInput) fileInput.click();
     }
 
+    /* 녹음 파일 선택 시 즉각 재생 연동 및 텍스트 자동 주입 */
     function handleAudioFileSelected(event) {
       const file = event.target.files && event.target.files[0];
-      if (file) {
-        showToast(`🎙️ 녹음파일 [${file.name}] 등록됨 (AI 음성-텍스트 변환 연동 준비 완료)`);
+      if (!file) return;
+
+      const panel = document.getElementById('audioPlayerPanel');
+      const nameEl = document.getElementById('audioFileName');
+      const sizeEl = document.getElementById('audioFileSize');
+      const statusBadge = document.getElementById('audioStatusBadge');
+      const audioPlayer = document.getElementById('audioPreviewPlayer');
+      const memoEl = document.getElementById('counselInput');
+
+      if (panel) panel.style.display = 'block';
+      if (nameEl) nameEl.innerText = file.name;
+      if (sizeEl) sizeEl.innerText = (file.size / (1024 * 1024)).toFixed(2) + " MB";
+      
+      const fileUrl = URL.createObjectURL(file);
+      if (audioPlayer) {
+        audioPlayer.src = fileUrl;
       }
+
+      if (statusBadge) {
+        statusBadge.innerText = "⏳ 온디바이스 STT 음성 변환 중...";
+        statusBadge.style.color = "#b45309";
+        statusBadge.style.background = "#fef3c7";
+        statusBadge.style.borderColor = "#fcd34d";
+      }
+
+      showToast(`🎙️ [${file.name}] 음성 파일 분석을 시작합니다.`);
+
+      // -------------------------------------------------------------------------
+      // [직접 제작한 AI 대본 텍스트 교체 영역]
+      // 녹음 파일로 만드신 대본 내용을 아래 transcribedText 변수에 똑같이 적어두시면 됩니다.
+      // -------------------------------------------------------------------------
+      setTimeout(() => {
+        const transcribedText = `[복지상담 창구 대면 녹취록 - 온디바이스 STT]
+공무원: 어르신, 오늘 어떤 일로 오셨을까요? 성함이랑 연령 말씀해 주시겠어요?
+민원인: 제 이름은 박철수이고, 1968년생이라 올해 만으로 58세입니다.
+공무원: 네, 박철수 님. 지금 가족분들과 같이 살고 계신가요?
+민원인: 아니요, 가족 없이 혼자 살고 있는 1인 단독 가구입니다.
+공무원: 건강은 좀 어떠세요? 일은 하고 계신가요?
+민원인: 허리디스크랑 척추 질환이 너무 심해서 거동이 불편해 일을 전혀 못 합니다. 그래서 현재 월소득은 0원입니다.
+공무원: 주거 형태와 재산 상황은 어떻게 되실까요?
+민원인: 보증금 300만 원에 월세 25만 원 원룸에 거주하고 있고요, 통장 잔액은 35만 원 남아있고 병원비 빚이 250만 원 있습니다.
+공무원: 혹시 자녀분이나 부양해 줄 가족은 따로 없으신가요?
+민원인: 아들이 한 명 있기는 한데, 사업 실패하고 10년 전부터 완전히 연락두절되어 생사도 모릅니다. 가족관계 해체사유서라도 쓰겠습니다.`;
+
+        if (memoEl) {
+          memoEl.value = transcribedText;
+          handleCounselInputChanged();
+          processCounseling();
+        }
+
+        if (statusBadge) {
+          statusBadge.innerText = "⚡ 대화체 팩트 분석 및 사정표 연동 완료 (0.6s)";
+          statusBadge.style.color = "#047857";
+          statusBadge.style.background = "#ecfdf5";
+          statusBadge.style.borderColor = "#a7f3d0";
+        }
+
+        showToast("✅ 창구 대화 녹취 분석 및 초기사정표 작성이 완료되었습니다.");
+      }, 600);
+
       event.target.value = "";
     }
 
+    function closeAudioPanel() {
+      const panel = document.getElementById('audioPlayerPanel');
+      const audioPlayer = document.getElementById('audioPreviewPlayer');
+      if (audioPlayer) {
+        audioPlayer.pause();
+        audioPlayer.src = "";
+      }
+      if (panel) panel.style.display = 'none';
+    }
+
     function attemptNavigateToStep2() {
+      if (parseDebounceTimer) {
+        clearTimeout(parseDebounceTimer);
+        parseDebounceTimer = null;
+      }
+      processCounseling();
+
       if (currentMissingFields.length > 0) {
         const modal = document.getElementById('missingConfirmModal');
         const modalList = document.getElementById('modalMissingList');
@@ -802,6 +891,7 @@
       if (duty) duty.style.display = 'none';
       const emerg = document.getElementById('emergencyAlertBanner');
       if (emerg) emerg.style.display = 'none';
+      closeAudioPanel();
       showToast("자연어 상담 입력창이 초기화되었습니다.");
     }
 
@@ -965,6 +1055,7 @@
       return null;
     }
 
+    /* 정규식 파싱 엔진 (라벨 뒤 실제 입력값 타겟팅 & 오탐 차단) */
     function processCounseling() {
       try {
         const memoEl = document.getElementById('counselInput');
@@ -980,58 +1071,59 @@
 
         // 1. 대상자 성명
         let name = null;
-        let mName = text.match(/(?:내\s*|제\s*|본인\s*)?(?:성명|이름|성함|대상자명?|신청인명?|신청자명?|신청자|민원인|세대주\s*(?:성명|이름)|환자\s*성명)\s*(?:은|는|이|가|의|:|=|：|•|-)?\s*[:：•\-=\s]*[\[\(]?\s*([가-힣a-zA-Z]{2,6})\s*(?:입니다|이고|이라\s*하고|씨|님|[\]\)\s,.\n]|$)/) ||
-                    text.match(/저는\s*([가-힣]{2,5})\s*(?:이라\s*고\s*합니다|입니다|라고\s*불러요)/) ||
-                    text.match(/([가-힣]{2,5})\s*(?:이라\s*고\s*불러요|라고\s*불러요)/) ||
-                    text.match(/([가-힣]{2,4})\s*(?:씨|님|어르신|할머니|할아버지)(?:\s*\(대상자\))?/) ||
-                    text.match(/대상자\s*[:：•\s]*[\[\(]?\s*([가-힣]{2,5})\s*[\]\)]?/);
-
-        if (mName) {
-          name = unbracket(mName[1]).trim();
-        } else {
-          currentMissingFields.push({ key: 'name', label: '대상자 성명' });
+        let mNameLine = text.match(/(?:세대주\s*성명|신청인\s*성명|신청자\s*성명|대상자\s*성명|성명|이름|성함)\s*[:：•\-=\s]*([^\n(]+)/i);
+        if (mNameLine) {
+          let rawName = unbracket(mNameLine[1]).trim();
+          let mOnlyName = rawName.match(/([가-힣a-zA-Z]{2,6})/);
+          if (mOnlyName && !/미기재|확인요망|작성/.test(mOnlyName[1])) {
+            name = mOnlyName[1];
+          }
         }
+        if (!name) {
+          let mNameFallback = text.match(/저는\s*([가-힣]{2,5})\s*(?:이라\s*고\s*합니다|입니다|라고\s*불러요)/) ||
+                               text.match(/([가-힣]{2,4})\s*(?:씨|님|어르신|할머니|할아버지)(?:\s*\(대상자\))?/);
+          if (mNameFallback) name = unbracket(mNameFallback[1]).trim();
+        }
+        if (!name) currentMissingFields.push({ key: 'name', label: '대상자 성명' });
 
         // 2. 대상자 연령
         let age = null;
-        let mYear4 = text.match(/(?:^|[^\d])(19[3-9][0-9]|20[0-2][0-9])\s*년\s*(?:생|출생|도생)?(?=[^\d]|$)/) ||
-                     text.match(/(?:생년|출생|나이|연령)[^\d\n]*(19[3-9][0-9]|20[0-2][0-9])\s*년?/);
-        let mYear2 = text.match(/(?:^|[^\d])([0-9]{2})\s*년생(?=[^\d]|$)/);
-        let mDirectAge = text.match(/만\s*(?:으로\s*)?([0-9]{1,2})\s*세/) ||
-                         text.match(/(?:나이|연령)\s*(?:은|는|이|가|:|=|：|•)?\s*[:：•\s]*[\[\(\{]?\s*([0-9]{1,2})\s*[\]\}\)]?\s*(?:세|살)?/) ||
-                         text.match(/[\[\(\{]\s*([0-9]{1,2})\s*[\]\}\)]\s*세/) ||
-                         text.match(/(?:올해\s*)?([0-9]{1,2})\s*(?:세|살)(?:\s*입니다|\s*이고|\s*가량|\s*내외|[^\d가-힣]|$)/);
-
-        if (mYear4) {
-          let birthYear = parseInt(mYear4[1], 10);
-          age = 2026 - birthYear;
-        } else if (mYear2) {
-          let yy = parseInt(mYear2[1], 10);
-          let birthYear = (yy <= 26) ? (2000 + yy) : (1900 + yy);
-          age = 2026 - birthYear;
-        } else if (mDirectAge) {
-          age = parseInt(mDirectAge[1], 10);
+        let mSelfAgeLine = text.match(/(?:세대주|신청인|신청자|대상자|본인|나이|연령)[^\n]*?(?:만\s*)?[\[\(\{]?\s*([0-9]{1,2})\s*[\]\}\)]?\s*(?:세|살)/i) ||
+                           text.match(/•\s*(?:대상자\s*)?연령\s*[:：•\s]*[\[\(\{]?\s*([0-9]{1,2})\s*[\]\}\)]?\s*(?:세|살)?/i);
+        
+        if (mSelfAgeLine) {
+          age = parseInt(mSelfAgeLine[1], 10);
         } else {
-          currentMissingFields.push({ key: 'age', label: '대상자 연령' });
+          let mYear4 = text.match(/(?:^|[^\d])(19[3-9][0-9]|20[0-2][0-9])\s*년\s*(?:생|출생|도생)?(?=[^\d]|$)/);
+          let mYear2 = text.match(/(?:^|[^\d])([0-9]{2})\s*년생(?=[^\d]|$)/);
+          let mDirectAge = text.match(/만\s*(?:으로\s*)?([0-9]{1,2})\s*세/) ||
+                           text.match(/[\[\(\{]\s*([0-9]{1,2})\s*[\]\}\)]\s*세/);
+          if (mYear4) {
+            age = 2026 - parseInt(mYear4[1], 10);
+          } else if (mYear2) {
+            let yy = parseInt(mYear2[1], 10);
+            age = 2026 - (yy <= 26 ? (2000 + yy) : (1900 + yy));
+          } else if (mDirectAge) {
+            age = parseInt(mDirectAge[1], 10);
+          }
         }
+        if (!age) currentMissingFields.push({ key: 'age', label: '대상자 연령' });
 
         // 3. 가구원수
         let members = null;
         let mMemDirect = text.match(/[\[\(\{]?\s*([1-7])\s*[\]\}\)]?\s*인\s*가구/) ||
                          text.match(/가구원\s*수\s*[:：]?\s*[\[\(\{]?\s*([1-7])\s*[\]\}\)]?/);
-        let hasSingle = /(나\s*혼자|나혼자|혼자|홀로)\s*(?:산다|살고|살아|살며|거주|삶|삽니다|살아요)|독거|홀몸|단독\s*가구|단독\s*세대|1인\s*단독|1인\s*가구/.test(text);
+        let hasSingle = /(나\s*혼자|나혼자|혼자|홀로)\s*(?:산다|살고|살아|거주|삶|삽니다|살아요)|독거|홀몸|단독\s*가구|단독\s*세대|1인\s*단독|1인\s*가구/.test(text);
         let hasSpouse = /(배우자|남편|아내|처|와이프)/.test(text);
-        let mChild = text.match(/(?:자녀|아이|아들|딸|애기|애)\s*(?:가\s*)?([1-5]|한|하나|두|둘|세|셋|네|넷|다섯)?\s*(?:명|과|이랑|와|하고)?(?:\s*(?:같이|함께|데리고|키우))?/);
-        let hasCouple = /(배우자|남편|아내|처|와이프|어머니|엄마|모친|아버지|부친|아들|딸)\s*(?:랑|와|이랑|하고)?\s*(?:둘이|단둘이|둘이서|같이|함께|모시고)?\s*(?:산다|살고|살아|거주|삶|삽니다|살아요)|(?:단둘이|둘이서|둘이)\s*(?:산다|살고|살아|거주|삶|삽니다|살아요)|모자가구|모녀가구|부자가구|부부\s*2인|부부\s*가구|부부(?!\s*[0-9])/.test(text);
+        let mChild = text.match(/(?:자녀|아이|아들|딸|애기|애)\s*(?:가\s*)?([1-5]|한|하나|두|둘|세|셋|네|넷|다섯)?\s*(?:명|과|이랑|와|하고)?/);
+        let hasCouple = /(배우자|남편|아내|처|와이프|어머니|엄마|모친|아버지|부친|아들|딸)\s*(?:랑|와|하고)?\s*(?:둘이|단둘이|같이|함께)?\s*(?:산다|살고|살아|거주)|모자가구|모녀가구|부자가구|부부\s*2인|부부\s*가구/.test(text);
 
         if (mMemDirect) {
           members = parseInt(mMemDirect[1], 10);
         } else if (hasSpouse && mChild) {
-          let cCount = parseKoreanCount(mChild[1]);
-          members = 2 + cCount;
-        } else if (mChild && /(?:함께|같이|데리고|키우|산다|살고|살아|거주|삶|삽니다|살아요|동거|있음|있고|키우는)/.test(text) && !hasSingle) {
-          let cCount = parseKoreanCount(mChild[1]);
-          members = 1 + cCount;
+          members = 2 + parseKoreanCount(mChild[1]);
+        } else if (mChild && /(?:함께|같이|데리고|키우|동거|있고)/.test(text) && !hasSingle) {
+          members = 1 + parseKoreanCount(mChild[1]);
         } else if (hasCouple) {
           members = 2;
         } else if (hasSingle) {
@@ -1044,27 +1136,30 @@
         let earned = null;
         let other = 0;
 
-        let hasExplicitZeroPattern = /(?:월\s*소득|근로\s*소득|사업\s*소득|소득|수입|월급|벌이|급여|돈)[^\n.]*(?:없|안\s*벌|못\s*벌|0원|0만|제로|전무|단절|하나도\s*없)|실직|무직|백수|소득\s*없음|수입\s*0원|수입\s*없음|벌이\s*없음|무소득|경제활동\s*(?:일체\s*)?안\s*함|경제활동\s*중단|일자리\s*(?:를\s*)?잃/i.test(text);
-
-        let mEarned = text.match(/(?:월\s*소득|근로\s*및\s*사업소득|근로\s*및\s*사업|근로소득|사업소득|월소득|급여|수입|알바비|벌이|월급|식당\s*보조|파트타임|배달대행\s*소득|아르바이트)\s*(?:은|는|이|가|:|=|：|•)?\s*[:：•\s]*([\[\(\{]?[0-9,.\s]+(?:억|천만|천\s*만|만\s*원|만원|원)?[\]\}\)]?)/) ||
-                      text.match(/([0-9,.\s]+(?:억|천만|천\s*만|만\s*원|만원))\s*(?:씩\s*)?(?:벌고\s*있|법니다|받음|받고\s*있|수령)/) ||
-                      text.match(/(?:월급|급여|수입|알바비|벌고\s*있|소득이)[^\d\n:]*[:：•\s]*([\[\(\{]?[0-9,.\s]+(?:억|천만|천\s*만|만\s*원|만원|원)?[\]\}\)]?)/);
-
-        if (hasExplicitZeroPattern && (!mEarned || /0|없/.test(mEarned[1]))) {
-          earned = 0;
-        } else if (mEarned) {
-          let parsedVal = parseWon(mEarned[1]);
-          earned = (parsedVal !== null) ? parsedVal : (hasExplicitZeroPattern ? 0 : null);
-        } else if (hasExplicitZeroPattern) {
-          earned = 0;
+        let mEarnedLine = text.match(/(?:근로\s*(?:및|·)?\s*사업소득|근로소득|사업소득|월\s*소득|월급|급여|수입|알바비|벌이|식당\s*보조)\s*[:：=•\-]?\s*([^\n]+)/);
+        if (mEarnedLine) {
+          let lineContent = mEarnedLine[1].trim();
+          if (/^\[?\s*0\s*(?:원|만|만원)?\s*\]?/.test(lineContent) || /없음|무소득|0원|소득\s*없/i.test(lineContent)) {
+            earned = 0;
+          } else {
+            earned = parseWon(lineContent);
+          }
+        } else {
+          let hasExplicitZeroPattern = /(?:소득|수입|월급|벌이)[^\n.]*(?:없|0원|제로|전무)|실직|무직|백수|무소득/i.test(text);
+          if (hasExplicitZeroPattern) earned = 0;
         }
 
-        if (earned === null) {
-          currentMissingFields.push({ key: 'income', label: '소득 내역' });
-        }
+        if (earned === null) currentMissingFields.push({ key: 'income', label: '소득 내역' });
 
-        let mOther = text.match(/(?:공적이전소득|이전소득|아동수당|국민연금|기초연금|연금)\s*(?:은|는|이|가|:|=|：|•)?\s*[:：•\s]*([\[\(\{]?[0-9,.\s]+(?:억|천만|만\s*원|만원|원)?[\]\}\)]?)/);
-        if (mOther) other = parseWon(mOther[1]) || 0;
+        let mOtherLine = text.match(/(?:공적이전소득|공적\s*이전소득|아동수당|국민연금|기초연금|이전소득)\s*[:：=•\-]?\s*([^\n]+)/);
+        if (mOtherLine) {
+          let oContent = mOtherLine[1].trim();
+          if (/^\[?\s*0\s*(?:원|만|만원)?\s*\]?/.test(oContent) || /없음|0원/.test(oContent)) {
+            other = 0;
+          } else {
+            other = parseWon(oContent) || 0;
+          }
+        }
 
         // 5. 주거 및 재산
         let housingType = null;
@@ -1073,24 +1168,15 @@
         let finProp = null;
         let debt = null;
 
-        let isJeonseFraud = /(전세\s*사기|보증금\s*사기|깡통\s*전세|보증금\s*미반환|전세\s*피해|전세보증금\s*(?:떼임|못\s*받))/i.test(text);
-
-        let isFreeRent = /(사용대차|무료임차|무상거주|무상임차|친척집\s*무상|지인집\s*무상)/.test(text) ||
-                         /(?:친구|지인|부모|부모님|친척|형제|남동생|여동생|오빠|형|누나|언니|아들|딸)\s*집(?:에|에서)?\s*(?:무상으로\s*|공짜로\s*|얹혀\s*|신세\s*지고\s*|그냥\s*)?(?:산다|살고|살아|거주|지내|머물|삶)/.test(text) ||
-                         /(?:친구|부모|부모님|친척|지인)\s*집에\s*(?:산다|살고|거주)/.test(text);
-
-        let isOwn = /(자가|본인명의\s*(?:주택|집|아파트|빌라)|소유\s*(?:주택|집|빌라|아파트)|자가\s*보유|주택가액|집값|공시지가)/.test(text);
-        
-        let isJeonse = (/(?:전세보증금|전세금|전세로|전세\s*거주|전세방|전세\s*임차)/.test(text) || 
-                       (/(?:^|[^\w가-힣])전세(?!\s*사기|\s*피해)(?:[^\w가-힣]|$)/.test(text))) && !isJeonseFraud;
-
+        let isJeonseFraud = /(전세\s*사기|보증금\s*사기|깡통\s*전세|보증금\s*미반환|전세\s*피해)/i.test(text);
+        let isFreeRent = /(사용대차|무료임차|무상거주|무상임차)/.test(text) ||
+                         /(?:친구|지인|부모|부모님|친척)\s*집(?:에|에서)?\s*(?:무상으로\s*|그냥\s*)?(?:산다|살고|거주)/.test(text);
+        let isOwn = /(자가|본인명의\s*(?:주택|집|아파트)|소유\s*(?:주택|집)|자가\s*보유)/.test(text);
+        let isJeonse = (/(?:전세보증금|전세금|전세로|전세\s*거주|전세\s*임차)/.test(text) || /(?:^|[^\w가-힣])전세(?!\s*사기|\s*피해)/.test(text)) && !isJeonseFraud;
         let isMonthly = /(월세|월세방|임차|월세로)/.test(text);
 
-        let mDeposit = text.match(/(?:보증금|전세금)\s*(?:은|는|이|가|:|=|：|•)?\s*([\[\(\{]?[0-9,.\s]+(?:억|천만|천\s*만|만\s*원|만원|천원)?[\]\}\)]?)/) ||
-                       text.match(/보증금[^\d]*([\[\(\{]?[0-9,.\s]+(?:억|천만|천\s*만|만\s*원|만원|천원)?[\]\}\)]?)/) ||
-                       text.match(/(?:^|[^\w가-힣])전세(?!\s*사기|\s*피해)[^\d]*([\[\(\{]?[0-9,.\s]+(?:억|천만|천\s*만|만\s*원|만원|천원)?[\]\}\)]?)/);
-
-        let mRent = text.match(/월세\s*(?:은|는|이|가|:|=|：|•)?\s*[:：•\s]*([\[\(\{]?[0-9,.\s]+(?:억|천만|만\s*원|만원)?)(?!\s*(?:달|개월|회|차))/);
+        let mDeposit = text.match(/(?:보증금|전세금)\s*[:：=•\-]?\s*([^\n,/()]+)/);
+        let mRent = text.match(/월세\s*[:：=•\-]?\s*([^\n,/()]+)(?!\s*(?:달|개월|회|차))/);
 
         if (isFreeRent) {
           housingType = "사용대차 (무상거주)";
@@ -1114,22 +1200,35 @@
           currentMissingFields.push({ key: 'property', label: '주거 및 재산' });
         }
 
-        let mFin = text.match(/(?:금융재산|통장\s*잔액|통장\s*잔고|통장|예금\s*잔액|예금|은행\s*예금|청년도약계좌|적금|청약|주식)[^\d]*([\[\(\{]?[0-9,.\s]+(?:억|천만|만\s*원|만원|원)?[\]\}\)]?)/);
-        finProp = mFin ? parseWon(mFin[1]) : (text.includes("통장 잔고 0원") ? 0 : null);
+        let mFinLine = text.match(/(?:금융재산|통장\s*잔액|통장\s*잔고|예금\s*잔액|예금)\s*[:：=•\-]?\s*([^\n()]+)/);
+        if (mFinLine) {
+          let finStr = mFinLine[1].trim();
+          finProp = (/^\[?\s*0\s*(?:원|만|만원)?\s*\]?/.test(finStr) || /없음|0원/.test(finStr)) ? 0 : parseWon(finStr);
+        } else {
+          finProp = text.includes("통장 잔고 0원") ? 0 : null;
+        }
 
-        let mDebt = text.match(/(?:부채|대출|빚|사채|카드빚|신용카드\s*빚|마이너스\s*통장)[^\d]*([\[\(\{]?[0-9,.\s]+(?:억|천만|만\s*원|만원|원)?[\]\}\)]?)/);
-        debt = mDebt ? parseWon(mDebt[1]) : 0;
+        let mDebtLine = text.match(/(?:부채\s*(?:내역)?|대출금|빚|사채|마이너스\s*통장)\s*[:：=•\-]?\s*([^\n()]+)/);
+        if (mDebtLine) {
+          let debtStr = mDebtLine[1].trim();
+          debt = (/^\[?\s*0\s*(?:원|만|만원)?\s*\]?/.test(debtStr) || /없음|0원/.test(debtStr)) ? 0 : parseWon(debtStr);
+        } else {
+          debt = 0;
+        }
 
         // 6. 건강/근로능력 및 부양의무자
         let workAbility = "able";
         let healthDesc = null;
         if (!isPensionMode) {
-          if (/(척추|디스크|협착증|질병|수술|입원|장애|거동불편)/.test(text)) {
-            workAbility = "illness";
-            healthDesc = "만성질환·부상 거동불편 (근로무능력 판정 심사 대상)";
-          } else if (age && age >= 65) {
+          let mHealthLine = text.match(/(?:건강상태\s*(?:및|·)?\s*질병|건강상태|건강\s*(?:및|·)?\s*근로|근로능력\s*유무)\s*[:：=•\-]?\s*([^\n]+)/);
+          let hContent = mHealthLine ? mHealthLine[1] : text;
+
+          if (age && age >= 65) {
             workAbility = "none";
             healthDesc = "만 65세 이상 노인 (법정 근로무능력자)";
+          } else if (/(척추|디스크|협착증|수술|입원|장애|거동\s*불편|진단서|근로무능력)/.test(hContent) && !/이상\s*없|양호|특이\s*중증질환\s*없음|질환\s*없음/i.test(hContent)) {
+            workAbility = "illness";
+            healthDesc = "만성질환·부상 거동불편 (근로무능력 판정 심사 대상)";
           } else if (age && age <= 24) {
             workAbility = "youth";
             healthDesc = "만 24세 이하 청년특례 대상 (40만+30% 공제)";
@@ -1140,10 +1239,15 @@
 
         let support = "normal";
         if (!isPensionMode) {
-          if (/(연락두절|단절|해체사유서|생사모름)/.test(text)) {
-            support = "severed";
-          } else if (/(가족\s*없음|부양의무자\s*없음)/.test(text)) {
+          let mSupportLine = text.match(/(?:부양\s*기피\s*(?:및|·)?\s*단절\s*여부|부양의무자\s*(?:실태|현황|기준))\s*[:：=•\-]?\s*([^\n]+)/);
+          let sContent = mSupportLine ? mSupportLine[1] : text;
+
+          if (/(해당\s*없음|부양의무자\s*없음|가족\s*없음|없음)/.test(sContent)) {
             support = "none";
+          } else if (/(연락두절|단절|해체사유서|생사모름|가출)/.test(sContent) && !/단절\s*없음|해당\s*없음/.test(sContent)) {
+            support = "severed";
+          } else {
+            support = "normal";
           }
         }
 
