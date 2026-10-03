@@ -44,19 +44,109 @@
 
     .container { max-width: 1480px; margin: 18px auto; padding: 0 20px; }
     
+    /* 가독성 및 직관성이 향상된 4분할 스텝 카드형 탭 바 */
     .nav-tabs {
-      display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 2px solid var(--border);
-      background: var(--surface); padding: 8px 12px 0 12px; border-radius: var(--radius) var(--radius) 0 0;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+      background: transparent;
+      padding: 0;
+      border-bottom: none;
     }
+
     .tab-btn {
-      padding: 11px 18px; border: none; background: transparent; font-size: 13.5px; font-weight: 700;
-      color: var(--text-muted); cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s;
-      display: flex; align-items: center; gap: 6px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      text-align: left;
+      position: relative;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
     }
-    .tab-btn:hover { color: var(--text-main); }
-    .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
-    .tab-badge { background: #e2e8f0; color: #475569; font-size: 11px; padding: 2px 7px; border-radius: 10px; font-weight: 700; }
-    .tab-btn.active .tab-badge { background: var(--primary-light); color: var(--primary); }
+
+    .tab-btn:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      transform: translateY(-1px);
+    }
+
+    .tab-btn.active {
+      background: #ffffff;
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(29, 78, 216, 0.12);
+      border-bottom-width: 1.5px;
+    }
+
+    .tab-step-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #f1f5f9;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active .tab-step-num {
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    .tab-content {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .tab-badge {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: #f1f5f9;
+      color: #64748b;
+      display: inline-block;
+      width: fit-content;
+      letter-spacing: -0.2px;
+    }
+
+    .tab-btn.active .tab-badge {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .tab-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #334155;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tab-btn.active .tab-title {
+      color: var(--primary);
+      font-weight: 800;
+    }
+
+    @media (max-width: 1024px) {
+      .nav-tabs { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .nav-tabs { grid-template-columns: 1fr; }
+    }
 
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
@@ -227,23 +317,38 @@
 
   <div class="container">
     
-    <!-- 재배치된 4단계 탭 바 (1.입력 -> 2.대민서류/연계 -> 3.전산사정표/일지 -> 4.시뮬레이터) -->
+    <!-- 개선된 4단계 프로세스 탭 바 -->
     <div class="nav-tabs">
       <button class="tab-btn active" id="btnTab1" onclick="switchTab('tab1', this)">
-        <span>1. 상담 기록 &amp; 비정형 구술</span>
-        <span class="tab-badge">입력</span>
+        <div class="tab-step-num">1</div>
+        <div class="tab-content">
+          <span class="tab-badge">데이터 입력</span>
+          <span class="tab-title">상담 기록 &amp; 비정형 구술</span>
+        </div>
       </button>
+
       <button class="tab-btn" id="btnTab2" onclick="switchTab('tab2', this)">
-        <span>2. 민원인 맞춤 구비서류 &amp; 유관기관 연계망</span>
-        <span class="tab-badge" id="tab2Badge" style="background:#ccfbf1; color:#0f766e;">대민 안내/인쇄</span>
+        <div class="tab-step-num">2</div>
+        <div class="tab-content">
+          <span class="tab-badge" id="tab2Badge" style="background:#ccfbf1; color:#0f766e;">대민 서류/연계</span>
+          <span class="tab-title">맞춤 구비서류 &amp; 지원망</span>
+        </div>
       </button>
+
       <button class="tab-btn" id="btnTab3" onclick="switchTab('tab3', this)">
-        <span>3. 초기사정표 &amp; 4대급여 판정 &amp; 행복e음 일지</span>
-        <span class="tab-badge">전산 검증</span>
+        <div class="tab-step-num">3</div>
+        <div class="tab-content">
+          <span class="tab-badge">전산 검증</span>
+          <span class="tab-title">사정표 · 4대급여 · 일지</span>
+        </div>
       </button>
+
       <button class="tab-btn" id="btnTab4" onclick="switchTab('tab4', this)">
-        <span>4. 소득인정액 정밀 시뮬레이터</span>
-        <span class="tab-badge">공식 Trace</span>
+        <div class="tab-step-num">4</div>
+        <div class="tab-content">
+          <span class="tab-badge">정밀 모의산출</span>
+          <span class="tab-title">소득인정액 시뮬레이터</span>
+        </div>
       </button>
     </div>
 
@@ -303,7 +408,7 @@
       </div>
     </div>
 
-    <!-- [2단계 패널] 민원인 맞춤 구비서류 인쇄 & 유관기관 연계망 (신규 2단계) -->
+    <!-- [2단계 패널] 민원인 맞춤 구비서류 인쇄 & 유관기관 연계망 -->
     <div id="tab2" class="tab-panel">
       <div class="grid-2col">
         <div class="card" id="printableArea">
@@ -341,12 +446,12 @@
       
       <div style="margin-top: 16px; display: flex; justify-content: flex-end;">
         <button class="btn btn-primary" style="padding: 10px 20px; font-size: 13.5px; font-weight: 800;" onclick="switchTab('tab3', document.getElementById('btnTab3'))">
-          📑 전산 등록용 3단계(사정표 &amp; 행복e음 일지)로 이동 ➡️️
+          📑 전산 등록용 3단계(사정표 &amp; 행복e음 일지)로 이동 ➡
         </button>
       </div>
     </div>
 
-    <!-- [3단계 패널] 사정표 + 4대급여 판정 + 행복e음 일지 (기존 2단계) -->
+    <!-- [3단계 패널] 사정표 + 4대급여 판정 + 행복e음 일지 -->
     <div id="tab3" class="tab-panel">
       
       <div id="emergencyAlertBanner" class="emergency-alert-banner">
@@ -459,7 +564,7 @@
       </div>
     </div>
 
-    <!-- [4단계 패널] 소득인정액 정밀 시뮬레이터 (기존 3단계) -->
+    <!-- [4단계 패널] 소득인정액 정밀 시뮬레이터 -->
     <div id="tab4" class="tab-panel">
       <div class="card">
         <div class="card-header">
@@ -792,7 +897,7 @@
         statusBadge.style.borderColor = "#fcd34d";
       }
 
-      showToast(`🎙️️ [${file.name}] 음성 파일 분석을 시작합니다.`);
+      showToast(`🎙 [${file.name}] 음성 파일 분석을 시작합니다.`);
 
       setTimeout(() => {
         const transcribedText = `[복지상담 창구 대면 녹취록 - 온디바이스 STT]
@@ -1338,7 +1443,7 @@
           currentMissingFields.push({ key: 'health', label: '근로능력 및 건강상태' });
         }
 
-        // 7. 부양의무자 판정 (기초생활보장 시 정상 조사/해체 분기 보장)
+        // 7. 부양의무자 판정
         let support = null;
         let supportText = "";
 
@@ -1763,20 +1868,20 @@
 
       if (sim.eligibleBenefits && sim.eligibleBenefits.length > 0) {
         sim.eligibleBenefits.forEach(b => {
-          doc += `\n  • ${b}`;
+          doc += `\n   • ${b}`;
         });
       } else {
-        doc += `\n  • 모의판정 기준 충족 급여 없음 (소득·재산 기준 초과 - 민간 자원 및 타 복지제도 연계 검토)`;
+        doc += `\n   • 모의판정 기준 충족 급여 없음 (소득·재산 기준 초과 - 민간 자원 및 타 복지제도 연계 검토)`;
       }
 
       doc += `\n\n [행정 조치 계획]
-  ① 사업별 모의 소득인정액(선정기준 대비 판정):
+ ① 사업별 모의 소득인정액(선정기준 대비 판정):
     - [국민기초 생계급여]: 소득인정액 약 ${sim.recognized.toLocaleString()}만 원 (${sim.isLivePass ? `기준 중위 32%인 ${sim.liveStd}만 원 이하 [적합]` : `기준 초과 [부적합]`})
     - [긴급복지지원(정부)]: 총 실소득 약 ${sim.realIncome.toLocaleString()}만 원 (${sim.isEmergPass ? `중위 75%인 ${sim.emergStd}만 원 이하 & 금융 822만 원 이하 [적합]` : `소득/금융 기준 초과 [부적합]`})
     - [차상위계층]: 소득인정액 약 ${sim.recognized.toLocaleString()}만 원 (${sim.isNearPass ? `기준 중위 50%인 ${sim.nearStd}만 원 이하 [적합]` : `기준 초과 [부적합]`})
     - [기초연금]: 연금 소득인정액 약 ${sim.pensionRecognized.toLocaleString()}만 원 (${!sim.isSenior ? `만 65세 미만 [연령 미달 / 대상자 만 ${sim.ageVal}세]` : (sim.isPensionPass ? `선정기준액 ${sim.pensionCutoff}만 원 이하 [적합]` : `소득인정액 초과 [부적합]`)})
-  ② 구비서류 징구: 사회보장급여 신청서, 금융정보제공동의서, 소득·재산신고서, 신분증, 통장사본 등 필수 법정서식 일체
-  ③ 전산 접수: 서류 보완 즉시 행복e음 정식 접수 등록`;
+ ② 구비서류 징구: 사회보장급여 신청서, 금융정보제공동의서, 소득·재산신고서, 신분증, 통장사본 등 필수 법정서식 일체
+ ③ 전산 접수: 서류 보완 즉시 행복e음 정식 접수 등록`;
 
       safeSetText('happyEumOutput', doc);
     }
