@@ -91,7 +91,6 @@
     .btn-primary:hover { background: var(--primary-hover); }
     .btn-outline { background: #fff; border-color: var(--border-dark); color: #334155; }
     .btn-outline:hover { background: #f1f5f9; }
-    .btn-danger { background: #fee2e2; border-color: #fca5a5; color: #b91c1c; }
     .btn-happy { background: #047857; color: #fff; }
     .btn-happy:hover { background: #065f46; }
     .btn-indigo { background: #4338ca; color: #fff; }
@@ -222,7 +221,8 @@
           <div class="btn-group">
             <button class="btn btn-outline" onclick="loadPreset('basicLife')" style="color:#1d4ed8; font-weight:800; border-color:#bfdbfe;">📋 기초생활</button>
             <button class="btn btn-outline" onclick="loadPreset('nearPoverty')" style="color:#047857; font-weight:800; border-color:#a7f3d0;">🎁 차상위</button>
-            <button class="btn btn-danger" onclick="loadPreset('emergency')" style="font-weight:800;">🚨 긴급복지</button>
+            <!-- 붉은 단색 대신 일관성 있는 아웃라인 톤으로 정돈 -->
+            <button class="btn btn-outline" onclick="loadPreset('emergency')" style="color:#b91c1c; font-weight:800; border-color:#fca5a5;">🚨 긴급복지</button>
             <button class="btn btn-outline" onclick="loadPreset('basicPension')" style="color:#7c3aed; font-weight:800; border-color:#ddd6fe;">👵 노인연금</button>
             <button class="btn btn-outline" onclick="clearCounselInput()" style="font-weight:800; border-color:#94a3b8; color:#0f172a;">🧹 자연어 상담</button>
           </div>
@@ -237,7 +237,7 @@
         </div>
 
         <div class="textarea-wrapper">
-          <textarea id="counselInput" class="counsel-textarea" oninput="handleCounselInputChanged()" placeholder="민원인의 구술 기록을 편하게 입력하세요.&#10;예) 내 이름은 홍길동이고 1982년생입니다. 나혼자 산다. 소득 0원, 월세 30만 원 거주 중."></textarea>
+          <textarea id="counselInput" class="counsel-textarea" oninput="handleCounselInputChanged()" placeholder="민원인의 구술 기록을 편하게 입력하세요.&#10;예) 내 이름은 홍길동이고 1982년생입니다. 친구 집에 산다. 소득 0원."></textarea>
           <div id="counselCharCounter" class="char-counter">0자</div>
         </div>
 
@@ -593,6 +593,15 @@
     };
 
     const AGENCY_RULES = [
+      {
+        id: "hug_jeonse",
+        agency: "HUG 주택도시보증공사",
+        program: "전세피해지원센터 (특별법 피해자 원스톱 지원)",
+        trigger: /(전세\s*사기|보증금\s*사기|깡통\s*전세|보증금\s*미반환|전세\s*피해|전세보증금\s*(?:떼임|못\s*받))/,
+        desc: "전세사기 피해자 대상 긴급주거지원(공공임대), 저리 대환대출 및 무료 법률상담 원스톱 연계",
+        contact: "1533-8119",
+        guide: "전세피해지원센터(1533-8119) 방문 또는 안심전세포털 온라인 신청"
+      },
       {
         id: "nhis_medical",
         agency: "국민건강보험공단",
@@ -950,7 +959,7 @@
         currentMissingFields = [];
 
         // -------------------------------------------------------------------------
-        // 1. 대상자 성명 (조사, 호칭, 기호, 구어체 전수 대응)
+        // 1. 대상자 성명
         // -------------------------------------------------------------------------
         let name = null;
         let mName = text.match(/(?:내\s*|제\s*|본인\s*)?(?:성명|이름|성함|대상자명?|신청인명?|신청자명?|신청자|민원인|세대주\s*(?:성명|이름)|환자\s*성명)\s*(?:은|는|이|가|의|:|=|：|•|-)?\s*[:：•\-=\s]*[\[\(]?\s*([가-힣a-zA-Z]{2,6})\s*(?:입니다|이고|이라\s*하고|씨|님|[\]\)\s,.\n]|$)/) ||
@@ -966,7 +975,7 @@
         }
 
         // -------------------------------------------------------------------------
-        // 2. 대상자 연령 (2026년 기준 만 나이 계산 및 JS 한글 워드바운더리 결함 해결)
+        // 2. 대상자 연령
         // -------------------------------------------------------------------------
         let age = null;
         let mYear4 = text.match(/(?:^|[^\d])(19[3-9][0-9]|20[0-2][0-9])\s*년\s*(?:생|출생|도생)?(?=[^\d]|$)/) ||
@@ -991,7 +1000,7 @@
         }
 
         // -------------------------------------------------------------------------
-        // 3. 가구원수 (단둘이, 동거 중, 자녀 수사 결합 등 전수 판정)
+        // 3. 가구원수
         // -------------------------------------------------------------------------
         let members = null;
         let mMemDirect = text.match(/[\[\(\{]?\s*([1-7])\s*[\]\}\)]?\s*인\s*가구/) ||
@@ -1018,7 +1027,7 @@
         }
 
         // -------------------------------------------------------------------------
-        // 4. 월소득 (구어체 무소득, 도치문, 단위 분리 완벽 처리)
+        // 4. 월소득
         // -------------------------------------------------------------------------
         let earned = null;
         let other = 0;
@@ -1046,7 +1055,7 @@
         if (mOther) other = parseWon(mOther[1]) || 0;
 
         // -------------------------------------------------------------------------
-        // 5. 주거 및 재산 (빌라, 아파트, 단위 생략, 청년도약계좌, 사채 등)
+        // 5. 주거 및 재산 (사용대차 확대 및 전세사기 오탐 차단)
         // -------------------------------------------------------------------------
         let housingType = null;
         let resProp = null;
@@ -1054,14 +1063,25 @@
         let finProp = null;
         let debt = null;
 
-        let isFreeRent = /(사용대차|무료임차|무상거주|친척집\s*무상|지인집\s*무상|무상임차)/.test(text);
-        let isJeonse = /(전세|전세보증금)/.test(text);
-        let isMonthly = /(월세|월세방|임차|월세로)/.test(text);
-        let isOwn = /(자가|본인명의\s*(?:주택|집|아파트|빌라)|소유\s*(?:주택|집|빌라|아파트)|자가\s*보유|주택가액|집값|공시지가)/.test(text);
+        // 전세사기/사기 키워드 분리 (단순 전세 임차로 오인식 방지)
+        let isJeonseFraud = /(전세\s*사기|보증금\s*사기|깡통\s*전세|보증금\s*미반환|전세\s*피해|전세보증금\s*(?:떼임|못\s*받))/i.test(text);
 
-        let mDeposit = text.match(/(?:보증금|전세금|전세)\s*(?:은|는|이|가|:|=|：|•)?\s*[:：•\s]*([\[\(\{]?[0-9,.\s]+(?:억|천만|천\s*만|만\s*원|만원|천원)?[\]\}\)]?)/) ||
+        // 사용대차(무상거주) 인식 대폭 강화: 친구 집, 부모 집, 친척/지인 집 거주 포함
+        let isFreeRent = /(사용대차|무료임차|무상거주|무상임차|친척집\s*무상|지인집\s*무상)/.test(text) ||
+                         /(?:친구|지인|부모|부모님|친척|형제|남동생|여동생|오빠|형|누나|언니|아들|딸)\s*집(?:에|에서)?\s*(?:무상으로\s*|공짜로\s*|얹혀\s*|신세\s*지고\s*|그냥\s*)?(?:산다|살고|살아|거주|지내|머물|삶)/.test(text) ||
+                         /(?:친구|부모|부모님|친척|지인)\s*집에\s*(?:산다|살고|거주)/.test(text);
+
+        let isOwn = /(자가|본인명의\s*(?:주택|집|아파트|빌라)|소유\s*(?:주택|집|빌라|아파트)|자가\s*보유|주택가액|집값|공시지가)/.test(text);
+        
+        // 전세사기 구문은 전세 거주 형태 확정에서 제외
+        let isJeonse = (/(?:전세보증금|전세금|전세로|전세\s*거주|전세방|전세\s*임차)/.test(text) || 
+                       (/(?:^|[^\w가-힣])전세(?!\s*사기|\s*피해)(?:[^\w가-힣]|$)/.test(text))) && !isJeonseFraud;
+
+        let isMonthly = /(월세|월세방|임차|월세로)/.test(text);
+
+        let mDeposit = text.match(/(?:보증금|전세금)\s*(?:은|는|이|가|:|=|：|•)?\s*([\[\(\{]?[0-9,.\s]+(?:억|천만|천\s*만|만\s*원|만원|천원)?[\]\}\)]?)/) ||
                        text.match(/보증금[^\d]*([\[\(\{]?[0-9,.\s]+(?:억|천만|천\s*만|만\s*원|만원|천원)?[\]\}\)]?)/) ||
-                       text.match(/전세[^\d]*([\[\(\{]?[0-9,.\s]+(?:억|천만|천\s*만|만\s*원|만원|천원)?[\]\}\)]?)/);
+                       text.match(/(?:^|[^\w가-힣])전세(?!\s*사기|\s*피해)[^\d]*([\[\(\{]?[0-9,.\s]+(?:억|천만|천\s*만|만\s*원|만원|천원)?[\]\}\)]?)/);
 
         let mRent = text.match(/월세\s*(?:은|는|이|가|:|=|：|•)?\s*[:：•\s]*([\[\(\{]?[0-9,.\s]+(?:억|천만|만\s*원|만원)?)(?!\s*(?:달|개월|회|차))/);
 
@@ -1084,6 +1104,7 @@
           resProp = mDeposit ? parseWon(mDeposit[1]) : 0;
           rentFee = mRent ? parseWon(mRent[1]) : 0;
         } else {
+          // 전세사기 피해자라도 주거 형태(월세, 보증금 등)가 별도로 언급되지 않았으면 정상 결손 처리
           currentMissingFields.push({ key: 'property', label: '주거 및 재산' });
         }
 
@@ -1137,34 +1158,41 @@
       }
     }
 
+    // 긴급복지 법정 위기사유 대폭 보강 (전세사기, 재난재해, 사망·실종·수감 등 추가)
     function detectEmergencyCrisisAndStatutoryDuty(text, p) {
       const emergencyBanner = document.getElementById('emergencyAlertBanner');
       const dutySection = document.getElementById('dutyAlertSection');
       const draftContentArea = document.getElementById('officialNoticeContent');
 
-      const isUnemployed = /(실직|휴업|폐업|사업\s*실패|소득\s*상실)/.test(text);
-      const isIllnessCrisis = /(중한\s*질병|부상|수술|입원|투병)/.test(text);
-      const isEvictionCrisis = /(쫓겨|퇴거|방을\s*빼라|강제\s*집행|월세\s*밀려)/.test(text);
-      const isDomesticAbuse = /(가정폭력|폭행|폭력|학대|유기|방임)/.test(text);
-      const isEnergyCrisis = /(단전|단수|가스\s*끊김)/.test(text);
-      const isSuicideRisk = /(죽고\s*싶|자살|극단적)/.test(text);
+      const isJeonseFraud = /(전세\s*사기|보증금\s*사기|깡통\s*전세|보증금\s*미반환|전세\s*피해|전세보증금\s*(?:떼임|못\s*받))/i.test(text);
+      const isUnemployed = /(실직|휴업|폐업|사업\s*실패|소득\s*상실|일자리\s*잃|해고)/.test(text);
+      const isIllnessCrisis = /(중한\s*질병|중증질환|부상|수술|입원|투병|중환자|암환자)/.test(text);
+      const isEvictionCrisis = /(쫓겨|퇴거|방을\s*빼|강제\s*집행|월세\s*밀려|명도|노숙|고시원\s*밀려)/.test(text);
+      const isDisasterCrisis = /(화재|불이\s*나|산불|수해|침수|지진|재난|재해)/.test(text);
+      const isLossFamily = /(사망|숨지|돌아가|행방불명|실종|가출|구속|수감|교도소)/.test(text);
+      const isDomesticAbuse = /(가정폭력|폭행|폭력|학대|유기|방임|때린다|맞고\s*산다|협박)/.test(text);
+      const isEnergyCrisis = /(단전|단수|가스\s*끊김|전기\s*끊김|수도\s*끊김|공과금\s*체납)/.test(text);
+      const isSuicideRisk = /(죽고\s*싶|자살|극단적|삶을\s*정리|목숨)/.test(text);
 
-      const hasEmergencyCrisis = isUnemployed || isIllnessCrisis || isEvictionCrisis || isDomesticAbuse || isEnergyCrisis || isSuicideRisk;
+      const hasEmergencyCrisis = isJeonseFraud || isUnemployed || isIllnessCrisis || isEvictionCrisis || isDisasterCrisis || isLossFamily || isDomesticAbuse || isEnergyCrisis || isSuicideRisk;
 
       if (emergencyBanner) {
         if (hasEmergencyCrisis) {
           emergencyBanner.style.display = 'block';
           let crisisReasons = [];
+          if (isJeonseFraud) crisisReasons.push("전세사기 피해");
           if (isUnemployed) crisisReasons.push("주소득자 실직·폐업");
           if (isIllnessCrisis) crisisReasons.push("중한 질병·부상");
-          if (isEvictionCrisis) crisisReasons.push("강제퇴거 위기");
-          if (isDomesticAbuse) crisisReasons.push("가정폭력·학대 피해");
+          if (isEvictionCrisis) crisisReasons.push("강제퇴거·주거위기");
+          if (isDomesticAbuse) crisisReasons.push("가정폭력·학대·유기");
+          if (isLossFamily) crisisReasons.push("사망·가출·수감");
+          if (isDisasterCrisis) crisisReasons.push("화재·재난 피해");
           if (isEnergyCrisis) crisisReasons.push("단전·단수 빈곤");
           if (isSuicideRisk) crisisReasons.push("자살·자해 고위험군");
 
           safeSetHtml('emergencyAlertDesc', `
             상담 기록에서 <strong>긴급복지지원법 제2조 법정 위기사유 [${crisisReasons.join(', ')}]</strong>가 식별되었습니다.<br>
-            • <strong>권고 조치:</strong> <strong>선지원·사후조사 원칙</strong>에 따라 긴급생계지원 직권신청 여부를 검토하십시오.
+            • <strong>권고 조치:</strong> <strong>선지원·사후조사 원칙</strong>에 따라 긴급생계지원 및 주거비 지원 직권신청 여부를 우선 검토하십시오.
           `);
         } else {
           emergencyBanner.style.display = 'none';
@@ -1439,7 +1467,7 @@
       ];
 
       if (p.housingType && p.housingType.includes("사용대차")) {
-        docs.push({ name: "무료임대확인서 (사용대차 확인서)", desc: "친인척/지인 소유 주택 무상거주 사실 확인용" });
+        docs.push({ name: "무료임대확인서 (사용대차 확인서)", desc: "친인척/지인 소유 주택 무상거주 사실 확인용 (소유자 서명)" });
       } else if (p.housingType && (p.housingType.includes("월세") || p.housingType.includes("전세"))) {
         docs.push({ name: "임대차계약서 사본", desc: "확정일자 날인본 권장 (보증금 및 월세 지출 증빙)" });
       }
