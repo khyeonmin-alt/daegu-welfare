@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>이어봄 Pro (행정안전부 AI 공통기반 연계형)</title>
+  <title>복지완성 Pro (행정안전부 AI 공통기반 연계형)</title>
   
   <style>
     :root {
@@ -169,13 +169,47 @@
     }
     #toast.show { opacity: 1; }
 
+    /* [개선 5] 인쇄(Print CSS) 최적화 */
+    @page {
+      size: A4 portrait;
+      margin: 15mm;
+    }
     @media print {
+      html, body {
+        background: #fff !important;
+        color: #000 !important;
+        font-size: 11pt !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
       body * { visibility: hidden; }
       #printableArea, #printableArea * { visibility: visible; }
       #printableArea {
-        position: absolute; left: 0; top: 0; width: 100%; padding: 15mm; font-size: 12pt; line-height: 1.8;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: #fff !important;
+      }
+      #printableArea .card-header {
+        display: none !important;
+      }
+      #clientDocListArea li {
+        page-break-inside: avoid;
+        break-inside: avoid;
+        border: 1px solid #cbd5e1 !important;
+        margin-bottom: 6px !important;
+        padding: 8px 12px !important;
       }
       .no-print { display: none !important; }
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
     }
   </style>
 </head>
@@ -386,7 +420,7 @@
     <div id="tab3" class="tab-panel">
       <div class="card">
         <div class="card-header">
-          <div class="card-title">🧮 [3단계] 소득인정액 산출 시뮬레이터 (법정 기준 상세)</div>
+          <div class="card-title">🧮 [3단계] 소득인정액 산출 시뮬레이터 (2026년 법정 기준 상세)</div>
           <button class="btn btn-outline" onclick="toggleCalcTrace()">🔍 법정 산출 공식(Trace) 열기</button>
         </div>
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 12px;">
@@ -402,10 +436,10 @@
           <div>
             <label style="font-size:11.5px; font-weight:700;">거주 지역</label>
             <select id="simRegion" onchange="runSimulation()">
-              <option value="seoul">서울특별시 (대도시 9,900만원 공제)</option>
-              <option value="gyeonggi">경기·인천 (중소도시 8,000만원 공제)</option>
-              <option value="metro" selected>광역시·세종 (대도시 7,700만원 공제)</option>
-              <option value="rural">그 외 시·군 (농어촌 5,300만원 공제)</option>
+              <option value="seoul">서울특별시 (대도시 9,900만원 공제 / 주거한도 1.72억)</option>
+              <option value="gyeonggi">경기·인천 (중소도시 8,000만원 공제 / 주거한도 1.51억)</option>
+              <option value="metro" selected>광역시·세종 (대도시 7,700만원 공제 / 주거한도 1.46억)</option>
+              <option value="rural">그 외 시·군 (농어촌 5,300만원 공제 / 주거한도 1.12억)</option>
             </select>
           </div>
           <div>
@@ -498,9 +532,12 @@
   <div id="toast">알림</div>
 
   <script>
+    /* [개선 3] 2026년 법정 기준 정밀 데이터 (지역별 주거재산 한도액 및 환산율 체계 탑재) */
     const POLICY_2026 = {
       medianIncome: { 1: 256.4, 2: 419.9, 3: 535.9, 4: 649.5 },
       baseDeduction: { seoul: 9900, gyeonggi: 8000, metro: 7700, rural: 5300 },
+      housingLimit: { seoul: 17200, gyeonggi: 15100, metro: 14600, rural: 11200 }, // 주거용재산 한도액
+      conversionRates: { residential: 0.0104, general: 0.0417, financial: 0.0626 },
       standards: { livelihood: 0.32, medical: 0.40, housing: 0.48, education: 0.50, nearPoverty: 0.50, emergency: 0.75 },
       emergencyPayouts: { 1: 71.3, 2: 117.8, 3: 150.9, 4: 183.4 }
     };
@@ -924,39 +961,53 @@
       `);
     }
 
+    /* [개선 2] DLP(개인정보 비식별화) 고도화 엔진 */
     function applyDlpMasking(rawText) {
       let masked = rawText;
       let wasMasked = false;
 
-      let rrnPattern = /\b(\d{6})[- ]?([1-4]\d{6})\b/g;
+      // 1. 주민등록번호 (공백, 하이픈 등 변칙 구술 형태까지 완벽 마스킹)
+      let rrnPattern = /\b(\d{6})\s*[-~_.]?\s*([1-4]\s*(?:\d\s*){6})\b/g;
       if (rrnPattern.test(masked)) {
         masked = masked.replace(rrnPattern, function(match, front, back) {
           wasMasked = true;
-          return front + "-" + back.charAt(0) + "****** [주민번호 마스킹]";
+          let cleanBack = back.replace(/\s+/g, '');
+          return front + "-" + cleanBack.charAt(0) + "****** [주민번호 마스킹]";
         });
       }
 
-      let phonePattern = /\b(01[016789]|02|0[3-6][1-5])[- ]?(\d{3,4})[- ]?(\d{4})\b/g;
+      // 2. 전화번호 (휴대전화 010,011 및 지역번호 02,031~064 포괄)
+      let phonePattern = /(?:^|[^\d])(01[016789]|02|0[3-6][1-5])[\s.-]?(\d{3,4})[\s.-]?(\d{4})(?=[^\d]|$)/g;
       if (phonePattern.test(masked)) {
         masked = masked.replace(phonePattern, function(match, p1, p2, p3) {
           wasMasked = true;
-          return p1 + "-****-" + p3;
+          return match.replace(new RegExp(`${p1}[\\s.-]?${p2}[\\s.-]?${p3}`), `${p1}-****-${p3}`);
         });
       }
 
-      let accountPattern = /\b\d{3,6}[- ]?\d{2,6}[- ]?\d{3,6}\b/g;
-      masked = masked.replace(accountPattern, function(match) {
-        if (match.length >= 11 && !match.startsWith("01")) {
+      // 3. 계좌번호 (은행명/통장 키워드 인접 혹은 표준 하이픈 계좌패턴 한정 마스킹으로 일반 숫자 오탐 차단)
+      let accountContextPattern = /(계좌|통장|국민|신한|우리|하나|농협|기업|카카오|케이뱅크|토스|우체국|sc|씨티|새마을|수협|신협)\s*(?:번호)?[:：\s]*([0-9-]{10,20})/gi;
+      if (accountContextPattern.test(masked)) {
+        masked = masked.replace(accountContextPattern, function(match, bank) {
           wasMasked = true;
-          return "[계좌번호 비식별화 처리]";
-        }
-        return match;
-      });
+          return bank + " [계좌번호 비식별화 처리]";
+        });
+      }
+      let accountHyphenPattern = /\b(\d{3,6}-\d{2,6}-\d{3,6}(?:-\d{1,4})?)\b/g;
+      if (accountHyphenPattern.test(masked)) {
+        masked = masked.replace(accountHyphenPattern, function(match) {
+          if (!match.startsWith("010-") && !match.startsWith("02-") && match.length >= 11) {
+            wasMasked = true;
+            return "[계좌번호 비식별화 처리]";
+          }
+          return match;
+        });
+      }
 
       const badge = document.getElementById('dlpBadge');
       if (badge) {
         if (wasMasked) {
-          badge.innerText = "🛡️️ PII 자동 감지: 민감정보 마스킹 완료";
+          badge.innerText = "🛡️ PII 자동 감지: 민감정보 마스킹 완료";
           badge.style.background = "#fef3c7";
           badge.style.color = "#92400e";
           badge.style.borderColor = "#fcd34d";
@@ -1051,7 +1102,7 @@
       return null;
     }
 
-    /* 정규식 파싱 엔진 (소득 누락 오류 원천 해결 및 안정화) */
+    /* 정규식 파싱 엔진 */
     function processCounseling() {
       try {
         const memoEl = document.getElementById('counselInput');
@@ -1062,7 +1113,6 @@
           return;
         }
 
-        // 공백 및 유령 문자 정규화
         text = text.replace(/\u00A0/g, ' ');
 
         const isPensionMode = (activePreset === 'basicPension') || /(기초연금|노인연금)/.test(text);
@@ -1131,7 +1181,7 @@
           currentMissingFields.push({ key: 'household', label: '가구원수' });
         }
 
-        // 4. 월소득 (기초생활 프리셋 및 변칙 0원 표현 안정적 감지)
+        // 4. 월소득
         let earned = null;
         let other = 0;
 
@@ -1158,7 +1208,7 @@
         let mOtherLine = text.match(/(?:공적이전소득|공적\s*이전소득|아동수당|국민연금|기초연금|이전소득)\s*[:：=•\-]?\s*([^\n]+)/i);
         if (mOtherLine) {
           let oContent = mOtherLine[1].trim().replace(/\([^\)]*\)/g, '').trim();
-          if (/\[?\s*0\s*(?:원|만|만원)?\s*\]?/i.test(oContent) || /없음|0원/i.test(oContent)) {
+          if (/\[?\s*0\s*(?:원|만|만원)?\s*\]?/i.test(oContent) || /없음|0원/.test(oContent)) {
             other = 0;
           } else {
             other = parseWon(oContent) || 0;
@@ -1220,7 +1270,7 @@
           debt = 0;
         }
 
-        // 6. 건강상태 및 근로능력 판정 (해당없음 vs 조사필요)
+        // 6. 건강상태 및 근로능력 판정
         let healthDesc = null;
         let mHealthLine = text.match(/(?:건강상태\s*(?:및|·)?\s*질병|건강상태|질병|질환)\s*[:：=•\-]?\s*([^\n]+)/);
         if (mHealthLine) {
@@ -1270,7 +1320,7 @@
           currentMissingFields.push({ key: 'health', label: '근로능력 및 건강상태' });
         }
 
-        // 7. 부양의무자 판정 (해당없음 vs 조사필요 vs 가족관계해체 조사필요)
+        // 7. 부양의무자 판정
         let support = null;
         let supportText = "";
 
@@ -1462,6 +1512,7 @@
       }
     }
 
+    /* [개선 3] 2026년 법정 기준 재산의 소득환산액 정밀 시뮬레이터 */
     function runSimulation() {
       try {
         const getNum = (id, def = 0) => {
@@ -1485,6 +1536,7 @@
         const finProp = getNum('simFinProp', 0);
         const debt = getNum('simDebt', 0);
 
+        // 1. 소득평가액 산정 (근로유형별 법정 공제)
         let earnedDeduct = 0;
         if (workAbility === 'none' || workAbility === 'illness') {
           earnedDeduct = earned <= 20 ? earned : 20 + (earned - 20) * 0.3;
@@ -1496,28 +1548,41 @@
         const finalEarned = Math.max(0, earned - earnedDeduct);
         const incomeVal = Math.round((finalEarned + other) * 10) / 10;
 
+        // 2. 재산의 소득환산액 산정 (기본재산액 공제 -> 생활준비금 공제 -> 법정 부채 차감 -> 주거한도액 분기 환산)
         let baseDeduct = POLICY_2026.baseDeduction[region] || 7700;
+        let resLimit = POLICY_2026.housingLimit[region] || 14600;
         let remainBaseDeduct = baseDeduct;
 
+        // (1) 기본재산액 공제 (주거용재산 우선)
         let deductToRes = Math.min(resProp, remainBaseDeduct);
-        let resAfter = resProp - deductToRes;
+        let resAfterBase = resProp - deductToRes;
         remainBaseDeduct -= deductToRes;
 
+        // (2) 금융재산: 생활준비금 500만원 우선 공제 후 잔여 기본재산액 공제
         let netFin = Math.max(0, finProp - 500);
         let deductToFin = Math.min(netFin, remainBaseDeduct);
-        let finAfter = netFin - deductToFin;
+        let finAfterBase = netFin - deductToFin;
+        remainBaseDeduct -= deductToFin;
 
+        // (3) 법정 부채 공제 (일반/주거재산 -> 금융재산 순 차감)
         let remainDebt = debt;
-        let debtToRes = Math.min(resAfter, remainDebt);
-        resAfter -= debtToRes;
+        let debtToRes = Math.min(resAfterBase, remainDebt);
+        let resAfterDebt = resAfterBase - debtToRes;
         remainDebt -= debtToRes;
 
-        let debtToFin = Math.min(finAfter, remainDebt);
-        finAfter -= debtToFin;
+        let debtToFin = Math.min(finAfterBase, remainDebt);
+        let finAfterDebt = finAfterBase - debtToFin;
+        remainDebt -= debtToFin;
 
-        let resMonthly = Math.round((resAfter * 0.0104) * 10) / 10;
-        let finMonthly = Math.round((finAfter * 0.0626) * 10) / 10;
-        let propertyMonthly = Math.round((resMonthly + finMonthly) * 10) / 10;
+        // (4) 주거용재산 한도액 분기 적용 (한도 내 1.04% vs 한도 초과분 일반재산 4.17%)
+        let resWithinLimit = Math.min(resAfterDebt, resLimit);
+        let resExceedLimit = Math.max(0, resAfterDebt - resLimit);
+
+        let resMonthly = Math.round((resWithinLimit * POLICY_2026.conversionRates.residential) * 10) / 10;
+        let resExceedMonthly = Math.round((resExceedLimit * POLICY_2026.conversionRates.general) * 10) / 10;
+        let finMonthly = Math.round((finAfterDebt * POLICY_2026.conversionRates.financial) * 10) / 10;
+
+        let propertyMonthly = Math.round((resMonthly + resExceedMonthly + finMonthly) * 10) / 10;
         let recognized = Math.round((incomeVal + propertyMonthly) * 10) / 10;
 
         let median = POLICY_2026.medianIncome[members] || 256.4;
@@ -1547,11 +1612,14 @@
           !isSenior ? "연령 미달 (만 65세 미만)" : (isPensionPass ? "월 최대 33.4만 원 (선정)" : "소득인정액 초과 (탈락)"));
 
         safeSetHtml('calcTraceBox', `
-          <strong>[2026년 법정 소득인정액 산출 상세 Trace]</strong><br>
+          <strong>[2026년 법정 소득인정액 산출 정밀 Trace]</strong><br>
           1. <strong>소득평가액:</strong> ${incomeVal}만 원 = 실제소득(${earned}만 - 공제 ${Math.round(earnedDeduct*10)/10}만) + 이전소득 ${other}만<br>
-          2. <strong>재산환산액:</strong> ${propertyMonthly}만 원 = 주거환산(${resMonthly}만, 과표 ${resAfter}만) + 금융환산(${finMonthly}만, 과표 ${finAfter}만)<br>
+          2. <strong>재산의 소득환산액:</strong> ${propertyMonthly}만 원<br>
+          &nbsp;&nbsp;• <strong>기본재산액 공제:</strong> ${baseDeduct.toLocaleString()}만 원 (선택지역) | <strong>생활준비금 공제:</strong> 500만 원 | <strong>부채 차감:</strong> ${debt.toLocaleString()}만 원<br>
+          &nbsp;&nbsp;• <strong>주거용재산 환산:</strong> ${resMonthly}만 원 (한도 ${resLimit.toLocaleString()}만 내 과표 ${resWithinLimit.toLocaleString()}만 × 1.04%)${resExceedLimit > 0 ? ` + 한도초과분 ${resExceedMonthly}만 원 (과표 ${resExceedLimit.toLocaleString()}만 × 4.17%)` : ''}<br>
+          &nbsp;&nbsp;• <strong>금융재산 환산:</strong> ${finMonthly}만 원 (과표 ${finAfterDebt.toLocaleString()}만 × 6.26%)<br>
           3. <strong>최종 소득인정액:</strong> <strong>${recognized}만 원</strong> (기준 중위소득 대비 ${(recognized/median*100).toFixed(1)}%)<br>
-          • 판정 임계치: 생계(32%) ${liveStd}만 | 긴급실소득(75%) ${emergStd}만 | 차상위(50%) ${nearStd}만 | 기초연금선정액 ${pensionCutoff}만
+          • <strong>임계치:</strong> 생계(32%) ${liveStd}만 | 긴급실소득(75%) ${emergStd}만 | 차상위(50%) ${nearStd}만 | 기초연금선정액 ${pensionCutoff}만
         `);
 
         renderStep4ClientDocs(members, currentParsedData);
@@ -1611,7 +1679,6 @@
       safeSetText('happyEumOutput', doc);
     }
 
-    /* 4단계 민원인 맞춤 구비서류 (법정 필수 서식 일괄 탑재 및 자동 분기) */
     function renderStep4ClientDocs(members, p) {
       const applicantName = p.name ? p.name : "[미입력] 성명 미상";
       safeSetText('printApplicantName', applicantName);
@@ -1625,26 +1692,22 @@
         { name: "급여수급 계좌 통장사본", desc: "복지급여 입금 희망 본인 명의 통장 (압류방지통장 개설 안내 가능)", required: true }
       ];
 
-      // 소득 상태별 서류 분기
       if (p.earned === 0 || (p.earned !== null && p.earned < 50)) {
         docs.push({ name: "지출실태조사표", desc: "소득 미발생 가구의 최근 생활비·주거비 조달 출처 소명서 (창구 서식)", required: true });
       } else if (p.earned !== null && p.earned > 0) {
         docs.push({ name: "소득신고서 및 소득증빙서류", desc: "급여명세서, 소득금액증명원, 사업자등록 관련 서류 중 해당분", required: true });
       }
 
-      // 주거 형태별 서류 분기
       if (p.housingType && p.housingType.includes("사용대차")) {
         docs.push({ name: "무료임대확인서 (사용대차 확인서)", desc: "친인척/지인 소유 주택 무상거주 사실 확인용 (주택소유자 서명 날인)", required: true });
       } else if (p.housingType && (p.housingType.includes("월세") || p.housingType.includes("전세"))) {
         docs.push({ name: "임대차계약서 사본", desc: "확정일자 날인본 권장 (보증금 및 월 임차료 지출 증빙)", required: true });
       }
 
-      // 근로능력 심사 서류 분기
       if (p.workAbility === 'illness' && !p.isPensionMode) {
         docs.push({ name: "근로능력평가용 진단서 및 진료기록부", desc: "질병·부상 근로능력 판정 심사용 (국민연금공단 심사용, 최근 2개월 내 발급본)", required: true });
       }
 
-      // 부양의무자 서류 분기
       if (!p.isPensionMode && activePreset !== 'nearPoverty' && activePreset !== 'emergency') {
         if (p.support === 'severed') {
           docs.push({ name: "가족관계 해체사유서 및 최근 1년 금융거래내역서", desc: "부양의무자와의 연락두절/왕래단절 소명 및 정기지원 전무 입증 (지생보 심의용)", required: true });
@@ -1653,7 +1716,6 @@
         }
       }
 
-      // 긴급복지 위기 증빙
       const memoEl = document.getElementById('counselInput');
       const rawText = memoEl ? memoEl.value : "";
       const isEmergencyRisk = /(실직|퇴거|쫓겨|방을\s*빼|월세\s*밀려|단전|단수|폭력|학대)/.test(rawText);
@@ -1674,7 +1736,6 @@
         </li>
       `).join(''));
 
-      // 유관기관 매칭
       const matchedAgencies = AGENCY_RULES.filter(rule => rule.trigger.test(rawText));
 
       if (matchedAgencies.length > 0) {
