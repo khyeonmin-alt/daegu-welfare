@@ -169,7 +169,6 @@
     }
     #toast.show { opacity: 1; }
 
-    /* [개선 5] 인쇄(Print CSS) 최적화 */
     @page {
       size: A4 portrait;
       margin: 15mm;
@@ -532,11 +531,10 @@
   <div id="toast">알림</div>
 
   <script>
-    /* [개선 3] 2026년 법정 기준 정밀 데이터 (지역별 주거재산 한도액 및 환산율 체계 탑재) */
     const POLICY_2026 = {
       medianIncome: { 1: 256.4, 2: 419.9, 3: 535.9, 4: 649.5 },
       baseDeduction: { seoul: 9900, gyeonggi: 8000, metro: 7700, rural: 5300 },
-      housingLimit: { seoul: 17200, gyeonggi: 15100, metro: 14600, rural: 11200 }, // 주거용재산 한도액
+      housingLimit: { seoul: 17200, gyeonggi: 15100, metro: 14600, rural: 11200 },
       conversionRates: { residential: 0.0104, general: 0.0417, financial: 0.0626 },
       standards: { livelihood: 0.32, medical: 0.40, housing: 0.48, education: 0.50, nearPoverty: 0.50, emergency: 0.75 },
       emergencyPayouts: { 1: 71.3, 2: 117.8, 3: 150.9, 4: 183.4 }
@@ -961,12 +959,10 @@
       `);
     }
 
-    /* [개선 2] DLP(개인정보 비식별화) 고도화 엔진 */
     function applyDlpMasking(rawText) {
       let masked = rawText;
       let wasMasked = false;
 
-      // 1. 주민등록번호 (공백, 하이픈 등 변칙 구술 형태까지 완벽 마스킹)
       let rrnPattern = /\b(\d{6})\s*[-~_.]?\s*([1-4]\s*(?:\d\s*){6})\b/g;
       if (rrnPattern.test(masked)) {
         masked = masked.replace(rrnPattern, function(match, front, back) {
@@ -976,7 +972,6 @@
         });
       }
 
-      // 2. 전화번호 (휴대전화 010,011 및 지역번호 02,031~064 포괄)
       let phonePattern = /(?:^|[^\d])(01[016789]|02|0[3-6][1-5])[\s.-]?(\d{3,4})[\s.-]?(\d{4})(?=[^\d]|$)/g;
       if (phonePattern.test(masked)) {
         masked = masked.replace(phonePattern, function(match, p1, p2, p3) {
@@ -985,7 +980,6 @@
         });
       }
 
-      // 3. 계좌번호 (은행명/통장 키워드 인접 혹은 표준 하이픈 계좌패턴 한정 마스킹으로 일반 숫자 오탐 차단)
       let accountContextPattern = /(계좌|통장|국민|신한|우리|하나|농협|기업|카카오|케이뱅크|토스|우체국|sc|씨티|새마을|수협|신협)\s*(?:번호)?[:：\s]*([0-9-]{10,20})/gi;
       if (accountContextPattern.test(masked)) {
         masked = masked.replace(accountContextPattern, function(match, bank) {
@@ -1102,7 +1096,6 @@
       return null;
     }
 
-    /* 정규식 파싱 엔진 */
     function processCounseling() {
       try {
         const memoEl = document.getElementById('counselInput');
@@ -1512,7 +1505,7 @@
       }
     }
 
-    /* [개선 3] 2026년 법정 기준 재산의 소득환산액 정밀 시뮬레이터 */
+    /* 시뮬레이션 및 4대 급여 모의판정 연동 */
     function runSimulation() {
       try {
         const getNum = (id, def = 0) => {
@@ -1536,7 +1529,7 @@
         const finProp = getNum('simFinProp', 0);
         const debt = getNum('simDebt', 0);
 
-        // 1. 소득평가액 산정 (근로유형별 법정 공제)
+        // 1. 일반 기초생활보장 소득평가액
         let earnedDeduct = 0;
         if (workAbility === 'none' || workAbility === 'illness') {
           earnedDeduct = earned <= 20 ? earned : 20 + (earned - 20) * 0.3;
@@ -1548,23 +1541,20 @@
         const finalEarned = Math.max(0, earned - earnedDeduct);
         const incomeVal = Math.round((finalEarned + other) * 10) / 10;
 
-        // 2. 재산의 소득환산액 산정 (기본재산액 공제 -> 생활준비금 공제 -> 법정 부채 차감 -> 주거한도액 분기 환산)
+        // 2. 재산의 소득환산액 산정
         let baseDeduct = POLICY_2026.baseDeduction[region] || 7700;
         let resLimit = POLICY_2026.housingLimit[region] || 14600;
         let remainBaseDeduct = baseDeduct;
 
-        // (1) 기본재산액 공제 (주거용재산 우선)
         let deductToRes = Math.min(resProp, remainBaseDeduct);
         let resAfterBase = resProp - deductToRes;
         remainBaseDeduct -= deductToRes;
 
-        // (2) 금융재산: 생활준비금 500만원 우선 공제 후 잔여 기본재산액 공제
         let netFin = Math.max(0, finProp - 500);
         let deductToFin = Math.min(netFin, remainBaseDeduct);
         let finAfterBase = netFin - deductToFin;
         remainBaseDeduct -= deductToFin;
 
-        // (3) 법정 부채 공제 (일반/주거재산 -> 금융재산 순 차감)
         let remainDebt = debt;
         let debtToRes = Math.min(resAfterBase, remainDebt);
         let resAfterDebt = resAfterBase - debtToRes;
@@ -1574,7 +1564,6 @@
         let finAfterDebt = finAfterBase - debtToFin;
         remainDebt -= debtToFin;
 
-        // (4) 주거용재산 한도액 분기 적용 (한도 내 1.04% vs 한도 초과분 일반재산 4.17%)
         let resWithinLimit = Math.min(resAfterDebt, resLimit);
         let resExceedLimit = Math.max(0, resAfterDebt - resLimit);
 
@@ -1585,17 +1574,39 @@
         let propertyMonthly = Math.round((resMonthly + resExceedMonthly + finMonthly) * 10) / 10;
         let recognized = Math.round((incomeVal + propertyMonthly) * 10) / 10;
 
+        // 3. 기초연금 전용 소득인정액 계산 (근로소득 112만 기본공제+30%, 대도시 1.35억 재산공제, 연 4% 환산)
+        let bpEarnedDeduct = earned <= 112 ? earned : 112 + (earned - 112) * 0.3;
+        let bpFinalEarned = Math.max(0, earned - bpEarnedDeduct);
+        let bpIncomeVal = Math.round((bpFinalEarned + other) * 10) / 10;
+
+        let bpBaseDeduct = (region === 'seoul' || region === 'metro') ? 13500 : (region === 'gyeonggi' ? 8500 : 7250);
+        let bpResAfter = Math.max(0, resProp - bpBaseDeduct);
+        let bpFinAfter = Math.max(0, finProp - 2000);
+        let bpDebtRemain = debt;
+        let bpDebtToRes = Math.min(bpResAfter, bpDebtRemain);
+        bpResAfter -= bpDebtToRes;
+        bpDebtRemain -= bpDebtToRes;
+        let bpDebtToFin = Math.min(bpFinAfter, bpDebtRemain);
+        bpFinAfter -= bpDebtToFin;
+
+        let bpPropMonthly = Math.round(((bpResAfter + bpFinAfter) * 0.04 / 12) * 10) / 10;
+        let pensionRecognized = Math.round((bpIncomeVal + bpPropMonthly) * 10) / 10;
+
+        // 사업별 임계치 기준
         let median = POLICY_2026.medianIncome[members] || 256.4;
         let liveStd = Math.round(median * POLICY_2026.standards.livelihood * 10) / 10;
         let emergStd = Math.round(median * POLICY_2026.standards.emergency * 10) / 10;
         let nearStd = Math.round(median * POLICY_2026.standards.nearPoverty * 10) / 10;
+        const pensionCutoff = (members === 1) ? 213.0 : 340.8;
 
         safeSetText('liveIncomeRecognized', recognized.toLocaleString());
         safeSetText('liveRealIncome', (earned + other).toLocaleString());
 
+        // 4대 급여 적합 여부 판정
         const isLivePass = recognized <= liveStd;
+        const liveAmount = Math.max(0, Math.round(liveStd - recognized));
         updateLiveCard('liveCardBasicLife', 'liveEstBasicLife', isLivePass, 
-          isLivePass ? `월 약 ${Math.max(0, Math.round(liveStd - recognized))}만 원 (선정)` : "기준 초과 (탈락)");
+          isLivePass ? `월 약 ${liveAmount}만 원 (선정)` : "기준 초과 (탈락)");
 
         const isEmergPass = ((earned + other) <= emergStd) && (finProp <= 822);
         updateLiveCard('liveCardEmergency', 'liveEstEmergency', isEmergPass, 
@@ -1605,9 +1616,8 @@
         updateLiveCard('liveCardNearPoverty', 'liveEstNearPoverty', isNearPass, 
           isNearPass ? "수급 대상 (선정)" : "기준 초과 (탈락)");
 
-        const pensionCutoff = (members === 1) ? 213.0 : 340.8;
         const isSenior = (currentParsedData.age && currentParsedData.age >= 65);
-        const isPensionPass = isSenior && (recognized <= pensionCutoff);
+        const isPensionPass = isSenior && (pensionRecognized <= pensionCutoff);
         updateLiveCard('liveCardBasicPension', 'liveEstBasicPension', isPensionPass, 
           !isSenior ? "연령 미달 (만 65세 미만)" : (isPensionPass ? "월 최대 33.4만 원 (선정)" : "소득인정액 초과 (탈락)"));
 
@@ -1618,18 +1628,68 @@
           &nbsp;&nbsp;• <strong>기본재산액 공제:</strong> ${baseDeduct.toLocaleString()}만 원 (선택지역) | <strong>생활준비금 공제:</strong> 500만 원 | <strong>부채 차감:</strong> ${debt.toLocaleString()}만 원<br>
           &nbsp;&nbsp;• <strong>주거용재산 환산:</strong> ${resMonthly}만 원 (한도 ${resLimit.toLocaleString()}만 내 과표 ${resWithinLimit.toLocaleString()}만 × 1.04%)${resExceedLimit > 0 ? ` + 한도초과분 ${resExceedMonthly}만 원 (과표 ${resExceedLimit.toLocaleString()}만 × 4.17%)` : ''}<br>
           &nbsp;&nbsp;• <strong>금융재산 환산:</strong> ${finMonthly}만 원 (과표 ${finAfterDebt.toLocaleString()}만 × 6.26%)<br>
-          3. <strong>최종 소득인정액:</strong> <strong>${recognized}만 원</strong> (기준 중위소득 대비 ${(recognized/median*100).toFixed(1)}%)<br>
-          • <strong>임계치:</strong> 생계(32%) ${liveStd}만 | 긴급실소득(75%) ${emergStd}만 | 차상위(50%) ${nearStd}만 | 기초연금선정액 ${pensionCutoff}만
+          3. <strong>사업별 기준 비교:</strong> 국기초(32%) ${liveStd}만 | 긴급실소득(75%) ${emergStd}만(금융 822만 이하) | 차상위(50%) ${nearStd}만 | 기초연금 인정액 ${pensionRecognized}만(선정액 ${pensionCutoff}만)
         `);
 
+        // 신청 가능(선정) 급여 목록 취합
+        const eligibleBenefits = [];
+        if (isLivePass) {
+          eligibleBenefits.push(`국민기초 맞춤형 생계급여 (선정 - 예상 급여: 월 약 ${liveAmount}만 원)`);
+        }
+        if (isEmergPass) {
+          eligibleBenefits.push(`긴급복지지원 (선정 - 예상 지원: 월 ${POLICY_2026.emergencyPayouts[members]}만 원 우선지원)`);
+        }
+        if (isNearPass) {
+          eligibleBenefits.push(`차상위계층 확인 (선정 - 법정 양곡할인·자활사업·통신비 등 감면 패키지)`);
+        }
+        if (isPensionPass) {
+          eligibleBenefits.push(`기초연금 (선정 - 만 65세 이상 노인 대상, 월 최대 33.4만 원 지급)`);
+        }
+
+        const simResults = {
+          recognized,
+          realIncome: earned + other,
+          finProp,
+          liveStd,
+          isLivePass,
+          emergStd,
+          isEmergPass,
+          nearStd,
+          isNearPass,
+          pensionRecognized,
+          pensionCutoff,
+          isSenior,
+          isPensionPass,
+          eligibleBenefits
+        };
+
         renderStep4ClientDocs(members, currentParsedData);
-        renderHappyEumDocument(currentParsedData, recognized, (earned + other));
+        renderHappyEumDocument(currentParsedData, simResults);
       } catch (err) {
         console.error("Simulation calculation error:", err);
       }
     }
 
-    function renderHappyEumDocument(p, recognized, realIncome) {
+    /* 행복e음 표준 상담일지 생성: 신청 예정 급여 및 사업별 소득인정액 구분 반영 */
+    function renderHappyEumDocument(p, sim) {
+      if (!sim) {
+        sim = {
+          recognized: 0,
+          realIncome: 0,
+          finProp: 0,
+          liveStd: 82.0,
+          isLivePass: false,
+          emergStd: 192.3,
+          isEmergPass: false,
+          nearStd: 128.2,
+          isNearPass: false,
+          pensionRecognized: 0,
+          pensionCutoff: 213.0,
+          isSenior: false,
+          isPensionPass: false,
+          eligibleBenefits: []
+        };
+      }
       const today = new Date().toLocaleDateString('ko-KR');
       const nameStr = p.name || "[성명 미기재]";
       const ageStr = p.age ? `만 ${p.age}세` : "[연령 미기재]";
@@ -1668,11 +1728,22 @@
  • 대한법률구조공단 [무료 개인회생·파산 지원]: 부채 채무조정 무료 법률상담 (문의: 국번없이 132)
 
 5. 종합 상담 소견 및 법정 조치계획
- [신청 예정 급여]
-  • ${p.isPensionMode ? "기초연금 신청" : "맞춤형 기초생활보장 (생계·의료·주거급여) 및 긴급복지지원"}
+ [신청 예정 급여]`;
 
- [행정 조치 계획]
-  ① 소득인정액 산출 결과: 모의 소득인정액 약 ${recognized !== undefined ? recognized : 0}만 원
+      if (sim.eligibleBenefits && sim.eligibleBenefits.length > 0) {
+        sim.eligibleBenefits.forEach(b => {
+          doc += `\n  • ${b}`;
+        });
+      } else {
+        doc += `\n  • 모의판정 기준 충족 급여 없음 (소득·재산 기준 초과 - 민간 자원 및 타 복지제도 연계 검토)`;
+      }
+
+      doc += `\n\n [행정 조치 계획]
+  ① 사업별 모의 소득인정액(선정기준 대비 판정):
+    - [국민기초 생계급여]: 소득인정액 약 ${sim.recognized.toLocaleString()}만 원 (${sim.isLivePass ? `기준 중위 32%인 ${sim.liveStd}만 원 이하 [적합]` : `기준 초과 [부적합]`})
+    - [긴급복지지원(정부)]: 총 실소득 약 ${sim.realIncome.toLocaleString()}만 원 (${sim.isEmergPass ? `중위 75%인 ${sim.emergStd}만 원 이하 & 금융 822만 원 이하 [적합]` : `소득/금융 기준 초과 [부적합]`})
+    - [차상위계층]: 소득인정액 약 ${sim.recognized.toLocaleString()}만 원 (${sim.isNearPass ? `기준 중위 50%인 ${sim.nearStd}만 원 이하 [적합]` : `기준 초과 [부적합]`})
+    - [기초연금]: 연금 소득인정액 약 ${sim.pensionRecognized.toLocaleString()}만 원 (${!sim.isSenior ? "만 65세 미만 [연령 미달]" : (sim.isPensionPass ? `선정기준액 ${sim.pensionCutoff}만 원 이하 [적합]` : `소득인정액 초과 [부적합]`)})
   ② 구비서류 징구: 사회보장급여 신청서, 금융정보제공동의서, 소득·재산신고서, 신분증, 통장사본 등 필수 법정서식 일체
   ③ 전산 접수: 서류 보완 즉시 행복e음 정식 접수 등록`;
 
