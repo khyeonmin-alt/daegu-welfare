@@ -290,7 +290,7 @@
         </div>
 
         <div class="textarea-wrapper">
-          <textarea id="counselInput" class="counsel-textarea" oninput="handleCounselInputChanged()" placeholder="민원인의 구술 기록을 편하게 입력하세요.&#10;예) 내 이름은 홍길동이고 1982년생입니다. 친구 집에 산다. 소득 0원."></textarea>
+          <textarea id="counselInput" class="counsel-textarea" oninput="handleCounselInputChanged()" placeholder="민원인의 구술 기록을 편하게 입력하세요.&#10;예) 내 이름은 홍길동이고 1958년생입니다. 보증금 300만원 월세 25만원 거주 중이고 소득 0원."></textarea>
           <div id="counselCharCounter" class="char-counter">0자</div>
         </div>
 
@@ -504,7 +504,7 @@
 
         <div class="card">
           <div class="card-header">
-            <div class="card-title">🏛️ [유관기관 지원망] 맞춤 연계 사업 안내</div>
+            <div class="card-title">🏛️️ [유관기관 지원망] 맞춤 연계 사업 안내</div>
             <span class="badge" style="background:#ccfbf1; color:#0f766e;" id="agencyRecommendCountBadge">0건 매칭</span>
           </div>
           <div id="agencyRecommendListArea" style="display: flex; flex-direction: column; gap: 10px; max-height: 520px; overflow-y: auto;"></div>
@@ -1103,7 +1103,7 @@
       return null;
     }
 
-    /* 정규식 파싱 엔진 (연령 및 노인 요건 정밀화) */
+    /* 정규식 파싱 엔진 (연령 및 사업별 특성 정밀화) */
     function processCounseling() {
       try {
         const memoEl = document.getElementById('counselInput');
@@ -1140,7 +1140,7 @@
         }
         if (!name) currentMissingFields.push({ key: 'name', label: '대상자 성명' });
 
-        // 2. 대상자 연령 (괄호·특수기호 혼합 형태 완벽 인식)
+        // 2. 대상자 연령
         let age = null;
         let mManAge = text.match(/만\s*(?:으로\s*)?[\[\(\{]?\s*([0-9]{1,2})\s*[\]\}\)]?\s*(?:세|살)/i);
         let mSelfAgeLine = text.match(/(?:세대주|신청인|신청자|대상자|본인|나이|연령)[^\n]*?[\[\(\{]?\s*([0-9]{1,2})\s*[\]\}\)]?\s*(?:세|살)/i);
@@ -1161,7 +1161,7 @@
         } else if (mBracketAge) {
           age = parseInt(mBracketAge[1], 10);
         } else if (isPensionMode || /(만\s*65세\s*이상|65세\s*이상|독거노인|어르신)/.test(text)) {
-          age = 70; // 노인 대상 명시적 구술 시 기본 연령 충족
+          age = 70;
         }
 
         if (!age) currentMissingFields.push({ key: 'age', label: '대상자 연령' });
@@ -1278,7 +1278,7 @@
           debt = 0;
         }
 
-        // 6. 건강상태 및 근로능력 판정
+        // 6. 건강상태 및 근로능력 판정 (차상위/긴급복지 시 '해당없음' 최우선 분기)
         let healthDesc = null;
         let mHealthLine = text.match(/(?:건강상태\s*(?:및|·)?\s*질병|건강상태|질병|질환)\s*[:：=•\-]?\s*([^\n]+)/);
         if (mHealthLine) {
@@ -1331,7 +1331,7 @@
           currentMissingFields.push({ key: 'health', label: '근로능력 및 건강상태' });
         }
 
-        // 7. 부양의무자 판정
+        // 7. 부양의무자 판정 (차상위/긴급복지/기초연금 시 '해당없음' 최우선 분기)
         let support = null;
         let supportText = "";
 
@@ -1525,7 +1525,7 @@
       }
     }
 
-    /* 시뮬레이션 및 4대 급여 모의판정 연동 (노인 연령 요건 정밀화) */
+    /* 시뮬레이션 및 4대 급여 모의판정 연동 */
     function runSimulation() {
       try {
         const getNum = (id, def = 0) => {
@@ -1622,7 +1622,7 @@
         safeSetText('liveIncomeRecognized', recognized.toLocaleString());
         safeSetText('liveRealIncome', (earned + other).toLocaleString());
 
-        // 4. [고도화]: 기초연금 노인 연령 요건(만 65세 이상) 정밀 다중 판독
+        // 4. 기초연금 노인 연령 요건(만 65세 이상) 정밀 다중 판독
         const memoEl = document.getElementById('counselInput');
         const rawText = memoEl ? memoEl.value : "";
         const isSenior = (ageVal >= 65) || 
