@@ -583,7 +583,7 @@
 • 세대주 성명: 이미선 (만 [ 46 ] 세)
 • 보장가구 범위: [ 2 ]인 가구 (본인 및 미취학 자녀 1명 동거 모자가구)
 • 건강상태 및 질병: 모녀 모두 특이 중증질환 없음 (통상 건강)
-• 근로능력 유무: 일반 근로능력자 (자활사업 및 파트타임 가능)
+• 근로능력 유무: 해당없음 (차상위계층 신청)
 
 2. 소득 사항 (기준 중위소득 50% 검토)
 • 근로 및 사업소득: 식당 보조 근로소득 월 [ 140 ]만 원 (30% 법정공제 적용)
@@ -612,7 +612,7 @@
 2. 가구원 구성 및 인적사항
 • 세대주 성명: 최영미 (만 [ 44 ] 세)
 • 보장가구 범위: [ 2 ]인 가구 (본인 및 초등학생 자녀 1명 동거)
-• 건강 및 근로: 실직 및 극심한 불안 상태로 경제활동 중단
+• 건강상태 및 근로: 해당없음 (긴급복지 선지원 대상)
 
 3. 긴급지원 소득 및 금융재산 기준 검토 (실소득 75% 이하)
 • 월 총실소득: [ 0 ]원 (무소득 확인, 실소득 기준 충족)
@@ -621,7 +621,7 @@
 • 부채 내역: 사채 및 소액대출 [ 200 ]만 원
 
 4. 부양의무자 기준
-• 부양의무자 기준: 해당없음 (긴급복지지원법상 선지원 대상)
+• 부양의무자 기준: 해당없음 (긴급복지지원법상 부양의무자 기준 미적용)
 
 5. 긴급 행정 조치 계획
 • 지원 요청: 긴급생계지원 (2인 가구 117.8만 원) 직권 우선신청
@@ -634,6 +634,7 @@
 • 수급 대상 여부: 만 65세 이상 노인가구 요건 충족
 • 가구 형태: [ 1 ]인 단독 노인가구 (독거노인)
 • 건강상태: 만성 퇴행성 관절염으로 거동 불편
+• 근로능력 유무: 해당없음 (만 65세 이상 기초연금)
 
 2. 소득 현황 (기초연금 소득인정액 산정)
 • 월소득: [ 0 ]원 (경제활동 일체 없음, 무소득)
@@ -1109,6 +1110,10 @@
         text = text.replace(/\u00A0/g, ' ');
 
         const isPensionMode = (activePreset === 'basicPension') || /(기초연금|노인연금)/.test(text);
+        const isNearPovertyMode = (activePreset === 'nearPoverty') || /(차상위계층|차상위\s*확인)/.test(text);
+        const isEmergencyMode = (activePreset === 'emergency') || /(긴급복지지원|긴급생계지원|긴급지원)/.test(text);
+        const isExemptScheme = isNearPovertyMode || isEmergencyMode;
+
         currentMissingFields = [];
 
         // 1. 대상자 성명
@@ -1263,7 +1268,7 @@
           debt = 0;
         }
 
-        // 6. 건강상태 및 근로능력 판정
+        // 6. 건강상태 및 근로능력 판정 (차상위/긴급복지 시 '해당없음' 최우선 처리)
         let healthDesc = null;
         let mHealthLine = text.match(/(?:건강상태\s*(?:및|·)?\s*질병|건강상태|질병|질환)\s*[:：=•\-]?\s*([^\n]+)/);
         if (mHealthLine) {
@@ -1283,7 +1288,10 @@
         let workAbility = null;
         let workAbilityText = "";
 
-        if (age && age >= 65) {
+        if (isExemptScheme) {
+          workAbility = isNearPovertyMode ? "able" : "none";
+          workAbilityText = `<strong style="color:#64748b;">해당없음</strong> <span style="color:#64748b;">(${isEmergencyMode ? '긴급복지' : '차상위'} 기준 미적용)</span>`;
+        } else if (age && age >= 65) {
           workAbility = "none";
           workAbilityText = `<strong style="color:#059669;">해당없음</strong> <span style="color:#475569;">(만 65세 이상 법정 노인)</span>`;
         } else if (isSevereDisability) {
@@ -1313,7 +1321,7 @@
           currentMissingFields.push({ key: 'health', label: '근로능력 및 건강상태' });
         }
 
-        // 7. 부양의무자 판정
+        // 7. 부양의무자 판정 (차상위/긴급복지/기초연금 시 '해당없음' 최우선 처리)
         let support = null;
         let supportText = "";
 
@@ -1324,7 +1332,11 @@
         let hasNoSupport = /(부양의무자\s*없음|부양자\s*없음|가족\s*없음|해당없음|없음)/.test(sContent) || /부양의무자\s*없음|부양자\s*없음|가족\s*없음/.test(text);
         let hasSupportObligor = /(장남|차남|아들|딸|자녀|부모|모친|부친|배우자)\s*([0-9]|한|하나|두|둘)?\s*명?/.test(text) || /부양의무자\s*있음/.test(text);
 
-        if (hasSevered) {
+        if (isExemptScheme || isPensionMode) {
+          support = "none";
+          const schemeName = isEmergencyMode ? '긴급복지' : (isNearPovertyMode ? '차상위' : '기초연금');
+          supportText = `<strong style="color:#64748b;">해당없음</strong> <span style="color:#64748b;">(${schemeName} 부양의무자 기준 미적용)</span>`;
+        } else if (hasSevered) {
           support = "severed";
           supportText = `<strong style="color:#b45309;">가족관계해체 조사필요</strong> <span style="color:#b45309;">(지방생활보장위원회 심의 대상)</span>`;
         } else if (hasNoSupport && !hasSupportObligor) {
@@ -1333,9 +1345,6 @@
         } else if (hasSupportObligor) {
           support = "normal";
           supportText = `<strong style="color:#be123c;">부양의무자 조사필요</strong> <span style="color:#be123c;">(소득·재산 조사 대상)</span>`;
-        } else if (isPensionMode || activePreset === 'nearPoverty' || activePreset === 'emergency') {
-          support = "none";
-          supportText = `<strong style="color:#64748b;">해당없음</strong> <span style="color:#64748b;">(부양의무자 기준 미적용 사업)</span>`;
         } else {
           support = null;
           supportText = `<span class="missing-text">[미기재] 부양의무자 확인 요망</span>`;
@@ -1505,7 +1514,6 @@
       }
     }
 
-    /* 시뮬레이션 및 4대 급여 모의판정 연동 */
     function runSimulation() {
       try {
         const getNum = (id, def = 0) => {
@@ -1574,7 +1582,7 @@
         let propertyMonthly = Math.round((resMonthly + resExceedMonthly + finMonthly) * 10) / 10;
         let recognized = Math.round((incomeVal + propertyMonthly) * 10) / 10;
 
-        // 3. 기초연금 전용 소득인정액 계산 (근로소득 112만 기본공제+30%, 대도시 1.35억 재산공제, 연 4% 환산)
+        // 3. 기초연금 전용 소득인정액 계산
         let bpEarnedDeduct = earned <= 112 ? earned : 112 + (earned - 112) * 0.3;
         let bpFinalEarned = Math.max(0, earned - bpEarnedDeduct);
         let bpIncomeVal = Math.round((bpFinalEarned + other) * 10) / 10;
@@ -1592,7 +1600,6 @@
         let bpPropMonthly = Math.round(((bpResAfter + bpFinAfter) * 0.04 / 12) * 10) / 10;
         let pensionRecognized = Math.round((bpIncomeVal + bpPropMonthly) * 10) / 10;
 
-        // 사업별 임계치 기준
         let median = POLICY_2026.medianIncome[members] || 256.4;
         let liveStd = Math.round(median * POLICY_2026.standards.livelihood * 10) / 10;
         let emergStd = Math.round(median * POLICY_2026.standards.emergency * 10) / 10;
@@ -1602,7 +1609,6 @@
         safeSetText('liveIncomeRecognized', recognized.toLocaleString());
         safeSetText('liveRealIncome', (earned + other).toLocaleString());
 
-        // 4대 급여 적합 여부 판정
         const isLivePass = recognized <= liveStd;
         const liveAmount = Math.max(0, Math.round(liveStd - recognized));
         updateLiveCard('liveCardBasicLife', 'liveEstBasicLife', isLivePass, 
@@ -1631,7 +1637,6 @@
           3. <strong>사업별 기준 비교:</strong> 국기초(32%) ${liveStd}만 | 긴급실소득(75%) ${emergStd}만(금융 822만 이하) | 차상위(50%) ${nearStd}만 | 기초연금 인정액 ${pensionRecognized}만(선정액 ${pensionCutoff}만)
         `);
 
-        // 신청 가능(선정) 급여 목록 취합
         const eligibleBenefits = [];
         if (isLivePass) {
           eligibleBenefits.push(`국민기초 맞춤형 생계급여 (선정 - 예상 급여: 월 약 ${liveAmount}만 원)`);
@@ -1670,7 +1675,6 @@
       }
     }
 
-    /* 행복e음 표준 상담일지 생성: 신청 예정 급여 및 사업별 소득인정액 구분 반영 */
     function renderHappyEumDocument(p, sim) {
       if (!sim) {
         sim = {
@@ -1719,7 +1723,7 @@
 
       if (!p.isPensionMode) {
         let suppClean = p.supportText ? p.supportText.replace(/<[^>]+>/g, '').trim() : "미확인";
-        doc += `\n\n3. 부양의무자 실태 (의료급여 기준)
+        doc += `\n\n3. 부양의무자 실태
  - 실태 조사: ${suppClean}`;
       }
 
@@ -1775,7 +1779,7 @@
         docs.push({ name: "임대차계약서 사본", desc: "확정일자 날인본 권장 (보증금 및 월 임차료 지출 증빙)", required: true });
       }
 
-      if (p.workAbility === 'illness' && !p.isPensionMode) {
+      if (p.workAbility === 'illness' && !p.isPensionMode && activePreset !== 'nearPoverty' && activePreset !== 'emergency') {
         docs.push({ name: "근로능력평가용 진단서 및 진료기록부", desc: "질병·부상 근로능력 판정 심사용 (국민연금공단 심사용, 최근 2개월 내 발급본)", required: true });
       }
 
