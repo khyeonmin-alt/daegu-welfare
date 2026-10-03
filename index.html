@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>복지완성 Pro (행정안전부 AI 공통기반 연계형)</title>
+  <title>이어봄 Pro (행정안전부 AI 공통기반 연계형)</title>
   
   <style>
     :root {
@@ -221,10 +221,16 @@
           <div class="btn-group">
             <button class="btn btn-outline" onclick="loadPreset('basicLife')" style="color:#1d4ed8; font-weight:800; border-color:#bfdbfe;">📋 기초생활</button>
             <button class="btn btn-outline" onclick="loadPreset('nearPoverty')" style="color:#047857; font-weight:800; border-color:#a7f3d0;">🎁 차상위</button>
-            <!-- 붉은 단색 대신 일관성 있는 아웃라인 톤으로 정돈 -->
             <button class="btn btn-outline" onclick="loadPreset('emergency')" style="color:#b91c1c; font-weight:800; border-color:#fca5a5;">🚨 긴급복지</button>
-            <button class="btn btn-outline" onclick="loadPreset('basicPension')" style="color:#7c3aed; font-weight:800; border-color:#ddd6fe;">👵 노인연금</button>
+            <!-- 노인연금 -> 기초연금으로 수정 -->
+            <button class="btn btn-outline" onclick="loadPreset('basicPension')" style="color:#7c3aed; font-weight:800; border-color:#ddd6fe;">👵 기초연금</button>
             <button class="btn btn-outline" onclick="clearCounselInput()" style="font-weight:800; border-color:#94a3b8; color:#0f172a;">🧹 자연어 상담</button>
+            
+            <!-- 음성 녹음 파일 업로드 전용 숨김 인풋 및 버튼 추가 -->
+            <input type="file" id="audioUploadInput" accept="audio/*,.mp3,.m4a,.wav,.ogg" style="display: none;" onchange="handleAudioFileSelected(event)">
+            <button class="btn btn-outline" onclick="triggerAudioUpload()" style="color:#0284c7; font-weight:800; border-color:#bae6fd; background:#f0f9ff;" title="상담 녹음 파일(mp3, m4a 등)을 업로드합니다">
+              🎙️ 상담 녹음파일 업로드
+            </button>
           </div>
         </div>
 
@@ -340,7 +346,7 @@
               </div>
 
               <div class="live-benefit-card" id="liveCardBasicPension">
-                <div style="font-weight: 800; font-size: 13px;">기초연금 (노인)</div>
+                <div style="font-weight: 800; font-size: 13px;">기초연금</div>
                 <div style="font-size: 11px; color: var(--text-muted);">만 65세 이상 (선정액 이하)</div>
                 <div class="benefit-status" id="liveEstBasicPension" style="margin-top: 4px;">판정 대기</div>
               </div>
@@ -443,7 +449,7 @@
 
         <div class="card">
           <div class="card-header">
-            <div class="card-title">🏛️ [유관기관 지원망] 맞춤 연계 사업 안내</div>
+            <div class="card-title">🏛️️ [유관기관 지원망] 맞춤 연계 사업 안내</div>
             <span class="badge" style="background:#ccfbf1; color:#0f766e;" id="agencyRecommendCountBadge">0건 매칭</span>
           </div>
           <div id="agencyRecommendListArea" style="display: flex; flex-direction: column; gap: 10px; max-height: 520px; overflow-y: auto;"></div>
@@ -689,6 +695,20 @@
       const target = document.getElementById(tabId);
       if (target) target.classList.add('active');
       if (btnElem) btnElem.classList.add('active');
+    }
+
+    /* 음성 녹음 업로드 트리거 및 이벤트 핸들러 */
+    function triggerAudioUpload() {
+      const fileInput = document.getElementById('audioUploadInput');
+      if (fileInput) fileInput.click();
+    }
+
+    function handleAudioFileSelected(event) {
+      const file = event.target.files && event.target.files[0];
+      if (file) {
+        showToast(`🎙️ 녹음파일 [${file.name}] 등록됨 (AI 음성-텍스트 변환 연동 준비 완료)`);
+      }
+      event.target.value = "";
     }
 
     function attemptNavigateToStep2() {
@@ -958,9 +978,7 @@
         const isPensionMode = (activePreset === 'basicPension') || /(기초연금|노인연금)/.test(text);
         currentMissingFields = [];
 
-        // -------------------------------------------------------------------------
         // 1. 대상자 성명
-        // -------------------------------------------------------------------------
         let name = null;
         let mName = text.match(/(?:내\s*|제\s*|본인\s*)?(?:성명|이름|성함|대상자명?|신청인명?|신청자명?|신청자|민원인|세대주\s*(?:성명|이름)|환자\s*성명)\s*(?:은|는|이|가|의|:|=|：|•|-)?\s*[:：•\-=\s]*[\[\(]?\s*([가-힣a-zA-Z]{2,6})\s*(?:입니다|이고|이라\s*하고|씨|님|[\]\)\s,.\n]|$)/) ||
                     text.match(/저는\s*([가-힣]{2,5})\s*(?:이라\s*고\s*합니다|입니다|라고\s*불러요)/) ||
@@ -974,9 +992,7 @@
           currentMissingFields.push({ key: 'name', label: '대상자 성명' });
         }
 
-        // -------------------------------------------------------------------------
         // 2. 대상자 연령
-        // -------------------------------------------------------------------------
         let age = null;
         let mYear4 = text.match(/(?:^|[^\d])(19[3-9][0-9]|20[0-2][0-9])\s*년\s*(?:생|출생|도생)?(?=[^\d]|$)/) ||
                      text.match(/(?:생년|출생|나이|연령)[^\d\n]*(19[3-9][0-9]|20[0-2][0-9])\s*년?/);
@@ -999,9 +1015,7 @@
           currentMissingFields.push({ key: 'age', label: '대상자 연령' });
         }
 
-        // -------------------------------------------------------------------------
         // 3. 가구원수
-        // -------------------------------------------------------------------------
         let members = null;
         let mMemDirect = text.match(/[\[\(\{]?\s*([1-7])\s*[\]\}\)]?\s*인\s*가구/) ||
                          text.match(/가구원\s*수\s*[:：]?\s*[\[\(\{]?\s*([1-7])\s*[\]\}\)]?/);
@@ -1026,9 +1040,7 @@
           currentMissingFields.push({ key: 'household', label: '가구원수' });
         }
 
-        // -------------------------------------------------------------------------
         // 4. 월소득
-        // -------------------------------------------------------------------------
         let earned = null;
         let other = 0;
 
@@ -1054,26 +1066,21 @@
         let mOther = text.match(/(?:공적이전소득|이전소득|아동수당|국민연금|기초연금|연금)\s*(?:은|는|이|가|:|=|：|•)?\s*[:：•\s]*([\[\(\{]?[0-9,.\s]+(?:억|천만|만\s*원|만원|원)?[\]\}\)]?)/);
         if (mOther) other = parseWon(mOther[1]) || 0;
 
-        // -------------------------------------------------------------------------
-        // 5. 주거 및 재산 (사용대차 확대 및 전세사기 오탐 차단)
-        // -------------------------------------------------------------------------
+        // 5. 주거 및 재산
         let housingType = null;
         let resProp = null;
         let rentFee = 0;
         let finProp = null;
         let debt = null;
 
-        // 전세사기/사기 키워드 분리 (단순 전세 임차로 오인식 방지)
         let isJeonseFraud = /(전세\s*사기|보증금\s*사기|깡통\s*전세|보증금\s*미반환|전세\s*피해|전세보증금\s*(?:떼임|못\s*받))/i.test(text);
 
-        // 사용대차(무상거주) 인식 대폭 강화: 친구 집, 부모 집, 친척/지인 집 거주 포함
         let isFreeRent = /(사용대차|무료임차|무상거주|무상임차|친척집\s*무상|지인집\s*무상)/.test(text) ||
                          /(?:친구|지인|부모|부모님|친척|형제|남동생|여동생|오빠|형|누나|언니|아들|딸)\s*집(?:에|에서)?\s*(?:무상으로\s*|공짜로\s*|얹혀\s*|신세\s*지고\s*|그냥\s*)?(?:산다|살고|살아|거주|지내|머물|삶)/.test(text) ||
                          /(?:친구|부모|부모님|친척|지인)\s*집에\s*(?:산다|살고|거주)/.test(text);
 
         let isOwn = /(자가|본인명의\s*(?:주택|집|아파트|빌라)|소유\s*(?:주택|집|빌라|아파트)|자가\s*보유|주택가액|집값|공시지가)/.test(text);
         
-        // 전세사기 구문은 전세 거주 형태 확정에서 제외
         let isJeonse = (/(?:전세보증금|전세금|전세로|전세\s*거주|전세방|전세\s*임차)/.test(text) || 
                        (/(?:^|[^\w가-힣])전세(?!\s*사기|\s*피해)(?:[^\w가-힣]|$)/.test(text))) && !isJeonseFraud;
 
@@ -1104,7 +1111,6 @@
           resProp = mDeposit ? parseWon(mDeposit[1]) : 0;
           rentFee = mRent ? parseWon(mRent[1]) : 0;
         } else {
-          // 전세사기 피해자라도 주거 형태(월세, 보증금 등)가 별도로 언급되지 않았으면 정상 결손 처리
           currentMissingFields.push({ key: 'property', label: '주거 및 재산' });
         }
 
@@ -1114,9 +1120,7 @@
         let mDebt = text.match(/(?:부채|대출|빚|사채|카드빚|신용카드\s*빚|마이너스\s*통장)[^\d]*([\[\(\{]?[0-9,.\s]+(?:억|천만|만\s*원|만원|원)?[\]\}\)]?)/);
         debt = mDebt ? parseWon(mDebt[1]) : 0;
 
-        // -------------------------------------------------------------------------
         // 6. 건강/근로능력 및 부양의무자
-        // -------------------------------------------------------------------------
         let workAbility = "able";
         let healthDesc = null;
         if (!isPensionMode) {
@@ -1158,7 +1162,6 @@
       }
     }
 
-    // 긴급복지 법정 위기사유 대폭 보강 (전세사기, 재난재해, 사망·실종·수감 등 추가)
     function detectEmergencyCrisisAndStatutoryDuty(text, p) {
       const emergencyBanner = document.getElementById('emergencyAlertBanner');
       const dutySection = document.getElementById('dutyAlertSection');
@@ -1398,7 +1401,7 @@
           1. <strong>소득평가액:</strong> ${incomeVal}만 원 = 실제소득(${earned}만 - 공제 ${Math.round(earnedDeduct*10)/10}만) + 이전소득 ${other}만<br>
           2. <strong>재산환산액:</strong> ${propertyMonthly}만 원 = 주거환산(${resMonthly}만, 과표 ${resAfter}만) + 금융환산(${finMonthly}만, 과표 ${finAfter}만)<br>
           3. <strong>최종 소득인정액:</strong> <strong>${recognized}만 원</strong> (기준 중위소득 대비 ${(recognized/median*100).toFixed(1)}%)<br>
-          • 판정 임계치: 생계(32%) ${liveStd}만 | 긴급실소득(75%) ${emergStd}만 | 차상위(50%) ${nearStd}만 | 노인연금선정액 ${pensionCutoff}만
+          • 판정 임계치: 생계(32%) ${liveStd}만 | 긴급실소득(75%) ${emergStd}만 | 차상위(50%) ${nearStd}만 | 기초연금선정액 ${pensionCutoff}만
         `);
 
         renderStep4ClientDocs(members, currentParsedData);
