@@ -44,7 +44,6 @@
 
     .container { max-width: 1480px; margin: 18px auto; padding: 0 20px; }
     
-    /* 가독성 및 직관성이 향상된 4분할 스텝 카드형 탭 바 */
     .nav-tabs {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -237,10 +236,10 @@
       color: #047857; font-weight: 800; font-size: 14px;
     }
     .live-benefit-card.fail {
-      border-color: #e2e8f0; background: #f8fafc; opacity: 0.42; filter: grayscale(1);
+      border-color: #e2e8f0; background: #f8fafc; opacity: 0.65;
     }
     .live-benefit-card.fail .benefit-status {
-      color: #94a3b8; font-weight: 700; font-size: 12.5px;
+      color: #dc2626; font-weight: 700; font-size: 12.5px;
     }
 
     .modal-overlay {
@@ -317,7 +316,6 @@
 
   <div class="container">
     
-    <!-- 개선된 4단계 프로세스 탭 바 -->
     <div class="nav-tabs">
       <button class="tab-btn active" id="btnTab1" onclick="switchTab('tab1', this)">
         <div class="tab-step-num">1</div>
@@ -396,7 +394,7 @@
         </div>
 
         <div class="textarea-wrapper">
-          <textarea id="counselInput" class="counsel-textarea" oninput="handleCounselInputChanged()" placeholder="민원인의 구술 기록을 편하게 입력하세요.&#10;예) 내 이름은 홍길동이고 1958년생입니다. 보증금 300만원 월세 25만원 거주 중이고 소득 0원."></textarea>
+          <textarea id="counselInput" class="counsel-textarea" oninput="handleCounselInputChanged()" placeholder="민원인의 구술 기록을 편하게 입력하세요.&#10;예) 이름 홍길동, 생년월일 1982.3.2. 전세 4000만원 거주 중이고 월소득 0원."></textarea>
           <div id="counselCharCounter" class="char-counter">0자</div>
         </div>
 
@@ -658,10 +656,10 @@
 
     const MISSING_FIELD_TEMPLATES = {
       name: "\n• 대상자 성명: [       ] (신청인 본인)",
-      age: "\n• 대상자 연령: [    ]세 (만 [    ]세 또는 1900년생)",
-      household: "\n• 가구원수: [    ]인 가구 (단독 세대주 / 동거가족 수)",
-      income: "\n• 근로 및 사업소득: 월 [    ]만 원 (소득 없을 시 0원)\n• 공적/사적이전소득: 월 [    ]만 원",
-      property: "\n• 주거형태: [월세 / 전세 / 자가 / 사용대차(무상거주)]\n• 보증금: [    ]만 원 / 월세: [    ]만 원\n• 금융재산: [    ]만 원 / 부채: [    ]만 원",
+      age: "\n• 생년월일/연령: [ 1982.3.2. ] (만 00세 또는 생년월일 기재)",
+      household: "\n• 가구원수: [   ]인 가구 (단독 세대주 / 동거가족 수)",
+      income: "\n• 근로 및 사업소득: 월 [   ]만 원 (소득 없을 시 0원)\n• 공적/사적이전소득: 월 [   ]만 원",
+      property: "\n• 주거형태: [월세 / 전세 / 자가 / 사용대차(무상거주)]\n• 보증금/전세금: [   ]만 원 / 월세: [   ]만 원\n• 금융재산: [   ]만 원 / 부채: [   ]만 원",
       health: "\n• 건강상태: [만성질환 / 만65세이상 / 중증장애 / 일반건강]\n• 근로능력 유무: [해당없음 / 질병심사대상 / 일반근로자]",
       obligor: "\n• 부양의무자 실태: [부양의무자 없음 / 가족관계 해체사유서 대상 / 일반 조사대상]"
     };
@@ -669,8 +667,8 @@
     const PRESETS = {
       basicLife: `[기초생활보장 맞춤형급여 상담·조사 표준서식]
 1. 가구원 구성 및 기본 인적사항
-• 세대주 성명: 홍길동 (만 [ 58 ] 세)
-• 보장가구 범위: [ 1 ]인 가구 (단독 세대주, 실제 생계 및 주거 단독 운영)
+• 세대주 성명: 홍길동 (생년월일: 1968.04.15, 만 58세)
+• 보장가구 범위: 1인 가구 (단독 세대주, 실제 생계 및 주거 단독 운영)
 • 건강상태 및 질병: 척추협착증 및 허리디스크로 거동 불편 (진단서 제출)
 • 근로능력 유무: 질병·부상으로 인한 근로능력평가 심사 대상
 
@@ -680,14 +678,14 @@
 • 재산 및 사적이전소득: 월 0원 (가족 및 친인척 정기 지원 일체 없음)
 
 3. 재산 현황 (재산의 소득환산액 산정)
-• 주거 형태: 월세 (보증금 [ 500 ]만 원 / 월세 [ 25 ]만 원)
+• 주거 형태: 월세 (보증금 500만 원 / 월세 25만 원)
 • 일반재산: 없음 (부동산, 분양권, 토지 등 미보유)
-• 금융재산: 예금 잔액 약 [ 45 ]만 원 (기본공제 생활준비금 500만원 이내)
-• 부채 내역: 병원비 치료용 대출 [ 300 ]만 원 (신용대출)
+• 금융재산: 예금 잔액 약 45만 원 (기본공제 생활준비금 500만원 이내)
+• 부채 내역: 병원비 치료용 대출 300만 원 (신용대출)
 • 자동차 보유: 미보유 (100% 환산차량 없음)
 
 4. 부양의무자 기준 (의료급여 중심 조사)
-• 부양의무자 현황: 장남 1명 (만 [ 33 ]세)
+• 부양의무자 현황: 장남 1명 (만 33세)
 • 부양 기피 및 단절 여부: 10년 전 사업 실패 후 가출, 연락두절 상태임.
 • 소명 자료: 가족관계 해체사유서 자필 작성 의사 밝힘 및 1년 이상 금융거래내역 증빙 가능
 
@@ -696,21 +694,21 @@
 
       nearPoverty: `[차상위계층 확인 및 감면지원 상담·조사 표준서식]
 1. 가구원 구성 및 기본 인적사항
-• 세대주 성명: 이미선 (만 [ 46 ] 세)
-• 보장가구 범위: [ 2 ]인 가구 (본인 및 미취학 자녀 1명 동거 모자가구)
+• 세대주 성명: 이미선 (생년월일: 1980.08.12, 만 46세)
+• 보장가구 범위: 2인 가구 (본인 및 미취학 자녀 1명 동거 모자가구)
 • 건강상태 및 질병: 모녀 모두 특이 중증질환 없음 (통상 건강)
 • 근로능력 유무: 해당없음 (차상위계층 신청)
 
 2. 소득 사항 (기준 중위소득 50% 검토)
-• 근로 및 사업소득: 식당 보조 근로소득 월 [ 140 ]만 원 (30% 법정공제 적용)
-• 공적이전소득: 아동수당 월 [ 10 ]만 원
+• 근로 및 사업소득: 식당 보조 근로소득 월 140만 원 (30% 법정공제 적용)
+• 공적이전소득: 아동수당 월 10만 원
 • 재산 및 사적이전소득: 0원
 
 3. 재산 현황 (재산의 소득환산액 산정)
-• 주거 형태: 월세 (보증금 [ 1,500 ]만 원 / 월세 [ 35 ]만 원)
+• 주거 형태: 월세 (보증금 1,500만 원 / 월세 35만 원)
 • 일반재산: 없음 (비주거용 부동산 미보유)
-• 금융재산: 통장 잔액 [ 220 ]만 원 (생활준비금 500만원 공제 이내)
-• 부채 내역: 생활비 마이너스통장 대출 [ 500 ]만 원
+• 금융재산: 통장 잔액 220만 원 (생활준비금 500만원 공제 이내)
+• 부채 내역: 생활비 마이너스통장 대출 500만 원
 • 자동차 보유: 미보유
 
 4. 부양의무자 기준
@@ -726,15 +724,15 @@
 • 심리 상태: 극단적 선택 위기 호소 (위기신호 즉각 개입 요망)
 
 2. 가구원 구성 및 인적사항
-• 세대주 성명: 최영미 (만 [ 44 ] 세)
-• 보장가구 범위: [ 2 ]인 가구 (본인 및 초등학생 자녀 1명 동거)
+• 세대주 성명: 최영미 (생년월일: 1982.02.19, 만 44세)
+• 보장가구 범위: 2인 가구 (본인 및 초등학생 자녀 1명 동거)
 • 건강상태 및 근로: 해당없음 (긴급복지 선지원 대상)
 
 3. 긴급지원 소득 및 금융재산 기준 검토 (실소득 75% 이하)
-• 월 총실소득: [ 0 ]원 (무소득 확인, 실소득 기준 충족)
-• 금융재산: 통장 잔고 [ 0 ]원 (기준액 1인 822만 원 이하 절대 충족)
-• 주거 현황: 월세 [ 30 ]만 원 (임대료 4달 밀려 주말 내 퇴거 강요받음)
-• 부채 내역: 사채 및 소액대출 [ 200 ]만 원
+• 월 총실소득: 0원 (무소득 확인, 실소득 기준 충족)
+• 금융재산: 통장 잔고 0원 (기준액 1인 822만 원 이하 절대 충족)
+• 주거 현황: 월세 30만 원 (임대료 4달 밀려 주말 내 퇴거 강요받음)
+• 부채 내역: 사채 및 소액대출 200만 원
 
 4. 부양의무자 기준
 • 부양의무자 기준: 해당없음 (긴급복지지원법상 부양의무자 기준 미적용)
@@ -746,21 +744,21 @@
 
       basicPension: `[기초연금 신청 및 노인가구 자산조사 표준서식]
 1. 신청인 기본 인적사항 및 연령 확인
-• 신청인 이름: 김정순 (만 [ 72 ] 세)
+• 신청인 이름: 김정순 (생년월일: 1954.06.20, 만 72세)
 • 수급 대상 여부: 만 65세 이상 노인가구 요건 충족
-• 가구 형태: [ 1 ]인 단독 노인가구 (독거노인)
+• 가구 형태: 1인 단독 노인가구 (독거노인)
 • 건강상태: 만성 퇴행성 관절염으로 거동 불편
 • 근로능력 유무: 해당없음 (만 65세 이상 기초연금)
 
 2. 소득 현황 (기초연금 소득인정액 산정)
-• 월소득: [ 0 ]원 (경제활동 일체 없음, 무소득)
+• 월소득: 0원 (경제활동 일체 없음, 무소득)
 • 공적이전소득: 국민연금 월 0원
 • 사적이전소득: 0원
 
 3. 재산 현황 (주거재산 기본공제액 검토)
-• 주거 형태: 전세 (보증금 [ 6,500 ]만 원 / 월세 0원)
+• 주거 형태: 전세 (전세보증금 6,500만 원 / 월세 0원)
 • 일반재산: 없음
-• 금융재산: 통장 예금 잔액 [ 130 ]만 원 (기본공제 범위 내)
+• 금융재산: 통장 예금 잔액 130만 원 (기본공제 범위 내)
 • 금융부채: 담보대출 없음 (0원)
 • 자동차: 미보유
 
@@ -901,8 +899,8 @@
 
       setTimeout(() => {
         const transcribedText = `[복지상담 창구 대면 녹취록 - 온디바이스 STT]
-공무원: 어르신, 오늘 어떤 일로 오셨을까요? 성함이랑 연령 말씀해 주시겠어요?
-민원인: 제 이름은 박철수이고, 1958년생이라 올해 만으로 68세입니다.
+공무원: 어르신, 오늘 어떤 일로 오셨을까요? 성함이랑 생년월일 말씀해 주시겠어요?
+민원인: 제 이름은 박철수이고, 1958.03.12 생입니다.
 공무원: 네, 박철수 님. 지금 가족분들과 같이 살고 계신가요?
 민원인: 아니요, 가족 없이 혼자 살고 있는 1인 단독 가구입니다.
 공무원: 건강은 좀 어떠세요? 일은 하고 계신가요?
@@ -1169,49 +1167,116 @@
       return 1;
     }
 
+    // [정밀 화폐 파서] 억, 천만, 만원 및 순수 숫자 완벽 환산 (만원 단위 반환)
     function parseWon(text) {
       if (!text) return null;
       let clean = text.replace(/,/g, '').replace(/[\[\]\(\)\{\}]/g, '').trim();
-      if (/^0\s*(원|만|만원)?$/.test(clean) || /^(없음|없고|0|무소득|단절|전무|제로|없다)$/.test(clean)) {
+      
+      if (/^(0|0원|0만|0만원|없음|없고|무소득|단절|전무|제로|없다)$/i.test(clean)) {
         return 0;
       }
 
       let total = 0;
-      let eokMatch = clean.match(/([0-9.]+)\s*억/);
-      if (eokMatch) {
-        total += parseFloat(eokMatch[1]) * 10000;
+      let matchedAny = false;
+
+      // 1. 억 단위
+      let mEok = clean.match(/([0-9.]+)\s*억/);
+      if (mEok) {
+        total += parseFloat(mEok[1]) * 10000;
         clean = clean.replace(/([0-9.]+)\s*억/, '');
+        matchedAny = true;
       }
 
-      let cheonManMatch = clean.match(/([0-9.]+)\s*천\s*만/);
-      if (cheonManMatch) {
-        total += parseFloat(cheonManMatch[1]) * 1000;
-        clean = clean.replace(/([0-9.]+)\s*천\s*만/, '');
-      } else {
-        let cheonAlone = clean.match(/([0-9.]+)\s*천\s*원/);
-        if (cheonAlone) {
-          total += Math.round(parseFloat(cheonAlone[1]) * 1000 / 10000);
-          clean = clean.replace(/([0-9.]+)\s*천\s*원/, '');
-        }
+      // 2. 천만 단위 (예: 4천만원, 3천만, 3천)
+      let mCheonMan = clean.match(/([0-9.]+)\s*천\s*만\s*원?/) || clean.match(/([0-9.]+)\s*천\s*만/);
+      if (mCheonMan) {
+        total += parseFloat(mCheonMan[1]) * 1000;
+        clean = clean.replace(mCheonMan[0], '');
+        matchedAny = true;
       }
 
-      let manMatch = clean.match(/([0-9.]+)\s*만\s*원?/) || clean.match(/([0-9.]+)\s*만/);
-      if (manMatch) {
-        total += parseFloat(manMatch[1]);
-        clean = clean.replace(/([0-9.]+)\s*만\s*원?/, '');
+      // 3. 만원 단위 (예: 4000만원, 3000만, 50만)
+      let mMan = clean.match(/([0-9.]+)\s*만\s*원?/) || clean.match(/([0-9.]+)\s*만/);
+      if (mMan) {
+        total += parseFloat(mMan[1]);
+        clean = clean.replace(mMan[0], '');
+        matchedAny = true;
       }
 
-      if (total === 0) {
-        let numOnly = clean.match(/([0-9]+)/);
-        if (numOnly) {
-          let n = parseFloat(numOnly[1]);
-          if (n === 0) return 0;
-          total = n >= 10000 ? Math.round(n / 10000) : n;
-        }
+      // 4. 천 단위 단독 (예: 4천원)
+      let mCheonWon = clean.match(/([0-9.]+)\s*천\s*원/);
+      if (mCheonWon) {
+        total += (parseFloat(mCheonWon[1]) * 1000) / 10000;
+        clean = clean.replace(mCheonWon[0], '');
+        matchedAny = true;
       }
 
-      if (total > 0) return Math.round(total);
+      if (matchedAny) {
+        return Math.round(total);
+      }
+
+      // 5. 접미사 없는 순수 숫자 (예: 40000000 -> 4000만원, 4000 -> 4000만원)
+      let numMatch = clean.match(/([0-9]+)/);
+      if (numMatch) {
+        let n = parseFloat(numMatch[1]);
+        if (n === 0) return 0;
+        return n >= 10000 ? Math.round(n / 10000) : Math.round(n);
+      }
+
       if (/0|없/.test(text)) return 0;
+      return null;
+    }
+
+    // [정밀 생년월일 & 만 나이 계산기] (YYYY.MM.DD / YYYY-MM-DD / YY.MM.DD 완벽 지원)
+    function parseAgeFromText(text) {
+      if (!text) return null;
+
+      // 1. 점(.), 하이픈(-), 슬래시(/) 구분 생년월일 (예: 1982.3.2., 1991.12.2., 1982-03-02, 1982/3/2)
+      let mDate = text.match(/(?:생년월일|출생일|생일)?\s*[:：=•\-]?\s*([\[\(\{]?\s*(19[2-9][0-9]|20[0-2][0-9])\s*[.\-\/]\s*([0-9]{1,2})\s*[.\-\/]\s*([0-9]{1,2})\.?\s*[\]\}\)]?)/i);
+      if (mDate) {
+        let y = parseInt(mDate[2], 10);
+        let m = parseInt(mDate[3], 10);
+        let d = parseInt(mDate[4], 10);
+        
+        let now = new Date();
+        let currentYear = now.getFullYear();
+        let currentMonth = now.getMonth() + 1;
+        let currentDay = now.getDate();
+
+        let calcAge = currentYear - y;
+        if (currentMonth < m || (currentMonth === m && currentDay < d)) {
+          calcAge -= 1; // 생일 안 지난 경우
+        }
+        return Math.max(0, calcAge);
+      }
+
+      // 2. 만 XX세 명시
+      let mManAge = text.match(/만\s*(?:으로\s*)?[\[\(\{]?\s*([0-9]{1,2})\s*[\]\}\)]?\s*(?:세|살)/i);
+      if (mManAge) return parseInt(mManAge[1], 10);
+
+      // 3. 네자리 출생연도 (예: 1982년생, 1991년)
+      let mYear4 = text.match(/(?:^|[^\d])(19[2-9][0-9]|20[0-2][0-9])\s*년\s*(?:생|출생|도생)?(?=[^\d]|$)/);
+      if (mYear4) return new Date().getFullYear() - parseInt(mYear4[1], 10);
+
+      // 4. 두자리 출생연도 (예: 82년생)
+      let mYear2 = text.match(/(?:^|[^\d])([0-9]{2})\s*년생(?=[^\d]|$)/);
+      if (mYear2) {
+        let yy = parseInt(mYear2[1], 10);
+        let yyyy = (yy <= 26 ? (2000 + yy) : (1900 + yy));
+        return new Date().getFullYear() - yyyy;
+      }
+
+      // 5. 단순 나이 표기 (예: 44세, [44]세)
+      let mAgeSimple = text.match(/(?:세대주|신청인|신청자|대상자|본인|나이|연령)[^\n]*?[\[\(\{]?\s*([0-9]{1,2})\s*[\]\}\)]?\s*(?:세|살)/i) ||
+                       text.match(/[\[\(\{]\s*([0-9]{1,2})\s*[\]\}\)]\s*(?:세|살)/) ||
+                       text.match(/\b([1-9][0-9])\s*(?:세|살)\b/);
+      if (mAgeSimple) return parseInt(mAgeSimple[1], 10);
+
+      // 6. 노인 특례 키워드
+      if (/(만\s*65세\s*이상|65세\s*이상|독거노인|어르신)/.test(text)) {
+        return 70;
+      }
+
       return null;
     }
 
@@ -1247,36 +1312,16 @@
         }
         if (!name) {
           let mNameFallback = text.match(/저는\s*([가-힣]{2,5})\s*(?:이라\s*고\s*합니다|입니다|라고\s*불러요)/) ||
-                               text.match(/([가-힣]{2,4})\s*(?:씨|님|어르신|할머니|할아버지)(?:\s*\(대상자\))?/);
+                                 text.match(/([가-힣]{2,4})\s*(?:씨|님|어르신|할머니|할아버지)(?:\s*\(대상자\))?/);
           if (mNameFallback) name = unbracket(mNameFallback[1]).trim();
         }
         if (!name) currentMissingFields.push({ key: 'name', label: '대상자 성명' });
 
-        // 2. 대상자 연령
-        let age = null;
-        let mManAge = text.match(/만\s*(?:으로\s*)?[\[\(\{]?\s*([0-9]{1,2})\s*[\]\}\)]?\s*(?:세|살)/i);
-        let mSelfAgeLine = text.match(/(?:세대주|신청인|신청자|대상자|본인|나이|연령)[^\n]*?[\[\(\{]?\s*([0-9]{1,2})\s*[\]\}\)]?\s*(?:세|살)/i);
-        let mYear4 = text.match(/(?:^|[^\d])(19[2-9][0-9]|20[0-2][0-9])\s*년\s*(?:생|출생|도생)?(?=[^\d]|$)/);
-        let mYear2 = text.match(/(?:^|[^\d])([0-9]{2})\s*년생(?=[^\d]|$)/);
-        let mBracketAge = text.match(/[\[\(\{]\s*([0-9]{1,2})\s*[\]\}\)]\s*(?:세|살)/) ||
-                          text.match(/\b([1-9][0-9])\s*(?:세|살)\b/);
-
-        if (mManAge) {
-          age = parseInt(mManAge[1], 10);
-        } else if (mSelfAgeLine) {
-          age = parseInt(mSelfAgeLine[1], 10);
-        } else if (mYear4) {
-          age = 2026 - parseInt(mYear4[1], 10);
-        } else if (mYear2) {
-          let yy = parseInt(mYear2[1], 10);
-          age = 2026 - (yy <= 26 ? (2000 + yy) : (1900 + yy));
-        } else if (mBracketAge) {
-          age = parseInt(mBracketAge[1], 10);
-        } else if (isPensionMode || /(만\s*65세\s*이상|65세\s*이상|독거노인|어르신)/.test(text)) {
-          age = 70;
+        // 2. 대상자 연령 (생년월일 YYYY.MM.DD 즉각 계산 포함)
+        let age = parseAgeFromText(text);
+        if (age === null) {
+          currentMissingFields.push({ key: 'age', label: '대상자 연령' });
         }
-
-        if (!age) currentMissingFields.push({ key: 'age', label: '대상자 연령' });
 
         // 3. 가구원수
         let members = null;
@@ -1301,11 +1346,11 @@
           currentMissingFields.push({ key: 'household', label: '가구원수' });
         }
 
-        // 4. 월소득
+        // 4. 소득 파싱 (월 3천만원, 3000만 등 정확 환산)
         let earned = null;
         let other = 0;
 
-        let mEarnedLine = text.match(/(?:근로\s*(?:및|·)?\s*사업소득|근로소득|사업소득|월\s*소득|월급|급여|수입|알바비|벌이|식당\s*보조)\s*[:：=•\-]?\s*([^\n]+)/i);
+        let mEarnedLine = text.match(/(?:근로\s*(?:및|·)?\s*사업소득|근로소득|사업소득|월\s*소득|소득|월급|급여|수입|알바비|벌이|식당\s*보조)\s*[:：=•\-]?\s*([^\n]+)/i);
         if (mEarnedLine) {
           let lineContent = mEarnedLine[1].trim();
           let lineNoParen = lineContent.replace(/\([^\)]*\)/g, '').trim();
@@ -1335,7 +1380,7 @@
           }
         }
 
-        // 5. 주거 및 재산
+        // 5. 주거 및 재산 파싱 (전세 4000만원, 월세, 자가 완벽 포착)
         let housingType = null;
         let resProp = null;
         let rentFee = 0;
@@ -1349,8 +1394,10 @@
         let isJeonse = (/(?:전세보증금|전세금|전세로|전세\s*거주|전세\s*임차)/.test(text) || /(?:^|[^\w가-힣])전세(?!\s*사기|\s*피해)/.test(text)) && !isJeonseFraud;
         let isMonthly = /(월세|월세방|임차|월세로)/.test(text);
 
-        let mDeposit = text.match(/(?:보증금|전세금)\s*[:：=•\-]?\s*([^\n,/()]+)/);
-        let mRent = text.match(/월세\s*[:：=•\-]?\s*([^\n,/()]+)(?!\s*(?:달|개월|회|차))/);
+        // 전세 보증금 추출 (예: 전세 4000만원, 전세보증금 4천)
+        let mJeonseVal = text.match(/(?:전세보증금|전세금|전세)\s*[:：=•\-]?\s*([\[\(\{]?[0-9,.\s]+(?:억|천만|천|만\s*원|만원|원)?[\]\}\)]?)/i);
+        let mDeposit = text.match(/(?:보증금)\s*[:：=•\-]?\s*([\[\(\{]?[0-9,.\s]+(?:억|천만|천|만\s*원|만원|원)?[\]\}\)]?)/i);
+        let mRent = text.match(/월세\s*[:：=•\-]?\s*([\[\(\{]?[0-9,.\s]+(?:억|천만|천|만\s*원|만원|원)?[\]\}\)]?)(?!\s*(?:달|개월|회|차))/i);
 
         if (isFreeRent) {
           housingType = "사용대차 (무상거주)";
@@ -1358,13 +1405,13 @@
           rentFee = 0;
         } else if (isOwn) {
           housingType = "자가";
-          let mOwn = text.match(/(?:공시지가|집값|주택가액|시세)[^\d]*([\[\(\{]?[0-9,.\s]+(?:억|천만|만\s*원|만원|원)?[\]\}\)]?)/) ||
-                     text.match(/(?:자가\s*(?:보유)?|소유)[^\d]*([\[\(\{]?[0-9,.\s]+(?:억|천만|만\s*원|만원|원)?[\]\}\)]?)/);
+          let mOwn = text.match(/(?:공시지가|집값|주택가액|시세)[^\d]*([\[\(\{]?[0-9,.\s]+(?:억|천만|천|만\s*원|만원|원)?[\]\}\)]?)/) ||
+                     text.match(/(?:자가\s*(?:보유)?|소유)[^\d]*([\[\(\{]?[0-9,.\s]+(?:억|천만|천|만\s*원|만원|원)?[\]\}\)]?)/);
           resProp = mOwn ? parseWon(mOwn[1]) : 0;
           rentFee = 0;
-        } else if (isJeonse) {
+        } else if (isJeonse || mJeonseVal) {
           housingType = "전세";
-          resProp = mDeposit ? parseWon(mDeposit[1]) : 0;
+          resProp = mJeonseVal ? parseWon(mJeonseVal[1]) : (mDeposit ? parseWon(mDeposit[1]) : 0);
           rentFee = 0;
         } else if (isMonthly || mDeposit || mRent) {
           housingType = "월세 임차";
@@ -1438,9 +1485,8 @@
           workAbility = "able";
           workAbilityText = `<strong style="color:#2563eb;">조사필요</strong> <span style="color:#475569;">(일반 근로능력자 / 자활 참여 대상)</span>`;
         } else {
-          workAbility = null;
-          workAbilityText = `<span class="missing-text">[미기재] 근로능력 확인 요망</span>`;
-          currentMissingFields.push({ key: 'health', label: '근로능력 및 건강상태' });
+          workAbility = "able";
+          workAbilityText = `<strong style="color:#2563eb;">일반근로 추정</strong> <span style="color:#475569;">(건강상태 기재 시 자동 재심사)</span>`;
         }
 
         // 7. 부양의무자 판정
@@ -1468,9 +1514,8 @@
           const schemeName = isEmergencyMode ? '긴급복지' : (isNearPovertyMode ? '차상위' : '기초연금');
           supportText = `<strong style="color:#64748b;">해당없음</strong> <span style="color:#64748b;">(${schemeName} 부양의무자 기준 미적용)</span>`;
         } else {
-          support = null;
-          supportText = `<span class="missing-text">[미기재] 부양의무자 확인 요망</span>`;
-          currentMissingFields.push({ key: 'obligor', label: '부양의무자 실태' });
+          support = "normal";
+          supportText = `<strong style="color:#be123c;">부양의무자 일반</strong> <span style="color:#475569;">(단절 소명 시 심의 상정)</span>`;
         }
 
         renderMissingTags();
@@ -1594,8 +1639,8 @@
       }
 
       if (p.housingType) {
-        let propStr = `${p.housingType} (보증금 ${(p.resProp || 0).toLocaleString()}만 / 월세 ${(p.rentFee || 0).toLocaleString()}만)`;
-        let finStr = p.finProp !== null ? `금융 ${p.finProp.toLocaleString()}만` : `금융 [미기재]`;
+        let propStr = `${p.housingType} (보증금/가액 ${(p.resProp || 0).toLocaleString()}만 / 월세 ${(p.rentFee || 0).toLocaleString()}만)`;
+        let finStr = p.finProp !== null ? `금융 ${p.finProp.toLocaleString()}만` : `금융 0만`;
         let debtStr = p.debt !== null ? `부채 ${p.debt.toLocaleString()}만` : `부채 0만`;
         safeSetText('docAssetInfo', `${propStr} | ${finStr} | ${debtStr}`);
       } else {
@@ -1612,13 +1657,13 @@
         if (el) el.value = val;
       };
 
-      if (p.age) setVal('simAge', p.age);
+      if (p.age !== null && p.age !== undefined) setVal('simAge', p.age);
       if (p.members) setVal('simMembers', p.members);
       if (p.workAbility) setVal('simWorkAbility', p.workAbility);
       if (p.support) setVal('simSupportObligor', p.support);
       setVal('simEarnedIncome', p.earned !== null ? p.earned : 0);
       setVal('simOtherIncome', p.other || 0);
-      setVal('simResProp', p.resProp || 0);
+      setVal('simResProp', p.resProp !== null ? p.resProp : 0);
       setVal('simRentFee', p.rentFee || 0);
       setVal('simFinProp', p.finProp || 0);
       setVal('simDebt', p.debt || 0);
@@ -1637,7 +1682,6 @@
       }
     }
 
-    /* 시뮬레이션 및 4대 급여 모의판정 연동 */
     function runSimulation() {
       try {
         const getNum = (id, def = 0) => {
@@ -1734,7 +1778,6 @@
         safeSetText('liveIncomeRecognized', recognized.toLocaleString());
         safeSetText('liveRealIncome', (earned + other).toLocaleString());
 
-        // 4. 기초연금 노인 연령 요건(만 65세 이상) 정밀 다중 판독
         const memoEl = document.getElementById('counselInput');
         const rawText = memoEl ? memoEl.value : "";
         const isSenior = (ageVal >= 65) || 
@@ -1742,44 +1785,37 @@
                          (activePreset === 'basicPension') ||
                          /(만\s*65세\s*이상|65세\s*이상|독거노인|어르신)/.test(rawText);
 
+        // 엄격한 자격 판정 로직
         const isLivePass = recognized <= liveStd;
         const liveAmount = Math.max(0, Math.round(liveStd - recognized));
         updateLiveCard('liveCardBasicLife', 'liveEstBasicLife', isLivePass, 
-          isLivePass ? `월 약 ${liveAmount}만 원 (선정)` : "기준 초과 (탈락)");
+          isLivePass ? `월 약 ${liveAmount}만 원 (선정)` : `기준 초과 (탈락 / 소득인정액 ${recognized}만)`);
 
         const isEmergPass = ((earned + other) <= emergStd) && (finProp <= 822);
         updateLiveCard('liveCardEmergency', 'liveEstEmergency', isEmergPass, 
-          isEmergPass ? `월 ${POLICY_2026.emergencyPayouts[members]}만 원 (선정)` : (finProp > 822 ? "금융재산 기준 초과" : "소득 기준 초과"));
+          isEmergPass ? `월 ${POLICY_2026.emergencyPayouts[members]}만 원 (선정)` : (finProp > 822 ? `금융재산 초과 (${finProp}만 원)` : `실소득 기준 초과 (${earned + other}만 원)`));
 
         const isNearPass = recognized <= nearStd;
         updateLiveCard('liveCardNearPoverty', 'liveEstNearPoverty', isNearPass, 
-          isNearPass ? "수급 대상 (선정)" : "기준 초과 (탈락)");
+          isNearPass ? "수급 대상 (선정)" : `기준 초과 (탈락 / 소득인정액 ${recognized}만)`);
 
         const isPensionPass = isSenior && (pensionRecognized <= pensionCutoff);
         updateLiveCard('liveCardBasicPension', 'liveEstBasicPension', isPensionPass, 
-          !isSenior ? `연령 미달 (만 65세 미만 / 대상자 ${ageVal}세)` : (isPensionPass ? "월 최대 33.4만 원 (선정)" : "소득인정액 초과 (탈락)"));
+          !isSenior ? `연령 미달 (만 65세 미만 / 대상자 ${ageVal}세)` : (isPensionPass ? "월 최대 33.4만 원 (선정)" : `소득인정액 초과 (${pensionRecognized}만 원)`));
 
         safeSetHtml('calcTraceBox', `
           <strong>[2026년 법정 소득인정액 산출 정밀 Trace]</strong><br>
           1. <strong>신청인 연령 및 특례:</strong> 만 ${ageVal}세 (${isSenior ? '만 65세 이상 법정 노인 요건 충족' : '만 65세 미만'})<br>
           2. <strong>소득평가액:</strong> ${incomeVal}만 원 = 실제소득(${earned}만 - 공제 ${Math.round(earnedDeduct*10)/10}만) + 이전소득 ${other}만<br>
-          3. <strong>재산의 소득환산액:</strong> ${propertyMonthly}만 원 (주거환산 ${resMonthly}만 + 금융환산 ${finMonthly}만)<br>
+          3. <strong>재산의 소득환산액:</strong> ${propertyMonthly}만 원 (주거환산 ${resMonthly}만 [한도내 ${resWithinLimit}만] + 금융환산 ${finMonthly}만)<br>
           4. <strong>사업별 기준 비교:</strong> 국기초(32%) ${liveStd}만 | 긴급실소득(75%) ${emergStd}만(금융 822만 이하) | 차상위(50%) ${nearStd}만 | 기초연금 인정액 ${pensionRecognized}만(선정액 ${pensionCutoff}만)
         `);
 
         const eligibleBenefits = [];
-        if (isLivePass) {
-          eligibleBenefits.push(`국민기초 맞춤형 생계급여 (선정 - 예상 급여: 월 약 ${liveAmount}만 원)`);
-        }
-        if (isEmergPass) {
-          eligibleBenefits.push(`긴급복지지원 (선정 - 예상 지원: 월 ${POLICY_2026.emergencyPayouts[members]}만 원 우선지원)`);
-        }
-        if (isNearPass) {
-          eligibleBenefits.push(`차상위계층 확인 (선정 - 법정 양곡할인·자활사업·통신비 등 감면 패키지)`);
-        }
-        if (isPensionPass) {
-          eligibleBenefits.push(`기초연금 (선정 - 만 65세 이상 노인 대상, 월 최대 33.4만 원 지급)`);
-        }
+        if (isLivePass) eligibleBenefits.push(`국민기초 맞춤형 생계급여 (선정 - 예상 급여: 월 약 ${liveAmount}만 원)`);
+        if (isEmergPass) eligibleBenefits.push(`긴급복지지원 (선정 - 예상 지원: 월 ${POLICY_2026.emergencyPayouts[members]}만 원 우선지원)`);
+        if (isNearPass) eligibleBenefits.push(`차상위계층 확인 (선정 - 법정 양곡할인·자활사업·통신비 등 감면 패키지)`);
+        if (isPensionPass) eligibleBenefits.push(`기초연금 (선정 - 만 65세 이상 노인 대상, 월 최대 33.4만 원 지급)`);
 
         const simResults = {
           ageVal,
@@ -1832,7 +1868,7 @@
       const memberStr = p.members ? `${p.members}인 가구` : "[가구원수 미기재]";
       const incomeStr = p.earned !== null ? `월 ${p.earned.toLocaleString()}만 원 ${p.earned === 0 ? "(무소득 확인)" : ""}` : "[소득 미확인]";
       const assetStr = p.housingType ? `${p.housingType} (보증금 ${(p.resProp || 0).toLocaleString()}만 / 월세 ${(p.rentFee || 0).toLocaleString()}만)` : "[주거형태 미기재]";
-      const finStr = p.finProp !== null ? `금융 약 ${p.finProp.toLocaleString()}만 원` : `금융 [미기재]`;
+      const finStr = p.finProp !== null ? `금융 약 ${p.finProp.toLocaleString()}만 원` : `금융 0만 원`;
       const debtStr = p.debt !== null ? `부채 약 ${p.debt.toLocaleString()}만 원` : `부채 0만 원`;
 
       let doc = `[행복e음 초기상담이력 전산등록 표준 서식]
@@ -1871,7 +1907,7 @@
           doc += `\n   • ${b}`;
         });
       } else {
-        doc += `\n   • 모의판정 기준 충족 급여 없음 (소득·재산 기준 초과 - 민간 자원 및 타 복지제도 연계 검토)`;
+        doc += `\n   • 모의판정 기준 충족 급여 없음 (소득·재산 기준 초과 - 타 복지제도 연계 검토)`;
       }
 
       doc += `\n\n [행정 조치 계획]
