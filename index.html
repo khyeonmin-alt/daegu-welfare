@@ -44,10 +44,11 @@
 
     .container { max-width: 1480px; margin: 18px auto; padding: 0 20px; }
     
+    /* 4단계 스텝 카드형 탭 바 (단계별 색상 조화 및 시인성 고도화) */
     .nav-tabs {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
+      gap: 12px;
       margin-bottom: 20px;
       background: transparent;
       padding: 0;
@@ -58,7 +59,7 @@
       background: var(--surface);
       border: 1.5px solid var(--border);
       border-radius: var(--radius);
-      padding: 12px 14px;
+      padding: 12px 16px;
       display: flex;
       align-items: center;
       gap: 12px;
@@ -78,8 +79,8 @@
     .tab-btn.active {
       background: #ffffff;
       border-color: var(--primary);
-      box-shadow: 0 4px 12px rgba(29, 78, 216, 0.12);
-      border-bottom-width: 1.5px;
+      box-shadow: 0 4px 14px rgba(29, 78, 216, 0.12);
+      border-bottom-width: 2.5px;
     }
 
     .tab-step-num {
@@ -105,26 +106,37 @@
     .tab-content {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 3px;
       min-width: 0;
     }
 
+    /* 단계별 고유 배지 테마 스타일 */
     .tab-badge {
-      font-size: 10px;
+      font-size: 10.5px;
       font-weight: 800;
-      padding: 1px 6px;
+      padding: 2px 7px;
       border-radius: 4px;
-      background: #f1f5f9;
-      color: #64748b;
       display: inline-block;
       width: fit-content;
       letter-spacing: -0.2px;
+      border: 1px solid transparent;
+      transition: all 0.2s;
     }
 
-    .tab-btn.active .tab-badge {
-      background: var(--primary-light);
-      color: var(--primary);
-    }
+    /* 1단계 테마: 블루 */
+    .tab-badge-step1 { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    /* 2단계 테마: 에메랄드 */
+    .tab-badge-step2 { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+    /* 3단계 테마: 퍼플 */
+    .tab-badge-step3 { background: #f5f3ff; color: #6d28d9; border-color: #ddd6fe; }
+    /* 4단계 테마: 앰버 */
+    .tab-badge-step4 { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+
+    /* 활성화(Active) 시 배지 입체감 강화 */
+    .tab-btn.active .tab-badge-step1 { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+    .tab-btn.active .tab-badge-step2 { background: #d1fae5; color: #065f46; border-color: #6ee7b7; }
+    .tab-btn.active .tab-badge-step3 { background: #ede9fe; color: #5b21b6; border-color: #c4b5fd; }
+    .tab-btn.active .tab-badge-step4 { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
 
     .tab-title {
       font-size: 13px;
@@ -316,11 +328,12 @@
 
   <div class="container">
     
+    <!-- 단계별 맞춤 색상 배지가 적용된 4단계 탭 바 -->
     <div class="nav-tabs">
       <button class="tab-btn active" id="btnTab1" onclick="switchTab('tab1', this)">
         <div class="tab-step-num">1</div>
         <div class="tab-content">
-          <span class="tab-badge">데이터 입력</span>
+          <span class="tab-badge tab-badge-step1">데이터 입력</span>
           <span class="tab-title">상담 기록 &amp; 비정형 구술</span>
         </div>
       </button>
@@ -328,7 +341,7 @@
       <button class="tab-btn" id="btnTab2" onclick="switchTab('tab2', this)">
         <div class="tab-step-num">2</div>
         <div class="tab-content">
-          <span class="tab-badge" id="tab2Badge" style="background:#ccfbf1; color:#0f766e;">대민 서류/연계</span>
+          <span class="tab-badge tab-badge-step2" id="tab2Badge">대민 서류/연계</span>
           <span class="tab-title">맞춤 구비서류 &amp; 지원망</span>
         </div>
       </button>
@@ -336,7 +349,7 @@
       <button class="tab-btn" id="btnTab3" onclick="switchTab('tab3', this)">
         <div class="tab-step-num">3</div>
         <div class="tab-content">
-          <span class="tab-badge">전산 검증</span>
+          <span class="tab-badge tab-badge-step3">전산 검증</span>
           <span class="tab-title">사정표 · 4대급여 · 일지</span>
         </div>
       </button>
@@ -344,7 +357,7 @@
       <button class="tab-btn" id="btnTab4" onclick="switchTab('tab4', this)">
         <div class="tab-step-num">4</div>
         <div class="tab-content">
-          <span class="tab-badge">정밀 모의산출</span>
+          <span class="tab-badge tab-badge-step4">정밀 모의산출</span>
           <span class="tab-title">소득인정액 시뮬레이터</span>
         </div>
       </button>
@@ -1245,7 +1258,7 @@
 
         let calcAge = currentYear - y;
         if (currentMonth < m || (currentMonth === m && currentDay < d)) {
-          calcAge -= 1; // 생일 안 지난 경우
+          calcAge -= 1;
         }
         return Math.max(0, calcAge);
       }
@@ -1317,7 +1330,7 @@
         }
         if (!name) currentMissingFields.push({ key: 'name', label: '대상자 성명' });
 
-        // 2. 대상자 연령 (생년월일 YYYY.MM.DD 즉각 계산 포함)
+        // 2. 대상자 연령
         let age = parseAgeFromText(text);
         if (age === null) {
           currentMissingFields.push({ key: 'age', label: '대상자 연령' });
@@ -1346,7 +1359,7 @@
           currentMissingFields.push({ key: 'household', label: '가구원수' });
         }
 
-        // 4. 소득 파싱 (월 3천만원, 3000만 등 정확 환산)
+        // 4. 소득 파싱
         let earned = null;
         let other = 0;
 
@@ -1380,7 +1393,7 @@
           }
         }
 
-        // 5. 주거 및 재산 파싱 (전세 4000만원, 월세, 자가 완벽 포착)
+        // 5. 주거 및 재산 파싱
         let housingType = null;
         let resProp = null;
         let rentFee = 0;
@@ -1394,7 +1407,6 @@
         let isJeonse = (/(?:전세보증금|전세금|전세로|전세\s*거주|전세\s*임차)/.test(text) || /(?:^|[^\w가-힣])전세(?!\s*사기|\s*피해)/.test(text)) && !isJeonseFraud;
         let isMonthly = /(월세|월세방|임차|월세로)/.test(text);
 
-        // 전세 보증금 추출 (예: 전세 4000만원, 전세보증금 4천)
         let mJeonseVal = text.match(/(?:전세보증금|전세금|전세)\s*[:：=•\-]?\s*([\[\(\{]?[0-9,.\s]+(?:억|천만|천|만\s*원|만원|원)?[\]\}\)]?)/i);
         let mDeposit = text.match(/(?:보증금)\s*[:：=•\-]?\s*([\[\(\{]?[0-9,.\s]+(?:억|천만|천|만\s*원|만원|원)?[\]\}\)]?)/i);
         let mRent = text.match(/월세\s*[:：=•\-]?\s*([\[\(\{]?[0-9,.\s]+(?:억|천만|천|만\s*원|만원|원)?[\]\}\)]?)(?!\s*(?:달|개월|회|차))/i);
@@ -1785,7 +1797,6 @@
                          (activePreset === 'basicPension') ||
                          /(만\s*65세\s*이상|65세\s*이상|독거노인|어르신)/.test(rawText);
 
-        // 엄격한 자격 판정 로직
         const isLivePass = recognized <= liveStd;
         const liveAmount = Math.max(0, Math.round(liveStd - recognized));
         updateLiveCard('liveCardBasicLife', 'liveEstBasicLife', isLivePass, 
