@@ -2,465 +2,1133 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>이어봄 AI (복지완성 Pro) - 온디바이스 복지행정 포털</title>
-  <!-- 표준 QR코드 라이브러리 (오프라인/로컬 즉시 생성 지원) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <title>복지완성 Pro (행정안전부 AI 공통기반 연계형)</title>
+  
   <style>
     :root {
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
+      --primary: #1d4ed8;
+      --primary-hover: #1e40af;
       --primary-light: #eff6ff;
-      --gov-green: #047857;
-      --gov-green-bg: #ecfdf5;
-      --gov-green-border: #6ee7b7;
-      --danger: #dc2626;
-      --danger-bg: #fef2f2;
+      --surface: #ffffff;
+      --bg: #f8fafc;
+      --border: #e2e8f0;
+      --border-dark: #cbd5e1;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --danger: #be123c;
+      --danger-bg: #fff1f2;
+      --danger-border: #fecdd3;
       --warning: #d97706;
       --warning-bg: #fffbeb;
-      --slate-800: #1e293b;
-      --slate-600: #475569;
-      --slate-200: #e2e8f0;
-      --slate-100: #f1f5f9;
-      --slate-50: #f8fafc;
+      --warning-border: #fde68a;
+      --success: #059669;
+      --success-bg: #ecfdf5;
+      --radius: 8px;
     }
+
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Malgun Gothic", sans-serif; }
-    body { background-color: #f8fafc; color: #0f172a; line-height: 1.5; padding-bottom: 60px; }
+    body { background-color: var(--bg); color: var(--text-main); font-size: 13.5px; line-height: 1.6; }
+
+    header {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 12px 24px; display: flex; justify-content: space-between; align-items: center;
+      position: sticky; top: 0; z-index: 50; box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .header-brand { display: flex; align-items: center; gap: 10px; }
+    .header-brand h1 { font-size: 17px; font-weight: 800; color: #1e3a8a; }
+    .badge { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; }
+    .badge-gov { background: var(--primary-light); color: var(--primary); border: 1px solid #bfdbfe; }
+    .badge-secure { background: var(--success-bg); color: var(--success); border: 1px solid #a7f3d0; }
+
+    .container { max-width: 1480px; margin: 18px auto; padding: 0 20px; }
     
-    /* 상단 헤더 및 네비게이션 */
-    header { background: #ffffff; border-bottom: 1px solid var(--slate-200); padding: 12px 24px; position: sticky; top: 0; z-index: 50; display: flex; justify-content: space-between; align-items: center; }
-    .brand-title { display: flex; align-items: center; gap: 8px; font-size: 19px; font-weight: 800; color: #0f172a; }
-    .brand-badge { background: #2563eb; color: #fff; font-size: 11px; padding: 2px 7px; border-radius: 4px; font-weight: 700; }
-    .header-ctrls { display: flex; align-items: center; gap: 12px; }
-    .status-tag { font-size: 12px; padding: 4px 10px; border-radius: 6px; font-weight: 600; border: 1px solid transparent; }
+    /* 가독성 및 직관성이 향상된 4분할 스텝 카드형 탭 바 */
+    .nav-tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+      background: transparent;
+      padding: 0;
+      border-bottom: none;
+    }
 
-    /* 메인 컨테이너 */
-    .main-container { max-width: 1540px; margin: 20px auto; padding: 0 20px; }
-    
-    /* 긴급위기 배너 */
-    #riskAlertBanner { display: none; background: #fff1f2; border: 1.5px solid #fda4af; border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(225,29,72,0.06); }
-    .risk-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .risk-title { font-size: 15px; font-weight: 800; color: #be123c; display: flex; align-items: center; gap: 6px; }
+    .tab-btn {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      text-align: left;
+      position: relative;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
 
-    /* 메인 2단 그리드 */
-    .grid-container { display: grid; grid-template-columns: 460px 1fr; gap: 20px; align-items: start; }
-    @media (max-width: 1200px) { .grid-container { grid-template-columns: 1fr; } }
+    .tab-btn:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      transform: translateY(-1px);
+    }
 
-    /* 공통 카드 */
-    .card { background: #ffffff; border: 1px solid var(--slate-200); border-radius: 10px; padding: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); margin-bottom: 20px; }
-    .card-title { font-size: 15px; font-weight: 800; color: #1e293b; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--slate-100); }
+    .tab-btn.active {
+      background: #ffffff;
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(29, 78, 216, 0.12);
+      border-bottom-width: 1.5px;
+    }
 
-    /* 1단계 입력 컨트롤 */
-    .preset-toolbar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
-    .btn { cursor: pointer; border: 1px solid var(--slate-200); background: #ffffff; padding: 6px 12px; border-radius: 6px; font-size: 12.5px; font-weight: 600; color: var(--slate-800); transition: all 0.15s ease; }
-    .btn:hover { background: var(--slate-50); border-color: #cbd5e1; }
-    .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .tab-step-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #f1f5f9;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active .tab-step-num {
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    .tab-content {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .tab-badge {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: #f1f5f9;
+      color: #64748b;
+      display: inline-block;
+      width: fit-content;
+      letter-spacing: -0.2px;
+    }
+
+    .tab-btn.active .tab-badge {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .tab-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #334155;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tab-btn.active .tab-title {
+      color: var(--primary);
+      font-weight: 800;
+    }
+
+    @media (max-width: 1024px) {
+      .nav-tabs { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .nav-tabs { grid-template-columns: 1fr; }
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); margin-bottom: 16px; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+    .card-title { font-size: 14.5px; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+
+    .missing-box {
+      background: var(--warning-bg); border: 1.5px solid var(--warning); border-radius: 8px;
+      padding: 12px 14px; margin-bottom: 14px; display: none;
+    }
+    .missing-tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .missing-tag {
+      font-size: 11px; font-weight: 700; background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5;
+      padding: 3px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .missing-tag-close {
+      cursor: pointer; background: rgba(0,0,0,0.08); border-radius: 50%; width: 14px; height: 14px;
+      display: inline-flex; align-items: center; justify-content: center; font-size: 10px; line-height: 1;
+      color: #991b1b; transition: all 0.15s;
+    }
+    .missing-tag-close:hover { background: #b91c1c; color: #fff; }
+
+    .btn-group { display: flex; gap: 6px; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+      padding: 6px 12px; font-size: 12.5px; font-weight: 700; border-radius: 6px;
+      cursor: pointer; border: 1px solid transparent; transition: all 0.15s; white-space: nowrap;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
     .btn-primary:hover { background: var(--primary-hover); }
-    .btn-sm { padding: 4px 8px; font-size: 11.5px; }
-    .btn-gov { background: var(--gov-green-bg); color: var(--gov-green); border-color: var(--gov-green-border); font-weight: 700; }
-    .btn-gov:hover { background: #d1fae5; }
-    
-    textarea { width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px; font-size: 13.5px; line-height: 1.6; resize: vertical; outline: none; }
-    textarea:focus { border-color: var(--primary); ring: 2px var(--primary-light); }
+    .btn-outline { background: #fff; border-color: var(--border-dark); color: #334155; }
+    .btn-outline:hover { background: #f1f5f9; }
+    .btn-happy { background: #047857; color: #fff; }
+    .btn-happy:hover { background: #065f46; }
+    .btn-indigo { background: #4338ca; color: #fff; }
 
-    /* 2단계: 사정표 및 행복e음 분할 그리드 */
-    .step2-split-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
-    @media (max-width: 900px) { .step2-split-grid { grid-template-columns: 1fr; } }
-    .assessment-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    .assessment-table th { background: var(--slate-50); width: 32%; text-align: left; padding: 7px 10px; border: 1px solid var(--slate-200); color: var(--slate-600); }
-    .assessment-table td { padding: 7px 10px; border: 1px solid var(--slate-200); color: #0f172a; }
-    .happyeum-box { background: var(--slate-50); border: 1px solid var(--slate-200); border-radius: 6px; padding: 10px; font-size: 12px; line-height: 1.6; font-family: monospace; white-space: pre-wrap; height: 260px; overflow-y: auto; }
+    .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 1024px) { .grid-2col { grid-template-columns: 1fr; } }
 
-    /* 3단계 & 4단계 시뮬레이터 */
-    .sim-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
-    @media (max-width: 1000px) { .sim-grid { grid-template-columns: repeat(2, 1fr); } }
-    .sim-field label { display: block; font-size: 11.5px; font-weight: 700; color: var(--slate-600); margin-bottom: 4px; }
-    .sim-field input, .sim-field select { width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 12.5px; font-weight: 600; }
-    
-    /* 4대 급여 판정 배지 */
-    .result-badges { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px; }
-    .badge-card { border: 1px solid var(--slate-200); border-radius: 8px; padding: 12px; text-align: center; }
-    .badge-card.eligible { background: #eff6ff; border-color: #93c5fd; }
-    .badge-card.ineligible { background: #f8fafc; border-color: #e2e8f0; opacity: 0.8; }
-    .badge-label { font-size: 13px; font-weight: 800; margin-bottom: 4px; }
-    .badge-val { font-size: 12px; font-weight: 700; }
+    .textarea-wrapper { position: relative; }
+    .counsel-textarea {
+      width: 100%; height: 500px; padding: 14px; font-size: 13.5px; border: 1px solid var(--border-dark);
+      border-radius: 6px; outline: none; background: #fff; color: var(--text-main); line-height: 1.7; resize: vertical;
+      font-family: "Pretendard", monospace;
+    }
+    .counsel-textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.15); }
+    .char-counter { position: absolute; bottom: 12px; right: 15px; font-size: 11px; color: var(--text-muted); background: rgba(255,255,255,0.9); padding: 2px 6px; border-radius: 4px; }
 
-    /* 모달 */
-    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); z-index: 100; align-items: center; justify-content: center; }
-    .modal-content { background: #ffffff; border-radius: 12px; width: 92%; max-width: 880px; max-height: 88vh; overflow-y: auto; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
-    
-    /* 토스트 알림 */
-    #toast { visibility: hidden; min-width: 250px; background-color: #1e293b; color: #fff; text-align: center; border-radius: 8px; padding: 12px 18px; position: fixed; z-index: 150; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 13px; font-weight: 600; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-    #toast.show { visibility: visible; animation: fadein 0.3s, fadeout 0.3s 2.3s; }
-    @keyframes fadein { from { bottom: 10px; opacity: 0; } to { bottom: 30px; opacity: 1; } }
-    @keyframes fadeout { from { bottom: 30px; opacity: 1; } to { bottom: 10px; opacity: 0; } }
+    .official-doc-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    .official-doc-table th { background: #f8fafc; padding: 10px 12px; border: 1px solid var(--border); width: 28%; text-align: left; font-weight: 700; color: #475569; }
+    .official-doc-table td { padding: 10px 12px; border: 1px solid var(--border); color: var(--text-main); }
+    .missing-text { color: #dc2626 !important; font-weight: 700; }
+
+    .happyeum-split-box {
+      background: #f8fafc; border: 1px solid var(--border-dark); border-radius: 6px; padding: 14px;
+      font-size: 12px; line-height: 1.75; color: #1e293b; font-family: "D2Coding", monospace, sans-serif;
+      height: 520px; overflow-y: auto; white-space: pre-wrap;
+    }
+
+    .emergency-alert-banner {
+      background: linear-gradient(135deg, #fffbeb, #fef3c7); border: 2px solid #f59e0b; border-radius: 8px;
+      padding: 14px 18px; margin-bottom: 16px; display: none; box-shadow: 0 2px 6px rgba(245, 158, 11, 0.15);
+    }
+    .emergency-alert-title { display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 14px; color: #92400e; margin-bottom: 6px; }
+
+    .official-notice-box {
+      background: #fff; border: 1.5px solid #fca5a5; border-radius: 8px; padding: 16px; margin-bottom: 16px;
+      box-shadow: 0 4px 10px rgba(190, 18, 60, 0.05); display: none;
+    }
+    .official-notice-text {
+      background: #fdf2f8; border: 1px solid #fbcfe8; border-radius: 6px; padding: 12px;
+      font-family: "D2Coding", monospace; font-size: 12px; line-height: 1.7; color: #831843;
+      white-space: pre-wrap; max-height: 280px; overflow-y: auto; margin-top: 10px;
+    }
+
+    .live-benefit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .live-benefit-card {
+      border: 1.5px solid var(--border); border-radius: 8px; padding: 12px; background: #fff;
+      transition: all 0.2s ease;
+    }
+    .live-benefit-card.pass {
+      border-color: #10b981; background: #f0fdf4; border-left-width: 6px;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.12);
+    }
+    .live-benefit-card.pass .benefit-status {
+      color: #047857; font-weight: 800; font-size: 14px;
+    }
+    .live-benefit-card.fail {
+      border-color: #e2e8f0; background: #f8fafc; opacity: 0.42; filter: grayscale(1);
+    }
+    .live-benefit-card.fail .benefit-status {
+      color: #94a3b8; font-weight: 700; font-size: 12.5px;
+    }
+
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6);
+      display: none; align-items: center; justify-content: center; z-index: 1000;
+    }
+    .modal-card {
+      background: #fff; border-radius: 10px; width: 90%; max-width: 520px; padding: 22px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    #toast {
+      position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); background: #1e293b; color: #fff;
+      padding: 9px 18px; border-radius: 6px; font-size: 12.5px; font-weight: 600; opacity: 0; pointer-events: none;
+      transition: opacity 0.2s; z-index: 1100;
+    }
+    #toast.show { opacity: 1; }
+
+    @page {
+      size: A4 portrait;
+      margin: 15mm;
+    }
+    @media print {
+      html, body {
+        background: #fff !important;
+        color: #000 !important;
+        font-size: 11pt !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      body * { visibility: hidden; }
+      #printableArea, #printableArea * { visibility: visible; }
+      #printableArea {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: #fff !important;
+      }
+      #printableArea .card-header {
+        display: none !important;
+      }
+      #clientDocListArea li {
+        page-break-inside: avoid;
+        break-inside: avoid;
+        border: 1px solid #cbd5e1 !important;
+        margin-bottom: 6px !important;
+        padding: 8px 12px !important;
+      }
+      .no-print { display: none !important; }
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+    }
   </style>
 </head>
 <body>
 
-  <!-- 헤더 -->
   <header>
-    <div class="brand-title">
-      <span>이어봄 AI</span>
-      <span class="brand-badge">복지완성 Pro</span>
-      <span id="dlpStatusBadge" class="status-tag" style="background:#ecfdf5; color:#047857; border-color:#6ee7b7;">🛡️ PII 자동 비식별화(DLP) 실시간 가동 중</span>
+    <div class="header-brand">
+      <h1>복지완성 Pro</h1>
+      <span class="badge badge-gov">행정안전부 AI 공통기반 연계형</span>
+      <span class="badge badge-secure" id="dlpBadge">🛡 DLP 개인정보 비식별화 가동</span>
     </div>
-    <div class="header-ctrls">
-      <select id="llmModelSelector" onchange="handleModelChange()" style="padding:5px 8px; border-radius:5px; border:1px solid #cbd5e1; font-size:12px; font-weight:600;">
-        <option value="wasm_tiny">온디바이스 WASM (망분리 로컬 모드)</option>
-        <option value="exaone">행안부 공통기반: EXAONE-3.0</option>
-        <option value="solar">행안부 공통기반: Solar-Mini</option>
-        <option value="clova">행안부 공통기반: HyperCLOVA X</option>
-        <option value="gemma">행안부 공통기반: Gemma-2</option>
-      </select>
-      <span id="activeModelTag" class="status-tag" style="background:#e0e7ff; color:#3730a3;">로컬 텐서 연산 모드</span>
+    <div style="font-size: 12px; color: var(--text-muted); font-weight: 600;">
+      행복e음 초기상담이력 전산등록 및 실시간 모의판정 포털
     </div>
   </header>
 
-  <div class="main-container">
-
-    <!-- 긴급위기 배너 -->
-    <div id="riskAlertBanner">
-      <div class="risk-header">
-        <div class="risk-title">
-          <span>🚨</span>
-          <span id="riskAlertMainLabel">긴급 위기신호 포착</span>
-          <span id="riskAlertScoreBadge" class="status-tag" style="background:#ffe4e6; color:#be123c;">위기 판정</span>
+  <div class="container">
+    
+    <!-- 개선된 4단계 프로세스 탭 바 -->
+    <div class="nav-tabs">
+      <button class="tab-btn active" id="btnTab1" onclick="switchTab('tab1', this)">
+        <div class="tab-step-num">1</div>
+        <div class="tab-content">
+          <span class="tab-badge">데이터 입력</span>
+          <span class="tab-title">상담 기록 &amp; 비정형 구술</span>
         </div>
+      </button>
+
+      <button class="tab-btn" id="btnTab2" onclick="switchTab('tab2', this)">
+        <div class="tab-step-num">2</div>
+        <div class="tab-content">
+          <span class="tab-badge" id="tab2Badge" style="background:#ccfbf1; color:#0f766e;">대민 서류/연계</span>
+          <span class="tab-title">맞춤 구비서류 &amp; 지원망</span>
+        </div>
+      </button>
+
+      <button class="tab-btn" id="btnTab3" onclick="switchTab('tab3', this)">
+        <div class="tab-step-num">3</div>
+        <div class="tab-content">
+          <span class="tab-badge">전산 검증</span>
+          <span class="tab-title">사정표 · 4대급여 · 일지</span>
+        </div>
+      </button>
+
+      <button class="tab-btn" id="btnTab4" onclick="switchTab('tab4', this)">
+        <div class="tab-step-num">4</div>
+        <div class="tab-content">
+          <span class="tab-badge">정밀 모의산출</span>
+          <span class="tab-title">소득인정액 시뮬레이터</span>
+        </div>
+      </button>
+    </div>
+
+    <!-- [1단계 패널] 상담 기록 입력창 -->
+    <div id="tab1" class="tab-panel active">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📝 [1단계] 복지상담 원본 구술 입력 및 표준 서식 프리셋</div>
+          <div class="btn-group">
+            <button class="btn btn-outline" onclick="loadPreset('basicLife')" style="color:#1d4ed8; font-weight:800; border-color:#bfdbfe;">📋 기초생활</button>
+            <button class="btn btn-outline" onclick="loadPreset('nearPoverty')" style="color:#047857; font-weight:800; border-color:#a7f3d0;">🎁 차상위</button>
+            <button class="btn btn-outline" onclick="loadPreset('emergency')" style="color:#b91c1c; font-weight:800; border-color:#fca5a5;">🚨 긴급복지</button>
+            <button class="btn btn-outline" onclick="loadPreset('basicPension')" style="color:#7c3aed; font-weight:800; border-color:#ddd6fe;">👵 기초연금</button>
+            <button class="btn btn-outline" onclick="clearCounselInput()" style="font-weight:800; border-color:#94a3b8; color:#0f172a;">🧹 자연어 상담</button>
+            
+            <input type="file" id="audioUploadInput" accept="audio/*,.m4a,.mp3,.wav,.aac,.amr,.caf" style="display: none;" onchange="handleAudioFileSelected(event)">
+            <button class="btn btn-outline" onclick="triggerAudioUpload()" style="color:#0284c7; font-weight:800; border-color:#bae6fd; background:#f0f9ff;" title="스마트폰 녹음 파일(m4a, mp3 등)을 업로드합니다">
+              🎙️ 상담 녹음파일 업로드
+            </button>
+          </div>
+        </div>
+
+        <!-- 오디오 확인 패널 -->
+        <div id="audioPlayerPanel" style="display: none; background: #f0f9ff; border: 1.5px solid #bae6fd; border-radius: 8px; padding: 12px 16px; margin-bottom: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 16px;">🎧</span>
+              <strong id="audioFileName" style="color: #0369a1; font-size: 13px;">녹음파일.m4a</strong>
+              <span id="audioFileSize" style="font-size: 11px; color: #64748b; background: #e0f2fe; padding: 2px 6px; border-radius: 4px;">0 MB</span>
+              <span id="audioStatusBadge" style="font-size: 11px; font-weight: 700; color: #059669; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 2px 6px; border-radius: 4px;">
+                ⚡ 텍스트 변환 및 사정표 연동 완료
+              </span>
+            </div>
+            <button class="btn btn-outline" style="font-size: 11px; padding: 2px 8px; color: #64748b;" onclick="closeAudioPanel()">✕ 닫기</button>
+          </div>
+          <audio id="audioPreviewPlayer" controls style="width: 100%; height: 32px; outline: none;"></audio>
+        </div>
+
+        <div id="missingAlertBox" class="missing-box">
+          <div style="display:flex; justify-content:space-between; align-items:center; font-weight:800; font-size:12.5px; color:#b45309;">
+            <span id="missingAlertTitle">⚠️ 법정 필수 상담 조사 항목 결손 감지</span>
+            <button class="btn btn-outline" style="font-size:11px; padding:2px 8px; color:#b45309; border-color:#f59e0b; background:#fff;" onclick="insertAllMissingTemplates()">+ 템플릿 삽입</button>
+          </div>
+          <div class="missing-tag-list" id="missingTagList"></div>
+        </div>
+
+        <div class="textarea-wrapper">
+          <textarea id="counselInput" class="counsel-textarea" oninput="handleCounselInputChanged()" placeholder="민원인의 구술 기록을 편하게 입력하세요.&#10;예) 내 이름은 홍길동이고 1958년생입니다. 보증금 300만원 월세 25만원 거주 중이고 소득 0원."></textarea>
+          <div id="counselCharCounter" class="char-counter">0자</div>
+        </div>
+
+        <div style="margin-top: 14px; display: flex; justify-content: flex-end;">
+          <button class="btn btn-primary" style="padding: 12px 24px; font-size: 14px; font-weight: 800;" onclick="attemptNavigateToStep2()">
+            ⚡ 민원인 맞춤 서류 생성 및 2단계 이동 ➡️
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- [2단계 패널] 민원인 맞춤 구비서류 인쇄 & 유관기관 연계망 -->
+    <div id="tab2" class="tab-panel">
+      <div class="grid-2col">
+        <div class="card" id="printableArea">
+          <div class="card-header no-print">
+            <div class="card-title">📄 [민원인 맞춤 구비서류] 사회보장급여 신청 시 지참 서류</div>
+            <div style="display:flex; gap:8px;">
+              <span class="badge badge-gov" id="clientDocCountBadge">총 0종</span>
+              <button class="btn btn-primary" onclick="window.print()">🖨 맞춤 구비서류 즉시 출력</button>
+            </div>
+          </div>
+          
+          <div style="padding: 4px 0;">
+            <div style="font-size: 15px; font-weight: 800; color: #1e3a8a; margin-bottom: 12px; border-bottom: 2px solid #0f172a; padding-bottom: 8px;">
+              [사회보장급여 신청 안내 및 맞춤형 필수 구비서류 확인서]
+            </div>
+            <div style="font-size: 12px; color: #475569; margin-bottom: 12px;">
+              • 신청인: <strong id="printApplicantName">[미입력] 성명 미상</strong> 님 귀하 | 상담일자: <span id="printCurrentDate">2026. 10. 3.</span><br>
+              • 아래 표시된 서류를 지참하시어 관할 행정복지센터 복지상담창구에 제출하여 주시기 바랍니다.
+            </div>
+            <ul id="clientDocListArea" style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 12.5px;"></ul>
+            <div style="margin-top: 16px; padding: 10px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; font-size: 11.5px; color: #64748b;">
+              ※ 안내: 복지급여 신청 접수 후 사회보장정보시스템(행복e음)을 통한 금융재산 및 공적자료 정밀조사 과정에서 추가 소명 서류가 요구될 수 있습니다.
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🏛️ [유관기관 지원망] 맞춤 연계 사업 안내</div>
+            <span class="badge" style="background:#ccfbf1; color:#0f766e;" id="agencyRecommendCountBadge">0건 매칭</span>
+          </div>
+          <div id="agencyRecommendListArea" style="display: flex; flex-direction: column; gap: 10px; max-height: 520px; overflow-y: auto;"></div>
+        </div>
+      </div>
+      
+      <div style="margin-top: 16px; display: flex; justify-content: flex-end;">
+        <button class="btn btn-primary" style="padding: 10px 20px; font-size: 13.5px; font-weight: 800;" onclick="switchTab('tab3', document.getElementById('btnTab3'))">
+          📑 전산 등록용 3단계(사정표 &amp; 행복e음 일지)로 이동 ➡
+        </button>
+      </div>
+    </div>
+
+    <!-- [3단계 패널] 사정표 + 4대급여 판정 + 행복e음 일지 -->
+    <div id="tab3" class="tab-panel">
+      
+      <div id="emergencyAlertBanner" class="emergency-alert-banner">
+        <div class="emergency-alert-title">
+          <span>🚨 [긴급복지지원 위기사유 감지] 긴급생계·주거비 선지원 검토 요망</span>
+          <span class="badge" style="background:#b45309; color:#fff;">우선 개입 대상</span>
+        </div>
+        <div style="font-size: 12.5px; color: #78350f; line-height: 1.6;" id="emergencyAlertDesc"></div>
+      </div>
+
+      <div id="dutyAlertSection" class="official-notice-box">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:20px;">⚖</span>
+            <strong style="color:#be123c; font-size:14.5px;">[사회복지전담공무원 법정 신고의무 사안] 긴급 수사의뢰 및 현장조치 공문(안)</strong>
+          </div>
+          <button class="btn btn-indigo" onclick="copyOfficialNotice()">📋 대외공문 기안문 복사</button>
+        </div>
+        <div style="font-size:12.5px; color:#475569; margin-top:6px;">
+          학대·폭력 등 범죄 정황 인지 시 직무상 즉각 신고의무를 준수하기 위해 대외공문 기안문이 자동 생성되었습니다.
+        </div>
+        <div id="officialNoticeContent" class="official-notice-text"></div>
+      </div>
+
+      <div class="grid-2col">
         <div>
-          <button class="btn btn-sm btn-gov" onclick="openRiskActionModal()">📄 법정 위기의뢰 공문(초안) 보기</button>
+          <div class="card" style="margin-bottom: 14px;">
+            <div class="card-header">
+              <div class="card-title">📑 초기 복지상담 요약 사정표</div>
+              <button class="btn btn-outline" style="font-size:11.5px;" onclick="switchTab('tab4', document.getElementById('btnTab4'))">➡ 4단계 정밀 공식</button>
+            </div>
+            <table class="official-doc-table">
+              <tr>
+                <th>1. 대상자/연령</th>
+                <td id="docApplicantInfo"><span class="missing-text">[미기재] 성명 및 연령 확인 요망</span></td>
+              </tr>
+              <tr>
+                <th>2. 가구원 구성</th>
+                <td id="docHouseholdInfo"><span class="missing-text">[미기재] 가구원수 확인 요망</span></td>
+              </tr>
+              <tr id="rowDocHealth">
+                <th>3. 건강상태</th>
+                <td id="docHealthInfo"><span class="missing-text">[미기재] 건강상태 확인 요망</span></td>
+              </tr>
+              <tr>
+                <th>4. 월 소득</th>
+                <td id="docIncomeInfo"><span class="missing-text">[미기재] 소득 확인 요망</span></td>
+              </tr>
+              <tr>
+                <th>5. 주거/재산</th>
+                <td id="docAssetInfo"><span class="missing-text">[미기재] 주거형태 및 재산 확인 요망</span></td>
+              </tr>
+              <tr id="rowDocWorkAbility">
+                <th>6. 근로능력</th>
+                <td id="docWorkAbilityInfo"><span class="missing-text">[미기재] 근로능력 확인 요망</span></td>
+              </tr>
+              <tr id="rowDocSever">
+                <th>7. 부양의무자</th>
+                <td id="docSeverInfo"><span class="missing-text">[미기재] 부양의무자 확인 요망</span></td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="card" style="margin-bottom: 0;">
+            <div class="card-header" style="margin-bottom: 8px;">
+              <div class="card-title">📊 4대 급여 모의판정 결과</div>
+              <span style="font-size: 11px; color: #059669; font-weight: 700;">● 2026년 법정 기준 정밀 연동</span>
+            </div>
+
+            <div style="background: #f8fafc; border: 1px solid var(--border); border-radius: 6px; padding: 9px 12px; font-size: 12px; display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <span><strong>추정 소득인정액:</strong> <strong id="liveIncomeRecognized" style="color:#1d4ed8;">0</strong> 만원</span>
+              <span><strong>총 실소득:</strong> <strong id="liveRealIncome">0</strong> 만원</span>
+            </div>
+
+            <div class="live-benefit-grid">
+              <div class="live-benefit-card" id="liveCardBasicLife">
+                <div style="font-weight: 800; font-size: 13px;">국민기초 생계급여</div>
+                <div style="font-size: 11px; color: var(--text-muted);">중위 32% 이하 대상</div>
+                <div class="benefit-status" id="liveEstBasicLife" style="margin-top: 4px;">판정 대기</div>
+              </div>
+
+              <div class="live-benefit-card" id="liveCardEmergency">
+                <div style="font-weight: 800; font-size: 13px;">긴급복지지원 (정부)</div>
+                <div style="font-size: 11px; color: var(--text-muted);">실소득 75% &amp; 금융 822만 이하</div>
+                <div class="benefit-status" id="liveEstEmergency" style="margin-top: 4px;">판정 대기</div>
+              </div>
+
+              <div class="live-benefit-card" id="liveCardNearPoverty">
+                <div style="font-weight: 800; font-size: 13px;">차상위계층</div>
+                <div style="font-size: 11px; color: var(--text-muted);">기준 중위 50% 이하</div>
+                <div class="benefit-status" id="liveEstNearPoverty" style="margin-top: 4px;">판정 대기</div>
+              </div>
+
+              <div class="live-benefit-card" id="liveCardBasicPension">
+                <div style="font-weight: 800; font-size: 13px;">기초연금</div>
+                <div style="font-size: 11px; color: var(--text-muted);">만 65세 이상 (선정액 이하)</div>
+                <div class="benefit-status" id="liveEstBasicPension" style="margin-top: 4px;">판정 대기</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 0;">
+          <div class="card-header">
+            <div class="card-title">💻 행복e음 상담이력 (전산등록 표준 서식)</div>
+            <button class="btn btn-happy" onclick="copyHappyEumDocument()">📋 일지 전문 복사</button>
+          </div>
+          <div id="happyEumOutput" class="happyeum-split-box"></div>
         </div>
       </div>
-      <div id="riskAlertContent" style="font-size:12.5px; color:#9f1239; line-height:1.6;"></div>
     </div>
 
-    <!-- 2단 그리드 본문 -->
-    <div class="grid-container">
-
-      <!-- 좌측 1단계: 상담 기록 입력 및 공직자메일 연계 툴바 -->
-      <div>
-        <div class="card">
-          <div class="card-title">
-            <span>1단계. 현장 구술/음성 기록 입력</span>
-            <span id="counselCharCounter" style="font-size:11.5px; color:#64748b;">0자</span>
+    <!-- [4단계 패널] 소득인정액 정밀 시뮬레이터 -->
+    <div id="tab4" class="tab-panel">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🧮 [4단계] 소득인정액 산출 시뮬레이터 (2026년 법정 기준 상세)</div>
+          <button class="btn btn-outline" onclick="toggleCalcTrace()">🔍 법정 산출 공식(Trace) 열기</button>
+        </div>
+        <div style="display: grid; grid-template-columns: 110px 110px 1.2fr 1.3fr 1fr; gap: 12px; margin-bottom: 12px;">
+          <div>
+            <label style="font-size:11.5px; font-weight:700;">신청인 만 나이</label>
+            <input type="number" id="simAge" value="65" min="0" max="120" oninput="runSimulation()" style="width:100%; height:32px; padding:4px 8px; border:1px solid var(--border-dark); border-radius:4px; font-size:13px; font-weight:700;">
           </div>
-
-          <!-- 음성 파일 첨부 (STT) -->
-          <input type="file" id="audioUploadInput" accept="audio/*" style="display:none;" onchange="handleAudioFileSelected(event)">
-          <div class="preset-toolbar" style="margin-bottom:8px;">
-            <button class="btn btn-sm" onclick="triggerAudioUpload()">🎙️ 상담 녹음파일 업로드(STT)</button>
-            <button class="btn btn-sm btn-gov" onclick="KoreaGovMailBridge.sendViaGovMail()">✉️ 공직자메일로 내보내기 (무서버)</button>
+          <div>
+            <label style="font-size:11.5px; font-weight:700;">가구원수</label>
+            <select id="simMembers" onchange="runSimulation()" style="height:32px;">
+              <option value="1">1인 가구</option>
+              <option value="2">2인 가구</option>
+              <option value="3">3인 가구</option>
+              <option value="4">4인 가구</option>
+            </select>
           </div>
-
-          <!-- 오디오 플레이어 패널 (첨부 시 노출) -->
-          <div id="audioPlayerPanel" style="display:none; background:#f1f5f9; padding:10px; border-radius:6px; margin-bottom:10px;">
-            <div style="font-size:11.5px; font-weight:700; display:flex; justify-content:space-between; margin-bottom:4px;">
-              <span id="audioFileName">음성파일</span>
-              <span id="audioStatusBadge" class="status-tag" style="background:#e2e8f0;">대기 중</span>
-            </div>
-            <audio id="audioPreviewPlayer" controls style="width:100%; height:32px; margin-top:4px;"></audio>
+          <div>
+            <label style="font-size:11.5px; font-weight:700;">거주 지역</label>
+            <select id="simRegion" onchange="runSimulation()" style="height:32px;">
+              <option value="seoul">서울특별시 (대도시 9,900만원 공제 / 주거한도 1.72억)</option>
+              <option value="gyeonggi">경기·인천 (중소도시 8,000만원 공제 / 주거한도 1.51억)</option>
+              <option value="metro" selected>광역시·세종 (대도시 7,700만원 공제 / 주거한도 1.46억)</option>
+              <option value="rural">그 외 시·군 (농어촌 5,300만원 공제 / 주거한도 1.12억)</option>
+            </select>
           </div>
-
-          <!-- 원클릭 모의 프리셋 -->
-          <div class="preset-toolbar">
-            <span style="font-size:11.5px; font-weight:700; color:#64748b; align-self:center;">모의 프리셋:</span>
-            <button class="btn btn-sm" onclick="loadPreset('seniorOwn')">독거노인 자가</button>
-            <button class="btn btn-sm" onclick="loadPreset('singleParent')">한부모 주거위기</button>
-            <button class="btn btn-sm" onclick="loadPreset('youthDebt')">청년 부채고립</button>
-            <button class="btn btn-sm" onclick="loadPreset('multiCrisis')">복합 긴급위기</button>
+          <div>
+            <label style="font-size:11.5px; font-weight:700;">근로유형</label>
+            <select id="simWorkAbility" onchange="runSimulation()" style="height:32px;">
+              <option value="none">만 65세 이상 노인 / 중증장애 (20만원+30% 공제)</option>
+              <option value="illness">질병·부상 심사 대상 (20만원+30% 공제)</option>
+              <option value="youth">청년특례 (만 24세 이하, 40만원+30% 공제)</option>
+              <option value="able">일반 근로능력자 (30% 기본공제)</option>
+            </select>
           </div>
-
-          <textarea id="counselInput" rows="14" placeholder="민원인의 구술 또는 공직자통합메일 본문 전체를 여기에 붙여넣으세요 (Ctrl+V 자동 복원 지원)..." oninput="handleCounselInputChanged()"></textarea>
-
-          <div style="display:flex; justify-content:space-between; margin-top:10px;">
-            <button class="btn btn-sm" onclick="clearInput()">🧹 지우기</button>
-            <button class="btn btn-sm btn-primary" onclick="processCounseling()">⚡ 분석 및 판정 실행</button>
+          <div>
+            <label style="font-size:11.5px; font-weight:700;">부양의무 상태</label>
+            <select id="simSupportObligor" onchange="runSimulation()" style="height:32px;">
+              <option value="severed">가족관계 해체 (지생보 심의 대상)</option>
+              <option value="none">부양의무자 없음</option>
+              <option value="normal">부양의무자 있음 (조사 대상)</option>
+            </select>
           </div>
         </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid var(--border);">
+          <div><label style="font-size:11.5px; font-weight:700;">월 근로·사업소득 (만원)</label><input type="number" id="simEarnedIncome" value="0" min="0" oninput="runSimulation()"></div>
+          <div><label style="font-size:11.5px; font-weight:700;">공적·사적이전소득 (만원)</label><input type="number" id="simOtherIncome" value="0" min="0" oninput="runSimulation()"></div>
+          <div><label style="font-size:11.5px; font-weight:700;">주거용재산 (만원)</label><input type="number" id="simResProp" value="0" min="0" oninput="runSimulation()"></div>
+          <div><label style="font-size:11.5px; font-weight:700;">실제 지출 월세 (만원)</label><input type="number" id="simRentFee" value="0" min="0" oninput="runSimulation()"></div>
+          <div><label style="font-size:11.5px; font-weight:700;">금융재산 (만원)</label><input type="number" id="simFinProp" value="0" min="0" oninput="runSimulation()"></div>
+          <div><label style="font-size:11.5px; font-weight:700;">금융부채 (만원)</label><input type="number" id="simDebt" value="0" min="0" oninput="runSimulation()"></div>
+        </div>
+        <div id="calcTraceBox" style="display:none; background:#f1f5f9; padding:12px; border-radius:6px; margin-top:12px; font-family:monospace; font-size:11.5px; line-height:1.6;"></div>
       </div>
+    </div>
 
-      <!-- 우측 2·3·4단계: 종합 행정 처리 영역 -->
-      <div>
+  </div>
 
-        <!-- 2단계 카드: 사정표 및 행복e음 상담일지 분할 -->
-        <div class="card">
-          <div class="card-title">
-            <span>2단계. 초기 복지사정표 & 행복e음 등록 일지</span>
-            <div>
-              <button class="btn btn-sm" onclick="copyHappyEumText()">📋 행복e음 일지 복사</button>
-              <button class="btn btn-sm" onclick="openClientNoticeModal()">📱 민원인 모바일 QR / 안내</button>
-            </div>
-          </div>
-
-          <div class="step2-split-grid">
-            <!-- 사정표 -->
-            <div>
-              <table class="assessment-table">
-                <tr><th>성명/연령</th><td id="tblNameAge">미기재</td></tr>
-                <tr><th>가구형태</th><td id="tblHousehold">1인 가구</td></tr>
-                <tr><th>건강/근로</th><td id="tblHealth">근로능력 확인 필요</td></tr>
-                <tr><th>근로·사업소득</th><td id="tblEarned">0원</td></tr>
-                <tr><th>이전·기타소득</th><td id="tblOther">0원</td></tr>
-                <tr><th>주거/임차보증금</th><td id="tblHousing">월세/전세 0만 원</td></tr>
-                <tr><th>금융재산/부채</th><td id="tblFin">0만 원 / 대출 0만 원</td></tr>
-                <tr><th>부양의무자</th><td id="tblSupport">확인 필요</td></tr>
-              </table>
-            </div>
-            <!-- 행복e음 문안 -->
-            <div>
-              <div id="happyeumOutputBox" class="happyeum-box">상담 내용을 입력하면 행복e음 공식 전산 규격 상담일지가 자동 완성됩니다.</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 3단계 & 4단계 카드: 법정 룰 엔진 시뮬레이터 -->
-        <div class="card">
-          <div class="card-title">
-            <span>3·4단계. 2026년 법정 룰 엔진 (결정론적 판정기)</span>
-            <button class="btn btn-sm" onclick="openTraceModal()">🔍 계산 Trace (법정 산식 증명)</button>
-          </div>
-
-          <!-- 시뮬레이터 파라미터 컨트롤 -->
-          <div class="sim-grid">
-            <div class="sim-field">
-              <label>가구원수</label>
-              <input type="number" id="simMembers" min="1" max="7" value="1" onchange="runSimulation()">
-            </div>
-            <div class="sim-field">
-              <label>주거급지</label>
-              <select id="simRegion" onchange="runSimulation()">
-                <option value="seoul">1급지 (서울)</option>
-                <option value="gyeonggi">2급지 (경기)</option>
-                <option value="metro" selected>3급지 (광역시·세종)</option>
-                <option value="rural">4급지 (기타·농어촌)</option>
-              </select>
-            </div>
-            <div class="sim-field">
-              <label>근로능력 평가</label>
-              <select id="simWorkAbility" onchange="runSimulation()">
-                <option value="none">근로무능력 (노인/중증질환)</option>
-                <option value="youth">청년특례 (만 24세 이하)</option>
-                <option value="able">일반 근로능력자</option>
-              </select>
-            </div>
-            <div class="sim-field">
-              <label>부양의무자 판정</label>
-              <select id="simSupportObligor" onchange="runSimulation()">
-                <option value="none">부양의무자 없음</option>
-                <option value="severed">부양단절 (해체사유서)</option>
-                <option value="normal">부양능력 있음/미단절</option>
-              </select>
-            </div>
-            <div class="sim-field">
-              <label>근로·사업소득 (만원)</label>
-              <input type="number" id="simEarned" value="0" onchange="runSimulation()">
-            </div>
-            <div class="sim-field">
-              <label>공적·이전소득 (만원)</label>
-              <input type="number" id="simOtherIncome" value="0" onchange="runSimulation()">
-            </div>
-            <div class="sim-field">
-              <label>주거용재산/자가 (만원)</label>
-              <input type="number" id="simResProp" value="0" onchange="runSimulation()">
-            </div>
-            <div class="sim-field">
-              <label>월세 지출액 (만원)</label>
-              <input type="number" id="simRentFee" value="0" onchange="runSimulation()">
-            </div>
-            <div class="sim-field">
-              <label>금융재산 (만원)</label>
-              <input type="number" id="simFinProp" value="0" onchange="runSimulation()">
-            </div>
-            <div class="sim-field">
-              <label>금융부채 (만원)</label>
-              <input type="number" id="simDebt" value="0" onchange="runSimulation()">
-            </div>
-          </div>
-
-          <!-- 소득인정액 요약 바 -->
-          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center;">
-            <div>
-              <span style="font-size:12px; color:#64748b;">산출 소득인정액:</span>
-              <strong id="dispRecognizedIncome" style="font-size:15px; color:#0f172a; margin-left:6px;">0만 원</strong>
-            </div>
-            <div style="font-size:12px; color:#64748b;">
-              2026 기준 중위 100%: <span id="dispMedianIncome">256.4만 원</span>
-            </div>
-          </div>
-
-          <!-- 4대 급여 판정 결과 배지 -->
-          <div class="result-badges">
-            <div id="badgeLivelihood" class="badge-card">
-              <div class="badge-label">생계급여 (32%)</div>
-              <div id="txtLivelihood" class="badge-val">판정 중</div>
-            </div>
-            <div id="badgeMedical" class="badge-card">
-              <div class="badge-label">의료급여 (40%)</div>
-              <div id="txtMedical" class="badge-val">판정 중</div>
-            </div>
-            <div id="badgeHousing" class="badge-card">
-              <div class="badge-label">주거급여 (48%)</div>
-              <div id="txtHousing" class="badge-val">판정 중</div>
-            </div>
-            <div id="badgeEducation" class="badge-card">
-              <div class="badge-label">교육/차상위 (50%)</div>
-              <div id="txtEducation" class="badge-val">판정 중</div>
-            </div>
-          </div>
-        </div>
-
+  <!-- 결손 항목 확인 모달 -->
+  <div id="missingConfirmModal" class="modal-overlay">
+    <div class="modal-card">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+        <span style="font-size:20px;">⚠️</span>
+        <h3 style="font-size:16px; font-weight:800; color:#b45309;">필수 상담 항목 누락 알림</h3>
+      </div>
+      <p style="font-size:13px; color:#475569; line-height:1.6; margin-bottom:14px;">
+        다음 항목이 명확히 기재되지 않았습니다. 서식 템플릿을 넣어 보완하시겠습니까?
+      </p>
+      <div id="modalMissingList" style="background:#fffbeb; border:1px solid #fde68a; border-radius:6px; padding:10px 14px; margin-bottom:16px; font-size:12.5px; color:#92400e;"></div>
+      <div style="display:flex; justify-content:flex-end; gap:8px;">
+        <button class="btn btn-outline" onclick="forceNavigateToStep2()">확인 후 그대로 진행</button>
+        <button class="btn btn-primary" onclick="insertMissingAndCloseModal()">+ 서식 템플릿 넣고 작성</button>
       </div>
     </div>
   </div>
 
-  <!-- 계산 Trace 모달 -->
-  <div id="traceModal" class="modal-overlay">
-    <div class="modal-content" style="max-width:650px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
-        <h3 style="font-size:15px; font-weight:800;">🔍 2026년 법정 소득인정액 산출 Trace</h3>
-        <button class="btn btn-sm" onclick="closeModal('traceModal')">닫기</button>
-      </div>
-      <div id="traceModalBody" style="font-size:12.5px; line-height:1.8; color:#334155; font-family:monospace; background:#f8fafc; padding:12px; border-radius:6px; white-space:pre-wrap;"></div>
-    </div>
-  </div>
-
-  <!-- 대민 안내 및 모바일 QR 모달 -->
-  <div id="clientNoticeModal" class="modal-overlay">
-    <div class="modal-content">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
-        <h3 style="font-size:16px; font-weight:800;">📱 민원인 원스톱 안내 및 모바일 QR 전송</h3>
-        <button class="btn btn-sm" onclick="closeModal('clientNoticeModal')">닫기</button>
-      </div>
-      <div style="display:grid; grid-template-columns: 220px 1fr; gap:18px;">
-        <div style="text-align:center;">
-          <div id="qrCodeContainer" style="display:flex; justify-content:center; align-items:center; width:200px; height:200px; border:1px solid #e2e8f0; border-radius:8px; margin:0 auto 10px auto; background:#fff;"></div>
-          <div style="font-size:11.5px; color:#64748b; font-weight:600;">스마트폰 기본 카메라로 비추면 구비서류 목록이 폰에 바로 뜹니다.</div>
-        </div>
-        <div>
-          <textarea id="editableClientNoticeArea" rows="10" style="font-size:12px; font-family:inherit;"></textarea>
-          <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
-            <button class="btn btn-sm" onclick="copyClientNotice()">안내문 복사</button>
-            <button class="btn btn-sm btn-primary" onclick="printEditedClientNotice()">🖨️ 종이 안내장 인쇄</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 법정 위기의뢰 공문 모달 -->
-  <div id="riskActionModal" class="modal-overlay">
-    <div class="modal-content" style="max-width:700px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
-        <h3 style="font-size:15px; font-weight:800; color:#be123c;">📄 법정 위기의뢰 표준 공문 기안문(안)</h3>
-        <button class="btn btn-sm" onclick="closeModal('riskActionModal')">닫기</button>
-      </div>
-      <textarea id="riskOfficialDraftText" rows="12" style="font-size:12.5px; font-family:monospace; line-height:1.7; background:#fff;"></textarea>
-      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:10px;">
-        <button class="btn btn-sm" onclick="copyOfficialDraft()">기안문 복사</button>
-        <button class="btn btn-sm btn-primary" onclick="applyRiskEmergencyIntervention()">긴급복지 우선개입 반영</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 토스트 알림바 -->
   <div id="toast">알림</div>
 
   <script>
-    /* -------------------------------------------------------------
-       1. 법정 정책 테이블 (2026년 기준 중위소득 및 급지 기준)
-    ------------------------------------------------------------- */
     const POLICY_2026 = {
-      medianIncome: { 1: 256.4, 2: 419.9, 3: 535.9, 4: 649.5, 5: 755.7, 6: 859.3, 7: 961.1 },
+      medianIncome: { 1: 256.4, 2: 419.9, 3: 535.9, 4: 649.5 },
       baseDeduction: { seoul: 9900, gyeonggi: 8000, metro: 7700, rural: 5300 },
-      standards: { livelihood: 0.32, medical: 0.40, housing: 0.48, education: 0.50, nearPoverty: 0.50, emergency: 0.75 }
+      housingLimit: { seoul: 17200, gyeonggi: 15100, metro: 14600, rural: 11200 },
+      conversionRates: { residential: 0.0104, general: 0.0417, financial: 0.0626 },
+      standards: { livelihood: 0.32, medical: 0.40, housing: 0.48, education: 0.50, nearPoverty: 0.50, emergency: 0.75 },
+      emergencyPayouts: { 1: 71.3, 2: 117.8, 3: 150.9, 4: 183.4 }
     };
 
-    let currentParsedState = null;
-    let currentRiskStatus = { detected: false, signals: [] };
-    let currentHappyEumText = "";
-    let currentClientNoticeText = "";
-    let currentRequiredDocs = [];
-    let currentRecommendedAgencies = [];
-    let lastCalcTrace = "";
+    const MISSING_FIELD_TEMPLATES = {
+      name: "\n• 대상자 성명: [       ] (신청인 본인)",
+      age: "\n• 대상자 연령: [    ]세 (만 [    ]세 또는 1900년생)",
+      household: "\n• 가구원수: [    ]인 가구 (단독 세대주 / 동거가족 수)",
+      income: "\n• 근로 및 사업소득: 월 [    ]만 원 (소득 없을 시 0원)\n• 공적/사적이전소득: 월 [    ]만 원",
+      property: "\n• 주거형태: [월세 / 전세 / 자가 / 사용대차(무상거주)]\n• 보증금: [    ]만 원 / 월세: [    ]만 원\n• 금융재산: [    ]만 원 / 부채: [    ]만 원",
+      health: "\n• 건강상태: [만성질환 / 만65세이상 / 중증장애 / 일반건강]\n• 근로능력 유무: [해당없음 / 질병심사대상 / 일반근로자]",
+      obligor: "\n• 부양의무자 실태: [부양의무자 없음 / 가족관계 해체사유서 대상 / 일반 조사대상]"
+    };
 
-    /* -------------------------------------------------------------
-       2. 모델 비종속 어댑터 모의 객체
-    ------------------------------------------------------------- */
-    window.ModelAgnosticAdapter = {
-      modelSpecs: {
-        wasm_tiny: { name: "온디바이스 경량 모델", latency: "0.2s" },
-        exaone: { name: "LG EXAONE 3.0", latency: "0.8s" },
-        solar: { name: "Upstage Solar-Mini", latency: "0.6s" },
-        clova: { name: "NAVER CLOVA-X", latency: "0.7s" },
-        gemma: { name: "Google Gemma-2", latency: "0.5s" }
+    const PRESETS = {
+      basicLife: `[기초생활보장 맞춤형급여 상담·조사 표준서식]
+1. 가구원 구성 및 기본 인적사항
+• 세대주 성명: 홍길동 (만 [ 58 ] 세)
+• 보장가구 범위: [ 1 ]인 가구 (단독 세대주, 실제 생계 및 주거 단독 운영)
+• 건강상태 및 질병: 척추협착증 및 허리디스크로 거동 불편 (진단서 제출)
+• 근로능력 유무: 질병·부상으로 인한 근로능력평가 심사 대상
+
+2. 소득 사항 (소득평가액 산정)
+• 근로 및 사업소득: 월 0원 (질환으로 경제활동 불가, 무소득 상태)
+• 공적이전소득: 월 0원 (기초연금 또는 국민연금 수급 없음)
+• 재산 및 사적이전소득: 월 0원 (가족 및 친인척 정기 지원 일체 없음)
+
+3. 재산 현황 (재산의 소득환산액 산정)
+• 주거 형태: 월세 (보증금 [ 500 ]만 원 / 월세 [ 25 ]만 원)
+• 일반재산: 없음 (부동산, 분양권, 토지 등 미보유)
+• 금융재산: 예금 잔액 약 [ 45 ]만 원 (기본공제 생활준비금 500만원 이내)
+• 부채 내역: 병원비 치료용 대출 [ 300 ]만 원 (신용대출)
+• 자동차 보유: 미보유 (100% 환산차량 없음)
+
+4. 부양의무자 기준 (의료급여 중심 조사)
+• 부양의무자 현황: 장남 1명 (만 [ 33 ]세)
+• 부양 기피 및 단절 여부: 10년 전 사업 실패 후 가출, 연락두절 상태임.
+• 소명 자료: 가족관계 해체사유서 자필 작성 의사 밝힘 및 1년 이상 금융거래내역 증빙 가능
+
+5. 신청 희망 급여
+• 신청 희망 급여: 생계급여, 의료급여, 주거급여 동시 신청`,
+
+      nearPoverty: `[차상위계층 확인 및 감면지원 상담·조사 표준서식]
+1. 가구원 구성 및 기본 인적사항
+• 세대주 성명: 이미선 (만 [ 46 ] 세)
+• 보장가구 범위: [ 2 ]인 가구 (본인 및 미취학 자녀 1명 동거 모자가구)
+• 건강상태 및 질병: 모녀 모두 특이 중증질환 없음 (통상 건강)
+• 근로능력 유무: 해당없음 (차상위계층 신청)
+
+2. 소득 사항 (기준 중위소득 50% 검토)
+• 근로 및 사업소득: 식당 보조 근로소득 월 [ 140 ]만 원 (30% 법정공제 적용)
+• 공적이전소득: 아동수당 월 [ 10 ]만 원
+• 재산 및 사적이전소득: 0원
+
+3. 재산 현황 (재산의 소득환산액 산정)
+• 주거 형태: 월세 (보증금 [ 1,500 ]만 원 / 월세 [ 35 ]만 원)
+• 일반재산: 없음 (비주거용 부동산 미보유)
+• 금융재산: 통장 잔액 [ 220 ]만 원 (생활준비금 500만원 공제 이내)
+• 부채 내역: 생활비 마이너스통장 대출 [ 500 ]만 원
+• 자동차 보유: 미보유
+
+4. 부양의무자 기준
+• 부양의무자 기준: 해당없음 (차상위계층은 부양의무자 기준 미적용)
+
+5. 신청 희망 사업 및 감면 수요
+• 신청 희망: 차상위계층 확인서 발급, 차상위 자활급여`,
+
+      emergency: `[긴급복지지원(선지원·사후조사) 위기상담 표준서식]
+1. 위기상황 사유 (긴급복지지원법 제2조 해당여부 확인)
+• 위기 사유: 주소득자 실직 및 월세가 4달 밀려 집주인으로부터 강제퇴거 통보받음
+• 폭력 및 위기: 지속적인 협박과 폭행 위협 노출됨 (학대 및 폭력 위기)
+• 심리 상태: 극단적 선택 위기 호소 (위기신호 즉각 개입 요망)
+
+2. 가구원 구성 및 인적사항
+• 세대주 성명: 최영미 (만 [ 44 ] 세)
+• 보장가구 범위: [ 2 ]인 가구 (본인 및 초등학생 자녀 1명 동거)
+• 건강상태 및 근로: 해당없음 (긴급복지 선지원 대상)
+
+3. 긴급지원 소득 및 금융재산 기준 검토 (실소득 75% 이하)
+• 월 총실소득: [ 0 ]원 (무소득 확인, 실소득 기준 충족)
+• 금융재산: 통장 잔고 [ 0 ]원 (기준액 1인 822만 원 이하 절대 충족)
+• 주거 현황: 월세 [ 30 ]만 원 (임대료 4달 밀려 주말 내 퇴거 강요받음)
+• 부채 내역: 사채 및 소액대출 [ 200 ]만 원
+
+4. 부양의무자 기준
+• 부양의무자 기준: 해당없음 (긴급복지지원법상 부양의무자 기준 미적용)
+
+5. 긴급 행정 조치 계획
+• 지원 요청: 긴급생계지원 (2인 가구 117.8만 원) 직권 우선신청
+• 주거 지원: LH 긴급주거지원 공공임대 연계 의뢰
+• 안전 조치: 경찰청(112) 현장 안전확인 및 위기의뢰 공문 기안`,
+
+      basicPension: `[기초연금 신청 및 노인가구 자산조사 표준서식]
+1. 신청인 기본 인적사항 및 연령 확인
+• 신청인 이름: 김정순 (만 [ 72 ] 세)
+• 수급 대상 여부: 만 65세 이상 노인가구 요건 충족
+• 가구 형태: [ 1 ]인 단독 노인가구 (독거노인)
+• 건강상태: 만성 퇴행성 관절염으로 거동 불편
+• 근로능력 유무: 해당없음 (만 65세 이상 기초연금)
+
+2. 소득 현황 (기초연금 소득인정액 산정)
+• 월소득: [ 0 ]원 (경제활동 일체 없음, 무소득)
+• 공적이전소득: 국민연금 월 0원
+• 사적이전소득: 0원
+
+3. 재산 현황 (주거재산 기본공제액 검토)
+• 주거 형태: 전세 (보증금 [ 6,500 ]만 원 / 월세 0원)
+• 일반재산: 없음
+• 금융재산: 통장 예금 잔액 [ 130 ]만 원 (기본공제 범위 내)
+• 금융부채: 담보대출 없음 (0원)
+• 자동차: 미보유
+
+4. 부양의무자 기준
+• 부양의무자 기준: 해당없음 (기초연금 미적용)`
+    };
+
+    const AGENCY_RULES = [
+      {
+        id: "hug_jeonse",
+        agency: "HUG 주택도시보증공사",
+        program: "전세피해지원센터 (특별법 피해자 원스톱 지원)",
+        trigger: /(전세\s*사기|보증금\s*사기|깡통\s*전세|보증금\s*미반환|전세\s*피해|전세보증금\s*(?:떼임|못\s*받))/,
+        desc: "전세사기 피해자 대상 긴급주거지원(공공임대), 저리 대환대출 및 무료 법률상담 원스톱 연계",
+        contact: "1533-8119",
+        guide: "전세피해지원센터(1533-8119) 방문 또는 안심전세포털 온라인 신청"
+      },
+      {
+        id: "nhis_medical",
+        agency: "국민건강보험공단",
+        program: "재난적 의료비 지원사업",
+        trigger: /(병원|의료비|치료비|수술|입원|투병|협착증|디스크|약값|간병|질병)/,
+        desc: "과도한 중증·입원 의료비 발생 시 본인부담금의 50~80% 지원 (연간 최대 5,000만 원)",
+        contact: "1577-1000",
+        guide: "퇴원 전 또는 퇴원 후 180일 이내 관할 건보공단 지사 신청"
+      },
+      {
+        id: "klac_legal",
+        agency: "대한법률구조공단",
+        program: "무료 법률구조 및 개인회생·파산면책 지원",
+        trigger: /(빚|부채|대출|사채|파산|회생|차압|압류|소송|명도|강제집행)/,
+        desc: "저소득 취약계층 대상 민사소송 대리 및 무료 개인회생·파산면책 원스톱 법률구조",
+        contact: "132",
+        guide: "가까운 법률구조공단 출장소(국번없이 132) 사전 예약 상담"
+      },
+      {
+        id: "lh_housing",
+        agency: "LH 한국토지주택공사",
+        program: "주거취약계층 긴급지원주택 (매입·전세임대)",
+        trigger: /(쫓겨|퇴거|방을\s*빼|월세\s*밀려|노숙|고시원|비주택|임대료\s*체납)/,
+        desc: "강제퇴거 위기가구 대상 시세 30~50% 수준의 공공임대주택 긴급 입주 연계",
+        contact: "1600-1004",
+        guide: "행정복지센터 긴급지원 추천서 발급 후 관할 LH 주거복지지사 접수"
+      },
+      {
+        id: "ccrs_finance",
+        agency: "서민금융진흥원 / 신용회복위원회",
+        program: "소액생계비 대출 및 채무조정(신용회복)",
+        trigger: /(연체|이자|신용불량|돌려막기|통장\s*압류|생활비\s*대출)/,
+        desc: "불법사금융 피해 예방을 위한 당일 긴급 소액생계비(최대 100만원) 대출 및 채무 원금감면",
+        contact: "1397",
+        guide: "서민금융통합지원센터(1397) 방문 또는 모바일앱 상담"
+      },
+      {
+        id: "energy_voucher",
+        agency: "한국에너지공단",
+        program: "에너지바우처 (전기·도시가스·난방 지원)",
+        trigger: /(단전|단수|가스\s*끊김|난방|연탄|등유|전기요금|공과금)/,
+        desc: "동·하절기 냉·난방 에너지 비용을 충당할 수 있는 전자바우처 이용권 차등 지급",
+        contact: "1600-0736",
+        guide: "주민센터 복지팀에서 즉시 에너지바우처 발급 신청 가능"
+      },
+      {
+        id: "mental_health",
+        agency: "정신건강복지센터 / 자살예방센터",
+        program: "우울증 및 위기상담 심리지원",
+        trigger: /(죽고\s*싶|자살|극단적|우울|불안|불면|공황)/,
+        desc: "정신건강 전문요원 1:1 심층 위기상담 및 치료비(연 최대 36만원) 지원",
+        contact: "109 (또는 1577-0199)",
+        guide: "24시간 자살예방 상담전화 109 또는 관할 정신건강복지센터 연계"
+      },
+      {
+        id: "employment_center",
+        agency: "고용노동부 고용센터",
+        program: "국민취업지원제도 (취업지원 및 구직촉진수당)",
+        trigger: /(구직|취업|일자리|알바|실직|퇴사|이직)/,
+        desc: "맞춤형 취업지원서비스 및 월 50만 원씩 6개월간 최대 300만 원 구직수당 지급",
+        contact: "1350",
+        guide: "고용복지플러스센터 방문 또는 국민취업지원제도 홈페이지 신청"
       }
-    };
+    ];
 
-    function handleModelChange() {
-      const sel = document.getElementById('llmModelSelector').value;
-      const tag = document.getElementById('activeModelTag');
-      const spec = window.ModelAgnosticAdapter.modelSpecs[sel];
-      if (sel === 'wasm_tiny') {
-        tag.innerText = "로컬 텐서 연산 모드";
-        tag.style.background = "#e0e7ff";
-        tag.style.color = "#3730a3";
-        showToast("온디바이스 WASM 로컬 모델로 전환되었습니다.");
+    let activePreset = null;
+    let currentMissingFields = [];
+    let currentParsedData = {};
+    let currentOfficialNoticeDraft = "";
+    let parseDebounceTimer = null;
+
+    function safeSetText(id, text) {
+      const el = document.getElementById(id);
+      if (el) el.innerText = text;
+    }
+
+    function safeSetHtml(id, html) {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = html;
+    }
+
+    function switchTab(tabId, btnElem) {
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+      const target = document.getElementById(tabId);
+      if (target) target.classList.add('active');
+      if (btnElem) btnElem.classList.add('active');
+    }
+
+    function triggerAudioUpload() {
+      const fileInput = document.getElementById('audioUploadInput');
+      if (fileInput) fileInput.click();
+    }
+
+    function handleAudioFileSelected(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const panel = document.getElementById('audioPlayerPanel');
+      const nameEl = document.getElementById('audioFileName');
+      const sizeEl = document.getElementById('audioFileSize');
+      const statusBadge = document.getElementById('audioStatusBadge');
+      const audioPlayer = document.getElementById('audioPreviewPlayer');
+      const memoEl = document.getElementById('counselInput');
+
+      if (panel) panel.style.display = 'block';
+      if (nameEl) nameEl.innerText = file.name;
+      if (sizeEl) sizeEl.innerText = (file.size / (1024 * 1024)).toFixed(2) + " MB";
+      
+      const fileUrl = URL.createObjectURL(file);
+      if (audioPlayer) audioPlayer.src = fileUrl;
+
+      if (statusBadge) {
+        statusBadge.innerText = "⏳ 온디바이스 STT 음성 변환 중...";
+        statusBadge.style.color = "#b45309";
+        statusBadge.style.background = "#fef3c7";
+        statusBadge.style.borderColor = "#fcd34d";
+      }
+
+      showToast(`🎙 [${file.name}] 음성 파일 분석을 시작합니다.`);
+
+      setTimeout(() => {
+        const transcribedText = `[복지상담 창구 대면 녹취록 - 온디바이스 STT]
+공무원: 어르신, 오늘 어떤 일로 오셨을까요? 성함이랑 연령 말씀해 주시겠어요?
+민원인: 제 이름은 박철수이고, 1958년생이라 올해 만으로 68세입니다.
+공무원: 네, 박철수 님. 지금 가족분들과 같이 살고 계신가요?
+민원인: 아니요, 가족 없이 혼자 살고 있는 1인 단독 가구입니다.
+공무원: 건강은 좀 어떠세요? 일은 하고 계신가요?
+민원인: 허리디스크랑 척추 질환이 너무 심해서 거동이 불편해 일을 전혀 못 합니다. 근로능력 유무는 해당없음입니다. 그래서 현재 월소득은 0원입니다.
+공무원: 주거 형태와 재산 상황은 어떻게 되실까요?
+민원인: 보증금 300만 원에 월세 25만 원 원룸에 거주하고 있고요, 통장 잔액은 35만 원 남아있고 병원비 빚이 250만 원 있습니다.
+공무원: 혹시 자녀분이나 부양해 줄 가족은 따로 없으신가요?
+민원인: 아들이 한 명 있기는 한데, 사업 실패하고 10년 전부터 완전히 연락두절되어 생사도 모릅니다. 가족관계 해체사유서라도 쓰겠습니다.`;
+
+        if (memoEl) {
+          memoEl.value = transcribedText;
+          handleCounselInputChanged();
+          processCounseling();
+        }
+
+        if (statusBadge) {
+          statusBadge.innerText = "⚡ 대화체 팩트 분석 및 사정표 연동 완료 (0.6s)";
+          statusBadge.style.color = "#047857";
+          statusBadge.style.background = "#ecfdf5";
+          statusBadge.style.borderColor = "#a7f3d0";
+        }
+
+        showToast("✅ 창구 대화 녹취 분석 및 초기사정표 작성이 완료되었습니다.");
+      }, 600);
+
+      event.target.value = "";
+    }
+
+    function closeAudioPanel() {
+      const panel = document.getElementById('audioPlayerPanel');
+      const audioPlayer = document.getElementById('audioPreviewPlayer');
+      if (audioPlayer) {
+        audioPlayer.pause();
+        audioPlayer.src = "";
+      }
+      if (panel) panel.style.display = 'none';
+    }
+
+    function attemptNavigateToStep2() {
+      if (parseDebounceTimer) {
+        clearTimeout(parseDebounceTimer);
+        parseDebounceTimer = null;
+      }
+      processCounseling();
+
+      if (currentMissingFields.length > 0) {
+        const modal = document.getElementById('missingConfirmModal');
+        const modalList = document.getElementById('modalMissingList');
+        if (modalList) {
+          modalList.innerHTML = currentMissingFields.map(f => `• ${f.label}`).join('<br>');
+        }
+        if (modal) modal.style.display = 'flex';
       } else {
-        tag.innerText = "행안부 공통기반 연계 모드";
-        tag.style.background = "#dbeafe";
-        tag.style.color = "#1e40af";
-        showToast(`행정안전부 AI 공통기반 [${spec.name}] 어댑터로 전환되었습니다.`);
+        switchTab('tab2', document.getElementById('btnTab2'));
       }
     }
 
-    /* -------------------------------------------------------------
-       3. 개인식별정보(PII) 정규식 실시간 감지 & DLP 마스킹
-    ------------------------------------------------------------- */
+    function forceNavigateToStep2() {
+      const modal = document.getElementById('missingConfirmModal');
+      if (modal) modal.style.display = 'none';
+      switchTab('tab2', document.getElementById('btnTab2'));
+      showToast("2단계로 이동했습니다.");
+    }
+
+    function insertMissingAndCloseModal() {
+      const modal = document.getElementById('missingConfirmModal');
+      if (modal) modal.style.display = 'none';
+      insertAllMissingTemplates();
+    }
+
+    function dismissMissingTag(fieldKey) {
+      currentMissingFields = currentMissingFields.filter(f => f.key !== fieldKey);
+      renderMissingTags();
+      showToast("해당 누락 항목이 경고에서 제외되었습니다.");
+    }
+
+    function renderMissingTags() {
+      const box = document.getElementById('missingAlertBox');
+      const tagList = document.getElementById('missingTagList');
+      if (!box || !tagList) return;
+
+      if (currentMissingFields.length > 0) {
+        box.style.display = 'block';
+        tagList.innerHTML = currentMissingFields.map(f => `
+          <span class="missing-tag">
+            <span>❌ ${f.label} 누락</span>
+            <span class="missing-tag-close" onclick="dismissMissingTag('${f.key}')" title="경고 제외">✕</span>
+          </span>
+        `).join('');
+      } else {
+        box.style.display = 'none';
+      }
+    }
+
+    function insertAllMissingTemplates() {
+      if (currentMissingFields.length === 0) return;
+      const memo = document.getElementById('counselInput');
+      if (!memo) return;
+      let appendText = "\n\n[추가 필수 확인 사항]";
+      currentMissingFields.forEach(f => {
+        if (MISSING_FIELD_TEMPLATES[f.key]) {
+          appendText += MISSING_FIELD_TEMPLATES[f.key];
+        }
+      });
+      memo.value = memo.value.trim() + appendText;
+      handleCounselInputChanged();
+      memo.focus();
+      currentMissingFields = [];
+      renderMissingTags();
+      showToast("작성용 서식 템플릿이 삽입되었습니다.");
+    }
+
+    function loadPreset(key) {
+      activePreset = key;
+      const memo = document.getElementById('counselInput');
+      if (memo && PRESETS[key]) {
+        memo.value = PRESETS[key];
+        handleCounselInputChanged();
+        processCounseling();
+        showToast("표준 프리셋이 로드되었습니다.");
+      }
+    }
+
+    function clearCounselInput() {
+      activePreset = null;
+      const memo = document.getElementById('counselInput');
+      if (memo) memo.value = "";
+      handleCounselInputChanged();
+      currentMissingFields = [];
+      renderMissingTags();
+      resetViews();
+      const duty = document.getElementById('dutyAlertSection');
+      if (duty) duty.style.display = 'none';
+      const emerg = document.getElementById('emergencyAlertBanner');
+      if (emerg) emerg.style.display = 'none';
+      closeAudioPanel();
+      showToast("자연어 상담 입력창이 초기화되었습니다.");
+    }
+
+    function resetViews() {
+      safeSetHtml('docApplicantInfo', `<span class="missing-text">[미기재] 성명 및 연령 확인 요망</span>`);
+      safeSetHtml('docHouseholdInfo', `<span class="missing-text">[미기재] 가구원수 확인 요망</span>`);
+      safeSetHtml('docHealthInfo', `<span class="missing-text">[미기재] 건강상태 확인 요망</span>`);
+      safeSetHtml('docIncomeInfo', `<span class="missing-text">[미기재] 소득 확인 요망</span>`);
+      safeSetHtml('docAssetInfo', `<span class="missing-text">[미기재] 주거형태 및 재산 확인 요망</span>`);
+      safeSetHtml('docWorkAbilityInfo', `<span class="missing-text">[미기재] 근로능력 확인 요망</span>`);
+      safeSetHtml('docSeverInfo', `<span class="missing-text">[미기재] 부양의무자 확인 요망</span>`);
+      safeSetText('happyEumOutput', "상담 내용을 입력하고 판정을 실행하면 행복e음 전산등록 표준 서식이 실시간 생성됩니다.");
+      
+      safeSetText('liveIncomeRecognized', "0");
+      safeSetText('liveRealIncome', "0");
+      updateLiveCard('liveCardBasicLife', 'liveEstBasicLife', false, "판정 대기");
+      updateLiveCard('liveCardEmergency', 'liveEstEmergency', false, "판정 대기");
+      updateLiveCard('liveCardNearPoverty', 'liveEstNearPoverty', false, "판정 대기");
+      updateLiveCard('liveCardBasicPension', 'liveEstBasicPension', false, "판정 대기");
+
+      const ids = ['simEarnedIncome', 'simOtherIncome', 'simResProp', 'simRentFee', 'simFinProp', 'simDebt'];
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = 0;
+      });
+      const ageEl = document.getElementById('simAge');
+      if (ageEl) ageEl.value = 65;
+
+      safeSetText('printApplicantName', "[미입력] 성명 미상");
+      safeSetText('clientDocCountBadge', "총 0종");
+      safeSetHtml('clientDocListArea', "<li style='color:#94a3b8;'>상담 내용이 입력되지 않았습니다.</li>");
+      safeSetText('agencyRecommendCountBadge', "0건 매칭");
+      safeSetHtml('agencyRecommendListArea', `
+        <div style="padding:14px; background:#f8fafc; border:1px solid var(--border); border-radius:6px; color:#64748b; font-size:12px;">
+          상담 내용에서 유관기관 연계 키워드가 감지되지 않았습니다.
+        </div>
+      `);
+    }
+
     function applyDlpMasking(rawText) {
-      if (!rawText) return "";
       let masked = rawText;
       let wasMasked = false;
 
-      // 1. 주민등록번호
-      const rrnPattern = /\b(\d{6})[- ]?([1-4]\d{6})\b/g;
+      let rrnPattern = /\b(\d{6})\s*[-~_.]?\s*([1-4]\s*(?:\d\s*){6})\b/g;
       if (rrnPattern.test(masked)) {
         masked = masked.replace(rrnPattern, function(match, front, back) {
           wasMasked = true;
-          return front + "-" + back.charAt(0) + "****** [주민번호 비식별화]";
+          let cleanBack = back.replace(/\s+/g, '');
+          return front + "-" + cleanBack.charAt(0) + "****** [주민번호 마스킹]";
         });
       }
 
-      // 2. 전화번호
-      const phonePattern = /\b(01[016789]|02|0[3-6][1-5])[- ]?(\d{3,4})[- ]?(\d{4})\b/g;
+      let phonePattern = /(?:^|[^\d])(01[016789]|02|0[3-6][1-5])[\s.-]?(\d{3,4})[\s.-]?(\d{4})(?=[^\d]|$)/g;
       if (phonePattern.test(masked)) {
         masked = masked.replace(phonePattern, function(match, p1, p2, p3) {
           wasMasked = true;
-          return p1 + "-****-" + p3;
+          return match.replace(new RegExp(`${p1}[\\s.-]?${p2}[\\s.-]?${p3}`), `${p1}-****-${p3}`);
         });
       }
 
-      // 3. 계좌번호
-      const accountPattern = /\b\d{3,6}[- ]?\d{2,6}[- ]?\d{3,6}\b/g;
-      masked = masked.replace(accountPattern, function(match) {
-        if (match.length >= 11 && !match.startsWith("01")) {
+      let accountContextPattern = /(계좌|통장|국민|신한|우리|하나|농협|기업|카카오|케이뱅크|토스|우체국|sc|씨티|새마을|수협|신협)\s*(?:번호)?[:：\s]*([0-9-]{10,20})/gi;
+      if (accountContextPattern.test(masked)) {
+        masked = masked.replace(accountContextPattern, function(match, bank) {
           wasMasked = true;
-          return "[계좌번호 비식별화 처리]";
-        }
-        return match;
-      });
+          return bank + " [계좌번호 비식별화 처리]";
+        });
+      }
+      let accountHyphenPattern = /\b(\d{3,6}-\d{2,6}-\d{3,6}(?:-\d{1,4})?)\b/g;
+      if (accountHyphenPattern.test(masked)) {
+        masked = masked.replace(accountHyphenPattern, function(match) {
+          if (!match.startsWith("010-") && !match.startsWith("02-") && match.length >= 11) {
+            wasMasked = true;
+            return "[계좌번호 비식별화 처리]";
+          }
+          return match;
+        });
+      }
 
-      const badge = document.getElementById('dlpStatusBadge');
+      const badge = document.getElementById('dlpBadge');
       if (badge) {
         if (wasMasked) {
-          badge.innerHTML = "🛡️ PII 자동 감지: <strong>민감정보 마스킹 완료</strong>";
+          badge.innerText = "🛡️ PII 자동 감지: 민감정보 마스킹 완료";
           badge.style.background = "#fef3c7";
           badge.style.color = "#92400e";
           badge.style.borderColor = "#fcd34d";
         } else {
-          badge.innerHTML = "🛡️️ PII 자동 비식별화(DLP) 실시간 가동 중";
-          badge.style.background = "#ecfdf5";
-          badge.style.color = "#047857";
-          badge.style.borderColor = "#6ee7b7";
+          badge.innerText = "🛡️ DLP 개인정보 비식별화 가동";
+          badge.style.background = "var(--success-bg)";
+          badge.style.color = "var(--success)";
+          badge.style.borderColor = "#a7f3d0";
         }
       }
 
@@ -470,600 +1138,869 @@
     function handleCounselInputChanged() {
       const el = document.getElementById('counselInput');
       if (!el) return;
-      document.getElementById('counselCharCounter').innerText = el.value.length + "자";
+      
+      const maskedVal = applyDlpMasking(el.value);
+      if (maskedVal !== el.value) {
+        el.value = maskedVal;
+      }
+      
+      safeSetText('counselCharCounter', el.value.length + "자");
+
+      if (parseDebounceTimer) clearTimeout(parseDebounceTimer);
+      parseDebounceTimer = setTimeout(() => {
+        processCounseling();
+      }, 200);
     }
 
-    /* -------------------------------------------------------------
-       4. [KoreaGovMailBridge] 공직자통합메일 기반 무서버 연계 모듈
-    ------------------------------------------------------------- */
-    const KoreaGovMailBridge = {
-      exportForMail: function() {
-        if (!currentParsedState) {
-          showToast("내보낼 상담 데이터가 없습니다. 먼저 분석을 진행해 주세요.");
-          return null;
-        }
+    function unbracket(str) {
+      if (!str) return "";
+      return str.replace(/[\[\]\(\)\{\}]/g, '').trim();
+    }
 
-        const rawSummary = currentHappyEumText || "현장 상담 기록 없음";
-        const maskedSummary = applyDlpMasking(rawSummary);
+    function parseKoreanCount(str) {
+      if (!str) return 1;
+      str = str.trim();
+      if (/[1-9]/.test(str)) return parseInt(str, 10);
+      if (/^(한|하나|외동|첫째)$/.test(str)) return 1;
+      if (/^(두|둘|양)$/.test(str)) return 2;
+      if (/^(세|셋|삼)$/.test(str)) return 3;
+      if (/^(네|넷|사)$/.test(str)) return 4;
+      if (/^(다섯|오)$/.test(str)) return 5;
+      return 1;
+    }
 
-        const payload = {
-          v: "2026.1",
-          ts: new Date().toISOString(),
-          parsed: currentParsedState,
-          risk: currentRiskStatus ? currentRiskStatus.signals : [],
-          agency: currentRecommendedAgencies || [],
-          docs: currentRequiredDocs || []
-        };
-        
-        const encodedPayload = btoa(encodeURIComponent(JSON.stringify(payload)));
+    function parseWon(text) {
+      if (!text) return null;
+      let clean = text.replace(/,/g, '').replace(/[\[\]\(\)\{\}]/g, '').trim();
+      if (/^0\s*(원|만|만원)?$/.test(clean) || /^(없음|없고|0|무소득|단절|전무|제로|없다)$/.test(clean)) {
+        return 0;
+      }
 
-        const mailBody = `[이어봄 AI] 현장 복지상담 전산연계 기록
-==================================================
-발송일시: ${new Date().toLocaleString()}
-대상자: ${currentParsedState.name || '신청인 본인'} (${currentParsedState.householdDesc || '가구확인 요망'})
-==================================================
+      let total = 0;
+      let eokMatch = clean.match(/([0-9.]+)\s*억/);
+      if (eokMatch) {
+        total += parseFloat(eokMatch[1]) * 10000;
+        clean = clean.replace(/([0-9.]+)\s*억/, '');
+      }
 
-[1. 행복e음 공식 전산 등록 문안]
-${maskedSummary}
-
-==================================================
-[2. 사무실 폐쇄망 PC 자동복원용 보안 토큰]
-※ 사무실 PC 이어봄 AI 입력창에 본 메일 전체를 그대로 복사·붙여넣기 하세요.
----BEGIN_IEOMBOM_TOKEN---
-${encodedPayload}
----END_IEOMBOM_TOKEN---`;
-
-        return mailBody;
-      },
-
-      sendViaGovMail: function() {
-        const bodyText = this.exportForMail();
-        if (!bodyText) return;
-
-        navigator.clipboard.writeText(bodyText).then(() => {
-          const subject = encodeURIComponent(`[복지상담연계] ${currentParsedState.name || '현장상담'}_${new Date().toISOString().slice(0,10)}`);
-          const body = encodeURIComponent(bodyText);
-          window.location.href = `mailto:?subject=${subject}&body=${body}`;
-          showToast("✉️ 공직자메일 서식이 복사되었으며 메일 앱을 호출합니다.");
-        }).catch(() => {
-          showToast("클립보드 복사에 실패했습니다.");
-        });
-      },
-
-      importFromText: function(text) {
-        if (!text) return false;
-
-        const tokenMatch = text.match(/---BEGIN_IEOMBOM_TOKEN---([\s\S]*?)---END_IEOMBOM_TOKEN---/);
-        if (!tokenMatch || !tokenMatch[1]) return false;
-
-        try {
-          const base64Data = tokenMatch[1].trim();
-          const jsonStr = decodeURIComponent(atob(base64Data));
-          const payload = JSON.parse(jsonStr);
-
-          if (!payload.parsed) throw new Error("유효하지 않은 데이터 규격입니다.");
-
-          currentParsedState = payload.parsed;
-          
-          if (document.getElementById('simMembers')) document.getElementById('simMembers').value = currentParsedState.members || 1;
-          if (document.getElementById('simEarned')) document.getElementById('simEarned').value = currentParsedState.earned || 0;
-          if (document.getElementById('simOtherIncome')) document.getElementById('simOtherIncome').value = currentParsedState.other || 0;
-          if (document.getElementById('simResProp')) document.getElementById('simResProp').value = currentParsedState.resProp || 0;
-          if (document.getElementById('simFinProp')) document.getElementById('simFinProp').value = currentParsedState.finProp || 0;
-          if (document.getElementById('simDebt')) document.getElementById('simDebt').value = currentParsedState.debt || 0;
-          if (document.getElementById('simRentFee')) document.getElementById('simRentFee').value = currentParsedState.rentFee || 0;
-          if (document.getElementById('simSupportObligor')) document.getElementById('simSupportObligor').value = currentParsedState.support || 'normal';
-
-          syncStateToStep2Table();
-          runSimulation();
-
-          const cleanSummary = text.split("---BEGIN_IEOMBOM_TOKEN---")[0].trim();
-          document.getElementById('counselInput').value = cleanSummary;
-
-          showToast("⚡ [공직자메일 연계 성공] 현장 상담 데이터와 법정 룰 연산이 100% 복원되었습니다!");
-          return true;
-        } catch (e) {
-          console.error("복원 실패:", e);
-          showToast("보안 토큰 복원 중 오류가 발생했습니다.");
-          return false;
+      let cheonManMatch = clean.match(/([0-9.]+)\s*천\s*만/);
+      if (cheonManMatch) {
+        total += parseFloat(cheonManMatch[1]) * 1000;
+        clean = clean.replace(/([0-9.]+)\s*천\s*만/, '');
+      } else {
+        let cheonAlone = clean.match(/([0-9.]+)\s*천\s*원/);
+        if (cheonAlone) {
+          total += Math.round(parseFloat(cheonAlone[1]) * 1000 / 10000);
+          clean = clean.replace(/([0-9.]+)\s*천\s*원/, '');
         }
       }
-    };
 
-    // 붙여넣기(Paste) 이벤트 연동
-    document.getElementById('counselInput').addEventListener('paste', function(e) {
-      setTimeout(() => {
-        const pastedText = document.getElementById('counselInput').value;
-        KoreaGovMailBridge.importFromText(pastedText);
-      }, 100);
-    });
+      let manMatch = clean.match(/([0-9.]+)\s*만\s*원?/) || clean.match(/([0-9.]+)\s*만/);
+      if (manMatch) {
+        total += parseFloat(manMatch[1]);
+        clean = clean.replace(/([0-9.]+)\s*만\s*원?/, '');
+      }
 
-    /* -------------------------------------------------------------
-       5. 온디바이스 음성 구술 (STT) 업로드 핸들러
-    ------------------------------------------------------------- */
-    function triggerAudioUpload() {
-      document.getElementById('audioUploadInput').click();
+      if (total === 0) {
+        let numOnly = clean.match(/([0-9]+)/);
+        if (numOnly) {
+          let n = parseFloat(numOnly[1]);
+          if (n === 0) return 0;
+          total = n >= 10000 ? Math.round(n / 10000) : n;
+        }
+      }
+
+      if (total > 0) return Math.round(total);
+      if (/0|없/.test(text)) return 0;
+      return null;
     }
 
-    function handleAudioFileSelected(event) {
-      const file = event.target.files && event.target.files[0];
-      if (!file) return;
+    function processCounseling() {
+      try {
+        const memoEl = document.getElementById('counselInput');
+        if (!memoEl) return;
+        let text = memoEl.value;
+        if (!text.trim()) {
+          resetViews();
+          return;
+        }
 
-      const panel = document.getElementById('audioPlayerPanel');
-      const nameEl = document.getElementById('audioFileName');
-      const statusBadge = document.getElementById('audioStatusBadge');
-      const audioPlayer = document.getElementById('audioPreviewPlayer');
-      const memoEl = document.getElementById('counselInput');
+        text = text.replace(/\u00A0/g, ' ');
 
-      panel.style.display = 'block';
-      nameEl.innerText = `${file.name} (${(file.size / (1024*1024)).toFixed(2)} MB)`;
-      audioPlayer.src = URL.createObjectURL(file);
+        const isPensionMode = (activePreset === 'basicPension') || /^\[기초연금/m.test(text);
+        const isNearPovertyMode = (activePreset === 'nearPoverty') || /^\[차상위계층/m.test(text);
+        const isEmergencyMode = (activePreset === 'emergency') || /^\[긴급복지지원/m.test(text);
+        const isBasicLifeMode = (activePreset === 'basicLife') || /^\[기초생활보장/m.test(text);
+        const isExemptScheme = (isNearPovertyMode || isEmergencyMode || isPensionMode) && !isBasicLifeMode;
 
-      statusBadge.innerText = "⏳ 온디바이스 STT 변환 중...";
-      statusBadge.style.color = "#b45309";
-      statusBadge.style.background = "#fef3c7";
+        currentMissingFields = [];
 
-      showToast(`🎙️️ [${file.name}] 음성 변환을 시작합니다.`);
+        // 1. 대상자 성명
+        let name = null;
+        let mNameLine = text.match(/(?:세대주\s*성명|신청인\s*성명|신청인\s*이름|신청자\s*성명|대상자\s*성명|성명|이름|성함)\s*[:：•\-=\s]*([^\n(]+)/i);
+        if (mNameLine) {
+          let rawName = unbracket(mNameLine[1]).trim();
+          let mOnlyName = rawName.match(/([가-힣a-zA-Z]{2,6})/);
+          if (mOnlyName && !/미기재|확인요망|작성/.test(mOnlyName[1])) {
+            name = mOnlyName[1];
+          }
+        }
+        if (!name) {
+          let mNameFallback = text.match(/저는\s*([가-힣]{2,5})\s*(?:이라\s*고\s*합니다|입니다|라고\s*불러요)/) ||
+                               text.match(/([가-힣]{2,4})\s*(?:씨|님|어르신|할머니|할아버지)(?:\s*\(대상자\))?/);
+          if (mNameFallback) name = unbracket(mNameFallback[1]).trim();
+        }
+        if (!name) currentMissingFields.push({ key: 'name', label: '대상자 성명' });
 
-      setTimeout(() => {
-        const transcribedText = `[현장 방문상담 녹취록 - 온디바이스 STT 추출]
-대상자 박철수 (만 68세), 1인 단독 가구.
-척추디스크 및 관절염으로 거동이 불가능하여 일을 전혀 못 함 (근로능력 없음, 월소득 0원).
-보증금 300만 원에 월세 25만 원 원룸에 거주 중이며 통장 잔액은 35만 원 남아있고 병원비 대출 빚 250만 원 있음.
-자녀인 장남은 사업 실패 후 10년 전부터 연락두절 상태로 가족관계 해체사유서 작성 의사 밝힘.`;
+        // 2. 대상자 연령
+        let age = null;
+        let mManAge = text.match(/만\s*(?:으로\s*)?[\[\(\{]?\s*([0-9]{1,2})\s*[\]\}\)]?\s*(?:세|살)/i);
+        let mSelfAgeLine = text.match(/(?:세대주|신청인|신청자|대상자|본인|나이|연령)[^\n]*?[\[\(\{]?\s*([0-9]{1,2})\s*[\]\}\)]?\s*(?:세|살)/i);
+        let mYear4 = text.match(/(?:^|[^\d])(19[2-9][0-9]|20[0-2][0-9])\s*년\s*(?:생|출생|도생)?(?=[^\d]|$)/);
+        let mYear2 = text.match(/(?:^|[^\d])([0-9]{2})\s*년생(?=[^\d]|$)/);
+        let mBracketAge = text.match(/[\[\(\{]\s*([0-9]{1,2})\s*[\]\}\)]\s*(?:세|살)/) ||
+                          text.match(/\b([1-9][0-9])\s*(?:세|살)\b/);
 
-        memoEl.value = transcribedText;
-        handleCounselInputChanged();
-        processCounseling();
+        if (mManAge) {
+          age = parseInt(mManAge[1], 10);
+        } else if (mSelfAgeLine) {
+          age = parseInt(mSelfAgeLine[1], 10);
+        } else if (mYear4) {
+          age = 2026 - parseInt(mYear4[1], 10);
+        } else if (mYear2) {
+          let yy = parseInt(mYear2[1], 10);
+          age = 2026 - (yy <= 26 ? (2000 + yy) : (1900 + yy));
+        } else if (mBracketAge) {
+          age = parseInt(mBracketAge[1], 10);
+        } else if (isPensionMode || /(만\s*65세\s*이상|65세\s*이상|독거노인|어르신)/.test(text)) {
+          age = 70;
+        }
 
-        statusBadge.innerText = "⚡ STT 변환 및 팩트 추출 완료 (0.6s)";
-        statusBadge.style.color = "#047857";
-        statusBadge.style.background = "#ecfdf5";
-      }, 700);
+        if (!age) currentMissingFields.push({ key: 'age', label: '대상자 연령' });
+
+        // 3. 가구원수
+        let members = null;
+        let mMemDirect = text.match(/[\[\(\{]?\s*([1-7])\s*[\]\}\)]?\s*인\s*가구/) ||
+                         text.match(/가구원\s*수\s*[:：]?\s*[\[\(\{]?\s*([1-7])\s*[\]\}\)]?/);
+        let hasSingle = /(나\s*혼자|나혼자|혼자|홀로)\s*(?:산다|살고|살아|거주|삶|삽니다|살아요)|독거|홀몸|단독\s*가구|단독\s*세대|1인\s*단독|1인\s*가구/.test(text);
+        let hasSpouse = /(배우자|남편|아내|처|와이프)/.test(text);
+        let mChild = text.match(/(?:자녀|아이|아들|딸|애기|애)\s*(?:가\s*)?([1-5]|한|하나|두|둘|세|셋|네|넷|다섯)?\s*(?:명|과|이랑|와|하고)?/);
+        let hasCouple = /(배우자|남편|아내|처|와이프|어머니|엄마|모친|아버지|부친|아들|딸)\s*(?:랑|와|하고)?\s*(?:둘이|단둘이|같이|함께)?\s*(?:산다|살고|살아|거주)|모자가구|모녀가구|부자가구|부부\s*2인|부부\s*가구/.test(text);
+
+        if (mMemDirect) {
+          members = parseInt(mMemDirect[1], 10);
+        } else if (hasSpouse && mChild) {
+          members = 2 + parseKoreanCount(mChild[1]);
+        } else if (mChild && /(?:함께|같이|데리고|키우|동거|있고)/.test(text) && !hasSingle) {
+          members = 1 + parseKoreanCount(mChild[1]);
+        } else if (hasCouple) {
+          members = 2;
+        } else if (hasSingle) {
+          members = 1;
+        } else {
+          currentMissingFields.push({ key: 'household', label: '가구원수' });
+        }
+
+        // 4. 월소득
+        let earned = null;
+        let other = 0;
+
+        let mEarnedLine = text.match(/(?:근로\s*(?:및|·)?\s*사업소득|근로소득|사업소득|월\s*소득|월급|급여|수입|알바비|벌이|식당\s*보조)\s*[:：=•\-]?\s*([^\n]+)/i);
+        if (mEarnedLine) {
+          let lineContent = mEarnedLine[1].trim();
+          let lineNoParen = lineContent.replace(/\([^\)]*\)/g, '').trim();
+
+          if (/\[?\s*0\s*(?:원|만|만원)?\s*\]?/i.test(lineNoParen) || /없음|무소득|0원|소득\s*없/i.test(lineContent)) {
+            earned = 0;
+          } else {
+            let parsedVal = parseWon(lineNoParen);
+            earned = (parsedVal !== null) ? parsedVal : parseWon(lineContent);
+          }
+        }
+        
+        if (earned === null) {
+          let hasExplicitZeroPattern = /(?:월\s*소득|근로\s*소득|사업\s*소득|소득|수입|월급|벌이)[^\n.]*(?:없|0원|0만|제로|전무|단절)|실직|무직|백수|무소득|경제활동\s*불가/i.test(text);
+          if (hasExplicitZeroPattern) earned = 0;
+        }
+
+        if (earned === null) currentMissingFields.push({ key: 'income', label: '소득 내역' });
+
+        let mOtherLine = text.match(/(?:공적이전소득|공적\s*이전소득|아동수당|국민연금|기초연금|이전소득)\s*[:：=•\-]?\s*([^\n]+)/i);
+        if (mOtherLine) {
+          let oContent = mOtherLine[1].trim().replace(/\([^\)]*\)/g, '').trim();
+          if (/\[?\s*0\s*(?:원|만|만원)?\s*\]?/i.test(oContent) || /없음|0원/.test(oContent)) {
+            other = 0;
+          } else {
+            other = parseWon(oContent) || 0;
+          }
+        }
+
+        // 5. 주거 및 재산
+        let housingType = null;
+        let resProp = null;
+        let rentFee = 0;
+        let finProp = null;
+        let debt = null;
+
+        let isJeonseFraud = /(전세\s*사기|보증금\s*사기|깡통\s*전세|보증금\s*미반환|전세\s*피해)/i.test(text);
+        let isFreeRent = /(사용대차|무료임차|무상거주|무상임차)/.test(text) ||
+                         /(?:친구|지인|부모|부모님|친척)\s*집(?:에|에서)?\s*(?:무상으로\s*|그냥\s*)?(?:산다|살고|거주)/.test(text);
+        let isOwn = /(자가|본인명의\s*(?:주택|집|아파트)|소유\s*(?:주택|집)|자가\s*보유)/.test(text);
+        let isJeonse = (/(?:전세보증금|전세금|전세로|전세\s*거주|전세\s*임차)/.test(text) || /(?:^|[^\w가-힣])전세(?!\s*사기|\s*피해)/.test(text)) && !isJeonseFraud;
+        let isMonthly = /(월세|월세방|임차|월세로)/.test(text);
+
+        let mDeposit = text.match(/(?:보증금|전세금)\s*[:：=•\-]?\s*([^\n,/()]+)/);
+        let mRent = text.match(/월세\s*[:：=•\-]?\s*([^\n,/()]+)(?!\s*(?:달|개월|회|차))/);
+
+        if (isFreeRent) {
+          housingType = "사용대차 (무상거주)";
+          resProp = 0;
+          rentFee = 0;
+        } else if (isOwn) {
+          housingType = "자가";
+          let mOwn = text.match(/(?:공시지가|집값|주택가액|시세)[^\d]*([\[\(\{]?[0-9,.\s]+(?:억|천만|만\s*원|만원|원)?[\]\}\)]?)/) ||
+                     text.match(/(?:자가\s*(?:보유)?|소유)[^\d]*([\[\(\{]?[0-9,.\s]+(?:억|천만|만\s*원|만원|원)?[\]\}\)]?)/);
+          resProp = mOwn ? parseWon(mOwn[1]) : 0;
+          rentFee = 0;
+        } else if (isJeonse) {
+          housingType = "전세";
+          resProp = mDeposit ? parseWon(mDeposit[1]) : 0;
+          rentFee = 0;
+        } else if (isMonthly || mDeposit || mRent) {
+          housingType = "월세 임차";
+          resProp = mDeposit ? parseWon(mDeposit[1]) : 0;
+          rentFee = mRent ? parseWon(mRent[1]) : 0;
+        } else {
+          currentMissingFields.push({ key: 'property', label: '주거 및 재산' });
+        }
+
+        let mFinLine = text.match(/(?:금융재산|통장\s*잔액|통장\s*잔고|예금\s*잔액|예금)\s*[:：=•\-]?\s*([^\n()]+)/);
+        if (mFinLine) {
+          let finStr = mFinLine[1].trim();
+          finProp = (/^\[?\s*0\s*(?:원|만|만원)?\s*\]?/.test(finStr) || /없음|0원/.test(finStr)) ? 0 : parseWon(finStr);
+        } else {
+          finProp = text.includes("통장 잔고 0원") ? 0 : null;
+        }
+
+        let mDebtLine = text.match(/(?:부채\s*(?:내역)?|대출금|빚|사채|마이너스\s*통장)\s*[:：=•\-]?\s*([^\n()]+)/);
+        if (mDebtLine) {
+          let debtStr = mDebtLine[1].trim();
+          debt = (/^\[?\s*0\s*(?:원|만|만원)?\s*\]?/.test(debtStr) || /없음|0원/.test(debtStr)) ? 0 : parseWon(debtStr);
+        } else {
+          debt = 0;
+        }
+
+        // 6. 건강상태 및 근로능력 판정
+        let healthDesc = null;
+        let mHealthLine = text.match(/(?:건강상태\s*(?:및|·)?\s*질병|건강상태|질병|질환)\s*[:：=•\-]?\s*([^\n]+)/);
+        if (mHealthLine) {
+          healthDesc = mHealthLine[1].replace(/[\[\]]/g, '').trim();
+        } else if (/(척추|디스크|협착증|관절염|암환자|중증질환)/.test(text)) {
+          healthDesc = "만성질환·부상 거동불편";
+        }
+
+        let mWorkLine = text.match(/(?:근로능력\s*유무|근로능력|근로상태)\s*[:：=•\-]?\s*([^\n]+)/);
+        let workText = mWorkLine ? mWorkLine[1].trim() : "";
+
+        let isSevereDisability = /(중증장애|심한\s*장애|장애\s*정도\s*심한|장애인연금|장애\s*[1-3]급|뇌병변|지적장애|자폐성장애|지체장애\s*중증)/.test(text);
+        let isMinorStudent = (age && age < 18) || /(초등학생|중학생|고등학생|만\s*18세\s*미만|재학\s*중)/.test(text);
+        let isPregnancyCare = /(임산부|임신\s*중|분만\s*후\s*6개월|출산\s*직후|미취학\s*자녀\s*양육|영유아\s*양육|중증환자\s*간병|와상\s*간병|가족\s*간병)/.test(text);
+        let isExplicitNoWork = /해당없음|근로무능력|근로능력\s*없음|근로\s*불가|경제활동\s*불가|일\s*못함|일\s*못하|거동\s*불가/i.test(workText);
+
+        let workAbility = null;
+        let workAbilityText = "";
+
+        if (isExemptScheme) {
+          workAbility = isNearPovertyMode ? "able" : "none";
+          workAbilityText = `<strong style="color:#64748b;">해당없음</strong> <span style="color:#64748b;">(${isEmergencyMode ? '긴급복지' : (isNearPovertyMode ? '차상위' : '기초연금')} 기준 미적용)</span>`;
+        } else if (age && age >= 65) {
+          workAbility = "none";
+          workAbilityText = `<strong style="color:#059669;">해당없음</strong> <span style="color:#475569;">(만 65세 이상 법정 노인)</span>`;
+        } else if (isSevereDisability) {
+          workAbility = "none";
+          workAbilityText = `<strong style="color:#059669;">해당없음</strong> <span style="color:#475569;">(중증장애인 법정 제외)</span>`;
+        } else if (isMinorStudent) {
+          workAbility = "none";
+          workAbilityText = `<strong style="color:#059669;">해당없음</strong> <span style="color:#475569;">(18세 미만·학생 법정 제외)</span>`;
+        } else if (isPregnancyCare) {
+          workAbility = "none";
+          workAbilityText = `<strong style="color:#059669;">해당없음</strong> <span style="color:#475569;">(임산부·양육·간병 법정 제외)</span>`;
+        } else if (isExplicitNoWork) {
+          workAbility = "none";
+          workAbilityText = `<strong style="color:#059669;">해당없음</strong> <span style="color:#475569;">(근로무능력 인정 대상)</span>`;
+        } else if (/(디스크|협착증|질병|수술|입원|부상|진단서|심사\s*대상)/.test(text) || /심사\s*대상|진단서/.test(workText)) {
+          workAbility = "illness";
+          workAbilityText = `<strong style="color:#b45309;">조사필요</strong> <span style="color:#b45309;">(근로능력평가 진단서 심사 대상)</span>`;
+        } else if (age && age <= 24) {
+          workAbility = "youth";
+          workAbilityText = `<strong style="color:#2563eb;">조사필요</strong> <span style="color:#475569;">(만 24세 이하 청년특례 / 자활 대상)</span>`;
+        } else if (/일반\s*근로|자활|식당|알바|배달|직장|근로\s*가능|일반/.test(text) || /일반/.test(workText)) {
+          workAbility = "able";
+          workAbilityText = `<strong style="color:#2563eb;">조사필요</strong> <span style="color:#475569;">(일반 근로능력자 / 자활 참여 대상)</span>`;
+        } else {
+          workAbility = null;
+          workAbilityText = `<span class="missing-text">[미기재] 근로능력 확인 요망</span>`;
+          currentMissingFields.push({ key: 'health', label: '근로능력 및 건강상태' });
+        }
+
+        // 7. 부양의무자 판정
+        let support = null;
+        let supportText = "";
+
+        let mSupportLine = text.match(/(?:부양\s*기피\s*(?:및|·)?\s*단절\s*여부|부양의무자\s*(?:실태|현황|기준))\s*[:：=•\-]?\s*([^\n]+)/);
+        let sContent = mSupportLine ? mSupportLine[1].trim() : "";
+
+        let hasSevered = /(연락두절|단절|해체사유서|가족관계\s*해체|생사모름|가출|왕래\s*단절|연락\s*끊)/.test(text);
+        let hasNoSupport = /(부양의무자\s*없음|부양자\s*없음|가족\s*없음|해당없음|없음)/.test(sContent) || /부양의무자\s*없음|부양자\s*없음|가족\s*없음/.test(text);
+        let hasSupportObligor = /(장남|차남|아들|딸|자녀|부모|모친|부친|배우자)\s*([0-9]|한|하나|두|둘)?\s*명?/.test(text) || /부양의무자\s*있음/.test(text);
+
+        if (hasSevered) {
+          support = "severed";
+          supportText = `<strong style="color:#b45309;">가족관계해체 조사필요</strong> <span style="color:#b45309;">(지방생활보장위원회 심의 대상)</span>`;
+        } else if (hasNoSupport && !hasSupportObligor) {
+          support = "none";
+          supportText = `<strong style="color:#059669;">해당없음</strong> <span style="color:#475569;">(부양의무자 없음)</span>`;
+        } else if (hasSupportObligor) {
+          support = "normal";
+          supportText = `<strong style="color:#be123c;">부양의무자 조사필요</strong> <span style="color:#be123c;">(소득·재산 조사 대상)</span>`;
+        } else if (isExemptScheme) {
+          support = "none";
+          const schemeName = isEmergencyMode ? '긴급복지' : (isNearPovertyMode ? '차상위' : '기초연금');
+          supportText = `<strong style="color:#64748b;">해당없음</strong> <span style="color:#64748b;">(${schemeName} 부양의무자 기준 미적용)</span>`;
+        } else {
+          support = null;
+          supportText = `<span class="missing-text">[미기재] 부양의무자 확인 요망</span>`;
+          currentMissingFields.push({ key: 'obligor', label: '부양의무자 실태' });
+        }
+
+        renderMissingTags();
+
+        currentParsedData = {
+          name, age, members, earned, other, housingType, resProp, rentFee, finProp, debt, 
+          workAbility, workAbilityText, healthDesc, support, supportText, isPensionMode
+        };
+
+        detectEmergencyCrisisAndStatutoryDuty(text, currentParsedData);
+        renderVerifiedAssessment(currentParsedData);
+        syncToSimulator(currentParsedData);
+
+      } catch (err) {
+        console.error("Critical parse error:", err);
+      }
     }
 
-    /* -------------------------------------------------------------
-       6. 비정형 자연어 구술 파서 & 위기 탐지 엔진
-    ------------------------------------------------------------- */
-    function parseCounselText(text) {
-      const res = {
-        name: "신청인 본인",
-        age: 65,
-        members: 1,
-        householdDesc: "1인 단독 가구",
-        workAbility: "none",
-        healthDesc: "만성질환/거동불편",
-        earned: 0,
-        other: 0,
-        resProp: 0,
-        rentFee: 0,
-        housingType: "월세 임차",
-        finProp: 0,
-        debt: 0,
-        support: "normal"
+    function detectEmergencyCrisisAndStatutoryDuty(text, p) {
+      const emergencyBanner = document.getElementById('emergencyAlertBanner');
+      const dutySection = document.getElementById('dutyAlertSection');
+      const draftContentArea = document.getElementById('officialNoticeContent');
+
+      const isJeonseFraud = /(전세\s*사기|보증금\s*사기|깡통\s*전세|보증금\s*미반환|전세\s*피해|전세보증금\s*(?:떼임|못\s*받))/i.test(text);
+      const isUnemployed = /(실직|휴업|폐업|사업\s*실패|소득\s*상실|일자리\s*잃|해고)/.test(text);
+      const isIllnessCrisis = /(중한\s*질병|중증질환|부상|수술|입원|투병|중환자|암환자)/.test(text);
+      const isEvictionCrisis = /(쫓겨|퇴거|방을\s*빼|강제\s*집행|월세\s*밀려|명도|노숙|고시원\s*밀려)/.test(text);
+      const isDisasterCrisis = /(화재|불이\s*나|산불|수해|침수|지진|재난|재해)/.test(text);
+      const isLossFamily = /(사망|숨지|돌아가|행방불명|실종|가출|구속|수감|교도소)/.test(text);
+      const isDomesticAbuse = /(가정폭력|폭행|폭력|학대|유기|방임|때린다|맞고\s*산다|협박)/.test(text);
+      const isEnergyCrisis = /(단전|단수|가스\s*끊김|전기\s*끊김|수도\s*끊김|공과금\s*체납)/.test(text);
+      const isSuicideRisk = /(죽고\s*싶|자살|극단적|삶을\s*정리|목숨)/.test(text);
+
+      const hasEmergencyCrisis = isJeonseFraud || isUnemployed || isIllnessCrisis || isEvictionCrisis || isDisasterCrisis || isLossFamily || isDomesticAbuse || isEnergyCrisis || isSuicideRisk;
+
+      if (emergencyBanner) {
+        if (hasEmergencyCrisis) {
+          emergencyBanner.style.display = 'block';
+          let crisisReasons = [];
+          if (isJeonseFraud) crisisReasons.push("전세사기 피해");
+          if (isUnemployed) crisisReasons.push("주소득자 실직·폐업");
+          if (isIllnessCrisis) crisisReasons.push("중한 질병·부상");
+          if (isEvictionCrisis) crisisReasons.push("강제퇴거·주거위기");
+          if (isDomesticAbuse) crisisReasons.push("가정폭력·학대·유기");
+          if (isLossFamily) crisisReasons.push("사망·가출·수감");
+          if (isDisasterCrisis) crisisReasons.push("화재·재난 피해");
+          if (isEnergyCrisis) crisisReasons.push("단전·단수 빈곤");
+          if (isSuicideRisk) crisisReasons.push("자살·자해 고위험군");
+
+          safeSetHtml('emergencyAlertDesc', `
+            상담 기록에서 <strong>긴급복지지원법 제2조 법정 위기사유 [${crisisReasons.join(', ')}]</strong>가 식별되었습니다.<br>
+            • <strong>권고 조치:</strong> <strong>선지원·사후조사 원칙</strong>에 따라 긴급생계지원 및 주거비 지원 직권신청 여부를 우선 검토하십시오.
+          `);
+        } else {
+          emergencyBanner.style.display = 'none';
+        }
+      }
+
+      const hasSevereCrime = isDomesticAbuse || /(감금|갈취|성매매|성폭행)/.test(text);
+      if (dutySection) {
+        if (hasSevereCrime) {
+          dutySection.style.display = 'block';
+          const today = new Date().toLocaleDateString('ko-KR');
+          const docNo = "복지-긴급-" + Date.now().toString().slice(-4);
+          const nameStr = p.name || "[미입력] 성명 미상";
+          const ageStr = p.age ? `만 ${p.age}세` : "연령미상";
+
+          currentOfficialNoticeDraft = `[행정기관 대외공문 기안문(안) - 사회복지공무원 법정 신고의무 준수]
+문서번호: 행정복지센터-${docNo}
+시행일자: ${today}
+수    신: 관할 경찰서장 (112) 및 유관 전문보호기관장 귀하
+참    조: 여성청소년계장, 형사당직팀장, 위기가구사례관리팀장
+제    목: 법정 신고의무 대상 위기포착 가구에 대한 긴급 현장동행 및 수사의뢰 협조 요청
+
+1. 관련 법령:
+   • 가정폭력방지 및 피해자보호 등에 관한 법률 제4조의4 (긴급구조 협조)
+   • 아동학대범죄의 처벌 등에 관한 특례법 제10조 제2항 / 노인복지법 제39조의6 제2항
+   ※ 사회복지사업법상 사회복지전담공무원의 직무상 즉각 신고의무 준수
+
+2. 당 행정복지센터 복지상담 중 법률에 규정된 중대한 학대·폭력·위기 정황이 포착되었기에, 신속한 현장 안전확인, 긴급 임시조치 및 보호개입을 긴급 의뢰하오니 적극 협조하여 주시기 바랍니다.
+
+-  다      음  -
+가. 대상자 인적사항: ${nameStr} (${ageStr}, ${p.members || 1}인 가구)
+나. 위기식별 유형: 학대·폭력 및 신체적 위해 노출 정황 포착
+다. 행정복지센터 자체 조치: 긴급복지지원법에 따른 선지원 검토 및 사례관리 등록
+라. 협조 요청사항: 가해자 분리 임시조치 및 경찰관 현장 동행 조사
+
+행 정 복 지 센 터 장  (직인생략)`;
+
+          if (draftContentArea) draftContentArea.innerText = currentOfficialNoticeDraft;
+        } else {
+          dutySection.style.display = 'none';
+          currentOfficialNoticeDraft = "";
+        }
+      }
+    }
+
+    function renderVerifiedAssessment(p) {
+      if (p.name || p.age) {
+        safeSetText('docApplicantInfo', `${p.name || "[미기재] 성명 미상"} (${p.age ? "만 " + p.age + "세" : "[미기재] 연령 확인 요망"})`);
+      } else {
+        safeSetHtml('docApplicantInfo', `<span class="missing-text">[미기재] 대상자 성명 및 연령 확인 요망</span>`);
+      }
+
+      if (p.members) {
+        safeSetText('docHouseholdInfo', `${p.members}인 가구 (${p.members === 1 ? "단독 세대" : "동거 가구"})`);
+      } else {
+        safeSetHtml('docHouseholdInfo', `<span class="missing-text">[미기재] 가구원수 확인 요망</span>`);
+      }
+
+      if (p.healthDesc) {
+        safeSetText('docHealthInfo', p.healthDesc);
+      } else {
+        safeSetHtml('docHealthInfo', `<span class="missing-text">[미기재] 건강상태 확인 요망</span>`);
+      }
+
+      if (p.earned !== null) {
+        safeSetText('docIncomeInfo', `월 ${p.earned.toLocaleString()}만 원 ${p.earned === 0 ? "(무소득 확인)" : ""} / 이전소득: 월 ${(p.other || 0).toLocaleString()}만 원`);
+      } else {
+        safeSetHtml('docIncomeInfo', `<span class="missing-text">[미기재] 소득 확인 요망</span>`);
+      }
+
+      if (p.housingType) {
+        let propStr = `${p.housingType} (보증금 ${(p.resProp || 0).toLocaleString()}만 / 월세 ${(p.rentFee || 0).toLocaleString()}만)`;
+        let finStr = p.finProp !== null ? `금융 ${p.finProp.toLocaleString()}만` : `금융 [미기재]`;
+        let debtStr = p.debt !== null ? `부채 ${p.debt.toLocaleString()}만` : `부채 0만`;
+        safeSetText('docAssetInfo', `${propStr} | ${finStr} | ${debtStr}`);
+      } else {
+        safeSetHtml('docAssetInfo', `<span class="missing-text">[미기재] 주거 및 재산 확인 요망</span>`);
+      }
+
+      safeSetHtml('docWorkAbilityInfo', p.workAbilityText || `<span class="missing-text">[미기재] 근로능력 확인 요망</span>`);
+      safeSetHtml('docSeverInfo', p.supportText || `<span class="missing-text">[미기재] 부양의무자 확인 요망</span>`);
+    }
+
+    function syncToSimulator(p) {
+      const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val;
       };
 
-      // 성명 파싱
-      const mName = text.match(/성명\s*[:：]?\s*([가-힣]{2,4})/) || text.match(/대상자\s*([가-힣]{2,4})/);
-      if (mName) res.name = mName[1].trim();
+      if (p.age) setVal('simAge', p.age);
+      if (p.members) setVal('simMembers', p.members);
+      if (p.workAbility) setVal('simWorkAbility', p.workAbility);
+      if (p.support) setVal('simSupportObligor', p.support);
+      setVal('simEarnedIncome', p.earned !== null ? p.earned : 0);
+      setVal('simOtherIncome', p.other || 0);
+      setVal('simResProp', p.resProp || 0);
+      setVal('simRentFee', p.rentFee || 0);
+      setVal('simFinProp', p.finProp || 0);
+      setVal('simDebt', p.debt || 0);
 
-      // 연령 파싱
-      const mAge = text.match(/만\s*([0-9]{1,2})\s*세/) || text.match(/([0-9]{1,2})\s*세/);
-      if (mAge) res.age = parseInt(mAge[1], 10);
-
-      // 가구원수
-      if (text.indexOf("단독") !== -1 || text.indexOf("1인") !== -1 || text.indexOf("혼자") !== -1) {
-        res.members = 1;
-        res.householdDesc = "1인 단독 가구";
-      } else if (text.indexOf("2인") !== -1 || text.indexOf("자녀 1명과") !== -1 || text.indexOf("단둘") !== -1) {
-        res.members = 2;
-        res.householdDesc = "2인 가구";
-      }
-
-      // 근로능력
-      if (res.age >= 65 || text.indexOf("근로능력 없음") !== -1 || text.indexOf("일을 전혀 못") !== -1 || text.indexOf("일체 경제활동 못") !== -1) {
-        res.workAbility = "none";
-        res.healthDesc = res.age >= 65 ? "만 65세 이상 (법정 근로무능력)" : "중증 만성질환 (근로무능력)";
-      } else if (res.age <= 24) {
-        res.workAbility = "youth";
-        res.healthDesc = "만 24세 이하 청년특례";
-      } else {
-        res.workAbility = "able";
-        res.healthDesc = "일반 근로능력자";
-      }
-
-      // 소득 파싱
-      const mEarned = text.match(/(?:근로소득|월급|수입|소득)[^\d]*([0-9,]+)\s*(?:만\s*원|만원)/);
-      if (mEarned) res.earned = parseInt(mEarned[1].replace(/,/g, ''), 10);
-      else if (text.indexOf("소득 0원") !== -1 || text.indexOf("수입이 전무") !== -1 || text.indexOf("소득은 전무") !== -1) res.earned = 0;
-
-      const mOther = text.match(/(?:기초연금|이전소득)[^\d]*([0-9,]+)/);
-      if (mOther) {
-        const val = parseInt(mOther[1].replace(/,/g, ''), 10);
-        res.other = val > 10000 ? Math.round(val / 10000) : val;
-      }
-
-      // 주거 형태 및 재산
-      if (text.indexOf("자가") !== -1 || text.indexOf("본인명의") !== -1) {
-        res.housingType = "자가 주택";
-        const mOwn = text.match(/(?:공시지가|시세|주택가액)[^\d]*([0-9,]+)\s*(?:만\s*원|만원)/);
-        res.resProp = mOwn ? parseInt(mOwn[1].replace(/,/g, ''), 10) : 6500;
-        res.rentFee = 0;
-      } else {
-        res.housingType = "월세 임차";
-        const mRes = text.match(/보증금\s*([0-9,]+)\s*만\s*원/);
-        res.resProp = mRes ? parseInt(mRes[1].replace(/,/g, ''), 10) : 0;
-        const mRent = text.match(/월세\s*([0-9,]+)\s*만\s*원/);
-        res.rentFee = mRent ? parseInt(mRent[1].replace(/,/g, ''), 10) : 0;
-      }
-
-      // 금융재산 / 부채
-      const mFin = text.match(/(?:예금|통장|잔액|잔고)[^\d]*([0-9,]+)\s*만\s*원/);
-      res.finProp = mFin ? parseInt(mFin[1].replace(/,/g, ''), 10) : 0;
-
-      const mDebt = text.match(/(?:대출|빚|부채)[^\d]*([0-9,]+)\s*만\s*원/);
-      res.debt = mDebt ? parseInt(mDebt[1].replace(/,/g, ''), 10) : 0;
-
-      // 부양의무자
-      if (text.indexOf("연락두절") !== -1 || text.indexOf("해체사유서") !== -1 || text.indexOf("연락 끊") !== -1) {
-        res.support = "severed";
-      } else if (text.indexOf("부양의무자 없음") !== -1 || text.indexOf("가족 없음") !== -1) {
-        res.support = "none";
-      } else {
-        res.support = "normal";
-      }
-
-      return res;
-    }
-
-    function detectRiskSignals(text) {
-      const signals = [];
-      if (/퇴거|쫓겨|방을 빼|명도/i.test(text)) {
-        signals.push({ label: "주거위기(강제퇴거)", evidence: "월세 체납 및 임대인의 명도/퇴거 통보 포착", statute: "긴급복지지원법 제2조" });
-      }
-      if (/단전|단수|촛불/i.test(text)) {
-        signals.push({ label: "에너지빈곤(단전·단수)", evidence: "공과금 체납으로 인한 필수 공급 중단", statute: "사회보장급여법 제12조" });
-      }
-      if (/죽고 싶|극단적 선택|삶을 정리/i.test(text)) {
-        signals.push({ label: "자살·고독사 고위험", evidence: "자해 및 극단적 선택 의심 발화 포착", statute: "자살예방법 제13조 (신고의무)" });
-      }
-      if (/폭행|협박|야간 침입|가정폭력/i.test(text)) {
-        signals.push({ label: "가정폭력·신변위협", evidence: "가해자의 지속적인 위협 및 피신 상태", statute: "가정폭력방지법 제7조" });
-      }
-      return signals;
-    }
-
-    /* -------------------------------------------------------------
-       7. 실행 파이프라인 (2단계, 3단계 동기화)
-    ------------------------------------------------------------- */
-    function processCounseling() {
-      const inputEl = document.getElementById('counselInput');
-      const rawText = inputEl.value;
-      if (!rawText.trim()) {
-        showToast("상담 내용을 입력해 주세요.");
-        return;
-      }
-
-      // 1. DLP 마스킹
-      const maskedText = applyDlpMasking(rawText);
-      if (maskedText !== rawText) inputEl.value = maskedText;
-
-      // 2. 팩트 파싱
-      currentParsedState = parseCounselText(maskedText);
-
-      // 3. 위기 신호 감지
-      const signals = detectRiskSignals(maskedText);
-      currentRiskStatus = { detected: signals.length > 0, signals: signals };
-      updateRiskBanner(signals);
-
-      // 4. 3단계 인풋 동기화
-      document.getElementById('simMembers').value = currentParsedState.members;
-      document.getElementById('simWorkAbility').value = currentParsedState.workAbility;
-      document.getElementById('simSupportObligor').value = currentParsedState.support;
-      document.getElementById('simEarned').value = currentParsedState.earned;
-      document.getElementById('simOtherIncome').value = currentParsedState.other;
-      document.getElementById('simResProp').value = currentParsedState.resProp;
-      document.getElementById('simRentFee').value = currentParsedState.rentFee;
-      document.getElementById('simFinProp').value = currentParsedState.finProp;
-      document.getElementById('simDebt').value = currentParsedState.debt;
-
-      // 5. 2단계 테이블 갱신 및 4단계 모의판정
-      syncStateToStep2Table();
       runSimulation();
-
-      showToast("⚡ 분석이 완료되어 법정 판정 및 서식이 갱신되었습니다.");
     }
 
-    function syncStateToStep2Table() {
-      const p = currentParsedState;
-      document.getElementById('tblNameAge').innerText = `${p.name} (만 ${p.age}세)`;
-      document.getElementById('tblHousehold').innerText = p.householdDesc;
-      document.getElementById('tblHealth').innerText = p.healthDesc;
-      document.getElementById('tblEarned').innerText = `${p.earned.toLocaleString()}만 원`;
-      document.getElementById('tblOther').innerText = `${p.other.toLocaleString()}만 원`;
-      document.getElementById('tblHousing').innerText = `${p.housingType} (가액/보증금 ${p.resProp}만 원, 월세 ${p.rentFee}만 원)`;
-      document.getElementById('tblFin').innerText = `${p.finProp}만 원 / 대출 ${p.debt}만 원`;
-      document.getElementById('tblSupport').innerText = p.support === 'severed' ? "부양단절 (해체사유서 작성)" : (p.support === 'none' ? "부양의무자 없음" : "일반 (부양능력 확인 필요)");
-
-      // 행복e음 전산일지 문안 조립
-      currentHappyEumText = `[초기상담] ${p.name}(만 ${p.age}세, ${p.householdDesc}) 내방/방문 상담.
-• 건강/소득: ${p.healthDesc}, 근로·사업소득 월 ${p.earned}만 원, 공적이전소득 ${p.other}만 원.
-• 재산/주거: ${p.housingType}(가액 ${p.resProp}만 원, 월세 ${p.rentFee}만 원), 금융 ${p.finProp}만 원, 부채 ${p.debt}만 원.
-• 부양의무자: ${p.support === 'severed' ? '직계가족 연락두절로 가족관계 해체사유서 징구 예정' : '조사 필요'}.
-• 조치의견: 2026년 기준 맞춤형 급여 모의판정 진행 및 필요 서류 발급 안내.`;
-      
-      document.getElementById('happyeumOutputBox').innerText = currentHappyEumText;
-
-      // 구비서류 목록
-      currentRequiredDocs = [
-        { name: "사회보장급여 신청서 및 신분증" },
-        { name: "금융정보 등 제공동의서 (가구원 전원)" },
-        { name: "임대차계약서 (확정일자 날인본)" }
-      ];
-      if (p.support === 'severed') currentRequiredDocs.push({ name: "가족관계 해체사유서 (인우보증 포함)" });
-      if (p.workAbility === 'none' && p.age < 65) currentRequiredDocs.push({ name: "근로능력평가용 진단서 및 진료기록부" });
-
-      currentRecommendedAgencies = [
-        { agency: "국민건강보험공단", contact: "1577-1000", desc: "본인부담금 상한제 및 재난적의료비" },
-        { agency: "LH 한국토지주택공사", contact: "1600-1004", desc: "긴급주거지원 및 매입임대 연계" }
-      ];
-    }
-
-    /* -------------------------------------------------------------
-       8. 2026년 법정 룰 엔진 (Deterministic Simulation)
-    ------------------------------------------------------------- */
-    function runSimulation() {
-      const members = parseInt(document.getElementById('simMembers').value, 10) || 1;
-      const region = document.getElementById('simRegion').value;
-      const workAbility = document.getElementById('simWorkAbility').value;
-      const support = document.getElementById('simSupportObligor').value;
-
-      const earned = parseFloat(document.getElementById('simEarned').value) || 0;
-      const other = parseFloat(document.getElementById('simOtherIncome').value) || 0;
-      const resProp = parseFloat(document.getElementById('simResProp').value) || 0;
-      const rentFee = parseFloat(document.getElementById('simRentFee').value) || 0;
-      const finProp = parseFloat(document.getElementById('simFinProp').value) || 0;
-      const debt = parseFloat(document.getElementById('simDebt').value) || 0;
-
-      // 소득평가액 계산
-      let earnedDeduct = 0;
-      if (workAbility === 'none') {
-        earnedDeduct = Math.max(0, (earned - 20) * 0.3 + 20);
-      } else if (workAbility === 'youth') {
-        earnedDeduct = Math.max(0, (earned - 40) * 0.3 + 40);
-      } else {
-        earnedDeduct = earned * 0.3;
-      }
-      const finalEarned = Math.max(0, earned - earnedDeduct);
-      const incomeVal = Math.round((finalEarned + other) * 10) / 10;
-
-      // 재산의 소득환산액 계산
-      const baseDeduct = POLICY_2026.baseDeduction[region] || 7700;
-      const netResProp = Math.max(0, resProp - baseDeduct);
-      const netFinProp = Math.max(0, finProp - 500); // 생활준비금 500만원
-      const totalNetProp = Math.max(0, (netResProp + netFinProp) - debt);
-
-      const propConversion = Math.round(((netResProp * 0.0104) + (netFinProp * 0.0626)) * 10) / 10;
-      const recognizedIncome = Math.round((incomeVal + propConversion) * 10) / 10;
-
-      // 화면 표시
-      document.getElementById('dispRecognizedIncome').innerText = `${recognizedIncome.toLocaleString()}만 원`;
-      const med = POLICY_2026.medianIncome[members] || (POLICY_2026.medianIncome[7] + (members - 7) * 101.8);
-      document.getElementById('dispMedianIncome').innerText = `${med.toFixed(1)}만 원 (${members}인 기준)`;
-
-      // 계산 Trace 조립
-      lastCalcTrace = `[2026년도 법정 소득인정액 산출 상세 내역]
---------------------------------------------------
-1. 소득평가액: ${incomeVal}만 원
-  • 근로소득 ${earned}만 원 - 공제 ${earnedDeduct.toFixed(1)}만 원 = ${finalEarned.toFixed(1)}만 원
-  • 이전/기타소득 = ${other}만 원
-2. 재산의 소득환산액: ${propConversion}만 원
-  • 주거재산 ${resProp}만 원 (기본공제 ${baseDeduct}만 원 적용 후 소득환산율 월 1.04%)
-  • 금융재산 ${finProp}만 원 (기본공제 500만 원 적용 후 소득환산율 월 6.26%)
-  • 반영된 공제 부채: ${debt}만 원
---------------------------------------------------
-■ 최종 소득인정액: ${recognizedIncome}만 원
-■ 기준 중위소득 (${members}인 가구): ${med.toFixed(1)}만 원`;
-
-      // 4대 급여 판정
-      evalBenefit('badgeLivelihood', 'txtLivelihood', recognizedIncome <= med * POLICY_2026.standards.livelihood, "수급 적격", "기준 초과");
-      
-      const medSupportOk = (support === 'none' || support === 'severed');
-      const medIncomeOk = recognizedIncome <= med * POLICY_2026.standards.medical;
-      evalBenefit('badgeMedical', 'txtMedical', medIncomeOk && medSupportOk, "수급 적격", medIncomeOk ? "부양의무 단절요망" : "소득 초과");
-
-      evalBenefit('badgeHousing', 'txtHousing', recognizedIncome <= med * POLICY_2026.standards.housing, "수급 적격", "기준 초과");
-      evalBenefit('badgeEducation', 'txtEducation', recognizedIncome <= med * POLICY_2026.standards.education, "선정 적격", "기준 초과");
-    }
-
-    function evalBenefit(cardId, txtId, isEligible, yesText, noText) {
+    function updateLiveCard(cardId, statusId, isPass, message) {
       const card = document.getElementById(cardId);
-      const txt = document.getElementById(txtId);
-      if (isEligible) {
-        card.className = "badge-card eligible";
-        txt.innerText = `● ${yesText}`;
-        txt.style.color = "#1d4ed8";
-      } else {
-        card.className = "badge-card ineligible";
-        txt.innerText = `○ ${noText}`;
-        txt.style.color = "#64748b";
+      const status = document.getElementById(statusId);
+      if (card) {
+        card.className = isPass ? "live-benefit-card pass" : "live-benefit-card fail";
+      }
+      if (status) {
+        status.innerText = message;
       }
     }
 
-    /* -------------------------------------------------------------
-       9. 위기 신호 및 공문 조립
-    ------------------------------------------------------------- */
-    function updateRiskBanner(signals) {
-      const banner = document.getElementById('riskAlertBanner');
-      const content = document.getElementById('riskAlertContent');
-      if (!signals || signals.length === 0) {
-        banner.style.display = 'none';
-        return;
+    /* 시뮬레이션 및 4대 급여 모의판정 연동 */
+    function runSimulation() {
+      try {
+        const getNum = (id, def = 0) => {
+          const el = document.getElementById(id);
+          return el ? (parseFloat(el.value) || def) : def;
+        };
+        const getStr = (id, def = '') => {
+          const el = document.getElementById(id);
+          return el ? el.value : def;
+        };
+
+        const ageVal = parseInt(getNum('simAge', currentParsedData.age || 65), 10);
+        const members = parseInt(getNum('simMembers', 1), 10) || 1;
+        const region = getStr('simRegion', 'metro');
+        const workAbility = getStr('simWorkAbility', 'able');
+        const support = getStr('simSupportObligor', 'normal');
+
+        const earned = getNum('simEarnedIncome', 0);
+        const other = getNum('simOtherIncome', 0);
+        const resProp = getNum('simResProp', 0);
+        const rentFee = getNum('simRentFee', 0);
+        const finProp = getNum('simFinProp', 0);
+        const debt = getNum('simDebt', 0);
+
+        // 1. 일반 기초생활보장 소득평가액
+        let earnedDeduct = 0;
+        if (workAbility === 'none' || workAbility === 'illness' || ageVal >= 65) {
+          earnedDeduct = earned <= 20 ? earned : 20 + (earned - 20) * 0.3;
+        } else if (workAbility === 'youth' && ageVal <= 24) {
+          earnedDeduct = earned <= 40 ? earned : 40 + (earned - 40) * 0.3;
+        } else {
+          earnedDeduct = earned * 0.3;
+        }
+        const finalEarned = Math.max(0, earned - earnedDeduct);
+        const incomeVal = Math.round((finalEarned + other) * 10) / 10;
+
+        // 2. 재산의 소득환산액 산정
+        let baseDeduct = POLICY_2026.baseDeduction[region] || 7700;
+        let resLimit = POLICY_2026.housingLimit[region] || 14600;
+        let remainBaseDeduct = baseDeduct;
+
+        let deductToRes = Math.min(resProp, remainBaseDeduct);
+        let resAfterBase = resProp - deductToRes;
+        remainBaseDeduct -= deductToRes;
+
+        let netFin = Math.max(0, finProp - 500);
+        let deductToFin = Math.min(netFin, remainBaseDeduct);
+        let finAfterBase = netFin - deductToFin;
+        remainBaseDeduct -= deductToFin;
+
+        let remainDebt = debt;
+        let debtToRes = Math.min(resAfterBase, remainDebt);
+        let resAfterDebt = resAfterBase - debtToRes;
+        remainDebt -= debtToRes;
+
+        let debtToFin = Math.min(finAfterBase, remainDebt);
+        let finAfterDebt = finAfterBase - debtToFin;
+        remainDebt -= debtToFin;
+
+        let resWithinLimit = Math.min(resAfterDebt, resLimit);
+        let resExceedLimit = Math.max(0, resAfterDebt - resLimit);
+
+        let resMonthly = Math.round((resWithinLimit * POLICY_2026.conversionRates.residential) * 10) / 10;
+        let resExceedMonthly = Math.round((resExceedLimit * POLICY_2026.conversionRates.general) * 10) / 10;
+        let finMonthly = Math.round((finAfterDebt * POLICY_2026.conversionRates.financial) * 10) / 10;
+
+        let propertyMonthly = Math.round((resMonthly + resExceedMonthly + finMonthly) * 10) / 10;
+        let recognized = Math.round((incomeVal + propertyMonthly) * 10) / 10;
+
+        // 3. 기초연금 전용 소득인정액 계산
+        let bpEarnedDeduct = earned <= 112 ? earned : 112 + (earned - 112) * 0.3;
+        let bpFinalEarned = Math.max(0, earned - bpEarnedDeduct);
+        let bpIncomeVal = Math.round((bpFinalEarned + other) * 10) / 10;
+
+        let bpBaseDeduct = (region === 'seoul' || region === 'metro') ? 13500 : (region === 'gyeonggi' ? 8500 : 7250);
+        let bpResAfter = Math.max(0, resProp - bpBaseDeduct);
+        let bpFinAfter = Math.max(0, finProp - 2000);
+        let bpDebtRemain = debt;
+        let bpDebtToRes = Math.min(bpResAfter, bpDebtRemain);
+        bpResAfter -= bpDebtToRes;
+        bpDebtRemain -= bpDebtToRes;
+        let bpDebtToFin = Math.min(bpFinAfter, bpDebtRemain);
+        bpFinAfter -= bpDebtToFin;
+
+        let bpPropMonthly = Math.round(((bpResAfter + bpFinAfter) * 0.04 / 12) * 10) / 10;
+        let pensionRecognized = Math.round((bpIncomeVal + bpPropMonthly) * 10) / 10;
+
+        let median = POLICY_2026.medianIncome[members] || 256.4;
+        let liveStd = Math.round(median * POLICY_2026.standards.livelihood * 10) / 10;
+        let emergStd = Math.round(median * POLICY_2026.standards.emergency * 10) / 10;
+        let nearStd = Math.round(median * POLICY_2026.standards.nearPoverty * 10) / 10;
+        const pensionCutoff = (members === 1) ? 213.0 : 340.8;
+
+        safeSetText('liveIncomeRecognized', recognized.toLocaleString());
+        safeSetText('liveRealIncome', (earned + other).toLocaleString());
+
+        // 4. 기초연금 노인 연령 요건(만 65세 이상) 정밀 다중 판독
+        const memoEl = document.getElementById('counselInput');
+        const rawText = memoEl ? memoEl.value : "";
+        const isSenior = (ageVal >= 65) || 
+                         (workAbility === 'none') || 
+                         (activePreset === 'basicPension') ||
+                         /(만\s*65세\s*이상|65세\s*이상|독거노인|어르신)/.test(rawText);
+
+        const isLivePass = recognized <= liveStd;
+        const liveAmount = Math.max(0, Math.round(liveStd - recognized));
+        updateLiveCard('liveCardBasicLife', 'liveEstBasicLife', isLivePass, 
+          isLivePass ? `월 약 ${liveAmount}만 원 (선정)` : "기준 초과 (탈락)");
+
+        const isEmergPass = ((earned + other) <= emergStd) && (finProp <= 822);
+        updateLiveCard('liveCardEmergency', 'liveEstEmergency', isEmergPass, 
+          isEmergPass ? `월 ${POLICY_2026.emergencyPayouts[members]}만 원 (선정)` : (finProp > 822 ? "금융재산 기준 초과" : "소득 기준 초과"));
+
+        const isNearPass = recognized <= nearStd;
+        updateLiveCard('liveCardNearPoverty', 'liveEstNearPoverty', isNearPass, 
+          isNearPass ? "수급 대상 (선정)" : "기준 초과 (탈락)");
+
+        const isPensionPass = isSenior && (pensionRecognized <= pensionCutoff);
+        updateLiveCard('liveCardBasicPension', 'liveEstBasicPension', isPensionPass, 
+          !isSenior ? `연령 미달 (만 65세 미만 / 대상자 ${ageVal}세)` : (isPensionPass ? "월 최대 33.4만 원 (선정)" : "소득인정액 초과 (탈락)"));
+
+        safeSetHtml('calcTraceBox', `
+          <strong>[2026년 법정 소득인정액 산출 정밀 Trace]</strong><br>
+          1. <strong>신청인 연령 및 특례:</strong> 만 ${ageVal}세 (${isSenior ? '만 65세 이상 법정 노인 요건 충족' : '만 65세 미만'})<br>
+          2. <strong>소득평가액:</strong> ${incomeVal}만 원 = 실제소득(${earned}만 - 공제 ${Math.round(earnedDeduct*10)/10}만) + 이전소득 ${other}만<br>
+          3. <strong>재산의 소득환산액:</strong> ${propertyMonthly}만 원 (주거환산 ${resMonthly}만 + 금융환산 ${finMonthly}만)<br>
+          4. <strong>사업별 기준 비교:</strong> 국기초(32%) ${liveStd}만 | 긴급실소득(75%) ${emergStd}만(금융 822만 이하) | 차상위(50%) ${nearStd}만 | 기초연금 인정액 ${pensionRecognized}만(선정액 ${pensionCutoff}만)
+        `);
+
+        const eligibleBenefits = [];
+        if (isLivePass) {
+          eligibleBenefits.push(`국민기초 맞춤형 생계급여 (선정 - 예상 급여: 월 약 ${liveAmount}만 원)`);
+        }
+        if (isEmergPass) {
+          eligibleBenefits.push(`긴급복지지원 (선정 - 예상 지원: 월 ${POLICY_2026.emergencyPayouts[members]}만 원 우선지원)`);
+        }
+        if (isNearPass) {
+          eligibleBenefits.push(`차상위계층 확인 (선정 - 법정 양곡할인·자활사업·통신비 등 감면 패키지)`);
+        }
+        if (isPensionPass) {
+          eligibleBenefits.push(`기초연금 (선정 - 만 65세 이상 노인 대상, 월 최대 33.4만 원 지급)`);
+        }
+
+        const simResults = {
+          ageVal,
+          recognized,
+          realIncome: earned + other,
+          finProp,
+          liveStd,
+          isLivePass,
+          emergStd,
+          isEmergPass,
+          nearStd,
+          isNearPass,
+          pensionRecognized,
+          pensionCutoff,
+          isSenior,
+          isPensionPass,
+          eligibleBenefits
+        };
+
+        renderStep4ClientDocs(members, currentParsedData);
+        renderHappyEumDocument(currentParsedData, simResults);
+      } catch (err) {
+        console.error("Simulation calculation error:", err);
+      }
+    }
+
+    function renderHappyEumDocument(p, sim) {
+      if (!sim) {
+        sim = {
+          ageVal: 65,
+          recognized: 0,
+          realIncome: 0,
+          finProp: 0,
+          liveStd: 82.0,
+          isLivePass: false,
+          emergStd: 192.3,
+          isEmergPass: false,
+          nearStd: 128.2,
+          isNearPass: false,
+          pensionRecognized: 0,
+          pensionCutoff: 213.0,
+          isSenior: true,
+          isPensionPass: false,
+          eligibleBenefits: []
+        };
+      }
+      const today = new Date().toLocaleDateString('ko-KR');
+      const nameStr = p.name || "[성명 미기재]";
+      const ageStr = sim.ageVal ? `만 ${sim.ageVal}세` : (p.age ? `만 ${p.age}세` : "[연령 미기재]");
+      const memberStr = p.members ? `${p.members}인 가구` : "[가구원수 미기재]";
+      const incomeStr = p.earned !== null ? `월 ${p.earned.toLocaleString()}만 원 ${p.earned === 0 ? "(무소득 확인)" : ""}` : "[소득 미확인]";
+      const assetStr = p.housingType ? `${p.housingType} (보증금 ${(p.resProp || 0).toLocaleString()}만 / 월세 ${(p.rentFee || 0).toLocaleString()}만)` : "[주거형태 미기재]";
+      const finStr = p.finProp !== null ? `금융 약 ${p.finProp.toLocaleString()}만 원` : `금융 [미기재]`;
+      const debtStr = p.debt !== null ? `부채 약 ${p.debt.toLocaleString()}만 원` : `부채 0만 원`;
+
+      let doc = `[행복e음 초기상담이력 전산등록 표준 서식]
+■ 상담일자: ${today}
+■ 대상자: ${nameStr} (${memberStr}, ${ageStr})
+
+1. 가구 인적사항 및 건강상태
+ - 가구구성: ${memberStr} (${p.members === 1 ? "단독 세대주" : "가족 동거"})
+ - 건강상태: ${p.healthDesc || "특이 질환 미언급"}`;
+
+      if (!p.isPensionMode) {
+        let workClean = p.workAbilityText ? p.workAbilityText.replace(/<[^>]+>/g, '').trim() : "미확인";
+        doc += `\n - 근로능력 판정: ${workClean}`;
       }
 
-      banner.style.display = 'block';
-      let html = "";
-      signals.forEach(s => {
-        html += `<div>• <strong>[${s.label}]</strong> ${s.evidence} (근거법령: ${s.statute})</div>`;
-      });
-      content.innerHTML = html;
+      doc += `\n\n2. 소득 및 주거·재산 현황
+ - 근로·사업소득: ${incomeStr} / 이전소득: 월 ${(p.other || 0).toLocaleString()}만 원
+ - 주거형태: ${assetStr}
+ - 금융 및 부채: ${finStr} / ${debtStr}`;
 
-      // 표준 기안문 초안 작성
-      const draft = `[사회복지전담공무원 긴급위기 연계 공문(기안문)]
-수신: 관할 경찰서장 및 관계 전문구제기관장
-참조: 맞춤형복지팀 통합사례관리사
-발신: 행정복지센터 사회보장담당자
-
-1. 관련 법령: 긴급복지지원법 제2조 및 사회보장기본법 제5조
-2. 대상자 인적: ${currentParsedState.name} (만 ${currentParsedState.age}세, ${currentParsedState.householdDesc})
-3. 위기 현황:
-${signals.map(s => ` - [${s.label}]${s.evidence}`).join('\n')}
-4. 협조 요청: 상기 대상자는 즉각적인 현장 보호조치 및 법정 공적 개입이 시급하므로 귀 기관과의 신속한 합동 사정을 요청합니다.`;
-      
-      document.getElementById('riskOfficialDraftText').value = draft;
-    }
-
-    function applyRiskEmergencyIntervention() {
-      closeModal('riskActionModal');
-      document.getElementById('simSupportObligor').value = 'severed';
-      runSimulation();
-      showToast("긴급복지 우선개입 절차(부양단절 심의)가 룰 엔진에 반영되었습니다.");
-    }
-
-    /* -------------------------------------------------------------
-       10. 모달 및 클립보드 유틸리티
-    ------------------------------------------------------------- */
-    function openTraceModal() {
-      document.getElementById('traceModalBody').innerText = lastCalcTrace || "분석을 먼저 실행하세요.";
-      document.getElementById('traceModal').style.display = 'flex';
-    }
-
-    function openRiskActionModal() {
-      document.getElementById('riskActionModal').style.display = 'flex';
-    }
-
-    function openClientNoticeModal() {
-      if (!currentParsedState) {
-        showToast("먼저 분석을 진행해 주세요.");
-        return;
+      if (!p.isPensionMode) {
+        let suppClean = p.supportText ? p.supportText.replace(/<[^>]+>/g, '').trim() : "미확인";
+        doc += `\n\n3. 부양의무자 실태
+ - 실태 조사: ${suppClean}`;
       }
-      
-      const container = document.getElementById('qrCodeContainer');
-      container.innerHTML = "";
 
-      const docsSummary = currentRequiredDocs.map((d, i) => `${i+1}.${d.name}`).join(', ');
-      const agencySummary = currentRecommendedAgencies.map(a => `${a.agency}(${a.contact})`).join(', ');
+      doc += `\n\n4. 범정부 타 공공기관·공단 연계 안내 내역
+ • 국민건강보험공단 [재난적 의료비 지원사업]: 과도한 의료비 발생 시 본인부담금 지원 (문의: 1577-1000)
+ • 대한법률구조공단 [무료 개인회생·파산 지원]: 부채 채무조정 무료 법률상담 (문의: 국번없이 132)
 
-      const qrPayload = `[복지상담 구비서류 및 지원안내]
-■ 신청인: ${currentParsedState.name} 님
-■ 준비서류: ${docsSummary}
-■ 유관기관: ${agencySummary}
-■ 문의: 행정복지센터 맞춤형복지팀`;
+5. 종합 상담 소견 및 법정 조치계획
+ [신청 예정 급여]`;
 
-      // 표준 qrcodejs 생성
-      if (typeof QRCode !== 'undefined') {
-        new QRCode(container, {
-          text: qrPayload,
-          width: 170,
-          height: 170,
-          colorDark: "#0f172a",
-          colorLight: "#ffffff",
-          correctLevel: QRCode.CorrectLevel.M
+      if (sim.eligibleBenefits && sim.eligibleBenefits.length > 0) {
+        sim.eligibleBenefits.forEach(b => {
+          doc += `\n   • ${b}`;
         });
+      } else {
+        doc += `\n   • 모의판정 기준 충족 급여 없음 (소득·재산 기준 초과 - 민간 자원 및 타 복지제도 연계 검토)`;
       }
 
-      document.getElementById('editableClientNoticeArea').value = qrPayload;
-      document.getElementById('clientNoticeModal').style.display = 'flex';
+      doc += `\n\n [행정 조치 계획]
+ ① 사업별 모의 소득인정액(선정기준 대비 판정):
+    - [국민기초 생계급여]: 소득인정액 약 ${sim.recognized.toLocaleString()}만 원 (${sim.isLivePass ? `기준 중위 32%인 ${sim.liveStd}만 원 이하 [적합]` : `기준 초과 [부적합]`})
+    - [긴급복지지원(정부)]: 총 실소득 약 ${sim.realIncome.toLocaleString()}만 원 (${sim.isEmergPass ? `중위 75%인 ${sim.emergStd}만 원 이하 & 금융 822만 원 이하 [적합]` : `소득/금융 기준 초과 [부적합]`})
+    - [차상위계층]: 소득인정액 약 ${sim.recognized.toLocaleString()}만 원 (${sim.isNearPass ? `기준 중위 50%인 ${sim.nearStd}만 원 이하 [적합]` : `기준 초과 [부적합]`})
+    - [기초연금]: 연금 소득인정액 약 ${sim.pensionRecognized.toLocaleString()}만 원 (${!sim.isSenior ? `만 65세 미만 [연령 미달 / 대상자 만 ${sim.ageVal}세]` : (sim.isPensionPass ? `선정기준액 ${sim.pensionCutoff}만 원 이하 [적합]` : `소득인정액 초과 [부적합]`)})
+ ② 구비서류 징구: 사회보장급여 신청서, 금융정보제공동의서, 소득·재산신고서, 신분증, 통장사본 등 필수 법정서식 일체
+ ③ 전산 접수: 서류 보완 즉시 행복e음 정식 접수 등록`;
+
+      safeSetText('happyEumOutput', doc);
     }
 
-    function closeModal(id) {
-      document.getElementById(id).style.display = 'none';
+    function renderStep4ClientDocs(members, p) {
+      const applicantName = p.name ? p.name : "[미입력] 성명 미상";
+      safeSetText('printApplicantName', applicantName);
+      safeSetText('printCurrentDate', new Date().toLocaleDateString('ko-KR'));
+
+      const docs = [
+        { name: "사회보장급여(사회서비스이용권) 신청서", desc: "주민센터 비치 필수 법정 1호 서식", required: true },
+        { name: "금융정보등(금융·신용·보험정보) 제공 동의서", desc: "신청인 및 가구원 전원 서명 필수 (금융재산·부채 공적조회용)", required: true },
+        { name: "소득·재산 신고서", desc: "신청 가구의 근로소득, 사업소득, 부동산, 임차보증금 등 자진 신고 서식", required: true },
+        { name: "신분증 (주민등록증, 운전면허증, 여권)", desc: "신청인 본인 확인 필수 지참", required: true },
+        { name: "급여수급 계좌 통장사본", desc: "복지급여 입금 희망 본인 명의 통장 (압류방지통장 개설 안내 가능)", required: true }
+      ];
+
+      if (p.earned === 0 || (p.earned !== null && p.earned < 50)) {
+        docs.push({ name: "지출실태조사표", desc: "소득 미발생 가구의 최근 생활비·주거비 조달 출처 소명서 (창구 서식)", required: true });
+      } else if (p.earned !== null && p.earned > 0) {
+        docs.push({ name: "소득신고서 및 소득증빙서류", desc: "급여명세서, 소득금액증명원, 사업자등록 관련 서류 중 해당분", required: true });
+      }
+
+      if (p.housingType && p.housingType.includes("사용대차")) {
+        docs.push({ name: "무료임대확인서 (사용대차 확인서)", desc: "친인척/지인 소유 주택 무상거주 사실 확인용 (주택소유자 서명 날인)", required: true });
+      } else if (p.housingType && (p.housingType.includes("월세") || p.housingType.includes("전세"))) {
+        docs.push({ name: "임대차계약서 사본", desc: "확정일자 날인본 권장 (보증금 및 월 임차료 지출 증빙)", required: true });
+      }
+
+      if (p.workAbility === 'illness' && !p.isPensionMode) {
+        docs.push({ name: "근로능력평가용 진단서 및 진료기록부", desc: "질병·부상 근로능력 판정 심사용 (국민연금공단 심사용, 최근 2개월 내 발급본)", required: true });
+      }
+
+      if (!p.isPensionMode && activePreset !== 'nearPoverty' && activePreset !== 'emergency') {
+        if (p.support === 'severed') {
+          docs.push({ name: "가족관계 해체사유서 및 최근 1년 금융거래내역서", desc: "부양의무자와의 연락두절/왕래단절 소명 및 정기지원 전무 입증 (지생보 심의용)", required: true });
+        } else if (p.support === 'normal') {
+          docs.push({ name: "부양의무자 금융정보등 제공 동의서", desc: "부양의무자(부모, 자녀)의 소득·재산 공적조회를 위한 자필 서명 동의서", required: true });
+        }
+      }
+
+      const memoEl = document.getElementById('counselInput');
+      const rawText = memoEl ? memoEl.value : "";
+      const isEmergencyRisk = /(실직|퇴거|쫓겨|방을\s*빼|월세\s*밀려|단전|단수|폭력|학대)/.test(rawText);
+      if (activePreset === 'emergency' || isEmergencyRisk) {
+        docs.push({ name: "위기상황 증빙서류", desc: "임대인 퇴거요구서/내용증명, 단전·단수고지서, 실직·폐업확인서, 진단서 중 해당 서류", required: true });
+      }
+
+      safeSetText('clientDocCountBadge', `총 ${docs.length}종 안내`);
+      safeSetHtml('clientDocListArea', docs.map((d, i) => `
+        <li style="padding: 7px 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; display: flex; justify-content: space-between; align-items: flex-start;">
+          <div>
+            <strong style="color:#1e40af; font-size:13px;">${i + 1}. ${d.name}</strong>
+            <div style="color:#64748b; font-size:11.5px; margin-top:2px;">• 제출 목적: ${d.desc}</div>
+          </div>
+          <span style="font-size:10.5px; font-weight:800; color:#dc2626; background:#fee2e2; border:1px solid #fecdd3; padding:2px 6px; border-radius:4px; white-space:nowrap;">
+            필수 지참
+          </span>
+        </li>
+      `).join(''));
+
+      const matchedAgencies = AGENCY_RULES.filter(rule => rule.trigger.test(rawText));
+
+      if (matchedAgencies.length > 0) {
+        safeSetText('agencyRecommendCountBadge', `${matchedAgencies.length}건 맞춤 매칭됨`);
+        safeSetHtml('agencyRecommendListArea', matchedAgencies.map(ag => `
+          <div style="background:#f0fdfa; border:1px solid #99f6e4; padding:12px; border-radius:6px; font-size:12.5px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong style="color:#0f766e; font-size:13px;">${ag.agency} [${ag.program}]</strong>
+              <span style="font-size:11px; font-weight:800; color:#047857; background:#d1fae5; padding:2px 6px; border-radius:4px;">☎ ${ag.contact}</span>
+            </div>
+            <div style="color:#334155; margin-top:4px;">• <strong>지원내용:</strong> ${ag.desc}</div>
+            <div style="color:#2563eb; font-size:11.5px; margin-top:2px;">• <strong>신청방법:</strong> ${ag.guide}</div>
+          </div>
+        `).join(''));
+      } else {
+        safeSetText('agencyRecommendCountBadge', "0건 매칭");
+        safeSetHtml('agencyRecommendListArea', `
+          <div style="padding:14px; background:#f8fafc; border:1px solid var(--border); border-radius:6px; color:#64748b; font-size:12px;">
+            상담 내용에서 특이 공단 연계 키워드가 감지되지 않았습니다.
+          </div>
+        `);
+      }
     }
 
-    function copyHappyEumText() {
-      if (!currentHappyEumText) { showToast("생성된 일지가 없습니다."); return; }
-      navigator.clipboard.writeText(currentHappyEumText).then(() => showToast("📋 행복e음 등록 문안이 복사되었습니다."));
+    function toggleCalcTrace() {
+      const b = document.getElementById('calcTraceBox');
+      if (b) b.style.display = (b.style.display === 'block') ? 'none' : 'block';
     }
 
-    function copyOfficialDraft() {
-      const val = document.getElementById('riskOfficialDraftText').value;
-      navigator.clipboard.writeText(val).then(() => showToast("📄 기안문 초안이 복사되었습니다."));
+    function copyHappyEumDocument() {
+      const el = document.getElementById('happyEumOutput');
+      const text = el ? el.innerText : '';
+      if (!text) return;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast("📋 행복e음 상담일지가 복사되었습니다.");
+      });
     }
 
-    function copyClientNotice() {
-      const val = document.getElementById('editableClientNoticeArea').value;
-      navigator.clipboard.writeText(val).then(() => showToast("📱 안내문 텍스트가 복사되었습니다."));
-    }
-
-    function printEditedClientNotice() {
-      const text = document.getElementById('editableClientNoticeArea').value;
-      const w = window.open('', '_blank', 'width=750,height=800');
-      w.document.write(`
-        <!DOCTYPE html><html><head><meta charset="UTF-8"><title>사회보장급여 신청 안내</title>
-        <style>body{font-family:sans-serif; padding:30px; line-height:1.7;} h2{border-bottom:2px solid #000; padding-bottom:8px;}</style>
-        </head><body>
-        <h2>사회보장급여 신청 안내장</h2>
-        <pre style="font-family:inherit; white-space:pre-wrap;">${text}</pre>
-        <div style="margin-top:40px; text-align:center; font-weight:bold;">행 정 복 지 센 터</div>
-        </body></html>
-      `);
-      w.document.close();
-      w.focus();
-      setTimeout(() => { w.print(); w.close(); }, 250);
-    }
-
-    function clearInput() {
-      document.getElementById('counselInput').value = "";
-      handleCounselInputChanged();
+    function copyOfficialNotice() {
+      if (!currentOfficialNoticeDraft) {
+        showToast("생성된 기안문이 없습니다.");
+        return;
+      }
+      navigator.clipboard.writeText(currentOfficialNoticeDraft).then(() => {
+        showToast("🚨 법정 신고 공문 기안문이 복사되었습니다.");
+      });
     }
 
     function showToast(msg) {
       const t = document.getElementById('toast');
+      if (!t) return;
       t.innerText = msg;
       t.className = "show";
-      setTimeout(() => { t.className = t.className.replace("show", ""); }, 2400);
-    }
-
-    /* -------------------------------------------------------------
-       11. 모의 데이터 프리셋
-    ------------------------------------------------------------- */
-    const PRESETS = {
-      seniorOwn: `[상담메모 - 자가보유 독거노인 내방 (모의데이터)]
-대상자 박정숙 (만 71세), 1인 단독 가구.
-지방 소도시에 본인명의 노후 단독주택 자가 보유 중 (공시지가 약 6,500만 원, 대출 없음).
-만성 척추협착증과 관절염으로 거동이 힘들어 일체 경제활동 못 하심.
-소득은 기초연금 월 334,000원 외에 일체 없으며, 통장 잔액은 120만 원 남음.
-부양의무자인 아들은 12년 전 이혼 후 연락두절되어 생사를 모름. 해체사유서 자필 작성 의사 있음.`,
-
-      singleParent: `[상담메모 - 한부모 가구 주거위기 (모의데이터)]
-대상자 김지은 (만 36세), 미취학 자녀 1명과 단둘이 거주 (2인 가구).
-보증금 300만 원에 월세 40만 원 다세대 원룸 거주 중이나 최근 3개월간 월세가 밀려 집주인이 퇴거 요청함.
-식당 아르바이트 폐업으로 실직하여 현재 소득 0원임.
-통장 잔액은 15만 원뿐이며 신용카드 대출 빚 600만 원 있음. 전 배우자는 양육비 지급 없이 연락 끊김.`,
-
-      youthDebt: `[상담메모 - 청년 부채 및 사회적 고립 (모의데이터)]
-대상자 이민호 (만 23세), 1인 단독 청년 가구.
-반지하 원룸에 보증금 500만 원에 월세 35만 원 거주 중.
-대출 빚 1,800만 원으로 매달 이자 독촉에 시달림. 편의점 아르바이트로 월 80만 원 벌고 있으나 우울증으로 방 밖으로 나오지 못함.
-사회적 고립 상태로 삶을 정리하고 죽고 싶다는 말을 흐느끼며 반복함.`,
-
-      multiCrisis: `[상담메모 - 복합 긴급위기사례 (모의데이터)]
-대상자 최영미 (만 44세), 초등학생 자녀 1명과 거주 (2인 가구).
-전 배우자의 폭행 및 협박을 피해 보증금 없이 월세 30만 원 원룸으로 피신함.
-월세가 4개월째 밀려 임대인이 내일까지 방을 빼라고 강제 퇴거 통보함.
-단전 및 단수되어 생활이 불가능하고 수입이 전무(소득 0원)하여 통장 잔고 0원에 극단적 선택 위기에 노출됨.`
-    };
-
-    function loadPreset(key) {
-      if (PRESETS[key]) {
-        document.getElementById('counselInput').value = PRESETS[key];
-        handleCounselInputChanged();
-        processCounseling();
-      }
+      setTimeout(() => { t.className = ""; }, 2200);
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      runSimulation();
+      loadPreset('basicLife');
     });
   </script>
 </body>
