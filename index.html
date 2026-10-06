@@ -42,6 +42,12 @@
     .badge-gov { background: var(--primary-light); color: var(--primary); border: 1px solid #bfdbfe; }
     .badge-secure { background: var(--success-bg); color: var(--success); border: 1px solid #a7f3d0; }
 
+    .header-controls { display: flex; align-items: center; gap: 10px; }
+    .gov-model-select {
+      height: 28px; padding: 0 8px; font-size: 11.5px; font-weight: 700; color: #1e3a8a;
+      background: #eff6ff; border: 1px solid #93c5fd; border-radius: 4px; outline: none; cursor: pointer;
+    }
+
     .container { max-width: 1480px; margin: 18px auto; padding: 0 20px; }
     
     .nav-tabs {
@@ -107,13 +113,13 @@
     }
 
     .tab-badge-step1 { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
-    .tab-badge-step2 { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
-    .tab-badge-step3 { background: #f5f3ff; color: #6d28d9; border-color: #ddd6fe; }
+    .tab-badge-step2 { background: #f5f3ff; color: #6d28d9; border-color: #ddd6fe; }
+    .tab-badge-step3 { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
     .tab-badge-step4 { background: #fffbeb; color: #b45309; border-color: #fde68a; }
 
     .tab-btn.active .tab-badge-step1 { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
-    .tab-btn.active .tab-badge-step2 { background: #d1fae5; color: #065f46; border-color: #6ee7b7; }
-    .tab-btn.active .tab-badge-step3 { background: #ede9fe; color: #5b21b6; border-color: #c4b5fd; }
+    .tab-btn.active .tab-badge-step2 { background: #ede9fe; color: #5b21b6; border-color: #c4b5fd; }
+    .tab-btn.active .tab-badge-step3 { background: #d1fae5; color: #065f46; border-color: #6ee7b7; }
     .tab-btn.active .tab-badge-step4 { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
 
     .tab-title { font-size: 13px; font-weight: 700; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -244,33 +250,59 @@
     }
     #toast.show { opacity: 1; }
 
-    @page { size: A4 portrait; margin: 15mm; }
+    /* [2번 수정] 고품질 A4 단일 페이지 공문서 전용 인쇄 스타일 */
+    @page { size: A4 portrait; margin: 15mm 20mm; }
     @media print {
-      html, body { background: #fff !important; color: #000 !important; font-size: 11pt !important; margin: 0 !important; padding: 0 !important; }
-      body * { visibility: hidden; }
-      #printableArea, #printableArea * { visibility: visible; }
-      #printableArea { position: absolute; left: 0; top: 0; width: 100% !important; padding: 0 !important; margin: 0 !important; border: none !important; box-shadow: none !important; background: #fff !important; }
-      #printableArea .card-header { display: none !important; }
-      #clientDocListArea li { page-break-inside: avoid; break-inside: avoid; border: 1px solid #cbd5e1 !important; margin-bottom: 6px !important; padding: 8px 12px !important; }
+      body * { visibility: hidden !important; }
+      #printableArea, #printableArea * { visibility: visible !important; }
+      #printableArea {
+        position: absolute !important; left: 0 !important; top: 0 !important;
+        width: 100% !important; margin: 0 !important; padding: 0 !important;
+        border: none !important; box-shadow: none !important; background: #fff !important;
+      }
       .no-print { display: none !important; }
+      .print-doc-header {
+        border-bottom: 2px solid #0f172a !important; padding-bottom: 12px !important; margin-bottom: 16px !important; text-align: center !important;
+      }
+      .print-doc-header h2 { font-size: 18pt !important; color: #000 !important; font-weight: 900 !important; letter-spacing: -0.5px !important; }
+      .print-info-table { width: 100% !important; border-collapse: collapse !important; margin-bottom: 14px !important; font-size: 10pt !important; }
+      .print-info-table td { padding: 6px 8px !important; border-bottom: 1px solid #cbd5e1 !important; }
+      #clientDocListArea li {
+        page-break-inside: avoid !important; break-inside: avoid !important;
+        border: 1px solid #64748b !important; margin-bottom: 6px !important; padding: 8px 12px !important;
+        background: #fff !important; color: #000 !important;
+      }
+      .print-official-footer {
+        display: block !important; margin-top: 30px !important; text-align: center !important;
+        font-size: 13pt !important; font-weight: 800 !important; letter-spacing: 2px !important;
+      }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
     }
   </style>
 </head>
 <body>
 
+  <!-- [5번 수정] 행정안전부 AI 공통기반 연계 증명 컨트롤 바 -->
   <header>
     <div class="header-brand">
       <h1>복지완성 Pro</h1>
       <span class="badge badge-gov">행정안전부 AI 공통기반 연계형</span>
       <span class="badge badge-secure" id="dlpBadge">🛡 DLP 개인정보 비식별화 가동</span>
     </div>
-    <div style="font-size: 12px; color: var(--text-muted); font-weight: 600;">
-      행복e음 초기상담이력 전산등록 및 실시간 모의판정 포털
+    <div class="header-controls">
+      <div style="display:flex; align-items:center; gap:6px;">
+        <span style="font-size:11px; font-weight:700; color:#475569;">🏛 공통기반 모델:</span>
+        <select class="gov-model-select" id="govModelGatewaySelect" onchange="switchGovModelGateway(this.value)">
+          <option value="gateway_local" selected>행안부 LLM Gateway (온디바이스 보안 모드)</option>
+          <option value="gateway_hybrid">정부 공통 SaaS망 하이브리드 연계 모드</option>
+          <option value="gateway_closed">지자체 행정폐쇄망 독립 추론 모드</option>
+        </select>
+      </div>
     </div>
   </header>
 
   <div class="container">
+    <!-- [1번 수정] 탭 순서 교체: 1.입력 ➔ 2.전산검증(사정표·일지) ➔ 3.대민서류/연계 ➔ 4.정밀시뮬레이터 -->
     <div class="nav-tabs">
       <button class="tab-btn active" id="btnTab1" onclick="switchTab('tab1', this)">
         <div class="tab-step-num">1</div>
@@ -283,16 +315,16 @@
       <button class="tab-btn" id="btnTab2" onclick="switchTab('tab2', this)">
         <div class="tab-step-num">2</div>
         <div class="tab-content">
-          <span class="tab-badge tab-badge-step2" id="tab2Badge">대민 서류/연계</span>
-          <span class="tab-title">맞춤 구비서류 &amp; 지원망</span>
+          <span class="tab-badge tab-badge-step2" id="tab2Badge">전산 검증</span>
+          <span class="tab-title">사정표 · 4대급여 · 일지</span>
         </div>
       </button>
 
       <button class="tab-btn" id="btnTab3" onclick="switchTab('tab3', this)">
         <div class="tab-step-num">3</div>
         <div class="tab-content">
-          <span class="tab-badge tab-badge-step3">전산 검증</span>
-          <span class="tab-title">사정표 · 4대급여 · 일지</span>
+          <span class="tab-badge tab-badge-step3">대민 서류/연계</span>
+          <span class="tab-title">맞춤 구비서류 &amp; 지원망</span>
         </div>
       </button>
 
@@ -354,57 +386,14 @@
 
         <div style="margin-top: 14px; display: flex; justify-content: flex-end;">
           <button class="btn btn-primary" style="padding: 12px 24px; font-size: 14px; font-weight: 800;" onclick="attemptNavigateToStep2()">
-            ⚡ 민원인 맞춤 서류 생성 및 2단계 이동 ➡️
+            ⚡ AI 사정표·행복e음 일지 생성 및 2단계 이동 ➡️
           </button>
         </div>
       </div>
     </div>
 
-    <!-- [2단계 패널] 민원인 맞춤 구비서류 인쇄 & 유관기관 연계망 -->
+    <!-- [2단계 패널] 사정표 + 4대급여 판정 + 행복e음 일지 (구 3단계) -->
     <div id="tab2" class="tab-panel">
-      <div class="grid-2col">
-        <div class="card" id="printableArea">
-          <div class="card-header no-print">
-            <div class="card-title">📄 [민원인 맞춤 구비서류] 사회보장급여 신청 시 지참 서류</div>
-            <div style="display:flex; gap:8px;">
-              <span class="badge badge-gov" id="clientDocCountBadge">총 0종</span>
-              <button class="btn btn-primary" onclick="window.print()">🖨 맞춤 구비서류 즉시 출력</button>
-            </div>
-          </div>
-          
-          <div style="padding: 4px 0;">
-            <div style="font-size: 15px; font-weight: 800; color: #1e3a8a; margin-bottom: 12px; border-bottom: 2px solid #0f172a; padding-bottom: 8px;">
-              [사회보장급여 신청 안내 및 맞춤형 필수 구비서류 확인서]
-            </div>
-            <div style="font-size: 12px; color: #475569; margin-bottom: 12px;">
-              • 신청인: <strong id="printApplicantName">[미입력] 성명 미상</strong> 님 귀하 | 상담일자: <span id="printCurrentDate">2026. 10. 6.</span><br>
-              • 아래 표시된 서류를 지참하시어 관할 행정복지센터 복지상담창구에 제출하여 주시기 바랍니다.
-            </div>
-            <ul id="clientDocListArea" style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 12.5px;"></ul>
-            <div style="margin-top: 16px; padding: 10px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; font-size: 11.5px; color: #64748b;">
-              ※ 안내: 복지급여 신청 접수 후 사회보장정보시스템(행복e음)을 통한 금융재산 및 공적자료 정밀조사 과정에서 추가 소명 서류가 요구될 수 있습니다.
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">🏛 [유관기관 지원망] 맞춤 연계 사업 안내</div>
-            <span class="badge" style="background:#ccfbf1; color:#0f766e;" id="agencyRecommendCountBadge">0건 매칭</span>
-          </div>
-          <div id="agencyRecommendListArea" style="display: flex; flex-direction: column; gap: 10px; max-height: 520px; overflow-y: auto;"></div>
-        </div>
-      </div>
-      
-      <div style="margin-top: 16px; display: flex; justify-content: flex-end;">
-        <button class="btn btn-primary" style="padding: 10px 20px; font-size: 13.5px; font-weight: 800;" onclick="switchTab('tab3', document.getElementById('btnTab3'))">
-          📑 전산 등록용 3단계(사정표 &amp; 행복e음 일지)로 이동 ➡
-        </button>
-      </div>
-    </div>
-
-    <!-- [3단계 패널] 사정표 + 4대급여 판정 + 행복e음 일지 -->
-    <div id="tab3" class="tab-panel">
       
       <div id="emergencyAlertBanner" class="emergency-alert-banner">
         <div class="emergency-alert-title">
@@ -514,6 +503,68 @@
           <div id="happyEumOutput" class="happyeum-split-box"></div>
         </div>
       </div>
+
+      <div style="margin-top: 16px; display: flex; justify-content: flex-end;">
+        <button class="btn btn-primary" style="padding: 10px 20px; font-size: 13.5px; font-weight: 800;" onclick="switchTab('tab3', document.getElementById('btnTab3'))">
+          📑 민원인 맞춤 서류 안내(3단계)로 이동 ➡
+        </button>
+      </div>
+    </div>
+
+    <!-- [3단계 패널] 민원인 맞춤 구비서류 인쇄 & 유관기관 연계망 (구 2단계) -->
+    <div id="tab3" class="tab-panel">
+      <div class="grid-2col">
+        <div class="card" id="printableArea">
+          <div class="card-header no-print">
+            <div class="card-title">📄 [민원인 맞춤 구비서류] 사회보장급여 신청 시 지참 서류</div>
+            <div style="display:flex; gap:8px;">
+              <span class="badge badge-gov" id="clientDocCountBadge">총 0종</span>
+              <button class="btn btn-primary" onclick="window.print()">🖨 맞춤 구비서류 즉시 출력</button>
+            </div>
+          </div>
+          
+          <div style="padding: 4px 0;">
+            <div class="print-doc-header">
+              <h2>사회보장급여 신청 안내 및 필수 구비서류 확인서</h2>
+            </div>
+            
+            <table class="print-info-table">
+              <tr>
+                <td><strong>신청인 성명:</strong> <span id="printApplicantName">[미입력] 성명 미상</span> 귀하</td>
+                <td style="text-align: right;"><strong>상담일자:</strong> <span id="printCurrentDate">2026. 10. 6.</span></td>
+              </tr>
+            </table>
+
+            <div style="font-size: 12px; color: #475569; margin-bottom: 12px;">
+              • 아래 표시된 서류를 지참하시어 관할 행정복지센터 복지상담창구에 제출하여 주시기 바랍니다.
+            </div>
+
+            <ul id="clientDocListArea" style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 12.5px;"></ul>
+            
+            <div style="margin-top: 16px; padding: 10px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; font-size: 11.5px; color: #64748b;">
+              ※ 안내: 복지급여 신청 접수 후 사회보장정보시스템(행복e음)을 통한 금융재산 및 공적자료 정밀조사 과정에서 추가 소명 서류가 요구될 수 있습니다.
+            </div>
+
+            <div class="print-official-footer" style="display: none;">
+              행 정 복 지 센 터 장
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🏛 [유관기관 지원망] 맞춤 연계 사업 안내</div>
+            <span class="badge" style="background:#ccfbf1; color:#0f766e;" id="agencyRecommendCountBadge">0건 매칭</span>
+          </div>
+          <div id="agencyRecommendListArea" style="display: flex; flex-direction: column; gap: 10px; max-height: 520px; overflow-y: auto;"></div>
+        </div>
+      </div>
+      
+      <div style="margin-top: 16px; display: flex; justify-content: flex-end;">
+        <button class="btn btn-primary" style="padding: 10px 20px; font-size: 13.5px; font-weight: 800;" onclick="switchTab('tab4', document.getElementById('btnTab4'))">
+          🧮 4단계 소득인정액 정밀 시뮬레이터로 이동 ➡
+        </button>
+      </div>
     </div>
 
     <!-- [4단계 패널] 소득인정액 정밀 시뮬레이터 -->
@@ -526,11 +577,11 @@
         <div style="display: grid; grid-template-columns: 110px 110px 1.2fr 1.3fr 1fr; gap: 12px; margin-bottom: 12px;">
           <div>
             <label style="font-size:11.5px; font-weight:700;">신청인 만 나이</label>
-            <input type="number" id="simAge" value="65" min="0" max="120" oninput="runSimulation()" style="width:100%; height:32px; padding:4px 8px; border:1px solid var(--border-dark); border-radius:4px; font-size:13px; font-weight:700;">
+            <input type="number" id="simAge" value="65" min="0" max="120" oninput="handleManualSimulatorChange()" style="width:100%; height:32px; padding:4px 8px; border:1px solid var(--border-dark); border-radius:4px; font-size:13px; font-weight:700;">
           </div>
           <div>
             <label style="font-size:11.5px; font-weight:700;">가구원수</label>
-            <select id="simMembers" onchange="runSimulation()" style="height:32px;">
+            <select id="simMembers" onchange="handleManualSimulatorChange()" style="height:32px;">
               <option value="1">1인 가구</option>
               <option value="2">2인 가구</option>
               <option value="3">3인 가구</option>
@@ -539,7 +590,7 @@
           </div>
           <div>
             <label style="font-size:11.5px; font-weight:700;">거주 지역</label>
-            <select id="simRegion" onchange="runSimulation()" style="height:32px;">
+            <select id="simRegion" onchange="handleManualSimulatorChange()" style="height:32px;">
               <option value="seoul">서울특별시 (대도시 9,900만원 공제 / 주거한도 1.72억)</option>
               <option value="gyeonggi">경기·인천 (중소도시 8,000만원 공제 / 주거한도 1.51억)</option>
               <option value="metro" selected>광역시·세종 (대도시 7,700만원 공제 / 주거한도 1.46억)</option>
@@ -548,7 +599,7 @@
           </div>
           <div>
             <label style="font-size:11.5px; font-weight:700;">근로유형</label>
-            <select id="simWorkAbility" onchange="runSimulation()" style="height:32px;">
+            <select id="simWorkAbility" onchange="handleManualSimulatorChange()" style="height:32px;">
               <option value="none">만 65세 이상 노인 / 중증장애 (20만원+30% 공제)</option>
               <option value="illness">질병·부상 심사 대상 (20만원+30% 공제)</option>
               <option value="youth">청년특례 (만 24세 이하, 40만원+30% 공제)</option>
@@ -557,7 +608,7 @@
           </div>
           <div>
             <label style="font-size:11.5px; font-weight:700;">부양의무 상태</label>
-            <select id="simSupportObligor" onchange="runSimulation()" style="height:32px;">
+            <select id="simSupportObligor" onchange="handleManualSimulatorChange()" style="height:32px;">
               <option value="severed">가족관계 해체 (지생보 심의 대상)</option>
               <option value="none">부양의무자 없음</option>
               <option value="normal">부양의무자 있음 (조사 대상)</option>
@@ -566,12 +617,12 @@
         </div>
 
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid var(--border);">
-          <div><label style="font-size:11.5px; font-weight:700;">월 근로·사업소득 (만원)</label><input type="number" id="simEarnedIncome" value="0" min="0" oninput="runSimulation()"></div>
-          <div><label style="font-size:11.5px; font-weight:700;">공적·사적이전소득 (만원)</label><input type="number" id="simOtherIncome" value="0" min="0" oninput="runSimulation()"></div>
-          <div><label style="font-size:11.5px; font-weight:700;">주거용재산 (만원)</label><input type="number" id="simResProp" value="0" min="0" oninput="runSimulation()"></div>
-          <div><label style="font-size:11.5px; font-weight:700;">일반재산 (만원)</label><input type="number" id="simGenProp" value="0" min="0" oninput="runSimulation()"></div>
-          <div><label style="font-size:11.5px; font-weight:700;">금융재산 (만원)</label><input type="number" id="simFinProp" value="0" min="0" oninput="runSimulation()"></div>
-          <div><label style="font-size:11.5px; font-weight:700;">금융부채 (만원)</label><input type="number" id="simDebt" value="0" min="0" oninput="runSimulation()"></div>
+          <div><label style="font-size:11.5px; font-weight:700;">월 근로·사업소득 (만원)</label><input type="number" id="simEarnedIncome" value="0" min="0" oninput="handleManualSimulatorChange()"></div>
+          <div><label style="font-size:11.5px; font-weight:700;">공적·사적이전소득 (만원)</label><input type="number" id="simOtherIncome" value="0" min="0" oninput="handleManualSimulatorChange()"></div>
+          <div><label style="font-size:11.5px; font-weight:700;">주거용재산 (만원)</label><input type="number" id="simResProp" value="0" min="0" oninput="handleManualSimulatorChange()"></div>
+          <div><label style="font-size:11.5px; font-weight:700;">일반재산 (만원)</label><input type="number" id="simGenProp" value="0" min="0" oninput="handleManualSimulatorChange()"></div>
+          <div><label style="font-size:11.5px; font-weight:700;">금융재산 (만원)</label><input type="number" id="simFinProp" value="0" min="0" oninput="handleManualSimulatorChange()"></div>
+          <div><label style="font-size:11.5px; font-weight:700;">금융부채 (만원)</label><input type="number" id="simDebt" value="0" min="0" oninput="handleManualSimulatorChange()"></div>
         </div>
         
         <div id="calcTraceBox" style="display:block; background:#f1f5f9; padding:14px; border-radius:6px; margin-top:12px; font-family:monospace; font-size:12px; line-height:1.7; border: 1px solid #cbd5e1;"></div>
@@ -827,6 +878,10 @@
       if (btnElem) btnElem.classList.add('active');
     }
 
+    function switchGovModelGateway(val) {
+      showToast("🏛 행정안전부 AI 공통기반 연계 모드가 변경되었습니다: " + val);
+    }
+
     function triggerAudioUpload() {
       var fileInput = document.getElementById('audioUploadInput');
       if (fileInput) fileInput.click();
@@ -923,7 +978,7 @@
       var modal = document.getElementById('missingConfirmModal');
       if (modal) modal.style.display = 'none';
       switchTab('tab2', document.getElementById('btnTab2'));
-      showToast("2단계로 이동했습니다.");
+      showToast("2단계 전산 검증으로 이동했습니다.");
     }
 
     function insertMissingAndCloseModal() {
@@ -1080,7 +1135,7 @@
           badge.style.color = "#92400e";
           badge.style.borderColor = "#fcd34d";
         } else {
-          badge.innerText = "🛡️️ DLP 개인정보 비식별화 가동";
+          badge.innerText = "🛡 DLP 개인정보 비식별화 가동";
           badge.style.background = "var(--success-bg)";
           badge.style.color = "var(--success)";
           badge.style.borderColor = "#a7f3d0";
@@ -1124,7 +1179,6 @@
       return 1;
     }
 
-    // 억, 천만, 만, 원 단위를 정확히 '만 원' 기준으로 환산하는 정밀 파서
     function parseWon(text) {
       if (!text) return null;
       var clean = text.replace(/,/g, '').replace(/[\[\]\(\)\{\}]/g, '').trim();
@@ -1164,7 +1218,6 @@
         matchedAny = true;
       }
 
-      // '334,000원' 형태의 순수 원 단위 매칭
       var mPureWon = clean.match(/([0-9]+)\s*원/);
       if (mPureWon) {
         var wonVal = parseFloat(mPureWon[1]);
@@ -1177,12 +1230,10 @@
         return Math.round(total * 10) / 10;
       }
 
-      // 숫자만 단독으로 적혀 있는 경우
       var numMatch = clean.match(/([0-9]+)/);
       if (numMatch) {
         var n = parseFloat(numMatch[1]);
         if (n === 0) return 0;
-        // 10000 이상이면 원 단위로 판단하여 만 원 단위로 변환
         if (n >= 10000) {
           return Math.round((n / 10000) * 10) / 10;
         }
@@ -1305,11 +1356,10 @@
           currentMissingFields.push({ key: 'household', label: '가구원수' });
         }
 
-        // 4. 소득 파싱 (근로·사업소득 및 공적·사적이전소득 완전 정밀화)
+        // 4. 소득 파싱 (근로소득 및 이전소득 완전 정밀화)
         var earned = null;
         var other = 0;
 
-        // (1) 근로소득 추출
         var mEarnedLine = text.match(/(?:근로\s*(?:및|·)?\s*사업소득|근로소득|사업소득|월\s*근로\s*(?:및|·)?\s*사업소득|월\s*소득|소득|급여|월급|식당\s*보조)[^\n:]*[:：=•\-]?\s*([^\n]+)/i);
         if (mEarnedLine) {
           var lineContent = mEarnedLine[1].trim();
@@ -1337,7 +1387,6 @@
 
         if (earned === null) currentMissingFields.push({ key: 'income', label: '소득 내역' });
 
-        // (2) 공적 및 사적 이전소득 추출
         var mOtherLine = text.match(/(?:공적이전소득|공적\s*이전소득|사적이전소득|이전소득|아동수당|국민연금|기초연금)[^\n:]*[:：=•\-]?\s*([^\n]+)/i);
         if (mOtherLine) {
           var oContent = mOtherLine[1].trim().replace(/\([^\)]*\)/g, '').trim();
@@ -1347,7 +1396,6 @@
             other = parseWon(oContent) || 0;
           }
         } else {
-          // 자연어 표현 (예: "기초연금 월 334,000원 외에", "아동수당 10만원")
           var mNaturalOther = text.match(/(?:기초연금|국민연금|아동수당)[^\d\n]*([0-9,.]+\s*(?:억|천만|만\s*원|만원|원)?)/i);
           if (mNaturalOther) {
             other = parseWon(mNaturalOther[1]) || 0;
@@ -1650,6 +1698,30 @@
       setVal('simFinProp', p.finProp !== null ? p.finProp : 0);
       setVal('simDebt', p.debt !== null ? p.debt : 0);
 
+      runSimulation();
+    }
+
+    // [4번 수정] 4단계 시뮬레이터 수동 변경 시 2단계 사정표 및 행복e음 일지 양방향 실시간 역반영
+    function handleManualSimulatorChange() {
+      var getNum = function(id, def) {
+        var el = document.getElementById(id);
+        return el ? (parseFloat(el.value) || (def || 0)) : (def || 0);
+      };
+      var getStr = function(id, def) {
+        var el = document.getElementById(id);
+        return el ? el.value : (def || '');
+      };
+
+      currentParsedData.age = parseInt(getNum('simAge', currentParsedData.age || 65), 10);
+      currentParsedData.members = parseInt(getNum('simMembers', 1), 10);
+      currentParsedData.earned = getNum('simEarnedIncome', 0);
+      currentParsedData.other = getNum('simOtherIncome', 0);
+      currentParsedData.resProp = getNum('simResProp', 0);
+      currentParsedData.genProp = getNum('simGenProp', 0);
+      currentParsedData.finProp = getNum('simFinProp', 0);
+      currentParsedData.debt = getNum('simDebt', 0);
+
+      renderVerifiedAssessment(currentParsedData);
       runSimulation();
     }
 
