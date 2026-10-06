@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title> 이어봄 Pro (행정안전부 AI 공통기반 연계형)</title>
+  <title>복지완성 Pro (행정안전부 AI 공통기반 연계형)</title>
   
   <style>
     :root {
@@ -565,7 +565,6 @@
           </div>
         </div>
 
-        <!-- 실제 지출 월세를 제거하고 '일반재산(만원)' 추가 -->
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid var(--border);">
           <div><label style="font-size:11.5px; font-weight:700;">월 근로·사업소득 (만원)</label><input type="number" id="simEarnedIncome" value="0" min="0" oninput="runSimulation()"></div>
           <div><label style="font-size:11.5px; font-weight:700;">공적·사적이전소득 (만원)</label><input type="number" id="simOtherIncome" value="0" min="0" oninput="runSimulation()"></div>
@@ -575,7 +574,6 @@
           <div><label style="font-size:11.5px; font-weight:700;">금융부채 (만원)</label><input type="number" id="simDebt" value="0" min="0" oninput="runSimulation()"></div>
         </div>
         
-        <!-- 항상 기본 오픈(display: block)으로 설정 -->
         <div id="calcTraceBox" style="display:block; background:#f1f5f9; padding:14px; border-radius:6px; margin-top:12px; font-family:monospace; font-size:12px; line-height:1.7; border: 1px solid #cbd5e1;"></div>
       </div>
     </div>
@@ -610,7 +608,6 @@
       emergencyPayouts: { 1: 71.3, 2: 117.8, 3: 150.9, 4: 183.4 }
     };
 
-    // 지역 코드 ➡️ 한글 법정 행정구역 매핑 객체
     const REGION_NAMES = {
       seoul: "대도시 (서울특별시)",
       gyeonggi: "중소도시 (경기·인천)",
@@ -1078,7 +1075,7 @@
       const badge = document.getElementById('dlpBadge');
       if (badge) {
         if (wasMasked) {
-          badge.innerText = "🛡️️ PII 자동 감지: 민감정보 마스킹 완료";
+          badge.innerText = "🛡 PII 자동 감지: 민감정보 마스킹 완료";
           badge.style.background = "#fef3c7";
           badge.style.color = "#92400e";
           badge.style.borderColor = "#fcd34d";
@@ -1293,7 +1290,7 @@
           currentMissingFields.push({ key: 'household', label: '가구원수' });
         }
 
-        // 4. 소득 파싱 (구술 및 단문 구문 강력 지원)
+        // 4. 소득 파싱
         let earned = null;
         let other = 0;
 
@@ -1375,7 +1372,6 @@
           currentMissingFields.push({ key: 'property', label: '주거 및 재산' });
         }
 
-        // 일반재산 파싱 (토지, 상가, 일반재산 등)
         let mGenLine = text.match(/(?:일반재산|토지|상가|건물|부동산)[^\d\n]*([\[\(\{]?[0-9,.\s]+(?:억|천만|천|만\s*원|만원|원)?[\]\}\)]?)/i);
         if (mGenLine && !isOwn) {
           genProp = parseWon(mGenLine[1]) || 0;
@@ -1679,7 +1675,7 @@
         const finalEarned = Math.max(0, earned - earnedDeduct);
         const incomeVal = Math.round((finalEarned + other) * 10) / 10;
 
-        // 2. 재산의 소득환산액 산정 (주거용재산 + 일반재산 + 금융재산 - 부채)
+        // 2. 재산의 소득환산액 산정
         let baseDeduct = POLICY_2026.baseDeduction[region] || 7700;
         let resLimit = POLICY_2026.housingLimit[region] || 14600;
         let remainBaseDeduct = baseDeduct;
@@ -1694,13 +1690,13 @@
         let genAfterBase = genProp - deductToGen;
         remainBaseDeduct -= deductToGen;
 
-        // 금융재산 (생활준비금 500만원 공제 후 기본공제 차감)
+        // 금융재산 차감
         let netFin = Math.max(0, finProp - 500);
         let deductToFin = Math.min(netFin, remainBaseDeduct);
         let finAfterBase = netFin - deductToFin;
         remainBaseDeduct -= deductToFin;
 
-        // 금융부채 차감 (주거 -> 일반 -> 금융 순차 차감)
+        // 금융부채 순차 차감
         let remainDebt = debt;
         let debtToRes = Math.min(resAfterBase, remainDebt);
         let resAfterDebt = resAfterBase - debtToRes;
@@ -1714,7 +1710,7 @@
         let finAfterDebt = finAfterBase - debtToFin;
         remainDebt -= debtToFin;
 
-        // 주거용재산 한도액 적용 (한도 내 1.04%, 한도 초과분은 일반재산 환산율 4.17% 적용)
+        // 한도 적용
         let resWithinLimit = Math.min(resAfterDebt, resLimit);
         let resExceedLimit = Math.max(0, resAfterDebt - resLimit);
 
@@ -1777,7 +1773,7 @@
         updateLiveCard('liveCardBasicPension', 'liveEstBasicPension', isPensionPass, 
           !isSenior ? ("연령 미달 (만 65세 미만 / 대상자 " + ageVal + "세)") : (isPensionPass ? "월 최대 33.4만 원 (선정)" : ("소득인정액 초과 (" + pensionRecognized + "만 원)")));
 
-        // 색상 배지 생성
+        // 색상 배지
         const badgeLive = isLivePass 
           ? '<span class="trace-badge trace-badge-pass">적합 (기준 ' + liveStd + '만 이하)</span>' 
           : '<span class="trace-badge trace-badge-fail">초과 (기준 ' + liveStd + '만)</span>';
@@ -1796,7 +1792,6 @@
               ? '<span class="trace-badge trace-badge-pass">적합 (인정액 ' + pensionRecognized + '만 ≤ 선정액 ' + pensionCutoff + '만)</span>' 
               : '<span class="trace-badge trace-badge-fail">초과 (인정액 ' + pensionRecognized + '만 > ' + pensionCutoff + '만)</span>');
 
-        // 지역명 한글 정규화
         const regionKoreanName = REGION_NAMES[region] || "대도시 (광역시·세종)";
 
         safeSetHtml('calcTraceBox', 
@@ -1934,112 +1929,4 @@
         { name: "사회보장급여(사회서비스이용권) 신청서", desc: "주민센터 비치 필수 법정 1호 서식", required: true },
         { name: "금융정보등(금융·신용·보험정보) 제공 동의서", desc: "신청인 및 가구원 전원 서명 필수 (금융재산·부채 공적조회용)", required: true },
         { name: "소득·재산 신고서", desc: "신청 가구의 근로소득, 사업소득, 부동산, 임차보증금 등 자진 신고 서식", required: true },
-        { name: "신분증 (주민등록증, 운전면허증, 여권)", desc: "신청인 본인 확인 필수 지참", required: true },
-        { name: "급여수급 계좌 통장사본", desc: "복지급여 입금 희망 본인 명의 통장 (압류방지통장 개설 안내 가능)", required: true }
-      ];
-
-      if (p.earned === 0 || (p.earned !== null && p.earned < 50)) {
-        docs.push({ name: "지출실태조사표", desc: "소득 미발생 가구의 최근 생활비·주거비 조달 출처 소명서 (창구 서식)", required: true });
-      } else if (p.earned !== null && p.earned > 0) {
-        docs.push({ name: "소득신고서 및 소득증빙서류", desc: "급여명세서, 소득금액증명원, 사업자등록 관련 서류 중 해당분", required: true });
-      }
-
-      if (p.housingType && p.housingType.includes("사용대차")) {
-        docs.push({ name: "무료임대확인서 (사용대차 확인서)", desc: "친인척/지인 소유 주택 무상거주 사실 확인용 (주택소유자 서명 날인)", required: true });
-      } else if (p.housingType && (p.housingType.includes("월세") || p.housingType.includes("전세"))) {
-        docs.push({ name: "임대차계약서 사본", desc: "확정일자 날인본 권장 (보증금 및 월 임차료 지출 증빙)", required: true });
-      }
-
-      if (p.workAbility === 'illness' && !p.isPensionMode) {
-        docs.push({ name: "근로능력평가용 진단서 및 진료기록부", desc: "질병·부상 근로능력 판정 심사용 (국민연금공단 심사용, 최근 2개월 내 발급본)", required: true });
-      }
-
-      if (!p.isPensionMode && activePreset !== 'nearPoverty' && activePreset !== 'emergency') {
-        if (p.support === 'severed') {
-          docs.push({ name: "가족관계 해체사유서 및 최근 1년 금융거래내역서", desc: "부양의무자와의 연락두절/왕래단절 소명 및 정기지원 전무 입증 (지생보 심의용)", required: true });
-        } else if (p.support === 'normal') {
-          docs.push({ name: "부양의무자 금융정보등 제공 동의서", desc: "부양의무자(부모, 자녀)의 소득·재산 공적조회를 위한 자필 서명 동의서", required: true });
-        }
-      }
-
-      const memoEl = document.getElementById('counselInput');
-      const rawText = memoEl ? memoEl.value : "";
-      const isEmergencyRisk = /(실직|퇴거|쫓겨|방을\s*빼|월세\s*밀려|단전|단수|폭력|학대)/.test(rawText);
-      if (activePreset === 'emergency' || isEmergencyRisk) {
-        docs.push({ name: "위기상황 증빙서류", desc: "임대인 퇴거요구서/내용증명, 단전·단수고지서, 실직·폐업확인서, 진단서 중 해당 서류", required: true });
-      }
-
-      safeSetText('clientDocCountBadge', "총 " + docs.length + "종 안내");
-      safeSetHtml('clientDocListArea', docs.map((d, i) => 
-        '<li style="padding: 7px 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; display: flex; justify-content: space-between; align-items: flex-start;">' +
-          '<div>' +
-            '<strong style="color:#1e40af; font-size:13px;">' + (i + 1) + '. ' + d.name + '</strong>' +
-            '<div style="color:#64748b; font-size:11.5px; margin-top:2px;">• 제출 목적: ' + d.desc + '</div>' +
-          '</div>' +
-          '<span style="font-size:10.5px; font-weight:800; color:#dc2626; background:#fee2e2; border:1px solid #fecdd3; padding:2px 6px; border-radius:4px; white-space:nowrap;">' +
-            '필수 지참' +
-          '</span>' +
-        '</li>'
-      ).join(''));
-
-      const matchedAgencies = AGENCY_RULES.filter(rule => rule.trigger.test(rawText));
-
-      if (matchedAgencies.length > 0) {
-        safeSetText('agencyRecommendCountBadge', matchedAgencies.length + "건 맞춤 매칭됨");
-        safeSetHtml('agencyRecommendListArea', matchedAgencies.map(ag => 
-          '<div style="background:#f0fdfa; border:1px solid #99f6e4; padding:12px; border-radius:6px; font-size:12.5px;">' +
-            '<div style="display:flex; justify-content:space-between; align-items:center;">' +
-              '<strong style="color:#0f766e; font-size:13px;">' + ag.agency + ' [' + ag.program + ']</strong>' +
-              '<span style="font-size:11px; font-weight:800; color:#047857; background:#d1fae5; padding:2px 6px; border-radius:4px;">☎ ' + ag.contact + '</span>' +
-            '</div>' +
-            '<div style="color:#334155; margin-top:4px;">• <strong>지원내용:</strong> ${ag.desc}</div>' +
-            '<div style="color:#2563eb; font-size:11.5px; margin-top:2px;">• <strong>신청방법:</strong> ${ag.guide}</div>' +
-          '</div>'
-        ).join(''));
-      } else {
-        safeSetText('agencyRecommendCountBadge', "0건 매칭");
-        safeSetHtml('agencyRecommendListArea', '<div style="padding:14px; background:#f8fafc; border:1px solid var(--border); border-radius:6px; color:#64748b; font-size:12px;">상담 내용에서 특이 공단 연계 키워드가 감지되지 않았습니다.</div>');
-      }
-    }
-
-    function toggleCalcTrace() {
-      const b = document.getElementById('calcTraceBox');
-      if (b) {
-        const isHidden = (b.style.display === 'none');
-        b.style.display = isHidden ? 'block' : 'none';
-      }
-    }
-
-    function copyHappyEumDocument() {
-      const el = document.getElementById('happyEumOutput');
-      const text = el ? el.innerText : '';
-      if (!text) return;
-      navigator.clipboard.writeText(text).then(() => {
-        showToast("📋 행복e음 상담일지가 복사되었습니다.");
-      });
-    }
-
-    function copyOfficialNotice() {
-      if (!currentOfficialNoticeDraft) {
-        showToast("생성된 기안문이 없습니다.");
-        return;
-      }
-      navigator.clipboard.writeText(currentOfficialNoticeDraft).then(() => {
-        showToast("🚨 법정 신고 공문 기안문이 복사되었습니다.");
-      });
-    }
-
-    function showToast(msg) {
-      const t = document.getElementById('toast');
-      if (!t) return;
-      t.innerText = msg;
-      t.className = "show";
-      setTimeout(() => { t.className = ""; }, 2200);
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      loadPreset('basicLife');
-    });
-  </script>
-</body>
-</html>
+        { name: "신분증 (주민등록증, 운전
