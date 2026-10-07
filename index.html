@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>복지완성!! Pro (행정안전부 AI 공통기반 연계형)</title>
+  <title>행복 이어봄(Ear Spring) : 사회복지공무원 상담지원 AI 서비스</title>
   
   <style>
     :root {
@@ -271,8 +271,8 @@
 
   <header>
     <div class="header-brand">
-      <h1>복지완성 Pro</h1>
-      <span class="badge badge-gov">행정안전부 AI 공통기반 연계형</span>
+      <h1>행복 이어봄(Ear Spring)</h1>
+      <span class="badge badge-gov">사회복지공무원 상담지원 AI 서비스</span>
       <span class="badge badge-secure" id="dlpBadge">🛡 DLP 개인정보 비식별화 가동</span>
     </div>
     <div class="header-controls">
@@ -347,8 +347,8 @@
               <span style="font-size: 16px;">🎧</span>
               <strong id="audioFileName" style="color: #0369a1; font-size: 13px;">녹음파일.m4a</strong>
               <span id="audioFileSize" style="font-size: 11px; color: #64748b; background: #e0f2fe; padding: 2px 6px; border-radius: 4px;">0 MB</span>
-              <span id="audioStatusBadge" style="font-size: 11px; font-weight: 700; color: #059669; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 2px 6px; border-radius: 4px;">
-                ⚡ 텍스트 변환 및 사정표 연동 완료
+              <span id="audioStatusBadge" style="font-size: 11px; font-weight: 700; color: #b45309; background: #fffbeb; border: 1px solid #fde68a; padding: 2px 6px; border-radius: 4px;">
+                ⚠️ STT 미연동 - 녹취 직접 청취 후 상담 내용 수기 입력 필요
               </span>
             </div>
             <button class="btn btn-outline" style="font-size: 11px; padding: 2px 8px; color: #64748b;" onclick="closeAudioPanel()">✕ 닫기</button>
@@ -641,7 +641,7 @@
       conversionRates: { residential: 0.0104, general: 0.0417, financial: 0.0626 },
       standards: { livelihood: 0.32, medical: 0.40, housing: 0.48, education: 0.50, nearPoverty: 0.50, emergency: 0.75 },
       emergencyPayouts: { 1: 71.3, 2: 117.8, 3: 150.9, 4: 183.4 },
-      emergencyFinLimit: { 1: 822, 2: 1008, 3: 1194, 4: 1380 } // 가구원수별 금융재산 기준 연동 (C번 반영)
+      emergencyFinLimit: { 1: 822, 2: 1008, 3: 1194, 4: 1380 }
     };
 
     var REGION_NAMES = {
@@ -791,7 +791,6 @@
       var sizeEl = document.getElementById('audioFileSize');
       var statusBadge = document.getElementById('audioStatusBadge');
       var audioPlayer = document.getElementById('audioPreviewPlayer');
-      var memoEl = document.getElementById('counselInput');
 
       if (panel) panel.style.display = 'block';
       if (nameEl) nameEl.innerText = file.name;
@@ -801,38 +800,20 @@
       if (audioPlayer) audioPlayer.src = fileUrl;
 
       if (statusBadge) {
-        statusBadge.innerText = "⏳ 온디바이스 STT 음성 변환 중...";
+        statusBadge.innerText = "⏳ 온디바이스 음성 파일 로드 중...";
         statusBadge.style.color = "#b45309";
         statusBadge.style.background = "#fef3c7";
       }
 
-      showToast("🎙 [" + file.name + "] 음성 파일 분석을 시작합니다.");
+      showToast("🎙 [" + file.name + "] 음성 파일이 로드되었습니다.");
 
       setTimeout(function() {
-        var transcribedText = "[복지상담 창구 대면 녹취록 - 온디바이스 STT]\n" +
-"공무원: 어르신, 오늘 어떤 일로 오셨을까요? 성함이랑 생년월일 말씀해 주시겠어요?\n" +
-"민원인: 제 이름은 박철수이고, 1958.03.12 생입니다. 대구 살아요.\n" +
-"공무원: 네, 박철수 님. 지금 가족분들과 같이 살고 계신가요?\n" +
-"민원인: 아니요, 가족 없이 혼자 살고 있는 1인 단독 가구입니다.\n" +
-"공무원: 건강은 좀 어떠세요? 일은 하고 계신가요?\n" +
-"민원인: 허리디스크랑 척추 질환이 너무 심해서 거동이 불편해 일을 전혀 못 합니다. 근로능력 유무는 해당없음입니다. 그래서 현재 월소득은 0원입니다.\n" +
-"공무원: 주거 형태와 재산 상황은 어떻게 되실까요?\n" +
-"민원인: 보증금 300만 원에 월세 25만 원 원룸에 거주하고 있고요, 일반재산은 없고 통장 잔액은 35만 원 남아있고 병원비 빚이 250만 원 있습니다.\n" +
-"공무원: 혹시 자녀분이나 부양해 줄 가족은 따로 없으신가요?\n" +
-"민원인: 아들이 한 명 있기는 한데, 사업 실패하고 10년 전부터 완전히 연락두절되어 생사도 모릅니다. 가족관계 해체사유서라도 쓰겠습니다.";
-
-        if (memoEl) {
-          memoEl.value = transcribedText;
-          handleCounselInputChanged();
-        }
-
         if (statusBadge) {
-          statusBadge.innerText = "⚡ 대화체 팩트 분석 및 사정표 연동 완료 (0.6s)";
-          statusBadge.style.color = "#047857";
-          statusBadge.style.background = "#ecfdf5";
+          statusBadge.innerText = "⚠️ STT 미연동 - 녹취 직접 청취 후 상담 내용 수기 입력 필요";
+          statusBadge.style.color = "#b45309";
+          statusBadge.style.background = "#fffbeb";
         }
-
-        showToast("✅ 창구 대화 녹취 분석 및 초기사정표 작성이 완료되었습니다.");
+        showToast("⚠️ 음성인식 기능은 연동되어 있지 않습니다. 녹취 내용을 직접 듣고 입력창에 작성해주세요.");
       }, 600);
 
       event.target.value = "";
@@ -943,7 +924,6 @@
       showToast("자연어 상담 입력창이 초기화되었습니다.");
     }
 
-    // B-③ 반영: 전체 화면 및 전산 뷰 완벽 초기화
     function resetViews() {
       safeSetHtml('docApplicantInfo', '<span class="missing-text">[미기재] 성명 및 연령 확인 요망</span>');
       safeSetHtml('docHouseholdInfo', '<span class="missing-text">[미기재] 가구원수 확인 요망</span>');
@@ -1180,7 +1160,6 @@
       return null;
     }
 
-    // B-④ 반영: 거주지역 파싱 로직 추가
     function parseRegionFromText(text) {
       if (!text) return 'metro';
       if (/(서울|서울특별시)/.test(text)) return 'seoul';
@@ -1256,7 +1235,7 @@
           currentMissingFields.push({ key: 'household', label: '가구원수' });
         }
 
-        // 4. 소득 파싱 (B-① 반영: 같은 줄의 다른 숫자까지 삼키지 않도록 단일 항목 정밀 캡처)
+        // 4. 소득 파싱
         var earned = null;
         var other = 0;
 
@@ -1317,8 +1296,9 @@
           currentMissingFields.push({ key: 'property', label: '주거 및 재산' });
         }
 
-        var mGen = text.match(/(?:일반재산|토지|상가|건물|부동산)[^\n:：=•\-\/]{0,20}[:：=•\-]?\s*([0-9,.]+\s*(?:천\s*만\s*원?|만\s*원?|원|억)|0원|0만|0|없음)/i);
-        if (mGen && !isOwn) {
+        // 일반재산 정규식 (자가 보유 무관 파싱 & 포괄 키워드 재산 반영)
+        var mGen = text.match(/(?:일반재산|토지|상가|건물|부동산|^재산|[^융]재산)[^\n:：=•\-\/]{0,20}[:：=•\-]?\s*([0-9,.]+\s*(?:천\s*만\s*원?|만\s*원?|원|억)|0원|0만|0|없음)/i);
+        if (mGen) {
           genProp = parseWon(mGen[1]) || 0;
         }
 
@@ -1332,7 +1312,7 @@
           debt = parseWon(mDebt[1]) || 0;
         }
 
-        // 6. 건강상태 및 근로능력 판정 (B-② 반영)
+        // 6. 건강상태 및 근로능력 판정 (실제 판정 로직 우선 수행)
         var healthDesc = null;
         var mHealthLine = text.match(/(?:건강상태\s*(?:및|·)?\s*질병|건강상태|질병|질환)\s*[:：=•\-]?\s*([^\n]+)/);
         if (mHealthLine) {
@@ -1352,10 +1332,7 @@
         var workAbility = null;
         var workAbilityText = "";
 
-        if (isExemptScheme) {
-          workAbility = isNearPovertyMode ? "able" : "none";
-          workAbilityText = '<strong style="color:#64748b;">해당없음</strong> <span style="color:#64748b;">(' + (isEmergencyMode ? '긴급복지' : (isNearPovertyMode ? '차상위' : '기초연금')) + ' 기준 미적용)</span>';
-        } else if (age && age >= 65) {
+        if (age && age >= 65) {
           workAbility = "none";
           workAbilityText = '<strong style="color:#059669;">해당없음</strong> <span style="color:#475569;">(만 65세 이상 법정 노인)</span>';
         } else if (isSevereDisability) {
@@ -1384,7 +1361,13 @@
           workAbilityText = '<strong style="color:#2563eb;">일반근로 추정</strong> <span style="color:#475569;">(건강상태 기재 시 자동 재심사)</span>';
         }
 
-        // 7. 부양의무자 판정
+        // 제도상 기준 미적용 안내 부가
+        if (isExemptScheme) {
+          var schemeLabel = isEmergencyMode ? '긴급복지' : (isNearPovertyMode ? '차상위' : '기초연금');
+          workAbilityText += ' <span style="color:#94a3b8; font-size:11px;">(참고: ' + schemeLabel + '은 근로능력 기준 자체 미적용, 실제 상태는 위와 같이 판정)</span>';
+        }
+
+        // 7. 부양의무자 판정 (isExemptScheme을 hasSupportObligor 앞으로 이동)
         var support = null;
         var supportText = "";
 
@@ -1401,19 +1384,18 @@
         } else if (hasNoSupport && !hasSupportObligor) {
           support = "none";
           supportText = '<strong style="color:#059669;">해당없음</strong> <span style="color:#475569;">(부양의무자 없음)</span>';
-        } else if (hasSupportObligor) {
-          support = "normal";
-          supportText = '<strong style="color:#be123c;">부양의무자 조사필요</strong> <span style="color:#be123c;">(소득·재산 조사 대상)</span>';
         } else if (isExemptScheme) {
           support = "none";
           var schemeName = isEmergencyMode ? '긴급복지' : (isNearPovertyMode ? '차상위' : '기초연금');
-          supportText = '<strong style="color:#64748b;">해당없음</strong> <span style="color:#64748b;">(' + schemeName + ' 부양의무자 기준 미적용)</span>';
+          supportText = '<strong style="color:#059669;">해당없음</strong> <span style="color:#475569;">(' + schemeName + ' 부양의무자 기준 미적용)</span>';
+        } else if (hasSupportObligor) {
+          support = "normal";
+          supportText = '<strong style="color:#be123c;">부양의무자 조사필요</strong> <span style="color:#be123c;">(소득·재산 조사 대상)</span>';
         } else {
           support = "normal";
           supportText = '<strong style="color:#be123c;">부양의무자 일반</strong> <span style="color:#475569;">(단절 소명 시 심의 상정)</span>';
         }
 
-        // 지역 추출 (B-④ 반영)
         var regionVal = parseRegionFromText(text);
 
         renderMissingTags();
@@ -1555,7 +1537,11 @@
       };
 
       if (p.age !== null && p.age !== undefined) setVal('simAge', p.age);
-      if (p.members) setVal('simMembers', p.members);
+      if (p.members) {
+        setVal('simMembers', p.members);
+      } else {
+        setVal('simMembers', 1);
+      }
       if (p.region) setVal('simRegion', p.region);
       if (p.workAbility) setVal('simWorkAbility', p.workAbility);
       if (p.support) setVal('simSupportObligor', p.support);
@@ -1569,7 +1555,6 @@
       runSimulation();
     }
 
-    // A-③, ④, ⑤, ⑥ 반영: 수동 변경 시 모든 필드(일반재산, 근로유형, 부양의무자 등) 역방향 동기화
     function handleManualSimulatorChange() {
       var getNum = function(id, def) {
         var el = document.getElementById(id);
@@ -1589,11 +1574,10 @@
       currentParsedData.earned = getNum('simEarnedIncome', 0);
       currentParsedData.other = getNum('simOtherIncome', 0);
       currentParsedData.resProp = getNum('simResProp', 0);
-      currentParsedData.genProp = getNum('simGenProp', 0); // 일반재산 반영
+      currentParsedData.genProp = getNum('simGenProp', 0);
       currentParsedData.finProp = getNum('simFinProp', 0);
       currentParsedData.debt = getNum('simDebt', 0);
 
-      // 근로유형 텍스트 업데이트
       if (currentParsedData.workAbility === 'none') {
         currentParsedData.workAbilityText = '<strong style="color:#059669;">해당없음</strong> <span style="color:#475569;">(만 65세 이상 노인 / 중증장애)</span>';
       } else if (currentParsedData.workAbility === 'illness') {
@@ -1604,7 +1588,6 @@
         currentParsedData.workAbilityText = '<strong style="color:#2563eb;">조사필요</strong> <span style="color:#475569;">(일반 근로능력자)</span>';
       }
 
-      // 부양의무자 텍스트 업데이트
       if (currentParsedData.support === 'severed') {
         currentParsedData.supportText = '<strong style="color:#b45309;">가족관계해체 조사필요</strong> <span style="color:#b45309;">(지생보 심의 대상)</span>';
       } else if (currentParsedData.support === 'none') {
@@ -1628,7 +1611,6 @@
       }
     }
 
-    // A, B, C 정밀 계산 로직
     function runSimulation() {
       try {
         var getNum = function(id, def) {
@@ -1653,7 +1635,7 @@
         var finProp = getNum('simFinProp', 0);
         var debt = getNum('simDebt', 0);
 
-        // 1. 기초생활보장 소득평가액 (A-⑤ 근로유형별 공제액 정밀 연동)
+        // 1. 기초생활보장 소득평가액
         var earnedDeduct = 0;
         if (workAbility === 'none' || workAbility === 'illness' || ageVal >= 65) {
           earnedDeduct = earned <= 20 ? earned : 20 + (earned - 20) * 0.3;
@@ -1663,9 +1645,9 @@
           earnedDeduct = earned * 0.3;
         }
         var finalEarned = Math.max(0, earned - earnedDeduct);
-        var incomeVal = Math.round((finalEarned + other) * 10) / 10; // 이전소득 합산 (A-④ 반영)
+        var incomeVal = Math.round((finalEarned + other) * 10) / 10;
 
-        // 2. 재산의 소득환산액 산정 (주거 -> 일반 -> 금융 차감 순서)
+        // 2. 재산의 소득환산액 산정
         var baseDeduct = POLICY_2026.baseDeduction[region] || 7700;
         var resLimit = POLICY_2026.housingLimit[region] || 14600;
         var remainBaseDeduct = baseDeduct;
@@ -1678,12 +1660,11 @@
         var genAfterBase = genProp - deductToGen;
         remainBaseDeduct -= deductToGen;
 
-        var netFin = Math.max(0, finProp - 500); // 생활준비금 500만원 공제
+        var netFin = Math.max(0, finProp - 500);
         var deductToFin = Math.min(netFin, remainBaseDeduct);
         var finAfterBase = netFin - deductToFin;
         remainBaseDeduct -= deductToFin;
 
-        // 부채 차감
         var remainDebt = debt;
         var debtToRes = Math.min(resAfterBase, remainDebt);
         var resAfterDebt = resAfterBase - debtToRes;
@@ -1697,19 +1678,18 @@
         var finAfterDebt = finAfterBase - debtToFin;
         remainDebt -= debtToFin;
 
-        // 주거재산 한도 초과분 분리 및 일반재산 환산율(4.17%) 연동
         var resWithinLimit = Math.min(resAfterDebt, resLimit);
         var resExceedLimit = Math.max(0, resAfterDebt - resLimit);
 
         var resMonthly = Math.round((resWithinLimit * POLICY_2026.conversionRates.residential) * 10) / 10;
         var resExceedMonthly = Math.round((resExceedLimit * POLICY_2026.conversionRates.general) * 10) / 10;
-        var genMonthly = Math.round((genAfterDebt * POLICY_2026.conversionRates.general) * 10) / 10; // 일반재산 반영 (A-③ 반영)
+        var genMonthly = Math.round((genAfterDebt * POLICY_2026.conversionRates.general) * 10) / 10;
         var finMonthly = Math.round((finAfterDebt * POLICY_2026.conversionRates.financial) * 10) / 10;
 
         var propertyMonthly = Math.round((resMonthly + resExceedMonthly + genMonthly + finMonthly) * 10) / 10;
         var recognized = Math.round((incomeVal + propertyMonthly) * 10) / 10;
 
-        // 3. 기초연금 소득인정액 (C-① 반영)
+        // 3. 기초연금 소득인정액
         var bpEarnedDeduct = earned <= 112 ? earned : 112 + (earned - 112) * 0.3;
         var bpFinalEarned = Math.max(0, earned - bpEarnedDeduct);
         var bpIncomeVal = Math.round((bpFinalEarned + other) * 10) / 10;
@@ -1732,7 +1712,7 @@
         var emergStd = Math.round(median * POLICY_2026.standards.emergency * 10) / 10;
         var nearStd = Math.round(median * POLICY_2026.standards.nearPoverty * 10) / 10;
         var pensionCutoff = (members === 1) ? 213.0 : 340.8;
-        var emergFinLimit = POLICY_2026.emergencyFinLimit[members] || 822; // C-② 반영
+        var emergFinLimit = POLICY_2026.emergencyFinLimit[members] || 822;
 
         safeSetText('liveIncomeRecognized', recognized.toLocaleString());
         safeSetText('liveRealIncome', (earned + other).toLocaleString());
@@ -1741,7 +1721,7 @@
         var rawText = memoEl ? memoEl.value : "";
         var isSenior = (ageVal >= 65) || 
                        (workAbility === 'none') || 
-                       (activePreset === 'basicPension') ||
+                       (activePreset === 'basicPension') || 
                        /(만\s*65세\s*이상|65세\s*이상|독거노인|어르신)/.test(rawText);
 
         var isLivePass = recognized <= liveStd;
@@ -2007,7 +1987,6 @@
       }
     }
 
-    // A-⑦ 반영: 클립보드 복사 폴백(Fallback) 및 예외 처리
     function copyTextFallback(text, successMsg) {
       var textArea = document.createElement("textarea");
       textArea.value = text;
