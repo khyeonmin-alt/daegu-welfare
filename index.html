@@ -365,7 +365,7 @@
         </div>
 
         <div class="textarea-wrapper">
-          <textarea id="counselInput" class="counsel-textarea" oninput="handleCounselInputChanged()" placeholder="민원인의 구술 기록을 편하게 입력하세요.&#10;예) 이름 홍길동, 생년월일 1982.3.2. 전세 4000만원, 일반재산 500만원, 통장 45만원 있고 월소득 0원."></textarea>
+          <textarea id="counselInput" class="counsel-textarea" oninput="handleCounselInputChanged()" placeholder="민원인의 구술 기록을 편하게 입력하세요.&#10;예) 이름 홍길동, 생년월일 1982.3.2. 서울 거주, 전세 4000만원, 일반재산 500만원, 통장 45만원 있고 월소득 0원."></textarea>
           <div id="counselCharCounter" class="char-counter">0자</div>
         </div>
 
@@ -460,7 +460,7 @@
 
               <div class="live-benefit-card" id="liveCardEmergency">
                 <div style="font-weight: 800; font-size: 13px;">긴급복지지원 (정부)</div>
-                <div style="font-size: 11px; color: var(--text-muted);">실소득 75% &amp; 금융 822만 이하</div>
+                <div style="font-size: 11px; color: var(--text-muted);">실소득 75% &amp; 가구별 금융기준 이하</div>
                 <div class="benefit-status" id="liveEstEmergency" style="margin-top: 4px;">판정 대기</div>
               </div>
 
@@ -640,7 +640,8 @@
       housingLimit: { seoul: 17200, gyeonggi: 15100, metro: 14600, rural: 11200 },
       conversionRates: { residential: 0.0104, general: 0.0417, financial: 0.0626 },
       standards: { livelihood: 0.32, medical: 0.40, housing: 0.48, education: 0.50, nearPoverty: 0.50, emergency: 0.75 },
-      emergencyPayouts: { 1: 71.3, 2: 117.8, 3: 150.9, 4: 183.4 }
+      emergencyPayouts: { 1: 71.3, 2: 117.8, 3: 150.9, 4: 183.4 },
+      emergencyFinLimit: { 1: 822, 2: 1008, 3: 1194, 4: 1380 } // 가구원수별 금융재산 기준 연동 (C번 반영)
     };
 
     var REGION_NAMES = {
@@ -661,13 +662,13 @@
     };
 
     var PRESETS = {
-      basicLife: "[기초생활보장 맞춤형급여 상담·조사 표준서식]\n1. 가구원 구성 및 기본 인적사항\n• 세대주 성명: 홍길동 (생년월일: 1968.04.15, 만 58세)\n• 보장가구 범위: 1인 가구 (단독 세대주, 실제 생계 및 주거 단독 운영)\n• 건강상태 및 질병: 척추협착증 및 허리디스크로 거동 불편 (진단서 제출)\n• 근로능력 유무: 질병·부상으로 인한 근로능력평가 심사 대상\n\n2. 소득 사항 (소득평가액 산정)\n• 근로 및 사업소득: 월 0원 (질환으로 경제활동 불가, 무소득 상태)\n• 공적이전소득: 월 0원 (기초연금 또는 국민연금 수급 없음)\n• 재산 및 사적이전소득: 월 0원 (가족 및 친인척 정기 지원 일체 없음)\n\n3. 재산 현황 (재산의 소득환산액 산정)\n• 주거 형태: 월세 (보증금 500만 원 / 월세 25만 원)\n• 일반재산: 없음 (부동산, 분양권, 토지 등 미보유)\n• 금융재산: 예금 잔액 약 45만 원 (기본공제 생활준비금 500만원 이내)\n• 부채 내역: 병원비 치료용 대출 300만 원 (신용대출)\n• 자동차 보유: 미보유 (100% 환산차량 없음)\n\n4. 부양의무자 기준 (의료급여 중심 조사)\n• 부양의무자 현황: 장남 1명 (만 33세)\n• 부양 기피 및 단절 여부: 10년 전 사업 실패 후 가출, 연락두절 상태임.\n• 소명 자료: 가족관계 해체사유서 자필 작성 의사 밝힘 및 1년 이상 금융거래내역 증빙 가능\n\n5. 신청 희망 급여\n• 신청 희망 급여: 생계급여, 의료급여, 주거급여 동시 신청",
+      basicLife: "[기초생활보장 맞춤형급여 상담·조사 표준서식]\n1. 가구원 구성 및 기본 인적사항\n• 세대주 성명: 홍길동 (생년월일: 1968.04.15, 만 58세)\n• 보장가구 범위: 1인 가구 (단독 세대주, 실제 생계 및 주거 단독 운영)\n• 거주지역: 대구광역시 (대도시 기준)\n• 건강상태 및 질병: 척추협착증 및 허리디스크로 거동 불편 (진단서 제출)\n• 근로능력 유무: 질병·부상으로 인한 근로능력평가 심사 대상\n\n2. 소득 사항 (소득평가액 산정)\n• 근로 및 사업소득: 월 0원 (질환으로 경제활동 불가, 무소득 상태)\n• 공적이전소득: 월 0원 (기초연금 또는 국민연금 수급 없음)\n• 재산 및 사적이전소득: 월 0원 (가족 및 친인척 정기 지원 일체 없음)\n\n3. 재산 현황 (재산의 소득환산액 산정)\n• 주거 형태: 월세 (보증금 500만 원 / 월세 25만 원)\n• 일반재산: 0원 (부동산, 분양권, 토지 등 미보유)\n• 금융재산: 예금 잔액 약 45만 원 (기본공제 생활준비금 500만원 이내)\n• 부채 내역: 병원비 치료용 대출 300만 원 (신용대출)\n• 자동차 보유: 미보유 (100% 환산차량 없음)\n\n4. 부양의무자 기준 (의료급여 중심 조사)\n• 부양의무자 현황: 장남 1명 (만 33세)\n• 부양 기피 및 단절 여부: 10년 전 사업 실패 후 가출, 연락두절 상태임.\n• 소명 자료: 가족관계 해체사유서 자필 작성 의사 밝힘 및 1년 이상 금융거래내역 증빙 가능\n\n5. 신청 희망 급여\n• 신청 희망 급여: 생계급여, 의료급여, 주거급여 동시 신청",
 
-      nearPoverty: "[차상위계층 확인 및 감면지원 상담·조사 표준서식]\n1. 가구원 구성 및 기본 인적사항\n• 세대주 성명: 이미선 (생년월일: 1980.08.12, 만 46세)\n• 보장가구 범위: 2인 가구 (본인 및 미취학 자녀 1명 동거 모자가구)\n• 건강상태 및 질병: 모녀 모두 특이 중증질환 없음 (통상 건강)\n• 근로능력 유무: 일반 근로능력자 (자활사업 및 파트타임 가능)\n\n2. 소득 사항 (기준 중위소득 50% 검토)\n• 근로 및 사업소득: 식당 보조 근로소득 월 140만 원 (30% 법정공제 적용)\n• 공적이전소득: 아동수당 월 10만 원\n• 재산 및 사적이전소득: 0원\n\n3. 재산 현황 (재산의 소득환산액 산정)\n• 주거 형태: 월세 (보증금 1,500만 원 / 월세 35만 원)\n• 일반재산: 없음 (비주거용 부동산 미보유)\n• 금융재산: 통장 잔액 220만 원 (생활준비금 500만원 공제 이내)\n• 부채 내역: 생활비 마이너스통장 대출 500만 원\n• 자동차 보유: 미보유\n\n4. 부양의무자 기준\n• 부양의무자 기준: 해당없음 (차상위계층은 부양의무자 기준 미적용)\n\n5. 신청 희망 사업 및 감면 수요\n• 신청 희망: 차상위계층 확인서 발급, 차상위 자활급여",
+      nearPoverty: "[차상위계층 확인 및 감면지원 상담·조사 표준서식]\n1. 가구원 구성 및 기본 인적사항\n• 세대주 성명: 이미선 (생년월일: 1980.08.12, 만 46세)\n• 보장가구 범위: 2인 가구 (본인 및 미취학 자녀 1명 동거 모자가구)\n• 거주지역: 경기도 수원시\n• 건강상태 및 질병: 모녀 모두 특이 중증질환 없음 (통상 건강)\n• 근로능력 유무: 일반 근로능력자 (자활사업 및 파트타임 가능)\n\n2. 소득 사항 (기준 중위소득 50% 검토)\n• 근로 및 사업소득: 식당 보조 근로소득 월 140만 원 (30% 법정공제 적용)\n• 공적이전소득: 아동수당 월 10만 원\n• 재산 및 사적이전소득: 0원\n\n3. 재산 현황 (재산의 소득환산액 산정)\n• 주거 형태: 월세 (보증금 1,500만 원 / 월세 35만 원)\n• 일반재산: 0원 (비주거용 부동산 미보유)\n• 금융재산: 통장 잔액 220만 원 (생활준비금 500만원 공제 이내)\n• 부채 내역: 생활비 마이너스통장 대출 500만 원\n• 자동차 보유: 미보유\n\n4. 부양의무자 기준\n• 부양의무자 기준: 해당없음 (차상위계층은 부양의무자 기준 미적용)\n\n5. 신청 희망 사업 및 감면 수요\n• 신청 희망: 차상위계층 확인서 발급, 차상위 자활급여",
 
-      emergency: "[긴급복지지원(선지원·사후조사) 위기상담 표준서식]\n1. 위기상황 사유 (긴급복지지원법 제2조 해당여부 확인)\n• 위기 사유: 주소득자 실직 및 월세가 4달 밀려 집주인으로부터 강제퇴거 통보받음\n• 폭력 및 위기: 지속적인 협박과 폭행 위협 노출됨 (학대 및 폭력 위기)\n• 심리 상태: 극단적 선택 위기 호소 (위기신호 즉각 개입 요망)\n\n2. 가구원 구성 및 인적사항\n• 세대주 성명: 최영미 (생년월일: 1982.02.19, 만 44세)\n• 보장가구 범위: 2인 가구 (본인 및 초등학생 자녀 1명 동거)\n• 건강상태 및 근로: 해당없음 (긴급복지 선지원 대상)\n\n3. 긴급지원 소득 및 금융재산 기준 검토 (실소득 75% 이하)\n• 월 총실소득: 0원 (무소득 확인, 실소득 기준 충족)\n• 금융재산: 통장 잔고 0원 (기준액 1인 822만 원 이하 절대 충족)\n• 주거 현황: 월세 30만 원 (임대료 4달 밀려 주말 내 퇴거 강요받음)\n• 일반재산: 없음\n• 부채 내역: 사채 및 소액대출 200만 원\n\n4. 부양의무자 기준\n• 부양의무자 기준: 해당없음 (긴급복지지원법상 부양의무자 기준 미적용)\n\n5. 긴급 행정 조치 계획\n• 지원 요청: 긴급생계지원 (2인 가구 117.8만 원) 직권 우선신청\n• 주거 지원: LH 긴급주거지원 공공임대 연계 의뢰\n• 안전 조치: 경찰청(112) 현장 안전확인 및 위기의뢰 공문 기안",
+      emergency: "[긴급복지지원(선지원·사후조사) 위기상담 표준서식]\n1. 위기상황 사유 (긴급복지지원법 제2조 해당여부 확인)\n• 위기 사유: 주소득자 실직 및 월세가 4달 밀려 집주인으로부터 강제퇴거 통보받음\n• 폭력 및 위기: 지속적인 협박과 폭행 위협 노출됨 (학대 및 폭력 위기)\n• 심리 상태: 극단적 선택 위기 호소 (위기신호 즉각 개입 요망)\n\n2. 가구원 구성 및 인적사항\n• 세대주 성명: 최영미 (생년월일: 1982.02.19, 만 44세)\n• 보장가구 범위: 2인 가구 (본인 및 초등학생 자녀 1명 동거)\n• 거주지역: 서울특별시\n• 건강상태 및 근로: 해당없음 (긴급복지 선지원 대상)\n\n3. 긴급지원 소득 및 금융재산 기준 검토 (실소득 75% 이하)\n• 월 총실소득: 0원\n• 금융재산: 0원\n• 주거 현황: 보증금 0원 / 월세 30만 원 (임대료 4달 밀려 주말 내 퇴거 강요받음)\n• 일반재산: 0원\n• 부채 내역: 사채 및 소액대출 200만 원\n\n4. 부양의무자 기준\n• 부양의무자 기준: 해당없음 (긴급복지지원법상 부양의무자 기준 미적용)\n\n5. 긴급 행정 조치 계획\n• 지원 요청: 긴급생계지원 (2인 가구 117.8만 원) 직권 우선신청\n• 주거 지원: LH 긴급주거지원 공공임대 연계 의뢰\n• 안전 조치: 경찰청(112) 현장 안전확인 및 위기의뢰 공문 기안",
 
-      basicPension: "[기초연금 신청 및 노인가구 자산조사 표준서식]\n1. 신청인 기본 인적사항 및 연령 확인\n• 신청인 이름: 김정순 (생년월일: 1954.06.20, 만 72세)\n• 수급 대상 여부: 만 65세 이상 노인가구 요건 충족\n• 가구 형태: 1인 단독 노인가구 (독거노인)\n• 건강상태: 만성 퇴행성 관절염으로 거동 불편\n• 근로능력 유무: 만 65세 이상 노인 (법정 근로무능력자)\n\n2. 소득 현황 (기초연금 소득인정액 산정)\n• 월 근로 및 사업소득: 0원 (경제활동 일체 없음, 무소득)\n• 공적이전소득: 기초연금 월 334,000원\n• 재산 및 사적이전소득: 0원\n\n3. 재산 현황 (주거재산 기본공제액 검토)\n• 주거 형태: 전세 (전세보증금 6,500만 원 / 월세 0원)\n• 일반재산: 없음\n• 금융재산: 통장 예금 잔액 130만 원 (기본공제 범위 내)\n• 금융부채: 담보대출 없음 (0원)\n• 자동차: 미보유\n\n4. 부양의무자 기준\n• 부양의무자 기준: 해당없음 (기초연금 미적용)"
+      basicPension: "[기초연금 신청 및 노인가구 자산조사 표준서식]\n1. 신청인 기본 인적사항 및 연령 확인\n• 신청인 이름: 김정순 (생년월일: 1954.06.20, 만 72세)\n• 수급 대상 여부: 만 65세 이상 노인가구 요건 충족\n• 가구 형태: 1인 단독 노인가구 (독거노인)\n• 거주지역: 대구광역시\n• 건강상태: 만성 퇴행성 관절염으로 거동 불편\n• 근로능력 유무: 만 65세 이상 노인 (법정 근로무능력자)\n\n2. 소득 현황 (기초연금 소득인정액 산정)\n• 월 근로 및 사업소득: 0원 (경제활동 일체 없음, 무소득)\n• 공적이전소득: 국민연금 0원, 기초연금 희망\n• 재산 및 사적이전소득: 0원\n\n3. 재산 현황 (주거재산 기본공제액 검토)\n• 주거 형태: 전세 (전세보증금 6,500만 원 / 월세 0원)\n• 일반재산: 0원\n• 금융재산: 통장 예금 잔액 130만 원 (기본공제 범위 내)\n• 금융부채: 담보대출 없음 (0원)\n• 자동차: 미보유\n\n4. 부양의무자 기준\n• 부양의무자 기준: 해당없음 (기초연금 미적용)"
     };
 
     var AGENCY_RULES = [
@@ -810,7 +811,7 @@
       setTimeout(function() {
         var transcribedText = "[복지상담 창구 대면 녹취록 - 온디바이스 STT]\n" +
 "공무원: 어르신, 오늘 어떤 일로 오셨을까요? 성함이랑 생년월일 말씀해 주시겠어요?\n" +
-"민원인: 제 이름은 박철수이고, 1958.03.12 생입니다.\n" +
+"민원인: 제 이름은 박철수이고, 1958.03.12 생입니다. 대구 살아요.\n" +
 "공무원: 네, 박철수 님. 지금 가족분들과 같이 살고 계신가요?\n" +
 "민원인: 아니요, 가족 없이 혼자 살고 있는 1인 단독 가구입니다.\n" +
 "공무원: 건강은 좀 어떠세요? 일은 하고 계신가요?\n" +
@@ -935,18 +936,14 @@
       activePreset = null;
       var memo = document.getElementById('counselInput');
       if (memo) memo.value = "";
-      handleCounselInputChanged();
       currentMissingFields = [];
       renderMissingTags();
       resetViews();
-      var duty = document.getElementById('dutyAlertSection');
-      if (duty) duty.style.display = 'none';
-      var emerg = document.getElementById('emergencyAlertBanner');
-      if (emerg) emerg.style.display = 'none';
       closeAudioPanel();
       showToast("자연어 상담 입력창이 초기화되었습니다.");
     }
 
+    // B-③ 반영: 전체 화면 및 전산 뷰 완벽 초기화
     function resetViews() {
       safeSetHtml('docApplicantInfo', '<span class="missing-text">[미기재] 성명 및 연령 확인 요망</span>');
       safeSetHtml('docHouseholdInfo', '<span class="missing-text">[미기재] 가구원수 확인 요망</span>');
@@ -971,22 +968,36 @@
       });
       var ageEl = document.getElementById('simAge');
       if (ageEl) ageEl.value = 65;
+      var memEl = document.getElementById('simMembers');
+      if (memEl) memEl.value = "1";
+      var regEl = document.getElementById('simRegion');
+      if (regEl) regEl.value = "metro";
+      var workEl = document.getElementById('simWorkAbility');
+      if (workEl) workEl.value = "none";
+      var suppEl = document.getElementById('simSupportObligor');
+      if (suppEl) suppEl.value = "normal";
 
       safeSetText('printApplicantName', "[미입력] 성명 미상");
       safeSetText('clientDocCountBadge', "총 0종");
       safeSetHtml('clientDocListArea', "<li style='color:#94a3b8;'>상담 내용이 입력되지 않았습니다.</li>");
       safeSetText('agencyRecommendCountBadge', "0건 매칭");
-      safeSetHtml('agencyRecommendListArea', '<div style="padding:14px; background:#f8fafc; border:1px solid var(--border); border-radius:6px; color:#64748b; font-size:12px;">상담 내용에서 유관기관 연계 키워드가 감지되지 않았습니다.</div>');
+      safeSetHtml('agencyRecommendListArea', '<div style="padding:14px; background:#f8fafc; border:1px solid var(--border); border-radius:6px; color:#64748b; font-size:12px;">상담 내용에서 특이 공단 연계 키워드가 감지되지 않았습니다.</div>');
       safeSetHtml('calcTraceBox', '<span style="color:#64748b;">상담 기록을 입력하면 법정 산출 공식 및 실시간 적합 여부가 이곳에 표시됩니다.</span>');
+
+      var duty = document.getElementById('dutyAlertSection');
+      if (duty) duty.style.display = 'none';
+      var emerg = document.getElementById('emergencyAlertBanner');
+      if (emerg) emerg.style.display = 'none';
+      currentOfficialNoticeDraft = "";
+      currentParsedData = {};
+      safeSetText('counselCharCounter', "0자");
     }
 
-    // 1번 반영: 주민등록번호(내외국인 1~8) 및 개인정보 비식별화 강화
     function applyDlpMasking(rawText) {
       if (!rawText) return "";
       var masked = rawText;
       var wasMasked = false;
 
-      // 2000년대 이후 및 외국인등록번호(5~8) 포괄 [1-8]
       var rrnPattern = /\b(\d{6})\s*[-~_.]?\s*([1-8])\d{6}\b/g;
       if (rrnPattern.test(masked)) {
         wasMasked = true;
@@ -1037,7 +1048,6 @@
 
       if (parseDebounceTimer) clearTimeout(parseDebounceTimer);
       parseDebounceTimer = setTimeout(function() {
-        // 전송 및 분석 전 비식별화 마스킹 우선 적용 (1번 반영)
         var maskedVal = applyDlpMasking(el.value);
         if (maskedVal !== el.value) {
           var start = el.selectionStart;
@@ -1170,6 +1180,16 @@
       return null;
     }
 
+    // B-④ 반영: 거주지역 파싱 로직 추가
+    function parseRegionFromText(text) {
+      if (!text) return 'metro';
+      if (/(서울|서울특별시)/.test(text)) return 'seoul';
+      if (/(경기|경기도|인천|인천광역시|수원|성남|고양|용인|부천|안산|평택|안양|시흥|김포|의정부)/.test(text)) return 'gyeonggi';
+      if (/(부산|대구|대전|광주|울산|세종|광역시)/.test(text)) return 'metro';
+      if (/(강원|충북|충남|전북|전남|경북|경남|제주|군청|읍|면)/.test(text)) return 'rural';
+      return 'metro';
+    }
+
     function processCounseling() {
       try {
         var memoEl = document.getElementById('counselInput');
@@ -1236,26 +1256,13 @@
           currentMissingFields.push({ key: 'household', label: '가구원수' });
         }
 
-        // 4. 소득 파싱
+        // 4. 소득 파싱 (B-① 반영: 같은 줄의 다른 숫자까지 삼키지 않도록 단일 항목 정밀 캡처)
         var earned = null;
         var other = 0;
 
-        var mEarnedPattern = text.match(/(?:근로\s*(?:및|·)?\s*사업소득|근로소득|사업소득|월\s*근로\s*(?:및|·)?\s*사업소득|월\s*소득|소득|급여|월급|식당\s*보조)[^\n:]*[:：=•\-]?\s*([^\n]+)/i);
+        var mEarnedPattern = text.match(/(?:근로\s*(?:및|·)?\s*사업소득|월\s*근로\s*(?:및|·)?\s*사업소득|근로소득|사업소득|월\s*총?실소득|월\s*소득|소득|급여|월급|식당\s*보조)[^\n:：=•\-\/]{0,25}[:：=•\-]?\s*([0-9,.]+\s*(?:천\s*만\s*원?|만\s*원?|원|억)|0원|0만|0|없음|무소득|전무|단절)/i);
         if (mEarnedPattern) {
-          var eLine = mEarnedPattern[1].trim();
-          var mNumInLine = eLine.match(/([0-9,.]+\s*(?:억|천만|만\s*원|만원|원)?)/);
-          if (mNumInLine) {
-            earned = parseWon(mNumInLine[1]);
-          } else if (/0|없음|무소득|0원/.test(eLine)) {
-            earned = 0;
-          }
-        }
-
-        if (earned === null) {
-          var mQuickEarned = text.match(/(?:소득|급여|수입)\s*[:：=•\-]?\s*([0-9,.]+\s*(?:억|천만|만\s*원|만원|원)?)/i);
-          if (mQuickEarned) {
-            earned = parseWon(mQuickEarned[1]);
-          }
+          earned = parseWon(mEarnedPattern[1]);
         }
 
         if (earned === null) {
@@ -1265,15 +1272,9 @@
 
         if (earned === null) currentMissingFields.push({ key: 'income', label: '소득 내역' });
 
-        var mOtherPattern = text.match(/(?:공적이전소득|공적\s*이전소득|사적이전소득|이전소득|아동수당|국민연금|기초연금)[^\n:]*[:：=•\-]?\s*([^\n]+)/i);
+        var mOtherPattern = text.match(/(?:공적\s*(?:및|·)?\s*사적이전소득|공적이전소득|공적\s*이전소득|사적이전소득|이전소득|아동수당|국민연금|기초연금)[^\n:：=•\-\/]{0,25}[:：=•\-]?\s*([0-9,.]+\s*(?:천\s*만\s*원?|만\s*원?|원|억)|0원|0만|0|없음|단절)/i);
         if (mOtherPattern) {
-          var oLine = mOtherPattern[1].trim();
-          var mNumInOLine = oLine.match(/([0-9,.]+\s*(?:억|천만|만\s*원|만원|원)?)/);
-          if (mNumInOLine) {
-            other = parseWon(mNumInOLine[1]) || 0;
-          } else if (/0|없음|0원/.test(oLine)) {
-            other = 0;
-          }
+          other = parseWon(mOtherPattern[1]) || 0;
         }
 
         // 5. 주거 및 재산 파싱
@@ -1291,9 +1292,9 @@
         var isJeonse = (/(?:전세보증금|전세금|전세로|전세\s*거주|전세\s*임차)/.test(text) || /(?:^|[^\w가-힣])전세(?!\s*사기|\s*피해)/.test(text)) && !isJeonseFraud;
         var isMonthly = /(월세|월세방|임차|월세로)/.test(text);
 
-        var mJeonseVal = text.match(/(?:전세\s*보증금|전세금|전세)\s*[:：=•\-]?\s*([0-9,.]+\s*(?:억|천만|만\s*원|만원|원)?)/i);
-        var mDeposit = text.match(/(?:보증금)\s*[:：=•\-]?\s*([0-9,.]+\s*(?:억|천만|만\s*원|만원|원)?)/i);
-        var mRent = text.match(/월세\s*[:：=•\-]?\s*([0-9,.]+\s*(?:억|천만|만\s*원|만원|원)?)(?!\s*(?:달|개월|회|차))/i);
+        var mJeonseVal = text.match(/(?:전세\s*보증금|전세금|전세)[^\n:：=•\-\/]{0,20}[:：=•\-]?\s*([0-9,.]+\s*(?:천\s*만\s*원?|만\s*원?|원|억)|0원|0만|0)/i);
+        var mDeposit = text.match(/(?:보증금)[^\n:：=•\-\/]{0,20}[:：=•\-]?\s*([0-9,.]+\s*(?:천\s*만\s*원?|만\s*원?|원|억)|0원|0만|0)/i);
+        var mRent = text.match(/월세[^\n:：=•\-\/]{0,20}[:：=•\-]?\s*([0-9,.]+\s*(?:천\s*만\s*원?|만\s*원?|원|억)|0원|0만|0)(?!\s*(?:달|개월|회|차))/i);
 
         if (isFreeRent) {
           housingType = "사용대차 (무상거주)";
@@ -1301,7 +1302,7 @@
           rentFee = 0;
         } else if (isOwn) {
           housingType = "자가";
-          var mOwn = text.match(/(?:공시지가|집값|주택가액|시세|자가)\s*[:：=•\-]?\s*([0-9,.]+\s*(?:억|천만|만\s*원|만원|원)?)/i);
+          var mOwn = text.match(/(?:공시지가|집값|주택가액|시세|자가)[^\n:：=•\-\/]{0,20}[:：=•\-]?\s*([0-9,.]+\s*(?:천\s*만\s*원?|만\s*원?|원|억)|0원|0만|0)/i);
           resProp = mOwn ? (parseWon(mOwn[1]) || 0) : 0;
           rentFee = 0;
         } else if (isJeonse || mJeonseVal) {
@@ -1316,40 +1317,22 @@
           currentMissingFields.push({ key: 'property', label: '주거 및 재산' });
         }
 
-        var mGen = text.match(/(?:일반재산|토지|상가|건물|부동산)[^\n:]*[:：=•\-]?\s*([^\n]+)/i);
+        var mGen = text.match(/(?:일반재산|토지|상가|건물|부동산)[^\n:：=•\-\/]{0,20}[:：=•\-]?\s*([0-9,.]+\s*(?:천\s*만\s*원?|만\s*원?|원|억)|0원|0만|0|없음)/i);
         if (mGen && !isOwn) {
-          var genText = mGen[1].trim();
-          var mGenNum = genText.match(/([0-9,.]+\s*(?:억|천만|만\s*원|만원|원)?)/);
-          if (mGenNum) {
-            genProp = parseWon(mGenNum[1]) || 0;
-          } else if (/없음|0원|0/.test(genText)) {
-            genProp = 0;
-          }
+          genProp = parseWon(mGen[1]) || 0;
         }
 
-        var mFin = text.match(/(?:금융재산|통장\s*잔액|통장\s*잔고|예금\s*잔액|통장|예금)[^\n:]*[:：=•\-]?\s*([^\n]+)/i);
+        var mFin = text.match(/(?:금융재산|통장\s*잔액|통장\s*잔고|예금\s*잔액|통장|예금)[^\n:：=•\-\/]{0,20}[:：=•\-]?\s*([0-9,.]+\s*(?:천\s*만\s*원?|만\s*원?|원|억)|0원|0만|0|없음)/i);
         if (mFin) {
-          var finText = mFin[1].trim();
-          var mFinNum = finText.match(/([0-9,.]+\s*(?:억|천만|만\s*원|만원|원)?)/);
-          if (mFinNum) {
-            finProp = parseWon(mFinNum[1]) || 0;
-          } else if (/없음|0원|0/.test(finText)) {
-            finProp = 0;
-          }
+          finProp = parseWon(mFin[1]) || 0;
         }
 
-        var mDebt = text.match(/(?:부채\s*(?:내역)?|대출금|대출|사채|빚|마이너스\s*통장)[^\n:]*[:：=•\-]?\s*([^\n]+)/i);
+        var mDebt = text.match(/(?:부채\s*(?:내역)?|대출금|대출|사채|빚|마이너스\s*통장)[^\n:：=•\-\/]{0,20}[:：=•\-]?\s*([0-9,.]+\s*(?:천\s*만\s*원?|만\s*원?|원|억)|0원|0만|0|없음)/i);
         if (mDebt) {
-          var debtText = mDebt[1].trim();
-          var mDebtNum = debtText.match(/([0-9,.]+\s*(?:억|천만|만\s*원|만원|원)?)/);
-          if (mDebtNum) {
-            debt = parseWon(mDebtNum[1]) || 0;
-          } else if (/없음|0원|0/.test(debtText)) {
-            debt = 0;
-          }
+          debt = parseWon(mDebt[1]) || 0;
         }
 
-        // 6. 건강상태 및 근로능력 판정
+        // 6. 건강상태 및 근로능력 판정 (B-② 반영)
         var healthDesc = null;
         var mHealthLine = text.match(/(?:건강상태\s*(?:및|·)?\s*질병|건강상태|질병|질환)\s*[:：=•\-]?\s*([^\n]+)/);
         if (mHealthLine) {
@@ -1430,10 +1413,13 @@
           supportText = '<strong style="color:#be123c;">부양의무자 일반</strong> <span style="color:#475569;">(단절 소명 시 심의 상정)</span>';
         }
 
+        // 지역 추출 (B-④ 반영)
+        var regionVal = parseRegionFromText(text);
+
         renderMissingTags();
 
         currentParsedData = {
-          name: name, age: age, members: members, earned: earned, other: other, 
+          name: name, age: age, members: members, region: regionVal, earned: earned, other: other, 
           housingType: housingType, resProp: resProp, genProp: genProp, rentFee: rentFee, 
           finProp: finProp, debt: debt, workAbility: workAbility, workAbilityText: workAbilityText, 
           healthDesc: healthDesc, support: support, supportText: supportText, isPensionMode: isPensionMode
@@ -1570,6 +1556,7 @@
 
       if (p.age !== null && p.age !== undefined) setVal('simAge', p.age);
       if (p.members) setVal('simMembers', p.members);
+      if (p.region) setVal('simRegion', p.region);
       if (p.workAbility) setVal('simWorkAbility', p.workAbility);
       if (p.support) setVal('simSupportObligor', p.support);
       setVal('simEarnedIncome', p.earned !== null ? p.earned : 0);
@@ -1582,20 +1569,49 @@
       runSimulation();
     }
 
+    // A-③, ④, ⑤, ⑥ 반영: 수동 변경 시 모든 필드(일반재산, 근로유형, 부양의무자 등) 역방향 동기화
     function handleManualSimulatorChange() {
       var getNum = function(id, def) {
         var el = document.getElementById(id);
         return el ? (parseFloat(el.value) || (def || 0)) : (def || 0);
       };
+      var getStr = function(id, def) {
+        var el = document.getElementById(id);
+        return el ? el.value : (def || '');
+      };
 
       currentParsedData.age = parseInt(getNum('simAge', currentParsedData.age || 65), 10);
       currentParsedData.members = parseInt(getNum('simMembers', 1), 10);
+      currentParsedData.region = getStr('simRegion', 'metro');
+      currentParsedData.workAbility = getStr('simWorkAbility', 'able');
+      currentParsedData.support = getStr('simSupportObligor', 'normal');
+
       currentParsedData.earned = getNum('simEarnedIncome', 0);
       currentParsedData.other = getNum('simOtherIncome', 0);
       currentParsedData.resProp = getNum('simResProp', 0);
-      currentParsedData.genProp = getNum('simGenProp', 0);
+      currentParsedData.genProp = getNum('simGenProp', 0); // 일반재산 반영
       currentParsedData.finProp = getNum('simFinProp', 0);
       currentParsedData.debt = getNum('simDebt', 0);
+
+      // 근로유형 텍스트 업데이트
+      if (currentParsedData.workAbility === 'none') {
+        currentParsedData.workAbilityText = '<strong style="color:#059669;">해당없음</strong> <span style="color:#475569;">(만 65세 이상 노인 / 중증장애)</span>';
+      } else if (currentParsedData.workAbility === 'illness') {
+        currentParsedData.workAbilityText = '<strong style="color:#b45309;">조사필요</strong> <span style="color:#b45309;">(질병·부상 심사 대상)</span>';
+      } else if (currentParsedData.workAbility === 'youth') {
+        currentParsedData.workAbilityText = '<strong style="color:#2563eb;">조사필요</strong> <span style="color:#475569;">(청년특례)</span>';
+      } else {
+        currentParsedData.workAbilityText = '<strong style="color:#2563eb;">조사필요</strong> <span style="color:#475569;">(일반 근로능력자)</span>';
+      }
+
+      // 부양의무자 텍스트 업데이트
+      if (currentParsedData.support === 'severed') {
+        currentParsedData.supportText = '<strong style="color:#b45309;">가족관계해체 조사필요</strong> <span style="color:#b45309;">(지생보 심의 대상)</span>';
+      } else if (currentParsedData.support === 'none') {
+        currentParsedData.supportText = '<strong style="color:#059669;">해당없음</strong> <span style="color:#475569;">(부양의무자 없음)</span>';
+      } else {
+        currentParsedData.supportText = '<strong style="color:#be123c;">부양의무자 조사필요</strong> <span style="color:#be123c;">(소득·재산 조사 대상)</span>';
+      }
 
       renderVerifiedAssessment(currentParsedData);
       runSimulation();
@@ -1612,7 +1628,7 @@
       }
     }
 
-    // 2번 반영: 주거재산 한도 초과분 산출 및 부채 차감 우선순위 정밀화
+    // A, B, C 정밀 계산 로직
     function runSimulation() {
       try {
         var getNum = function(id, def) {
@@ -1637,7 +1653,7 @@
         var finProp = getNum('simFinProp', 0);
         var debt = getNum('simDebt', 0);
 
-        // 1. 기초생활보장 소득평가액
+        // 1. 기초생활보장 소득평가액 (A-⑤ 근로유형별 공제액 정밀 연동)
         var earnedDeduct = 0;
         if (workAbility === 'none' || workAbility === 'illness' || ageVal >= 65) {
           earnedDeduct = earned <= 20 ? earned : 20 + (earned - 20) * 0.3;
@@ -1647,9 +1663,9 @@
           earnedDeduct = earned * 0.3;
         }
         var finalEarned = Math.max(0, earned - earnedDeduct);
-        var incomeVal = Math.round((finalEarned + other) * 10) / 10;
+        var incomeVal = Math.round((finalEarned + other) * 10) / 10; // 이전소득 합산 (A-④ 반영)
 
-        // 2. 재산의 소득환산액 산정 (법정 차감 순서: 주거 -> 일반 -> 금융)
+        // 2. 재산의 소득환산액 산정 (주거 -> 일반 -> 금융 차감 순서)
         var baseDeduct = POLICY_2026.baseDeduction[region] || 7700;
         var resLimit = POLICY_2026.housingLimit[region] || 14600;
         var remainBaseDeduct = baseDeduct;
@@ -1667,7 +1683,7 @@
         var finAfterBase = netFin - deductToFin;
         remainBaseDeduct -= deductToFin;
 
-        // 부채 차감 (주거 -> 일반 -> 금융 순서 차감)
+        // 부채 차감
         var remainDebt = debt;
         var debtToRes = Math.min(resAfterBase, remainDebt);
         var resAfterDebt = resAfterBase - debtToRes;
@@ -1681,19 +1697,19 @@
         var finAfterDebt = finAfterBase - debtToFin;
         remainDebt -= debtToFin;
 
-        // 주거재산 한도 분리 및 일반재산 환산율(4.17%) 연동
+        // 주거재산 한도 초과분 분리 및 일반재산 환산율(4.17%) 연동
         var resWithinLimit = Math.min(resAfterDebt, resLimit);
         var resExceedLimit = Math.max(0, resAfterDebt - resLimit);
 
         var resMonthly = Math.round((resWithinLimit * POLICY_2026.conversionRates.residential) * 10) / 10;
         var resExceedMonthly = Math.round((resExceedLimit * POLICY_2026.conversionRates.general) * 10) / 10;
-        var genMonthly = Math.round((genAfterDebt * POLICY_2026.conversionRates.general) * 10) / 10;
+        var genMonthly = Math.round((genAfterDebt * POLICY_2026.conversionRates.general) * 10) / 10; // 일반재산 반영 (A-③ 반영)
         var finMonthly = Math.round((finAfterDebt * POLICY_2026.conversionRates.financial) * 10) / 10;
 
         var propertyMonthly = Math.round((resMonthly + resExceedMonthly + genMonthly + finMonthly) * 10) / 10;
         var recognized = Math.round((incomeVal + propertyMonthly) * 10) / 10;
 
-        // 3. 기초연금 소득인정액
+        // 3. 기초연금 소득인정액 (C-① 반영)
         var bpEarnedDeduct = earned <= 112 ? earned : 112 + (earned - 112) * 0.3;
         var bpFinalEarned = Math.max(0, earned - bpEarnedDeduct);
         var bpIncomeVal = Math.round((bpFinalEarned + other) * 10) / 10;
@@ -1716,6 +1732,7 @@
         var emergStd = Math.round(median * POLICY_2026.standards.emergency * 10) / 10;
         var nearStd = Math.round(median * POLICY_2026.standards.nearPoverty * 10) / 10;
         var pensionCutoff = (members === 1) ? 213.0 : 340.8;
+        var emergFinLimit = POLICY_2026.emergencyFinLimit[members] || 822; // C-② 반영
 
         safeSetText('liveIncomeRecognized', recognized.toLocaleString());
         safeSetText('liveRealIncome', (earned + other).toLocaleString());
@@ -1732,9 +1749,9 @@
         updateLiveCard('liveCardBasicLife', 'liveEstBasicLife', isLivePass, 
           isLivePass ? ("월 약 " + liveAmount + "만 원 (선정)") : ("기준 초과 (탈락 / 소득인정액 " + recognized + "만)"));
 
-        var isEmergPass = ((earned + other) <= emergStd) && (finProp <= 822);
+        var isEmergPass = ((earned + other) <= emergStd) && (finProp <= emergFinLimit);
         updateLiveCard('liveCardEmergency', 'liveEstEmergency', isEmergPass, 
-          isEmergPass ? ("월 " + POLICY_2026.emergencyPayouts[members] + "만 원 (선정)") : (finProp > 822 ? ("금융재산 초과 (" + finProp + "만 원)") : ("실소득 기준 초과 (" + (earned + other) + "만 원)")));
+          isEmergPass ? ("월 " + POLICY_2026.emergencyPayouts[members] + "만 원 (선정)") : (finProp > emergFinLimit ? ("금융재산 초과 (" + finProp + "만 원 / 기준 " + emergFinLimit + "만)") : ("실소득 기준 초과 (" + (earned + other) + "만 원)")));
 
         var isNearPass = recognized <= nearStd;
         updateLiveCard('liveCardNearPoverty', 'liveEstNearPoverty', isNearPass, 
@@ -1742,15 +1759,15 @@
 
         var isPensionPass = isSenior && (pensionRecognized <= pensionCutoff);
         updateLiveCard('liveCardBasicPension', 'liveEstBasicPension', isPensionPass, 
-          !isSenior ? ("연령 미달 (만 65세 미만 / 대상자 " + ageVal + "세)") : (isPensionPass ? "월 최대 33.4만 원 (선정)" : ("소득인정액 초과 (" + pensionRecognized + "만 원)")));
+          !isSenior ? ("연령 미달 (만 65세 미만 / 대상자 " + ageVal + "세)") : (isPensionPass ? "월 최대 33.4만 원 (선정)" : ("소득인정액 초과 (" + pensionRecognized + "만 원 / 선정액 " + pensionCutoff + "만)")));
 
         var badgeLive = isLivePass 
           ? '<span class="trace-badge trace-badge-pass">적합 (기준 ' + liveStd + '만 이하)</span>' 
           : '<span class="trace-badge trace-badge-fail">초과 (기준 ' + liveStd + '만)</span>';
           
         var badgeEmerg = isEmergPass 
-          ? '<span class="trace-badge trace-badge-pass">적합 (실소득 ' + emergStd + '만 & 금융 822만 이하)</span>' 
-          : '<span class="trace-badge trace-badge-fail">부적합 (' + (finProp > 822 ? '금융초과' : '실소득초과') + ')</span>';
+          ? '<span class="trace-badge trace-badge-pass">적합 (실소득 ' + emergStd + '만 & 금융 ' + emergFinLimit + '만 이하)</span>' 
+          : '<span class="trace-badge trace-badge-fail">부적합 (' + (finProp > emergFinLimit ? '금융초과' : '실소득초과') + ')</span>';
           
         var badgeNear = isNearPass 
           ? '<span class="trace-badge trace-badge-pass">적합 (기준 ' + nearStd + '만 이하)</span>' 
@@ -1881,7 +1898,7 @@
       doc += "\n\n [행정 조치 계획]\n" +
 " ① 사업별 모의 소득인정액(선정기준 대비 판정):\n" +
 "    - [국민기초 생계급여]: 소득인정액 약 " + sim.recognized.toLocaleString() + "만 원 (" + (sim.isLivePass ? ("기준 중위 32%인 " + sim.liveStd + "만 원 이하 [적합]") : "기준 초과 [부적합]") + ")\n" +
-"    - [긴급복지지원(정부)]: 총 실소득 약 " + sim.realIncome.toLocaleString() + "만 원 (" + (sim.isEmergPass ? ("중위 75%인 " + sim.emergStd + "만 원 이하 & 금융 822만 원 이하 [적합]") : "소득/금융 기준 초과 [부적합]") + ")\n" +
+"    - [긴급복지지원(정부)]: 총 실소득 약 " + sim.realIncome.toLocaleString() + "만 원 (" + (sim.isEmergPass ? ("중위 75%인 " + sim.emergStd + "만 원 이하 & 금융기준 충족 [적합]") : "소득/금융 기준 초과 [부적합]") + ")\n" +
 "    - [차상위계층]: 소득인정액 약 " + sim.recognized.toLocaleString() + "만 원 (" + (sim.isNearPass ? ("기준 중위 50%인 " + sim.nearStd + "만 원 이하 [적합]") : "기준 초과 [부적합]") + ")\n" +
 "    - [기초연금]: 연금 소득인정액 약 " + sim.pensionRecognized.toLocaleString() + "만 원 (" + (!sim.isSenior ? ("만 65세 미만 [연령 미달 / 대상자 만 " + sim.ageVal + "세]") : (sim.isPensionPass ? ("선정기준액 " + sim.pensionCutoff + "만 원 이하 [적합]") : "소득인정액 초과 [부적합]")) + ")\n" +
 " ② 구비서류 징구: 사회보장급여 신청서, 금융정보제공동의서, 소득·재산신고서, 신분증, 통장사본 등 필수 법정서식 일체" + (p.debt > 0 ? " 및 압류방지 행복지킴이통장 연계" : "") + "\n" +
@@ -1890,7 +1907,6 @@
       safeSetText('happyEumOutput', doc);
     }
 
-    // 3번 반영: 부채/신용불량/압류 가구 '행복지킴이통장(압류방지 전용통장)' 신청서 자동 연계
     function renderStep4ClientDocs(members, p) {
       var applicantName = p.name ? p.name : "[미입력] 성명 미상";
       safeSetText('printApplicantName', applicantName);
@@ -1907,7 +1923,6 @@
         { name: "신분증 (주민등록증, 운전면허증, 여권)", desc: "신청인 본인 확인 필수 지참", required: true }
       ];
 
-      // 3번 반영: 부채/압류 가구는 행복지킴이통장 확인서 우선 안내, 일반 가구는 통장사본 안내
       if (hasDebtOrSeizure) {
         docs.push({ 
           name: "행복지킴이통장(압류방지 전용통장) 개설확인서 / 신규 통장사본", 
@@ -1992,13 +2007,44 @@
       }
     }
 
+    // A-⑦ 반영: 클립보드 복사 폴백(Fallback) 및 예외 처리
+    function copyTextFallback(text, successMsg) {
+      var textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      textArea.style.top = "-9999px";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        var successful = document.execCommand('copy');
+        if (successful) {
+          showToast(successMsg);
+        } else {
+          showToast("복사 권한이 제한되어 수동 복사가 필요합니다.");
+        }
+      } catch (err) {
+        showToast("클립보드 복사 실패: 수동으로 복사해주세요.");
+      }
+      document.body.removeChild(textArea);
+    }
+
     function copyHappyEumDocument() {
       var el = document.getElementById('happyEumOutput');
       var text = el ? el.innerText : '';
-      if (!text) return;
-      navigator.clipboard.writeText(text).then(function() {
-        showToast("📋 행복e음 상담일지가 복사되었습니다.");
-      });
+      if (!text || text.indexOf("상담 내용을 입력하고") !== -1) {
+        showToast("복사할 전산 서식 내용이 없습니다.");
+        return;
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() {
+          showToast("📋 행복e음 상담일지가 복사되었습니다.");
+        }).catch(function() {
+          copyTextFallback(text, "📋 행복e음 상담일지가 복사되었습니다.");
+        });
+      } else {
+        copyTextFallback(text, "📋 행복e음 상담일지가 복사되었습니다.");
+      }
     }
 
     function copyOfficialNotice() {
@@ -2006,9 +2052,15 @@
         showToast("생성된 기안문이 없습니다.");
         return;
       }
-      navigator.clipboard.writeText(currentOfficialNoticeDraft).then(function() {
-        showToast("🚨 법정 신고 공문 기안문이 복사되었습니다.");
-      });
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(currentOfficialNoticeDraft).then(function() {
+          showToast("🚨 법정 신고 공문 기안문이 복사되었습니다.");
+        }).catch(function() {
+          copyTextFallback(currentOfficialNoticeDraft, "🚨 법정 신고 공문 기안문이 복사되었습니다.");
+        });
+      } else {
+        copyTextFallback(currentOfficialNoticeDraft, "🚨 법정 신고 공문 기안문이 복사되었습니다.");
+      }
     }
 
     function showToast(msg) {
