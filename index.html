@@ -980,17 +980,18 @@
       safeSetHtml('calcTraceBox', '<span style="color:#64748b;">상담 기록을 입력하면 법정 산출 공식 및 실시간 적합 여부가 이곳에 표시됩니다.</span>');
     }
 
+    // 1번 반영: 주민등록번호(내외국인 1~8) 및 개인정보 비식별화 강화
     function applyDlpMasking(rawText) {
       if (!rawText) return "";
       var masked = rawText;
       var wasMasked = false;
 
-      // 주민번호 정밀 마스킹 (무한루프 방지 및 안전 치환)
-      var rrnPattern = /\b(\d{6})\s*[-~_.]?\s*([1-4])\d{6}\b/g;
+      // 2000년대 이후 및 외국인등록번호(5~8) 포괄 [1-8]
+      var rrnPattern = /\b(\d{6})\s*[-~_.]?\s*([1-8])\d{6}\b/g;
       if (rrnPattern.test(masked)) {
         wasMasked = true;
         masked = masked.replace(rrnPattern, function(match, front, backFirst) {
-          return front + "-" + backFirst + "****** [주민번호 마스킹]";
+          return front + "-" + backFirst + "****** [주민등록번호 마스킹]";
         });
       }
 
@@ -1005,7 +1006,7 @@
       var accountPattern = /(?:계좌|통장|국민|신한|우리|하나|농협|기업|카카오|토스)[\s:：]*([0-9-]{11,20})/gi;
       if (accountPattern.test(masked)) {
         wasMasked = true;
-        masked = masked.replace(accountPattern, function(match) {
+        masked = masked.replace(accountPattern, function() {
           return "[계좌번호 비식별화 처리]";
         });
       }
@@ -1036,6 +1037,14 @@
 
       if (parseDebounceTimer) clearTimeout(parseDebounceTimer);
       parseDebounceTimer = setTimeout(function() {
+        // 전송 및 분석 전 비식별화 마스킹 우선 적용 (1번 반영)
+        var maskedVal = applyDlpMasking(el.value);
+        if (maskedVal !== el.value) {
+          var start = el.selectionStart;
+          var end = el.selectionEnd;
+          el.value = maskedVal;
+          el.setSelectionRange(start, end);
+        }
         processCounseling();
       }, 100);
     }
@@ -1057,7 +1066,6 @@
       return 1;
     }
 
-    // 정밀 화폐 파서 (단위, 콤마, 띄어쓰기 완벽 정제)
     function parseWon(text) {
       if (text === null || text === undefined) return null;
       var clean = String(text).replace(/,/g, '').replace(/[\[\]\(\)\{\}]/g, '').trim();
@@ -1604,6 +1612,7 @@
       }
     }
 
+    // 2번 반영: 주거재산 한도 초과분 산출 및 부채 차감 우선순위 정밀화
     function runSimulation() {
       try {
         var getNum = function(id, def) {
@@ -1640,7 +1649,7 @@
         var finalEarned = Math.max(0, earned - earnedDeduct);
         var incomeVal = Math.round((finalEarned + other) * 10) / 10;
 
-        // 2. 재산의 소득환산액 산정
+        // 2. 재산의 소득환산액 산정 (법정 차감 순서: 주거 -> 일반 -> 금융)
         var baseDeduct = POLICY_2026.baseDeduction[region] || 7700;
         var resLimit = POLICY_2026.housingLimit[region] || 14600;
         var remainBaseDeduct = baseDeduct;
@@ -1653,11 +1662,12 @@
         var genAfterBase = genProp - deductToGen;
         remainBaseDeduct -= deductToGen;
 
-        var netFin = Math.max(0, finProp - 500);
+        var netFin = Math.max(0, finProp - 500); // 생활준비금 500만원 공제
         var deductToFin = Math.min(netFin, remainBaseDeduct);
         var finAfterBase = netFin - deductToFin;
         remainBaseDeduct -= deductToFin;
 
+        // 부채 차감 (주거 -> 일반 -> 금융 순서 차감)
         var remainDebt = debt;
         var debtToRes = Math.min(resAfterBase, remainDebt);
         var resAfterDebt = resAfterBase - debtToRes;
@@ -1671,6 +1681,7 @@
         var finAfterDebt = finAfterBase - debtToFin;
         remainDebt -= debtToFin;
 
+        // 주거재산 한도 분리 및 일반재산 환산율(4.17%) 연동
         var resWithinLimit = Math.min(resAfterDebt, resLimit);
         var resExceedLimit = Math.max(0, resAfterDebt - resLimit);
 
@@ -1759,7 +1770,7 @@
           '</div>' +
           '<div style="margin-bottom: 4px;">• <strong>신청인 기본정보:</strong> 만 ' + ageVal + '세 (' + (isSenior ? '만 65세 이상 법정 노인' : '만 65세 미만') + '), ' + members + '인 가구, <strong>거주지역: ' + regionKoreanName + '</strong></div>' +
           '<div style="margin-bottom: 4px;">• <strong>소득평가액:</strong> <strong>' + incomeVal + '만 원</strong> = [실제근로 ' + earned + '만 - 법정공제 ' + (Math.round(earnedDeduct*10)/10) + '만] + 이전소득 ' + other + '만</div>' +
-          '<div style="margin-bottom: 6px;">• <strong>재산의 소득환산액:</strong> <strong>' + propertyMonthly + '만 원</strong> = 주거환산 ' + resMonthly + '만(한도내) + 일반재산환산 ' + genMonthly + '만 + 금융환산 ' + finMonthly + '만</div>' +
+          '<div style="margin-bottom: 6px;">• <strong>재산의 소득환산액:</strong> <strong>' + propertyMonthly + '만 원</strong> = 주거한도내(' + resWithinLimit + '만×1.04%=' + resMonthly + '만) + 한도초과(' + resExceedLimit + '만×4.17%=' + resExceedMonthly + '만) + 일반재산(' + genAfterDebt + '만×4.17%=' + genMonthly + '만) + 금융재산(' + finAfterDebt + '만×6.26%=' + finMonthly + '만)</div>' +
           '<div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #cbd5e1;">' +
             '<div style="font-weight: 800; color: #334155; margin-bottom: 6px;">🎯 4대 복지급여 기준 비교 실시간 판정:</div>' +
             '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 11.5px;">' +
@@ -1873,24 +1884,43 @@
 "    - [긴급복지지원(정부)]: 총 실소득 약 " + sim.realIncome.toLocaleString() + "만 원 (" + (sim.isEmergPass ? ("중위 75%인 " + sim.emergStd + "만 원 이하 & 금융 822만 원 이하 [적합]") : "소득/금융 기준 초과 [부적합]") + ")\n" +
 "    - [차상위계층]: 소득인정액 약 " + sim.recognized.toLocaleString() + "만 원 (" + (sim.isNearPass ? ("기준 중위 50%인 " + sim.nearStd + "만 원 이하 [적합]") : "기준 초과 [부적합]") + ")\n" +
 "    - [기초연금]: 연금 소득인정액 약 " + sim.pensionRecognized.toLocaleString() + "만 원 (" + (!sim.isSenior ? ("만 65세 미만 [연령 미달 / 대상자 만 " + sim.ageVal + "세]") : (sim.isPensionPass ? ("선정기준액 " + sim.pensionCutoff + "만 원 이하 [적합]") : "소득인정액 초과 [부적합]")) + ")\n" +
-" ② 구비서류 징구: 사회보장급여 신청서, 금융정보제공동의서, 소득·재산신고서, 신분증, 통장사본 등 필수 법정서식 일체\n" +
+" ② 구비서류 징구: 사회보장급여 신청서, 금융정보제공동의서, 소득·재산신고서, 신분증, 통장사본 등 필수 법정서식 일체" + (p.debt > 0 ? " 및 압류방지 행복지킴이통장 연계" : "") + "\n" +
 " ③ 전산 접수: 서류 보완 즉시 행복e음 정식 접수 등록";
 
       safeSetText('happyEumOutput', doc);
     }
 
+    // 3번 반영: 부채/신용불량/압류 가구 '행복지킴이통장(압류방지 전용통장)' 신청서 자동 연계
     function renderStep4ClientDocs(members, p) {
       var applicantName = p.name ? p.name : "[미입력] 성명 미상";
       safeSetText('printApplicantName', applicantName);
       safeSetText('printCurrentDate', new Date().toLocaleDateString('ko-KR'));
 
+      var memoEl = document.getElementById('counselInput');
+      var rawText = memoEl ? memoEl.value : "";
+      var hasDebtOrSeizure = (p.debt !== null && p.debt > 0) || /(압류|차압|신용불량|빚|연체|부채|파산)/.test(rawText);
+
       var docs = [
         { name: "사회보장급여(사회서비스이용권) 신청서", desc: "주민센터 비치 필수 법정 1호 서식", required: true },
-        { name: "금융정보등(금융·신용·보험정보) 제공 동의서", desc: "신청인 및 가구원 전원 서명 필수 (금융재산·부채 공적조회용)", required: true },
-        { name: "소득·재산 신고서", desc: "신청 가구의 근로소득, 사업소득, 부동산, 임차보증금 등 자진 신고 서식", required: true },
-        { name: "신분증 (주민등록증, 운전면허증, 여권)", desc: "신청인 본인 확인 필수 지참", required: true },
-        { name: "급여수급 계좌 통장사본", desc: "복지급여 입금 희망 본인 명의 통장 (압류방지통장 개설 안내 가능)", required: true }
+        { name: "금융정보등(금융·신용·보험정보) 제공 동의서", desc: "신청인 및 가구원 전원 자필 서명 필수 (공적조회용)", required: true },
+        { name: "소득·재산 신고서", desc: "근로소득, 사업소득, 부동산, 임차보증금 등 자진 신고 서식", required: true },
+        { name: "신분증 (주민등록증, 운전면허증, 여권)", desc: "신청인 본인 확인 필수 지참", required: true }
       ];
+
+      // 3번 반영: 부채/압류 가구는 행복지킴이통장 확인서 우선 안내, 일반 가구는 통장사본 안내
+      if (hasDebtOrSeizure) {
+        docs.push({ 
+          name: "행복지킴이통장(압류방지 전용통장) 개설확인서 / 신규 통장사본", 
+          desc: "부채·압류로 인한 수급금 보호용 법정 전용통장 (행정복지센터 발급 수급자증명서 지참 후 금융기관 개설)", 
+          required: true 
+        });
+      } else {
+        docs.push({ 
+          name: "급여수급 계좌 통장사본", 
+          desc: "복지급여 입금 희망 본인 명의 계좌 통장 사본", 
+          required: true 
+        });
+      }
 
       if (p.earned === 0 || (p.earned !== null && p.earned < 50)) {
         docs.push({ name: "지출실태조사표", desc: "소득 미발생 가구의 최근 생활비·주거비 조달 출처 소명서 (창구 서식)", required: true });
@@ -1916,8 +1946,6 @@
         }
       }
 
-      var memoEl = document.getElementById('counselInput');
-      var rawText = memoEl ? memoEl.value : "";
       var isEmergencyRisk = /(실직|퇴거|쫓겨|방을\s*빼|월세\s*밀려|단전|단수|폭력|학대)/.test(rawText);
       if (activePreset === 'emergency' || isEmergencyRisk) {
         docs.push({ name: "위기상황 증빙서류", desc: "임대인 퇴거요구서/내용증명, 단전·단수고지서, 실직·폐업확인서, 진단서 중 해당 서류", required: true });
