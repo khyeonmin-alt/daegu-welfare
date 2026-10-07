@@ -962,4 +962,566 @@
         var modal = document.getElementById('missingConfirmModal');
         var modalList = document.getElementById('modalMissingList');
         if (modalList) {
-          modalList.innerHTML = currentMissingFields.map(function(f) { return "• " + f.label;
+          modalList.innerHTML = currentMissingFields.map(function(f) { return "• " + f.label; }).join('<br>');
+        }
+        if (modal) modal.style.display = 'flex';
+      } else {
+        switchTab('tab2', document.getElementById('btnTab2'));
+      }
+    }
+
+    function forceNavigateToStep2() {
+      var modal = document.getElementById('missingConfirmModal');
+      if (modal) modal.style.display = 'none';
+      switchTab('tab2', document.getElementById('btnTab2'));
+      showToast("2단계 전산 검증으로 이동했습니다.");
+    }
+
+    function insertMissingAndCloseModal() {
+      var modal = document.getElementById('missingConfirmModal');
+      if (modal) modal.style.display = 'none';
+      insertAllMissingTemplates();
+    }
+
+    function dismissMissingTag(fieldKey) {
+      currentMissingFields = currentMissingFields.filter(function(f) { return f.key !== fieldKey; });
+      renderMissingTags();
+      showToast("해당 누락 항목이 경고에서 제외되었습니다.");
+    }
+
+    function renderMissingTags() {
+      var box = document.getElementById('missingAlertBox');
+      var tagList = document.getElementById('missingTagList');
+      if (!box || !tagList) return;
+
+      if (currentMissingFields.length > 0) {
+        box.style.display = 'block';
+        tagList.innerHTML = currentMissingFields.map(function(f) {
+          return '<span class="missing-tag">' +
+            '<span>❌ ' + f.label + ' 누락</span>' +
+            '<span class="missing-tag-close" onclick="dismissMissingTag(\'' + f.key + '\')" title="경고 제외">✕</span>' +
+          '</span>';
+        }).join('');
+      } else {
+        box.style.display = 'none';
+      }
+    }
+
+    function insertAllMissingTemplates() {
+      if (currentMissingFields.length === 0) return;
+      var memo = document.getElementById('counselInput');
+      if (!memo) return;
+      var appendText = "\n\n[추가 필수 확인 사항]";
+      currentMissingFields.forEach(function(f) {
+        if (MISSING_FIELD_TEMPLATES[f.key]) {
+          appendText += MISSING_FIELD_TEMPLATES[f.key];
+        }
+      });
+      memo.value = memo.value.trim() + appendText;
+      handleCounselInputChanged();
+      memo.focus();
+      currentMissingFields = [];
+      renderMissingTags();
+      showToast("작성용 서식 템플릿이 삽입되었습니다.");
+    }
+
+    function loadPreset(key) {
+      activePreset = key;
+      var memo = document.getElementById('counselInput');
+      if (memo && PRESETS[key]) {
+        memo.value = PRESETS[key];
+        handleCounselInputChanged();
+        showToast("표준 프리셋이 로드되었습니다.");
+      }
+    }
+
+    function clearCounselInput() {
+      activePreset = null;
+      var memo = document.getElementById('counselInput');
+      if (memo) memo.value = "";
+      handleCounselInputChanged();
+      currentMissingFields = [];
+      renderMissingTags();
+      resetViews();
+      var duty = document.getElementById('dutyAlertSection');
+      if (duty) duty.style.display = 'none';
+      var emerg = document.getElementById('emergencyAlertBanner');
+      if (emerg) emerg.style.display = 'none';
+      closeAudioPanel();
+      showToast("자연어 상담 입력창이 초기화되었습니다.");
+    }
+
+    function resetViews() {
+      safeSetHtml('docApplicantInfo', '<span class="missing-text">[미기재] 성명 및 연령 확인 요망</span>');
+      safeSetHtml('docHouseholdInfo', '<span class="missing-text">[미기재] 가구원수 확인 요망</span>');
+      safeSetHtml('docHealthInfo', '<span class="missing-text">[미기재] 건강상태 확인 요망</span>');
+      safeSetHtml('docIncomeInfo', '<span class="missing-text">[미기재] 소득 확인 요망</span>');
+      safeSetHtml('docAssetInfo', '<span class="missing-text">[미기재] 주거형태 및 재산 확인 요망</span>');
+      safeSetHtml('docWorkAbilityInfo', '<span class="missing-text">[미기재] 근로능력 확인 요망</span>');
+      safeSetHtml('docSeverInfo', '<span class="missing-text">[미기재] 부양의무자 확인 요망</span>');
+      safeSetText('happyEumOutput', "상담 내용을 입력하고 판정을 실행하면 행복e음 전산등록 표준 서식이 실시간 생성됩니다.");
+      
+      safeSetText('liveIncomeRecognized', "0");
+      safeSetText('liveRealIncome', "0");
+      updateLiveCard('liveCardBasicLife', 'liveEstBasicLife', false, "판정 대기");
+      updateLiveCard('liveCardEmergency', 'liveEstEmergency', false, "판정 대기");
+      updateLiveCard('liveCardNearPoverty', 'liveEstNearPoverty', false, "판정 대기");
+      updateLiveCard('liveCardBasicPension', 'liveEstBasicPension', false, "판정 대기");
+
+      var ids = ['simEarnedIncome', 'simOtherIncome', 'simResProp', 'simGenProp', 'simFinProp', 'simDebt'];
+      ids.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.value = 0;
+      });
+      var ageEl = document.getElementById('simAge');
+      if (ageEl) ageEl.value = 65;
+
+      safeSetText('printApplicantName', "[미입력] 성명 미상");
+      safeSetText('clientDocCountBadge', "총 0종");
+      safeSetHtml('clientDocListArea', "<li style='color:#94a3b8;'>상담 내용이 입력되지 않았습니다.</li>");
+      safeSetText('agencyRecommendCountBadge', "0건 매칭");
+      safeSetHtml('agencyRecommendListArea', '<div style="padding:14px; background:#f8fafc; border:1px solid var(--border); border-radius:6px; color:#64748b; font-size:12px;">상담 내용에서 유관기관 연계 키워드가 감지되지 않았습니다.</div>');
+      safeSetHtml('calcTraceBox', '<span style="color:#64748b;">상담 기록을 입력하면 법정 산출 공식 및 실시간 적합 여부가 이곳에 표시됩니다.</span>');
+    }
+
+    function applyDlpMasking(rawText) {
+      var masked = rawText;
+      var wasMasked = false;
+
+      var rrnPattern = /\b(\d{6})\s*[-~_.]?\s*([1-4]\s*(?:\d\s*){6})\b/g;
+      if (rrnPattern.test(masked)) {
+        masked = masked.replace(rrnPattern, function(match, front, back) {
+          wasMasked = true;
+          var cleanBack = back.replace(/\s+/g, '');
+          return front + "-" + cleanBack.charAt(0) + "****** [주민번호 마스킹]";
+        });
+      }
+
+      var phonePattern = /(?:^|[^\d])(01[016789]|02|0[3-6][1-5])[\s.-]?(\d{3,4})[\s.-]?(\d{4})(?=[^\d]|$)/g;
+      if (phonePattern.test(masked)) {
+        masked = masked.replace(phonePattern, function(match, p1, p2, p3) {
+          wasMasked = true;
+          return match.replace(new RegExp(p1 + "[\\s.-]?" + p2 + "[\\s.-]?" + p3), p1 + "-****-" + p3);
+        });
+      }
+
+      var accountContextPattern = /(계좌|통장|국민|신한|우리|하나|농협|기업|카카오|케이뱅크|토스|우체국|sc|씨티|새마을|수협|신협)\s*(?:번호)?[:：\s]*([0-9-]{10,20})/gi;
+      if (accountContextPattern.test(masked)) {
+        masked = masked.replace(accountContextPattern, function(match, bank) {
+          wasMasked = true;
+          return bank + " [계좌번호 비식별화 처리]";
+        });
+      }
+      var accountHyphenPattern = /\b(\d{3,6}-\d{2,6}-\d{3,6}(?:-\d{1,4})?)\b/g;
+      if (accountHyphenPattern.test(masked)) {
+        masked = masked.replace(accountHyphenPattern, function(match) {
+          if (!match.startsWith("010-") && !match.startsWith("02-") && match.length >= 11) {
+            wasMasked = true;
+            return "[계좌번호 비식별화 처리]";
+          }
+          return match;
+        });
+      }
+
+      var badge = document.getElementById('dlpBadge');
+      if (badge) {
+        if (wasMasked) {
+          badge.innerText = "🛡 PII 자동 감지: 민감정보 마스킹 완료";
+          badge.style.background = "#fef3c7";
+          badge.style.color = "#92400e";
+          badge.style.borderColor = "#fcd34d";
+        } else {
+          badge.innerText = "🛡 DLP 개인정보 비식별화 가동";
+          badge.style.background = "var(--success-bg)";
+          badge.style.color = "var(--success)";
+          badge.style.borderColor = "#a7f3d0";
+        }
+      }
+
+      return masked;
+    }
+
+    function handleCounselInputChanged() {
+      var el = document.getElementById('counselInput');
+      if (!el) return;
+      
+      var maskedVal = applyDlpMasking(el.value);
+      if (maskedVal !== el.value) {
+        el.value = maskedVal;
+      }
+      
+      safeSetText('counselCharCounter', el.value.length + "자");
+
+      if (parseDebounceTimer) clearTimeout(parseDebounceTimer);
+      parseDebounceTimer = setTimeout(function() {
+        processCounseling();
+      }, 80);
+    }
+
+    function unbracket(str) {
+      if (!str) return "";
+      return str.replace(/[\[\]\(\)\{\}]/g, '').trim();
+    }
+
+    function parseKoreanCount(str) {
+      if (!str) return 1;
+      str = str.trim();
+      if (/[1-9]/.test(str)) return parseInt(str, 10);
+      if (/^(한|하나|외동|첫째)$/.test(str)) return 1;
+      if (/^(두|둘|양)$/.test(str)) return 2;
+      if (/^(세|셋|삼)$/.test(str)) return 3;
+      if (/^(네|넷|사)$/.test(str)) return 4;
+      if (/^(다섯|오)$/.test(str)) return 5;
+      return 1;
+    }
+
+    // 화폐 단위 정밀 파서 (단위 정밀 변환 지원)
+    function parseWon(text) {
+      if (text === null || text === undefined) return null;
+      var clean = String(text).replace(/,/g, '').replace(/[\[\]\(\)\{\}]/g, '').trim();
+      
+      if (/^(0|0원|0만|0만원|없음|없고|무소득|단절|전무|제로|없다)$/i.test(clean)) {
+        return 0;
+      }
+
+      var total = 0;
+      var matchedAny = false;
+
+      var mEok = clean.match(/([0-9.]+)\s*억/);
+      if (mEok) {
+        total += parseFloat(mEok[1]) * 10000;
+        clean = clean.replace(/([0-9.]+)\s*억/, '');
+        matchedAny = true;
+      }
+
+      var mCheonMan = clean.match(/([0-9.]+)\s*천\s*만\s*원?/);
+      if (mCheonMan) {
+        total += parseFloat(mCheonMan[1]) * 1000;
+        clean = clean.replace(mCheonMan[0], '');
+        matchedAny = true;
+      }
+
+      var mMan = clean.match(/([0-9.]+)\s*만\s*원?/);
+      if (mMan) {
+        total += parseFloat(mMan[1]);
+        clean = clean.replace(mMan[0], '');
+        matchedAny = true;
+      }
+
+      var mPureWon = clean.match(/([0-9]+)\s*원/);
+      if (mPureWon) {
+        var wonVal = parseFloat(mPureWon[1]);
+        total += wonVal / 10000;
+        clean = clean.replace(mPureWon[0], '');
+        matchedAny = true;
+      }
+
+      if (matchedAny) {
+        return Math.round(total * 10) / 10;
+      }
+
+      var numMatch = clean.match(/([0-9]+(?:\.[0-9]+)?)/);
+      if (numMatch) {
+        var n = parseFloat(numMatch[1]);
+        if (n === 0) return 0;
+        if (n >= 10000) {
+          return Math.round((n / 10000) * 10) / 10;
+        }
+        return n;
+      }
+
+      if (/0|없/.test(clean)) return 0;
+      return null;
+    }
+
+    function parseAgeFromText(text) {
+      if (!text) return null;
+
+      var mDate = text.match(/(?:생년월일|출생일|생일)?\s*[:：=•\-]?\s*([\[\(\{]?\s*(19[2-9][0-9]|20[0-2][0-9])\s*[.\-\/]\s*([0-9]{1,2})\s*[.\-\/]\s*([0-9]{1,2})\.?\s*[\]\}\)]?)/i);
+      if (mDate) {
+        var y = parseInt(mDate[2], 10);
+        var m = parseInt(mDate[3], 10);
+        var d = parseInt(mDate[4], 10);
+        
+        var now = new Date();
+        var currentYear = now.getFullYear();
+        var currentMonth = now.getMonth() + 1;
+        var currentDay = now.getDate();
+
+        var calcAge = currentYear - y;
+        if (currentMonth < m || (currentMonth === m && currentDay < d)) {
+          calcAge -= 1;
+        }
+        return Math.max(0, calcAge);
+      }
+
+      var mManAge = text.match(/만\s*(?:으로\s*)?[\[\(\{]?\s*([0-9]{1,2})\s*[\]\}\)]?\s*(?:세|살)/i);
+      if (mManAge) return parseInt(mManAge[1], 10);
+
+      var mYear4 = text.match(/(?:^|[^\d])(19[2-9][0-9]|20[0-2][0-9])\s*년\s*(?:생|출생|도생)?(?=[^\d]|$)/);
+      if (mYear4) return new Date().getFullYear() - parseInt(mYear4[1], 10);
+
+      var mYear2 = text.match(/(?:^|[^\d])([0-9]{2})\s*년생(?=[^\d]|$)/);
+      if (mYear2) {
+        var yy = parseInt(mYear2[1], 10);
+        var yyyy = (yy <= 26 ? (2000 + yy) : (1900 + yy));
+        return new Date().getFullYear() - yyyy;
+      }
+
+      var mAgeSimple = text.match(/(?:세대주|신청인|신청자|대상자|본인|나이|연령)[^\n]*?[\[\(\{]?\s*([0-9]{1,2})\s*[\]\}\)]?\s*(?:세|살)/i) ||
+                       text.match(/[\[\(\{]\s*([0-9]{1,2})\s*[\]\}\)]\s*(?:세|살)/) ||
+                       text.match(/\b([1-9][0-9])\s*(?:세|살)\b/);
+      if (mAgeSimple) return parseInt(mAgeSimple[1], 10);
+
+      if (/(만\s*65세\s*이상|65세\s*이상|독거노인|어르신)/.test(text)) {
+        return 70;
+      }
+
+      return null;
+    }
+
+    function processCounseling() {
+      try {
+        var memoEl = document.getElementById('counselInput');
+        if (!memoEl) return;
+        var text = memoEl.value;
+        if (!text.trim()) {
+          resetViews();
+          return;
+        }
+
+        text = text.replace(/\u00A0/g, ' ');
+
+        var isPensionMode = (activePreset === 'basicPension') || /^\[기초연금/m.test(text);
+        var isNearPovertyMode = (activePreset === 'nearPoverty') || /^\[차상위계층/m.test(text);
+        var isEmergencyMode = (activePreset === 'emergency') || /^\[긴급복지지원/m.test(text);
+        var isBasicLifeMode = (activePreset === 'basicLife') || /^\[기초생활보장/m.test(text);
+        var isExemptScheme = (isNearPovertyMode || isEmergencyMode || isPensionMode) && !isBasicLifeMode;
+
+        currentMissingFields = [];
+
+        // 1. 대상자 성명
+        var name = null;
+        var mNameLine = text.match(/(?:세대주\s*성명|신청인\s*성명|신청인\s*이름|신청자\s*성명|대상자\s*성명|성명|이름|성함)\s*[:：•\-=\s]*([^\n(]+)/i);
+        if (mNameLine) {
+          var rawName = unbracket(mNameLine[1]).trim();
+          var mOnlyName = rawName.match(/([가-힣a-zA-Z]{2,6})/);
+          if (mOnlyName && !/미기재|확인요망|작성/.test(mOnlyName[1])) {
+            name = mOnlyName[1];
+          }
+        }
+        if (!name) {
+          var mNameFallback = text.match(/저는\s*([가-힣]{2,5})\s*(?:이라\s*고\s*합니다|입니다|라고\s*불러요)/) ||
+                              text.match(/([가-힣]{2,4})\s*(?:씨|님|어르신|할머니|할아버지)(?:\s*\(대상자\))?/);
+          if (mNameFallback) name = unbracket(mNameFallback[1]).trim();
+        }
+        if (!name) currentMissingFields.push({ key: 'name', label: '대상자 성명' });
+
+        // 2. 대상자 연령
+        var age = parseAgeFromText(text);
+        if (age === null) {
+          currentMissingFields.push({ key: 'age', label: '대상자 연령' });
+        }
+
+        // 3. 가구원수
+        var members = null;
+        var mMemDirect = text.match(/[\[\(\{]?\s*([1-7])\s*[\]\}\)]?\s*인\s*가구/) ||
+                         text.match(/가구원\s*수\s*[:：]?\s*[\[\(\{]?\s*([1-7])\s*[\]\}\)]?/);
+        var hasSingle = /(나\s*혼자|나혼자|혼자|홀로)\s*(?:산다|살고|살아|거주|삶|삽니다|살아요)|독거|홀몸|단독\s*가구|단독\s*세대|1인\s*단독|1인\s*가구/.test(text);
+        var hasSpouse = /(배우자|남편|아내|처|와이프)/.test(text);
+        var mChild = text.match(/(?:자녀|아이|아들|딸|애기|애)\s*(?:가\s*)?([1-5]|한|하나|두|둘|세|셋|네|넷|다섯)?\s*(?:명|과|이랑|와|하고)?/);
+        var hasCouple = /(배우자|남편|아내|처|와이프|어머니|엄마|모친|아버지|부친|아들|딸)\s*(?:랑|와|하고)?\s*(?:둘이|단둘이|같이|함께)?\s*(?:산다|살고|살아|거주)|모자가구|모녀가구|부자가구|부부\s*2인|부부\s*가구/.test(text);
+
+        if (mMemDirect) {
+          members = parseInt(mMemDirect[1], 10);
+        } else if (hasSpouse && mChild) {
+          members = 2 + parseKoreanCount(mChild[1]);
+        } else if (mChild && /(?:함께|같이|데리고|키우|동거|있고)/.test(text) && !hasSingle) {
+          members = 1 + parseKoreanCount(mChild[1]);
+        } else if (hasCouple) {
+          members = 2;
+        } else if (hasSingle) {
+          members = 1;
+        } else {
+          currentMissingFields.push({ key: 'household', label: '가구원수' });
+        }
+
+        // 4. 소득 파싱
+        var earned = null;
+        var other = 0;
+
+        // 서식 프리셋 및 자연어에서 "월 OOO만 원" 또는 콜론 뒤 금액 추출
+        var mEarnedPattern = text.match(/(?:근로\s*(?:및|·)?\s*사업소득|근로소득|사업소득|월\s*근로\s*(?:및|·)?\s*사업소득|월\s*소득|소득|급여|월급|식당\s*보조)[^\n:]*[:：=•\-]?\s*([^\n]+)/i);
+        if (mEarnedPattern) {
+          var eLine = mEarnedPattern[1].trim();
+          var mNumInLine = eLine.match(/([0-9,.]+\s*(?:억|천만|만\s*원|만원|원)?)/);
+          if (mNumInLine) {
+            earned = parseWon(mNumInLine[1]);
+          } else if (/0|없음|무소득|0원/.test(eLine)) {
+            earned = 0;
+          }
+        }
+
+        if (earned === null) {
+          var mQuickEarned = text.match(/(?:소득|급여|수입)\s*[:：=•\-]?\s*([0-9,.]+\s*(?:억|천만|만\s*원|만원|원)?)/i);
+          if (mQuickEarned) {
+            earned = parseWon(mQuickEarned[1]);
+          }
+        }
+
+        if (earned === null) {
+          var isZero = /(?:월\s*소득|소득|수입|월급|벌이)\s*(?:은|이)?\s*(?:없|0원|0만|전무|단절)|실직|무직|무소득/i.test(text);
+          if (isZero) earned = 0;
+        }
+
+        if (earned === null) currentMissingFields.push({ key: 'income', label: '소득 내역' });
+
+        var mOtherPattern = text.match(/(?:공적이전소득|공적\s*이전소득|사적이전소득|이전소득|아동수당|국민연금|기초연금)[^\n:]*[:：=•\-]?\s*([^\n]+)/i);
+        if (mOtherPattern) {
+          var oLine = mOtherPattern[1].trim();
+          var mNumInOLine = oLine.match(/([0-9,.]+\s*(?:억|천만|만\s*원|만원|원)?)/);
+          if (mNumInOLine) {
+            other = parseWon(mNumInOLine[1]) || 0;
+          } else if (/0|없음|0원/.test(oLine)) {
+            other = 0;
+          }
+        }
+
+        // 5. 주거 및 재산 파싱
+        var housingType = null;
+        var resProp = 0;
+        var genProp = 0;
+        var rentFee = 0;
+        var finProp = 0;
+        var debt = 0;
+
+        var isJeonseFraud = /(전세\s*사기|보증금\s*사기|깡통\s*전세|보증금\s*미반환|전세\s*피해)/i.test(text);
+        var isFreeRent = /(사용대차|무료임차|무상거주|무상임차)/.test(text) ||
+                         /(?:친구|지인|부모|부모님|친척)\s*집(?:에|에서)?\s*(?:무상으로\s*|그냥\s*)?(?:산다|살고|거주)/.test(text);
+        var isOwn = /(자가|본인명의\s*(?:주택|집|아파트)|소유\s*(?:주택|집)|자가\s*보유)/.test(text);
+        var isJeonse = (/(?:전세보증금|전세금|전세로|전세\s*거주|전세\s*임차)/.test(text) || /(?:^|[^\w가-힣])전세(?!\s*사기|\s*피해)/.test(text)) && !isJeonseFraud;
+        var isMonthly = /(월세|월세방|임차|월세로)/.test(text);
+
+        // 보증금 및 전세금 정규식 추출
+        var mJeonseVal = text.match(/(?:전세\s*보증금|전세금|전세)\s*[:：=•\-]?\s*([0-9,.]+\s*(?:억|천만|만\s*원|만원|원)?)/i);
+        var mDeposit = text.match(/(?:보증금)\s*[:：=•\-]?\s*([0-9,.]+\s*(?:억|천만|만\s*원|만원|원)?)/i);
+        var mRent = text.match(/월세\s*[:：=•\-]?\s*([0-9,.]+\s*(?:억|천만|만\s*원|만원|원)?)(?!\s*(?:달|개월|회|차))/i);
+
+        if (isFreeRent) {
+          housingType = "사용대차 (무상거주)";
+          resProp = 0;
+          rentFee = 0;
+        } else if (isOwn) {
+          housingType = "자가";
+          var mOwn = text.match(/(?:공시지가|집값|주택가액|시세|자가)\s*[:：=•\-]?\s*([0-9,.]+\s*(?:억|천만|만\s*원|만원|원)?)/i);
+          resProp = mOwn ? (parseWon(mOwn[1]) || 0) : 0;
+          rentFee = 0;
+        } else if (isJeonse || mJeonseVal) {
+          housingType = "전세";
+          resProp = mJeonseVal ? (parseWon(mJeonseVal[1]) || 0) : (mDeposit ? (parseWon(mDeposit[1]) || 0) : 0);
+          rentFee = 0;
+        } else if (isMonthly || mDeposit || mRent) {
+          housingType = "월세 임차";
+          resProp = mDeposit ? (parseWon(mDeposit[1]) || 0) : 0;
+          rentFee = mRent ? (parseWon(mRent[1]) || 0) : 0;
+        } else {
+          currentMissingFields.push({ key: 'property', label: '주거 및 재산' });
+        }
+
+        // 일반재산
+        var mGen = text.match(/(?:일반재산|토지|상가|건물|부동산)[^\n:]*[:：=•\-]?\s*([^\n]+)/i);
+        if (mGen && !isOwn) {
+          var genText = mGen[1].trim();
+          var mGenNum = genText.match(/([0-9,.]+\s*(?:억|천만|만\s*원|만원|원)?)/);
+          if (mGenNum) {
+            genProp = parseWon(mGenNum[1]) || 0;
+          } else if (/없음|0원|0/.test(genText)) {
+            genProp = 0;
+          }
+        }
+
+        // 금융재산
+        var mFin = text.match(/(?:금융재산|통장\s*잔액|통장\s*잔고|예금\s*잔액|통장|예금)[^\n:]*[:：=•\-]?\s*([^\n]+)/i);
+        if (mFin) {
+          var finText = mFin[1].trim();
+          var mFinNum = finText.match(/([0-9,.]+\s*(?:억|천만|만\s*원|만원|원)?)/);
+          if (mFinNum) {
+            finProp = parseWon(mFinNum[1]) || 0;
+          } else if (/없음|0원|0/.test(finText)) {
+            finProp = 0;
+          }
+        }
+
+        // 금융부채
+        var mDebt = text.match(/(?:부채\s*(?:내역)?|대출금|대출|사채|빚|마이너스\s*통장)[^\n:]*[:：=•\-]?\s*([^\n]+)/i);
+        if (mDebt) {
+          var debtText = mDebt[1].trim();
+          var mDebtNum = debtText.match(/([0-9,.]+\s*(?:억|천만|만\s*원|만원|원)?)/);
+          if (mDebtNum) {
+            debt = parseWon(mDebtNum[1]) || 0;
+          } else if (/없음|0원|0/.test(debtText)) {
+            debt = 0;
+          }
+        }
+
+        // 6. 건강상태 및 근로능력 판정
+        var healthDesc = null;
+        var mHealthLine = text.match(/(?:건강상태\s*(?:및|·)?\s*질병|건강상태|질병|질환)\s*[:：=•\-]?\s*([^\n]+)/);
+        if (mHealthLine) {
+          healthDesc = mHealthLine[1].replace(/[\[\]]/g, '').trim();
+        } else if (/(척추|디스크|협착증|관절염|암환자|중증질환)/.test(text)) {
+          healthDesc = "만성질환·부상 거동불편";
+        }
+
+        var mWorkLine = text.match(/(?:근로능력\s*유무|근로능력|근로상태)\s*[:：=•\-]?\s*([^\n]+)/);
+        var workText = mWorkLine ? mWorkLine[1].trim() : "";
+
+        var isSevereDisability = /(중증장애|심한\s*장애|장애\s*정도\s*심한|장애인연금|장애\s*[1-3]급|뇌병변|지적장애|자폐성장애|지체장애\s*중증)/.test(text);
+        var isMinorStudent = (age && age < 18) || /(초등학생|중학생|고등학생|만\s*18세\s*미만|재학\s*중)/.test(text);
+        var isPregnancyCare = /(임산부|임신\s*중|분만\s*후\s*6개월|출산\s*직후|미취학\s*자녀\s*양육|영유아\s*양육|중증환자\s*간병|와상\s*간병|가족\s*간병)/.test(text);
+        var isExplicitNoWork = /해당없음|근로무능력|근로능력\s*없음|근로\s*불가|경제활동\s*불가|일\s*못함|일\s*못하|거동\s*불가/i.test(workText);
+
+        var workAbility = null;
+        var workAbilityText = "";
+
+        if (isExemptScheme) {
+          workAbility = isNearPovertyMode ? "able" : "none";
+          workAbilityText = '<strong style="color:#64748b;">해당없음</strong> <span style="color:#64748b;">(' + (isEmergencyMode ? '긴급복지' : (isNearPovertyMode ? '차상위' : '기초연금')) + ' 기준 미적용)</span>';
+        } else if (age && age >= 65) {
+          workAbility = "none";
+          workAbilityText = '<strong style="color:#059669;">해당없음</strong> <span style="color:#475569;">(만 65세 이상 법정 노인)</span>';
+        } else if (isSevereDisability) {
+          workAbility = "none";
+          workAbilityText = '<strong style="color:#059669;">해당없음</strong> <span style="color:#475569;">(중증장애인 법정 제외)</span>';
+        } else if (isMinorStudent) {
+          workAbility = "none";
+          workAbilityText = '<strong style="color:#059669;">해당없음</strong> <span style="color:#475569;">(18세 미만·학생 법정 제외)</span>';
+        } else if (isPregnancyCare) {
+          workAbility = "none";
+          workAbilityText = '<strong style="color:#059669;">해당없음</strong> <span style="color:#475569;">(임산부·양육·간병 법정 제외)</span>';
+        } else if (isExplicitNoWork) {
+          workAbility = "none";
+          workAbilityText = '<strong style="color:#059669;">해당없음</strong> <span style="color:#475569;">(근로무능력 인정 대상)</span>';
+        } else if (/(디스크|협착증|질병|수술|입원|부상|진단서|심사\s*대상)/.test(text) || /심사\s*대상|진단서/.test(workText)) {
+          workAbility = "illness";
+          workAbilityText = '<strong style="color:#b45309;">조사필요</strong> <span style="color:#b45309;">(근로능력평가 진단서 심사 대상)</span>';
+        } else if (age && age <= 24) {
+          workAbility = "youth";
+          workAbilityText = '<strong style="color:#2563eb;">조사필요</strong> <span style="color:#475569;">(만 24세 이하 청년특례 / 자활 대상)</span>';
+        } else if (/일반\s*근로|자활|식당|알바|배달|직장|근로\s*가능|일반/.test(text) || /일반/.test(workText)) {
+          workAbility = "able";
+          workAbilityText = '<strong style="color:#2563eb;">조사필요</strong> <span style="color:#475569;">(일반 근로능력자 / 자활 참여 대상)</span>';
+        } else {
+          workAbility = "able";
+          workAbilityText = '<strong style="color:#2563eb;">일반근로 추정</strong> <span style="color:#475569;">(건강상태 기재 시 자동 재심사)</span>';
+        }
+
+        // 7. 부양의무자 판정
+        var support = null;
+        var supportText = "";
+
+        var mSupportLine = text.match(/(?:부양\s*기피\s*(?:및|·)?\s*단절\s*여부|부양의무자\s*(?:실태|현황|기준))\s*[:：=•\-]?\s*([^\n]+)/);
+        var sContent = mSupportLine ? mSupportLine[1].trim() : "";
+
+        var hasSevered = /(연락두절|단절|해체사유서|가족관계\s*해체|생사모름|가출|왕래\s*단절|연락\s*끊)/.test(text);
+        var
