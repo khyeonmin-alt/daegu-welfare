@@ -277,6 +277,11 @@
     .form-row input, .form-row select { height: 32px; padding: 0 8px; border: 1px solid var(--border-dark); border-radius: 4px; font-size: 12.5px; }
     .form-hint { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
 
+    /* ── 녹음 → 글 변환 ── */
+    .stt-chip { font-size: 11px; color: #64748b; background: #e0f2fe; padding: 2px 6px; border-radius: 4px; }
+    .stt-bar { height: 8px; background: #e0f2fe; border-radius: 4px; overflow: hidden; }
+    .stt-bar > div { height: 100%; width: 2%; background: #0284c7; transition: width 0.3s; }
+
     /* ── AI 추출 근거·교차검증 표 ── */
     .extract-head { font-size: 12.5px; color: #334155; margin-bottom: 10px; line-height: 1.8; }
     .engine-pill { font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 4px; }
@@ -366,26 +371,38 @@
             <button class="btn btn-outline" onclick="loadPreset('basicPension')" style="color:#7c3aed; font-weight:800; border-color:#ddd6fe;">👵 기초연금</button>
             <button class="btn btn-outline" onclick="clearCounselInput()" style="font-weight:800; border-color:#94a3b8; color:#0f172a;">🧹 자연어 상담</button>
             
-            <input type="file" id="audioUploadInput" accept="audio/*,.m4a,.mp3,.wav,.aac,.amr,.caf" style="display: none;" onchange="handleAudioFileSelected(event)">
-          <button class="btn btn-outline" onclick="triggerAudioUpload()" style="color:#0284c7; font-weight:800; border-color:#bae6fd; background:#f0f9ff;" title="녹음 파일 청취용 플레이어를 엽니다 (STT 준비 중)">
-  🎧 상담 녹음 청취 (업로드)
-</button>
+            <input type="file" id="audioUploadInput" accept="audio/*,.m4a,.mp3,.wav,.aac,.ogg,.webm,.amr,.3gp" style="display: none;" onchange="handleAudioFileSelected(event)">
+            <button class="btn btn-outline" onclick="triggerAudioUpload()" style="color:#0284c7; font-weight:800; border-color:#bae6fd; background:#f0f9ff;" title="휴대폰 녹음 파일을 넣으면 대화 내용을 글로 바꿔 입력창에 넣습니다">🎙 상담 녹음 → 글 변환</button>
           </div>
         </div>
 
         <div id="audioPlayerPanel" style="display: none; background: #f0f9ff; border: 1.5px solid #bae6fd; border-radius: 8px; padding: 12px 16px; margin-bottom: 12px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-size: 16px;">🎧</span>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 8px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <span style="font-size: 16px;">🎙</span>
               <strong id="audioFileName" style="color: #0369a1; font-size: 13px;">녹음파일.m4a</strong>
-              <span id="audioFileSize" style="font-size: 11px; color: #64748b; background: #e0f2fe; padding: 2px 6px; border-radius: 4px;">0 MB</span>
-              <span id="audioStatusBadge" style="font-size: 11px; font-weight: 700; color: #b45309; background: #fffbeb; border: 1px solid #fde68a; padding: 2px 6px; border-radius: 4px;">
-                ⚠️ STT 미연동 - 녹취 직접 청취 후 상담 내용 수기 입력 필요
-              </span>
+              <span id="audioFileSize" class="stt-chip">0 MB</span>
+              <span id="audioDuration" class="stt-chip">길이 확인 중</span>
             </div>
             <button class="btn btn-outline" style="font-size: 11px; padding: 2px 8px; color: #64748b;" onclick="closeAudioPanel()">✕ 닫기</button>
           </div>
           <audio id="audioPreviewPlayer" controls="" style="width: 100%; height: 32px; outline: none;"></audio>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:10px; flex-wrap:wrap;">
+            <div style="display:flex; flex-direction:column; gap:3px;">
+              <label style="display:flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:#0f172a; cursor:pointer;">
+                <input type="checkbox" id="sttDiarize" checked> AI로 담당자/민원인 구분 <span id="sttDiarizeNote" style="font-weight:500; color:#94a3b8;"></span>
+              </label>
+              <span style="font-size:11px; color:#64748b;">음성인식: <span id="sttEngineInfo">PC 안에서 처리</span> · 바꾸려면 ⚙ AI 엔진 설정</span>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <button class="btn btn-outline" id="btnSttCancel" style="display:none;" onclick="cancelTranscription()">⏹ 중지</button>
+              <button class="btn btn-primary" id="btnSttStart" style="background:#0284c7;" onclick="startTranscription()">📝 녹음을 글로 변환</button>
+            </div>
+          </div>
+          <div id="sttProgressWrap" style="display:none; margin-top:10px;">
+            <div class="stt-bar"><div id="sttBar"></div></div>
+            <div id="sttStatus" style="font-size:12px; color:#0f172a; margin-top:6px; line-height:1.6;"></div>
+          </div>
         </div>
 
         <div id="missingAlertBox" class="missing-box" style="display: none;">
@@ -682,7 +699,7 @@
   </div>
 
   <div id="llmSettingsModal" class="modal-overlay">
-    <div class="modal-card" style="max-width: 560px;">
+    <div class="modal-card" style="max-width: 580px; max-height: 92vh; overflow-y: auto;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
         <h3 style="font-size:16px; font-weight:800; color:#1e3a8a;">⚙ AI 엔진 설정</h3>
         <button class="btn btn-outline" style="font-size:11px; padding:2px 8px;" onclick="closeLlmSettings()">✕</button>
@@ -721,7 +738,7 @@
           </div>
           <div class="form-row">
             <label for="cfgTimeout">응답 제한(초)</label>
-            <input id="cfgTimeout" type="number" min="5" max="600" value="90">
+            <input id="cfgTimeout" type="number" min="5" max="600" value="300">
           </div>
         </div>
         <div class="form-hint" style="background:#f8fafc; border:1px solid var(--border); border-radius:6px; padding:8px 10px; margin-bottom:10px;">
@@ -729,8 +746,49 @@
         </div>
         <div id="cfgTestResult" style="font-size:12px; min-height:18px; margin-bottom:8px;"></div>
       </div>
+      <div style="border-top:1px solid var(--border); margin:6px 0 12px; padding-top:12px;">
+        <div style="font-size:13px; font-weight:800; color:#0369a1; margin-bottom:8px;">🎙 음성인식 (상담 녹음 → 글)</div>
+        <div class="form-row">
+          <label for="sttMode">처리 방식</label>
+          <select id="sttMode" onchange="toggleSttFields()">
+            <option value="browser">PC 안에서 처리 (녹음이 PC 밖으로 나가지 않음, 권장)</option>
+            <option value="server">음성인식 서버 연결 (OpenAI 호환 /v1/audio/transcriptions)</option>
+          </select>
+        </div>
+        <div id="sttBrowserFields">
+          <div class="form-row">
+            <label for="sttBrowserModel">음성인식 모델</label>
+            <select id="sttBrowserModel">
+              <option value="onnx-community/whisper-base">빠름 · whisper-base (약 80MB)</option>
+              <option value="onnx-community/whisper-small">권장 · whisper-small (약 250MB)</option>
+              <option value="onnx-community/whisper-large-v3-turbo">정확 · whisper-large-v3-turbo (약 1GB, 그래픽카드 가속 권장)</option>
+            </select>
+            <span class="form-hint">처음 한 번 인터넷으로 모델을 내려받고, 이후에는 브라우저에 저장된 모델을 씁니다.</span>
+          </div>
+          <div class="form-row">
+            <label for="sttModelHost">모델 내려받을 주소 (기관 내부 저장소가 있으면 변경)</label>
+            <input id="sttModelHost" type="text" placeholder="https://huggingface.co/">
+          </div>
+        </div>
+        <div id="sttServerFields" style="display:none;">
+          <div class="form-row">
+            <label for="sttServerUrl">음성인식 서버 주소</label>
+            <input id="sttServerUrl" type="text" placeholder="http://localhost:8000/v1">
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <div class="form-row">
+              <label for="sttServerModel">모델명</label>
+              <input id="sttServerModel" type="text" placeholder="Systran/faster-whisper-small">
+            </div>
+            <div class="form-row">
+              <label for="sttServerApiKey">API 키 (필요한 서버만)</label>
+              <input id="sttServerApiKey" type="password" autocomplete="off">
+            </div>
+          </div>
+        </div>
+      </div>
       <div style="display:flex; justify-content:flex-end; gap:8px;">
-        <button class="btn btn-outline" onclick="testLlmConnection()">🔌 연결 테스트</button>
+        <button class="btn btn-outline" onclick="testLlmConnection()">🔌 AI 연결 테스트</button>
         <button class="btn btn-primary" onclick="saveLlmSettings()">저장</button>
       </div>
     </div>
@@ -1198,12 +1256,42 @@ function parseWonBase(text) {
   return null;
 }
 
-/* "4천", "1억5천"처럼 '만'이 생략된 표기와 "3천원"을 보정한 뒤 계산 (단위: 만원) */
+/* 한글·아라비아 숫자가 섞인 금액을 '원'으로 계산. "오백만 원", "사십오만", "1억 5천만", "3백만", "117.8만"
+   음성인식은 금액을 한글로 받아적는 경우가 많아 필요 (해석 불가 시 null) */
+var KOR_DIGITS = { '영': 0, '공': 0, '일': 1, '이': 2, '삼': 3, '사': 4, '오': 5, '육': 6, '륙': 6, '칠': 7, '팔': 8, '구': 9 };
+var KOR_SMALL = { '십': 10, '백': 100, '천': 1000 };
+var KOR_BIG = { '만': 10000, '억': 100000000 };
+function koreanAmountToWon(str) {
+  var s = String(str).replace(/[,\s]/g, '').replace(/^약|^한/, '').replace(/(원|정도|가량|쯤)+$/, '');
+  if (!s || !/^[0-9.영공일이삼사오육륙칠팔구십백천만억]+$/.test(s)) return null;
+  var total = 0, section = 0, num = null, i = 0, sawUnitOrDigit = false;
+  while (i < s.length) {
+    var ch = s[i];
+    if (/[0-9.]/.test(ch)) {
+      var m = s.slice(i).match(/^[0-9]+(?:\.[0-9]+)?/);
+      num = parseFloat(m[0]); i += m[0].length; sawUnitOrDigit = true; continue;
+    }
+    if (ch in KOR_DIGITS) { num = KOR_DIGITS[ch]; sawUnitOrDigit = true; }
+    else if (ch in KOR_SMALL) { section += (num === null ? 1 : num) * KOR_SMALL[ch]; num = null; sawUnitOrDigit = true; }
+    else if (ch in KOR_BIG) { total += (section + (num === null ? 0 : num) || 1) * KOR_BIG[ch]; section = 0; num = null; sawUnitOrDigit = true; }
+    else return null;
+    i++;
+  }
+  if (!sawUnitOrDigit) return null;
+  return total + section + (num === null ? 0 : num);
+}
+
+/* 금액 표기 → 만원. 단위 없는 순수 숫자는 만원으로 간주 (기존 입력 방식 유지) */
 function parseWon(text) {
   if (text === null || text === undefined) return null;
-  var s = String(text).replace(/,/g, '').replace(/\s+/g, '').replace(/^약/, '');
-  s = s.replace(/([0-9.]+)천원/g, function (m, n) { return (parseFloat(n) * 1000) + '원'; });
-  s = s.replace(/([0-9.]+)천(?![만원])/g, '$1천만');
+  var s = String(text).trim();
+  if (/^(0|0원|0만|0만원|없음|없고|무소득|단절|전무|제로|없다)$/.test(s.replace(/\s+/g, ''))) return 0;
+  var compact = s.replace(/[,\s]/g, '').replace(/^약|^한/, '');
+  if (/^[0-9]+(?:\.[0-9]+)?$/.test(compact)) return round1(parseFloat(compact));
+  // "4천", "1억5천"처럼 마지막 '천' 뒤 '만'이 생략된 표기 → 천만으로 해석 ("3천원"은 그대로 3,000원)
+  if (/천$/.test(compact.replace(/(원|정도|가량|쯤)+$/, '')) && !/천원$/.test(compact)) compact = compact.replace(/천(원|정도|가량|쯤)*$/, '천만');
+  var won = koreanAmountToWon(compact);
+  if (won !== null) return round1(won / 10000);
   return parseWonBase(s);
 }
 
@@ -1260,7 +1348,7 @@ function parseRegionKey(text, strict) {
 }
 
 /* 금액 표기: "500만 원", "6,500만원", "1억 5천만원", "0원", "45만" */
-var AMOUNT_RE = /([0-9][0-9,]*(?:\.[0-9]+)?)\s*(억|천\s*만|천|만|원)(?:\s*[0-9][0-9,]*(?:\.[0-9]+)?\s*(?:천\s*만|천|만))?\s*원?/g;
+var AMOUNT_RE = /([0-9][0-9,]*(?:\.[0-9]+)?)\s*(억|천\s*만|천|만|원)(?:\s*[0-9][0-9,]*(?:\.[0-9]+)?\s*(?:천\s*만|천|만))?\s*원?|(?<![가-힣])[일이삼사오육칠팔구십백천억][일이삼사오육칠팔구십백천억\s]{0,11}만\s*원|(?<![가-힣])[일이삼사오육칠팔구십백천]{1,6}\s*억(?:\s*[일이삼사오육칠팔구십백천]{1,6}\s*만)?\s*원?/g;
 var ZERO_WORD_RE = /(없음|없고|없다|없습니다|없어|미보유|무소득|전무)/;
 var SEGMENT_SPLIT_RE = /[\/();]|,(?!\d)/;
 
@@ -1326,7 +1414,8 @@ function extractByRules(text) {
   var ev = {};
 
   // 성명
-  var mNameLine = text.match(/(?:세대주\s*성명|신청인\s*성명|신청인\s*이름|신청자\s*성명|대상자\s*성명|성명|이름|성함)\s*[:：•\-=\s]*([^\n(]+)/);
+  // 라벨 뒤에 콜론이나 공백이 있어야 성명으로 인정 ("성함이랑 …" 같은 대화체 오인 방지)
+  var mNameLine = text.match(/(?:세대주\s*성명|신청인\s*성명|신청인\s*이름|신청자\s*성명|대상자\s*성명|성명|이름|성함)(?:\s*[:：•=]\s*|\s+)([^\n(]+)/);
   if (mNameLine) {
     var mOnly = unbracket(mNameLine[1]).match(/([가-힣a-zA-Z]{2,6})/);
     if (mOnly && !/미기재|확인요망|작성/.test(mOnly[1])) { f.name = mOnly[1]; ev.name = mNameLine[0].trim(); }
@@ -1432,16 +1521,28 @@ function extractByRules(text) {
   return f;
 }
 
+/* 위기사유 키워드 검사 범위: 따로 사는 가족(부양의무자)에 관한 내용은 신청인 가구의 위기가 아니므로 제외
+   예) "부양 기피 및 단절 여부: 10년 전 사업 실패 후 가출" → 아들의 일이라 '실직·가출' 위기로 보지 않음 */
+function crisisScopeText(text) {
+  var t = String(text || '');
+  t = t.replace(/(^|\n)\s*\d+\.\s*부양의무자[\s\S]*?(?=\n\s*\d+\.\s|$)/g, '\n');      // '4. 부양의무자 …' 절 전체
+  return t.split('\n').filter(function (line) {
+    return !/(부양\s*의무자|부양\s*기피|부양자|가족관계\s*해체|해체\s*사유서)/.test(line);
+  }).join('\n');
+}
+
 function detectCrisisByRules(text) {
+  var scope = crisisScopeText(text);
   var out = [];
-  var add = function (code, re) { if (re.test(text)) out.push(code); };
+  var add = function (code, re) { if (re.test(scope)) out.push(code); };
   add('전세사기', /(전세\s*사기|보증금\s*사기|깡통\s*전세|보증금\s*미반환|전세\s*피해|전세보증금\s*(?:떼임|못\s*받))/);
-  add('실직폐업', /(실직|휴업|폐업|사업\s*실패|소득\s*상실|일자리\s*잃|해고)/);
-  add('중한질병부상', /(중한\s*질병|중증질환(?!\s*없)|부상|수술|입원|투병|중환자|암환자)/);
-  add('강제퇴거주거위기', /(쫓겨|퇴거|방을\s*빼|강제\s*집행|월세\s*밀려|월세가\s*[0-9]+\s*달\s*밀려|명도|노숙|고시원\s*밀려)/);
+  add('실직폐업', /(실직|휴업|폐업|사업\s*실패|소득\s*상실|일자리\s*(?:를\s*)?잃|해고|권고\s*사직|일을\s*그만|그만\s*뒀|그만두었)/);
+  // '질병·부상으로 인한 근로능력평가'처럼 일반 표현의 '부상'은 제외하고, 중한 질병·부상 정황만 본다
+  add('중한질병부상', /(중한\s*질병|중증\s*질환(?!\s*없)|큰\s*수술|수술\s*(?:을|받|예정|후)|입원\s*(?:중|해|했|치료)|투병|중환자|암\s*(?:진단|투병|수술|환자)|암환자|사고로\s*(?:크게\s*)?(?:다쳐|부상)|부상을\s*(?:입|당))/);
+  add('강제퇴거주거위기', /(쫓겨|퇴거|방을\s*빼|강제\s*집행|월세\s*(?:가\s*)?(?:[0-9]+\s*(?:달|개월)\s*)?밀려|명도|노숙|고시원\s*밀려)/);
   add('화재재난', /(화재|불이\s*나|산불|수해|침수|지진|재난|재해)/);
-  add('사망가출수감', /(사망|숨지|돌아가|행방불명|실종|가출|구속|수감|교도소)/);
-  add('가정폭력학대', /(가정폭력|폭행|폭력|학대|유기|방임|때린다|맞고\s*산다|협박)/);
+  add('사망가출수감', /(사망|숨지|돌아가셨|행방불명|실종|가출|구속|수감|교도소)/);
+  add('가정폭력학대', /(가정폭력|폭행|폭력|학대|유기|방임|때린다|때려요|맞고\s*산다|협박)/);
   add('중대범죄피해', /(감금|갈취|성매매|성폭행)/);
   add('단전단수', /(단전|단수|가스\s*(?:가\s*)?끊|전기\s*(?:가\s*)?끊|수도\s*(?:가\s*)?끊|공과금\s*체납)/);
   add('자살위기', /(죽고\s*싶|자살|극단적|삶을\s*정리|목숨)/);
@@ -1451,7 +1552,7 @@ function detectCrisisByRules(text) {
 /* ───────────────────────── [6] LLM 추출기 (OpenAI 호환 Chat Completions) ───────────────────────── */
 /* Ollama · vLLM · LM Studio · 행안부 AI 공통기반 등 OpenAI 호환 엔드포인트라면 모델만 바꿔 사용 */
 var LLM_STORAGE_KEY = 'earspring.llm.v1';
-var LLM_DEFAULTS = { mode: 'llm', baseUrl: 'http://localhost:11434/v1', model: 'gemma3:4b', apiKey: '', timeoutSec: 90 };
+var LLM_DEFAULTS = { mode: 'llm', baseUrl: 'http://localhost:11434/v1', model: 'gemma3:4b', apiKey: '', timeoutSec: 300 };  // 일반 사무용 PC(CPU) 기준 넉넉하게
 var LLM_SERVER_PRESETS = {
   ollama:   { label: 'Ollama (로컬)', baseUrl: 'http://localhost:11434/v1' },
   vllm:     { label: 'vLLM (기관 서버)', baseUrl: 'http://localhost:8000/v1' },
@@ -1486,6 +1587,8 @@ var EXTRACTION_SYSTEM_PROMPT = [
   "4. evidence에는 근거가 된 원문 구절을 한 글자도 바꾸지 말고 복사합니다(80자 이내). 값이 없으면 null.",
   "5. 모든 항목은 '신청인 본인 가구' 기준입니다. 따로 사는 가족(부양의무자)이나 자녀의 나이·소득·사건을 신청인 것으로 넣지 않습니다.",
   "6. 열거형 항목은 제시된 값 중 하나만 씁니다. 해당 없으면 null.",
+  "7. 상담 기록이 '담당자:'/'민원인:' 대화 녹취록이면 민원인이 말한 내용에서 사실을 추출하고 evidence도 민원인 발화를 복사합니다. 담당자가 제도를 설명하며 말한 금액(선정기준, 지원액 등)은 신청인 정보로 넣지 않습니다.",
+  "8. birth_or_age의 value만은 한글 숫자를 아라비아 숫자로 바꿔 씁니다(예: '천구백육십사년 오월 삼일' → '1964년 5월 3일'). evidence는 원문 그대로.",
   "",
   "[스키마]",
   "{",
@@ -1549,7 +1652,7 @@ function llmEndpoint(cfg, path) { return String(cfg.baseUrl || '').replace(/\/+$
 
 async function callChatCompletion(cfg, messages, useJsonFormat) {
   var ctrl = new AbortController();
-  var timer = setTimeout(function () { ctrl.abort(); }, (Number(cfg.timeoutSec) || 90) * 1000);
+  var timer = setTimeout(function () { ctrl.abort(); }, (Number(cfg.timeoutSec) || 300) * 1000);
   var body = { model: cfg.model, messages: messages, temperature: 0, stream: false };
   if (useJsonFormat) body.response_format = { type: 'json_object' };
   var headers = { 'Content-Type': 'application/json' };
@@ -1763,6 +1866,294 @@ function normalizeLlmFacts(json, text) {
   });
   meta.crisis = crisisMeta;
   return { facts: f, meta: meta };
+}
+
+
+/* ───────────────────────── [6-2] 음성인식(STT): 상담 녹음 → 녹취록 ─────────────────────────
+   · 기본: 브라우저 안에서 Whisper 모델 실행 (녹음이 PC 밖으로 나가지 않음, 처음 한 번 모델 내려받기)
+   · 선택: OpenAI 호환 음성인식 서버 (/v1/audio/transcriptions) — 기관 서버가 있을 때
+   · 화자 구분: 받아적은 글을 LLM이 '담당자/민원인'으로 나누되, 원문 보존 여부를 코드가 검사 */
+var STT_STORAGE_KEY = 'earspring.stt.v1';
+var STT_DEFAULTS = {
+  mode: 'browser', browserModel: 'onnx-community/whisper-small', modelHost: 'https://huggingface.co/',
+  serverUrl: 'http://localhost:8000/v1', serverModel: 'Systran/faster-whisper-small', serverApiKey: '',
+  diarize: true
+};
+var STT_BROWSER_MODELS = {
+  'onnx-community/whisper-base':           '빠름 · whisper-base (약 80MB)',
+  'onnx-community/whisper-small':          '권장 · whisper-small (약 250MB)',
+  'onnx-community/whisper-large-v3-turbo': '정확 · whisper-large-v3-turbo (약 1GB, 그래픽카드 가속 권장)'
+};
+var TRANSFORMERS_CDN = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3';
+var STT_SAMPLE_RATE = 16000;
+/* 무음·잡음 구간에서 Whisper가 지어내는 대표적인 문장 */
+var STT_HALLUCINATION_RE = /(시청해\s*주셔서\s*감사합니다|구독과\s*좋아요|좋아요와\s*구독|다음\s*영상에서\s*만나요|MBC\s*뉴스|KBS\s*뉴스|자막\s*(?:제공|by)|한글\s*자막|감사합니다\.?\s*감사합니다\.?\s*감사합니다)/;
+
+function loadSttConfig() {
+  var cfg = {};
+  for (var k in STT_DEFAULTS) cfg[k] = STT_DEFAULTS[k];
+  try {
+    var saved = JSON.parse(localStorage.getItem(STT_STORAGE_KEY) || 'null');
+    if (saved) for (var s in saved) if (s in cfg) cfg[s] = saved[s];
+  } catch (e) { /* 기본값 사용 */ }
+  return cfg;
+}
+function saveSttConfig(cfg) { try { localStorage.setItem(STT_STORAGE_KEY, JSON.stringify(cfg)); } catch (e) { /* 무시 */ } }
+var sttConfig = loadSttConfig();
+var sttState = { file: null, duration: null, running: false, cancel: false, abort: null };
+
+function fmtClock(sec) {
+  sec = Math.max(0, Math.round(sec || 0));
+  var m = Math.floor(sec / 60), s = sec % 60;
+  return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+}
+function fmtDuration(sec) {
+  sec = Math.round(sec || 0);
+  var m = Math.floor(sec / 60), s = sec % 60;
+  return (m ? m + '분 ' : '') + s + '초';
+}
+function sttCancelled() { var e = new Error('사용자가 변환을 중지했습니다.'); e.cancelled = true; return e; }
+
+/* 녹음 파일 → 16kHz 모노 신호 */
+async function decodeAudioFile(file) {
+  var buf = await file.arrayBuffer();
+  var Ctx = window.AudioContext || window.webkitAudioContext;
+  if (!Ctx) throw new Error('이 브라우저는 녹음 파일 해독을 지원하지 않습니다. Chrome 또는 Edge를 사용하세요.');
+  var ctx;
+  try { ctx = new Ctx({ sampleRate: STT_SAMPLE_RATE }); } catch (e) { ctx = new Ctx(); }
+  var audioBuf;
+  try {
+    audioBuf = await ctx.decodeAudioData(buf);
+  } catch (e) {
+    var ext = (file.name.split('.').pop() || '').toLowerCase();
+    throw new Error('이 녹음 파일(.' + ext + ')을 브라우저가 읽지 못했습니다. Chrome·Edge 최신 버전에서 열거나, 녹음 앱에서 mp3·wav로 저장하거나, 설정에서 음성인식 서버 방식을 사용하세요.');
+  } finally {
+    try { ctx.close(); } catch (e) { /* 무시 */ }
+  }
+  var ch = audioBuf.numberOfChannels, len = audioBuf.length, mono = new Float32Array(len);
+  for (var c = 0; c < ch; c++) {
+    var d = audioBuf.getChannelData(c);
+    for (var i = 0; i < len; i++) mono[i] += d[i] / ch;
+  }
+  if (audioBuf.sampleRate !== STT_SAMPLE_RATE) mono = resampleLinear(mono, audioBuf.sampleRate, STT_SAMPLE_RATE);
+  return { samples: mono, duration: mono.length / STT_SAMPLE_RATE };
+}
+function resampleLinear(src, from, to) {
+  var ratio = from / to, n = Math.floor(src.length / ratio), out = new Float32Array(n);
+  for (var i = 0; i < n; i++) {
+    var x = i * ratio, i0 = Math.floor(x), i1 = Math.min(src.length - 1, i0 + 1), f = x - i0;
+    out[i] = src[i0] * (1 - f) + src[i1] * f;
+  }
+  return out;
+}
+function rmsLevel(a) {
+  var s = 0, n = 0;
+  for (var i = 0; i < a.length; i += 4) { s += a[i] * a[i]; n++; }
+  return n ? Math.sqrt(s / n) : 0;
+}
+/* 약 28초 단위로 자르되, 말이 끊기는 조용한 지점에서 자른다 */
+function splitAudio(samples) {
+  var sr = STT_SAMPLE_RATE, maxLen = 28 * sr, search = 4 * sr, win = Math.floor(0.2 * sr);
+  var chunks = [], start = 0;
+  while (start < samples.length) {
+    var end = Math.min(samples.length, start + maxLen);
+    if (end < samples.length) {
+      var best = end, bestE = Infinity;
+      for (var p = end - search; p <= end - win; p += win) {
+        var e = 0;
+        for (var k = p; k < p + win; k++) e += samples[k] * samples[k];
+        if (e < bestE) { bestE = e; best = p + Math.floor(win / 2); }
+      }
+      end = best;
+    }
+    chunks.push({ start: start / sr, end: end / sr, data: samples.subarray(start, end) });
+    start = end;
+  }
+  return chunks;
+}
+/* 음성인식 결과 정리: 지어낸 문장 제거, 같은 말 반복 축약 */
+function cleanTranscriptText(t) {
+  if (!t) return '';
+  var sentences = String(t).replace(/\s+/g, ' ').trim().split(/(?<=[.?!。])\s+/);
+  var out = [];
+  sentences.forEach(function (x) {
+    x = x.trim();
+    if (!x || STT_HALLUCINATION_RE.test(x)) return;
+    if (out.length >= 2 && out[out.length - 1] === x && out[out.length - 2] === x) return;  // 3번째 반복부터 버림
+    out.push(x);
+  });
+  return out.join(' ');
+}
+
+var sttPipeline = null, sttPipelineKey = null;
+async function getBrowserTranscriber(cfg, onProgress) {
+  if (window.__sttTestPipeline) return window.__sttTestPipeline;   // 자동 테스트용 주입
+  var key = cfg.browserModel + '|' + cfg.modelHost;
+  if (sttPipeline && sttPipelineKey === key) return sttPipeline;
+  var T;
+  try { T = await import(TRANSFORMERS_CDN); }
+  catch (e) { throw new Error('음성인식 프로그램을 불러오지 못했습니다. 처음 한 번은 인터넷 연결이 필요합니다.'); }
+  T.env.allowLocalModels = false;
+  if (cfg.modelHost) T.env.remoteHost = cfg.modelHost;
+  var files = {};
+  var progress = function (x) {
+    if (!x || !x.file) return;
+    if (x.status === 'progress' || x.status === 'done') {
+      files[x.file] = { loaded: x.status === 'done' ? (files[x.file] ? files[x.file].total : 0) : (x.loaded || 0), total: x.total || (files[x.file] ? files[x.file].total : 0) };
+      var L = 0, Tt = 0;
+      for (var f in files) { L += files[f].loaded || 0; Tt += files[f].total || 0; }
+      if (onProgress) onProgress(Tt ? L / Tt : 0, L, Tt);
+    }
+  };
+  var useGpu = !!navigator.gpu;
+  var opts = { device: useGpu ? 'webgpu' : 'wasm', progress_callback: progress };
+  if (!useGpu) opts.dtype = 'q8';
+  try {
+    sttPipeline = await T.pipeline('automatic-speech-recognition', cfg.browserModel, opts);
+  } catch (e) {
+    if (!useGpu) throw new Error('음성인식 모델을 내려받지 못했습니다: ' + (e.message || e));
+    sttPipeline = await T.pipeline('automatic-speech-recognition', cfg.browserModel, { device: 'wasm', dtype: 'q8', progress_callback: progress });
+  }
+  sttPipelineKey = key;
+  return sttPipeline;
+}
+
+async function transcribeInBrowser(file, cfg, ui) {
+  ui('decode', 0, '녹음 파일 읽는 중…');
+  var dec = await decodeAudioFile(file);
+  sttState.duration = dec.duration;
+  var tr = await getBrowserTranscriber(cfg, function (r, loaded, total) {
+    ui('download', r, '음성인식 AI 내려받는 중 (처음 한 번만) · ' + Math.round(r * 100) + '%' +
+       (total ? ' · ' + Math.round(loaded / 1048576) + '/' + Math.round(total / 1048576) + 'MB' : ''));
+  });
+  var chunks = splitAudio(dec.samples);
+  var segs = [], t0 = performance.now(), done = 0;
+  for (var i = 0; i < chunks.length; i++) {
+    if (sttState.cancel) throw sttCancelled();
+    var c = chunks[i];
+    if (rmsLevel(c.data) >= 0.003) {                       // 무음 구간 건너뜀
+      var out = await tr(c.data, { language: 'korean', task: 'transcribe' });
+      var text = cleanTranscriptText(out && out.text);
+      if (text) segs.push({ start: c.start, end: c.end, text: text });
+    }
+    done++;
+    var per = (performance.now() - t0) / done, left = (chunks.length - done) * per / 1000;
+    ui('transcribe', done / chunks.length, '글로 바꾸는 중 · ' + fmtClock(c.end) + ' / ' + fmtClock(dec.duration) +
+       (done < chunks.length ? ' · 남은 시간 약 ' + fmtDuration(left) : ''));
+  }
+  return segs;
+}
+
+async function transcribeOnServer(file, cfg, ui) {
+  ui('transcribe', 0.05, '음성인식 서버로 보내는 중…');
+  var url = String(cfg.serverUrl || '').replace(/\/+$/, '') + '/audio/transcriptions';
+  var send = async function (format) {
+    var fd = new FormData();
+    fd.append('file', file, file.name);
+    fd.append('model', cfg.serverModel);
+    fd.append('language', 'ko');
+    fd.append('response_format', format);
+    var headers = {};
+    if (cfg.serverApiKey) headers.Authorization = 'Bearer ' + cfg.serverApiKey;
+    sttState.abort = new AbortController();
+    var res;
+    try { res = await fetch(url, { method: 'POST', headers: headers, body: fd, signal: sttState.abort.signal }); }
+    catch (e) {
+      if (e.name === 'AbortError') throw sttCancelled();
+      throw new Error('음성인식 서버에 연결할 수 없습니다 (' + cfg.serverUrl + ')');
+    }
+    if (!res.ok) { var err = new Error('음성인식 서버 오류 HTTP ' + res.status); err.status = res.status; throw err; }
+    return res.json();
+  };
+  ui('transcribe', 0.3, '음성인식 서버가 글로 바꾸는 중… (녹음 길이에 따라 수 분 걸릴 수 있음)');
+  var data;
+  try { data = await send('verbose_json'); }
+  catch (e) { if (e.status === 400 || e.status === 422) data = await send('json'); else throw e; }
+  var segs = [];
+  if (data && Array.isArray(data.segments) && data.segments.length) {
+    data.segments.forEach(function (sg) {
+      var t = cleanTranscriptText(sg.text);
+      if (t) segs.push({ start: sg.start || 0, end: sg.end || 0, text: t });
+    });
+    sttState.duration = data.duration || (segs.length ? segs[segs.length - 1].end : null);
+  } else if (data && data.text) {
+    var t2 = cleanTranscriptText(data.text);
+    if (t2) segs.push({ start: 0, end: data.duration || 0, text: t2 });
+    sttState.duration = data.duration || null;
+  }
+  ui('transcribe', 1, '글로 바꾸기 완료');
+  return segs;
+}
+
+/* ── AI 화자 구분: 원문을 바꾸지 않고 '담당자/민원인'만 붙이게 하고, 원문 보존을 코드가 검사 ── */
+var DIARIZE_SYSTEM_PROMPT = [
+  "당신은 행정복지센터 복지 상담 녹취록에 말한 사람을 표시하는 도구입니다.",
+  "입력은 음성인식으로 받아적은 상담 대화이며, 누가 말했는지 표시가 없습니다.",
+  "",
+  "[규칙]",
+  "1. 문장을 말한 사람 단위로 나누고 speaker를 붙입니다.",
+  "   - \"담당자\": 행정복지센터 공무원. 질문하거나 제도·서류를 안내하는 말.",
+  "   - \"민원인\": 상담을 받으러 온 사람(본인 또는 동행 가족). 자기 사정을 설명하거나 질문에 답하는 말.",
+  "2. text는 입력 문장을 한 글자도 바꾸지 않고 그대로 옮깁니다. 요약·교정·삭제·추가 금지. 입력의 모든 문장이 순서대로 빠짐없이 들어가야 합니다.",
+  "3. JSON 객체 하나만 출력합니다: {\"turns\": [{\"speaker\": \"담당자\", \"text\": \"...\"}, {\"speaker\": \"민원인\", \"text\": \"...\"}]}"
+].join('\n');
+
+function textFidelity(original, rebuilt) {
+  var a = compactText(original), b = compactText(rebuilt);
+  if (!a.length || !b.length) return 0;
+  var ga = bigramSet(a), gb = bigramSet(b), hitA = 0, hitB = 0, na = 0, nb = 0;
+  for (var i = 0; i < a.length - 1; i++) { na++; if (gb[a.substr(i, 2)]) hitA++; }
+  for (var j = 0; j < b.length - 1; j++) { nb++; if (ga[b.substr(j, 2)]) hitB++; }
+  var lenRatio = Math.min(a.length, b.length) / Math.max(a.length, b.length);
+  return Math.min(hitA / Math.max(1, na), hitB / Math.max(1, nb), lenRatio);
+}
+
+async function diarizeTranscript(segs, cfg, ui) {
+  // 약 1,200자 단위 블록으로 나눠 처리 (작은 모델의 출력 한계 대비)
+  var blocks = [], cur = '';
+  segs.forEach(function (sg) {
+    if (cur && (cur.length + sg.text.length) > 1200) { blocks.push(cur); cur = ''; }
+    cur += (cur ? ' ' : '') + sg.text;
+  });
+  if (cur) blocks.push(cur);
+
+  var turns = [], fallbackBlocks = 0, lastSpeaker = null;
+  for (var i = 0; i < blocks.length; i++) {
+    if (sttState.cancel) throw sttCancelled();
+    ui('diarize', i / blocks.length, 'AI가 담당자/민원인 구분 중 · ' + (i + 1) + '/' + blocks.length);
+    var hint = lastSpeaker ? '(참고: 바로 앞 구간의 마지막 발화자는 "' + lastSpeaker + '"입니다.)\n' : '';
+    var messages = [
+      { role: 'system', content: DIARIZE_SYSTEM_PROMPT },
+      { role: 'user', content: hint + '[녹취 원문]\n' + blocks[i] }
+    ];
+    var blockTurns = null;
+    try {
+      var content;
+      try { content = await callChatCompletion(cfg, messages, true); }
+      catch (e) { if (e.status === 400 || e.status === 422) content = await callChatCompletion(cfg, messages, false); else throw e; }
+      var json = parseJsonLoose(content);
+      var arr = json && Array.isArray(json.turns) ? json.turns : null;
+      if (arr) {
+        arr = arr.filter(function (t) { return t && typeof t.text === 'string' && t.text.trim(); })
+                 .map(function (t) { return { speaker: t.speaker === '담당자' ? '담당자' : (t.speaker === '민원인' ? '민원인' : '화자 미상'), text: t.text.trim() }; });
+        var rebuilt = arr.map(function (t) { return t.text; }).join(' ');
+        if (arr.length && textFidelity(blocks[i], rebuilt) >= 0.9) blockTurns = arr;   // 원문이 바뀌었으면 채택하지 않음
+      }
+    } catch (e) {
+      if (e.cancelled) throw e;
+      console.warn('화자 구분 실패 (구간 ' + (i + 1) + '):', e);
+      if (i === 0 && /연결할 수 없습니다|시간 초과/.test(e.message || '')) throw e;   // 서버 자체가 없으면 전체 중단
+    }
+    if (!blockTurns) { fallbackBlocks++; blockTurns = [{ speaker: '화자 미구분', text: blocks[i] }]; }
+    blockTurns.forEach(function (t) {
+      var prev = turns[turns.length - 1];
+      if (prev && prev.speaker === t.speaker) prev.text += ' ' + t.text;     // 같은 사람의 연속 발화는 합침
+      else turns.push({ speaker: t.speaker, text: t.text });
+    });
+    lastSpeaker = turns.length ? turns[turns.length - 1].speaker : lastSpeaker;
+  }
+  ui('diarize', 1, '화자 구분 완료');
+  return { turns: turns, fallbackBlocks: fallbackBlocks, blocks: blocks.length };
 }
 
 /* ───────────────────────── [7] 병합·교차검증 ───────────────────────── */
@@ -2572,6 +2963,8 @@ function currentCounselText() {
 /* 추출 결과를 화면 전체에 반영 (계산·판정은 여기서부터 코드가 수행) */
 function applyExtraction(result, text) {
   currentMissingFields = findMissingFields(result.facts);
+  // 대화체 녹취록은 규칙 미리보기가 항목을 잘 못 찾으므로, AI 분석 전에는 누락 경고를 띄우지 않음
+  if (result.preview && /^\[상담 녹취록\]/.test(text) && llmConfig.mode === 'llm') currentMissingFields = [];
   renderMissingTags();
   var p = buildParsed(result.facts, text);
   p.crisis = result.crisis;
@@ -2742,28 +3135,37 @@ function insertMissingAndCloseModal() {
   insertAllMissingTemplates();
 }
 
+/* ── 상담 녹음 업로드 → 글 변환 → 입력창 ── */
 function triggerAudioUpload() {
   var el = document.getElementById('audioUploadInput');
   if (el) el.click();
 }
-
 function handleAudioFileSelected(ev) {
   var file = ev && ev.target && ev.target.files ? ev.target.files[0] : null;
   if (!file) return;
+  if (sttState.running) { showToast('변환이 진행 중입니다. 먼저 중지하세요.'); return; }
+  sttState.file = file;
+  sttState.duration = null;
+  ev.target.value = '';   // 같은 파일을 다시 골라도 동작하도록
   var player = document.getElementById('audioPreviewPlayer');
   if (player) {
     if (player.dataset.url) URL.revokeObjectURL(player.dataset.url);
     var url = URL.createObjectURL(file);
     player.dataset.url = url;
     player.src = url;
+    player.onloadedmetadata = function () {
+      if (isFinite(player.duration)) { sttState.duration = player.duration; safeSetText('audioDuration', fmtDuration(player.duration)); }
+    };
   }
   safeSetText('audioFileName', file.name);
   safeSetText('audioFileSize', (file.size / 1048576).toFixed(1) + ' MB');
+  safeSetText('audioDuration', '길이 확인 중');
+  setSttUi('ready');
   var panel = document.getElementById('audioPlayerPanel');
   if (panel) panel.style.display = 'block';
 }
-
 function closeAudioPanel() {
+  if (sttState.running) cancelTranscription();
   var panel = document.getElementById('audioPlayerPanel');
   if (panel) panel.style.display = 'none';
   var player = document.getElementById('audioPreviewPlayer');
@@ -2774,6 +3176,101 @@ function closeAudioPanel() {
   }
   var input = document.getElementById('audioUploadInput');
   if (input) input.value = '';
+  sttState.file = null;
+}
+
+function sttEngineLabel() {
+  if (sttConfig.mode === 'server') return '음성인식 서버 · ' + sttConfig.serverModel;
+  return 'PC 안에서 처리 · ' + String(sttConfig.browserModel).split('/').pop();
+}
+
+function setSttUi(state, pct, text) {
+  var start = document.getElementById('btnSttStart'), cancel = document.getElementById('btnSttCancel');
+  var wrap = document.getElementById('sttProgressWrap'), bar = document.getElementById('sttBar');
+  var diar = document.getElementById('sttDiarize');
+  safeSetText('sttEngineInfo', sttEngineLabel());
+  if (diar && state === 'ready') {
+    diar.checked = sttConfig.diarize && llmConfig.mode === 'llm';
+    diar.disabled = llmConfig.mode !== 'llm';
+    safeSetText('sttDiarizeNote', llmConfig.mode === 'llm' ? '' : '(AI 엔진이 꺼져 있어 사용 불가)');
+  }
+  if (start) { start.disabled = state === 'running'; start.style.display = state === 'running' ? 'none' : ''; }
+  if (cancel) cancel.style.display = state === 'running' ? '' : 'none';
+  if (wrap) wrap.style.display = (state === 'ready') ? 'none' : 'block';
+  if (bar && pct !== undefined && pct !== null) bar.style.width = Math.max(2, Math.min(100, Math.round(pct * 100))) + '%';
+  if (bar) bar.style.background = state === 'error' ? '#dc2626' : (state === 'done' ? '#059669' : '#0284c7');
+  if (text !== undefined) safeSetHtml('sttStatus', text);
+}
+
+function cancelTranscription() {
+  if (!sttState.running) return;
+  sttState.cancel = true;
+  if (sttState.abort) { try { sttState.abort.abort(); } catch (e) { /* 무시 */ } }
+  setSttUi('running', null, '중지하는 중… (현재 구간이 끝나면 멈춥니다)');
+}
+
+async function startTranscription() {
+  if (!sttState.file || sttState.running) return;
+  var memo = document.getElementById('counselInput');
+  if (memo && memo.value.trim() && !activePreset &&
+      !window.confirm('입력창에 작성 중인 내용이 있습니다. 녹취록으로 바꿀까요?')) return;
+  var diarEl = document.getElementById('sttDiarize');
+  var wantDiarize = !!(diarEl && diarEl.checked && llmConfig.mode === 'llm');
+  sttState.running = true; sttState.cancel = false;
+  var weights = { decode: [0, 0.05], download: [0.05, 0.3], transcribe: [0.3, wantDiarize ? 0.8 : 1], diarize: [0.8, 1] };
+  var ui = function (phase, r, text) {
+    var w = weights[phase] || [0, 1];
+    if (sttConfig.mode === 'server' && phase === 'transcribe') w = [0, wantDiarize ? 0.8 : 1];
+    setSttUi('running', w[0] + (w[1] - w[0]) * (r || 0), escapeHtml(text));
+  };
+  var started = performance.now();
+  try {
+    var segs = sttConfig.mode === 'server' ? await transcribeOnServer(sttState.file, sttConfig, ui)
+                                           : await transcribeInBrowser(sttState.file, sttConfig, ui);
+    if (!segs.length) throw new Error('녹음에서 말소리를 찾지 못했습니다. 녹음 상태를 확인하세요.');
+    // 주민번호·전화번호·계좌번호는 AI로 보내기 전에 가린다
+    segs = segs.map(function (sg) { return { start: sg.start, end: sg.end, text: applyDlpMasking(sg.text) }; });
+
+    var body, diarInfo = '미사용';
+    if (wantDiarize) {
+      try {
+        var d = await diarizeTranscript(segs, llmConfig, ui);
+        body = d.turns.map(function (t) { return t.speaker + ': ' + t.text; }).join('\n');
+        diarInfo = 'AI(' + llmConfig.model + ')' + (d.fallbackBlocks ? ' · ' + d.blocks + '개 구간 중 ' + d.fallbackBlocks + '개 미구분' : '');
+      } catch (e) {
+        if (e.cancelled) throw e;
+        body = null;
+        diarInfo = '실패 → 시간순 표기 (' + (e.message || e) + ')';
+      }
+    }
+    if (!body) body = segs.map(function (sg) { return '[' + fmtClock(sg.start) + '] ' + sg.text; }).join('\n');
+
+    var header = '[상담 녹취록] 파일: ' + sttState.file.name +
+      (sttState.duration ? ' · 길이 ' + fmtDuration(sttState.duration) : '') +
+      ' · 음성인식: ' + sttEngineLabel() + ' · 화자 구분: ' + diarInfo + '\n' +
+      '※ 음성인식 결과에는 오류가 있을 수 있으니 이름·금액은 녹음과 대조하세요.\n\n';
+    activePreset = null;
+    lastAiText = null;
+    lastExtraction = null;
+    memo.value = header + body;
+    safeSetText('counselCharCounter', memo.value.length + '자');
+    runRulePreview();
+    var secs = (performance.now() - started) / 1000;
+    setSttUi('done', 1, '✅ 변환 완료 (' + fmtDuration(secs) + ' 소요) · 화자 구분: ' + escapeHtml(diarInfo) +
+      '<br>입력창 내용을 확인한 뒤 아래 <b>AI 분석 실행</b>을 누르세요.');
+    showToast('녹취록을 입력창에 넣었습니다.');
+    var btn = document.getElementById('btnRunAi');
+    if (btn && btn.scrollIntoView) btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  } catch (e) {
+    console.warn('음성인식 실패:', e);
+    setSttUi(e.cancelled ? 'ready' : 'error', 1, (e.cancelled ? '⏹ ' : '⚠ ') + escapeHtml(e.message || String(e)));
+    if (e.cancelled) { var w2 = document.getElementById('sttProgressWrap'); if (w2) w2.style.display = 'block'; }
+  } finally {
+    sttState.running = false; sttState.cancel = false; sttState.abort = null;
+    var st = document.getElementById('btnSttStart'), cc = document.getElementById('btnSttCancel');
+    if (st) { st.disabled = false; st.style.display = ''; }
+    if (cc) cc.style.display = 'none';
+  }
 }
 
 /* ── AI 엔진 설정 창 ── */
@@ -2787,9 +3284,21 @@ function openLlmSettings() {
   var preset = 'custom';
   for (var k in LLM_SERVER_PRESETS) if (LLM_SERVER_PRESETS[k].baseUrl && LLM_SERVER_PRESETS[k].baseUrl === llmConfig.baseUrl) preset = k;
   v('cfgServerPreset', preset);
+  v('sttMode', sttConfig.mode);
+  v('sttBrowserModel', sttConfig.browserModel);
+  v('sttModelHost', sttConfig.modelHost);
+  v('sttServerUrl', sttConfig.serverUrl);
+  v('sttServerModel', sttConfig.serverModel);
+  v('sttServerApiKey', sttConfig.serverApiKey);
   safeSetHtml('cfgTestResult', '');
   toggleLlmFields();
+  toggleSttFields();
   document.getElementById('llmSettingsModal').style.display = 'flex';
+}
+function toggleSttFields() {
+  var mode = document.getElementById('sttMode').value;
+  document.getElementById('sttBrowserFields').style.display = mode === 'browser' ? '' : 'none';
+  document.getElementById('sttServerFields').style.display = mode === 'server' ? '' : 'none';
 }
 function closeLlmSettings() { document.getElementById('llmSettingsModal').style.display = 'none'; }
 function toggleLlmFields() {
@@ -2807,7 +3316,7 @@ function readLlmForm() {
     baseUrl: document.getElementById('cfgBaseUrl').value.trim(),
     model: document.getElementById('cfgModel').value.trim(),
     apiKey: document.getElementById('cfgApiKey').value.trim(),
-    timeoutSec: Math.max(5, Math.min(600, parseInt(document.getElementById('cfgTimeout').value, 10) || 90))
+    timeoutSec: Math.max(5, Math.min(600, parseInt(document.getElementById('cfgTimeout').value, 10) || 300))
   };
 }
 function saveLlmSettings() {
@@ -2815,6 +3324,13 @@ function saveLlmSettings() {
   if (cfg.mode === 'llm' && (!cfg.baseUrl || !cfg.model)) { safeSetHtml('cfgTestResult', '<span style="color:#b91c1c;">서버 주소와 모델명을 입력하세요.</span>'); return; }
   llmConfig = cfg;
   saveLlmConfig(cfg);
+  var g = function (id) { return document.getElementById(id).value.trim(); };
+  var newStt = { mode: g('sttMode'), browserModel: g('sttBrowserModel'), modelHost: g('sttModelHost') || STT_DEFAULTS.modelHost,
+                 serverUrl: g('sttServerUrl'), serverModel: g('sttServerModel'), serverApiKey: g('sttServerApiKey'), diarize: sttConfig.diarize };
+  if (newStt.browserModel !== sttConfig.browserModel || newStt.modelHost !== sttConfig.modelHost) { sttPipeline = null; sttPipelineKey = null; }
+  sttConfig = newStt;
+  saveSttConfig(sttConfig);
+  if (sttState.file && !sttState.running) setSttUi('ready');
   updateEngineBadge();
   closeLlmSettings();
   showToast(cfg.mode === 'rule' ? '규칙 기반(오프라인) 추출로 설정했습니다.' : 'AI 엔진을 ' + cfg.model + ' 모델로 설정했습니다.');
@@ -2861,6 +3377,10 @@ async function testLlmConnection() {
     if (e.target && e.target.id === 'simIsCouple') runSimulation();
   });
 })();
+
+document.addEventListener('change', function (e) {
+  if (e.target && e.target.id === 'sttDiarize') { sttConfig.diarize = e.target.checked; saveSttConfig(sttConfig); }
+});
 
 window.addEventListener('DOMContentLoaded', function () {
   updateEngineBadge();
