@@ -1574,69 +1574,45 @@ function saveLlmConfig(cfg) {
 }
 var llmConfig = loadLlmConfig();
 
+/* 일반 사무용 PC(CPU)에서도 빨리 끝나도록 지시문과 출력 형식을 짧게 유지합니다.
+   (AI가 쓰는 글자 수가 곧 대기 시간이므로: 짧은 키, 미기재 항목 생략, 짧은 근거) */
 var EXTRACTION_SYSTEM_PROMPT = [
-  "당신은 사회복지 초기상담 기록에서 '사실'만 뽑아 JSON으로 옮기는 추출기입니다.",
-  "급여 판정, 금액 계산, 단위 환산, 추측은 하지 않습니다. 계산과 판정은 별도 프로그램이 합니다.",
+  "상담 기록에서 사실만 뽑아 JSON 객체 하나로 출력하세요. 계산·판정·추측은 하지 않습니다(계산은 프로그램이 합니다). 설명이나 마크다운 없이 JSON만 출력합니다.",
   "",
-  "[출력 규칙]",
-  "1. 아래 스키마의 모든 키를 가진 JSON 객체 하나만 출력합니다. 설명, 마크다운, 코드블록은 쓰지 않습니다.",
-  "2. 상담 기록에 나오지 않은 항목은 value를 null, amounts를 []로 둡니다.",
-  "3. 금액(amounts)은 원문 표기를 글자 그대로 복사합니다. 예: \"4천만원\", \"500만 원\", \"6,500만 원\", \"0원\". 합산하거나 단위를 바꾸지 않습니다.",
-  "   - 한 항목에 금액이 여러 개면 모두 나열합니다. 예: 대출 300만 원과 사채 200만 원 → [\"300만 원\", \"200만 원\"]",
-  "   - '없음', '미보유', '무소득'처럼 없다고 명시했으면 [\"0원\"]으로 씁니다.",
-  "4. evidence에는 근거가 된 원문 구절을 한 글자도 바꾸지 말고 복사합니다(80자 이내). 값이 없으면 null.",
-  "5. 모든 항목은 '신청인 본인 가구' 기준입니다. 따로 사는 가족(부양의무자)이나 자녀의 나이·소득·사건을 신청인 것으로 넣지 않습니다.",
-  "6. 열거형 항목은 제시된 값 중 하나만 씁니다. 해당 없으면 null.",
-  "7. 상담 기록이 '담당자:'/'민원인:' 대화 녹취록이면 민원인이 말한 내용에서 사실을 추출하고 evidence도 민원인 발화를 복사합니다. 담당자가 제도를 설명하며 말한 금액(선정기준, 지원액 등)은 신청인 정보로 넣지 않습니다.",
-  "8. birth_or_age의 value만은 한글 숫자를 아라비아 숫자로 바꿔 씁니다(예: '천구백육십사년 오월 삼일' → '1964년 5월 3일'). evidence는 원문 그대로.",
+  "[규칙]",
+  "1. 기록에 나오지 않은 항목은 키를 생략합니다.",
+  "2. 일반 항목은 {\"v\": 값, \"e\": 근거}, 금액 항목은 {\"a\": [금액], \"e\": 근거} 형식입니다. e는 원문을 그대로 복사한 짧은 구절(30자 이내)입니다.",
+  "3. 금액은 원문 표기 그대로 씁니다(예: \"오백만 원\", \"6,500만 원\", \"0원\"). 합산·단위 변환을 하지 않고, 여러 개면 모두 나열합니다. 없다고 말했으면 [\"0원\"]입니다.",
+  "4. 신청인 본인 가구 기준입니다. 따로 사는 가족의 나이·소득·사건은 넣지 않습니다.",
+  "5. '담당자:/민원인:' 녹취록이면 민원인 말에서만 추출합니다. 담당자가 제도를 설명하며 말한 금액은 넣지 않습니다.",
   "",
-  "[스키마]",
-  "{",
-  " \"name\": {\"value\": 신청인 성명|null, \"evidence\": 원문|null},",
-  " \"birth_or_age\": {\"value\": 생년월일 또는 나이의 원문 표기(예 \"1968.04.15\", \"만 58세\")|null, \"evidence\": 원문|null},",
-  " \"household_members\": {\"value\": 신청인을 포함해 함께 사는 가구원 수(정수)|null, \"evidence\": 원문|null},",
-  " \"region\": {\"value\": 거주 시·도 또는 시·군 이름|null, \"evidence\": 원문|null},",
-  " \"housing_type\": {\"value\": \"월세\"|\"전세\"|\"자가\"|\"무상거주\"|null, \"evidence\": 원문|null},",
-  " \"housing_deposit\": {\"amounts\": [월세 보증금 또는 전세금], \"evidence\": 원문|null},",
-  " \"monthly_rent\": {\"amounts\": [월 임대료], \"evidence\": 원문|null},",
-  " \"home_value\": {\"amounts\": [자가 주택 가액], \"evidence\": 원문|null},",
-  " \"earned_income\": {\"amounts\": [월 근로·사업소득], \"evidence\": 원문|null},",
-  " \"transfer_income\": {\"amounts\": [월 이전소득: 연금·수당·가족 정기지원 등], \"evidence\": 원문|null},",
-  " \"general_property\": {\"amounts\": [토지·건물·상가 등 주거용 외 재산], \"evidence\": 원문|null},",
-  " \"financial_property\": {\"amounts\": [예금·통장 잔액 등 금융재산], \"evidence\": 원문|null},",
-  " \"debt\": {\"amounts\": [대출·사채·카드빚 등 부채], \"evidence\": 원문|null},",
-  " \"health\": {\"value\": 신청인 건강상태 한 줄 요약|null, \"evidence\": 원문|null},",
-  " \"work_ability\": {\"value\": \"중증장애\"|\"미성년학생\"|\"임신출산양육간병\"|\"근로불가명시\"|\"질병부상\"|\"일반근로\"|null, \"evidence\": 원문|null},",
-  " \"support_obligor\": {\"value\": \"없음\"|\"단절\"|\"있음\"|null, \"evidence\": 원문|null},",
-  " \"crisis\": [{\"type\": 위기유형, \"evidence\": 원문}]",
-  "}",
-  "",
-  "[열거형 판단 기준]",
-  "- work_ability: 중증장애=신청인이 심한 장애 / 미성년학생=신청인 본인이 만 18세 미만 또는 학생 / 임신출산양육간병=신청인이 임신·출산 직후이거나 영유아 양육·중증 가족 간병 / 근로불가명시=일할 수 없다고 명시 / 질병부상=질병·부상으로 근로능력 평가가 필요 / 일반근로=일할 수 있음",
-  "- support_obligor: 없음=부모·자녀 등 부양의무자가 없음 / 단절=부양의무자가 있으나 연락두절·가출·관계 단절 / 있음=부양의무자가 있고 관계 유지. '기준 미적용'만 적혀 있으면 null",
-  "- crisis type은 다음 중에서만: 실직폐업, 중한질병부상, 강제퇴거주거위기, 가정폭력학대, 중대범죄피해, 사망가출수감, 화재재난, 단전단수, 자살위기, 전세사기. 신청인 가구에 현재 일어난 일만 넣고, 따로 사는 가족의 과거 일은 넣지 않습니다. 없으면 []."
+  "[키]",
+  "name 성명 / birth 생년월일 또는 나이(v는 한글 숫자를 아라비아 숫자로) / members 함께 사는 가구원 수(정수) / region 거주 시·군·구",
+  "housing 주거형태: 월세|전세|자가|무상거주 / deposit 보증금·전세금·자가주택 가액 / rent 월세액",
+  "earned 월 근로·사업소득 / transfer 월 연금·수당·가족 정기지원 / general 토지·건물·상가 / financial 예금·통장 잔액 / debt 대출·사채·카드빚",
+  "health 건강상태 한 줄 요약",
+  "work 근로능력: 중증장애|미성년학생|임신출산양육간병|근로불가명시|질병부상|일반근로",
+  "support 부양의무자: 없음|단절(연락두절·가출·관계 끊김)|있음",
+  "crisis 신청인 가구에 현재 일어난 위기 목록 [{\"t\": 유형, \"e\": 근거}], 유형은 실직폐업|중한질병부상|강제퇴거주거위기|가정폭력학대|중대범죄피해|사망가출수감|화재재난|단전단수|자살위기|전세사기"
 ].join('\n');
 
 /* 형식 학습용 예시 1건 (실제 인물 아님) */
 var FEWSHOT_INPUT = "상담 메모) 박하늘 씨, 1979년 3월 5일생. 광주 북구에서 중학생 딸과 둘이 삶. 월세 보증금 300만원에 월세 28만원. 편의점 알바로 월 90만원 정도 벌고 아동수당은 없음. 통장에 30만원, 카드값 연체 150만원 있음. 친정 부모님은 연락은 되지만 도와줄 형편은 아님. 지난달부터 가스가 끊겼다고 함.";
 var FEWSHOT_OUTPUT = JSON.stringify({
-  name: { value: "박하늘", evidence: "박하늘 씨" },
-  birth_or_age: { value: "1979년 3월 5일생", evidence: "1979년 3월 5일생" },
-  household_members: { value: 2, evidence: "중학생 딸과 둘이 삶" },
-  region: { value: "광주 북구", evidence: "광주 북구에서" },
-  housing_type: { value: "월세", evidence: "월세 보증금 300만원에 월세 28만원" },
-  housing_deposit: { amounts: ["300만원"], evidence: "월세 보증금 300만원" },
-  monthly_rent: { amounts: ["28만원"], evidence: "월세 28만원" },
-  home_value: { amounts: [], evidence: null },
-  earned_income: { amounts: ["90만원"], evidence: "편의점 알바로 월 90만원 정도 벌고" },
-  transfer_income: { amounts: ["0원"], evidence: "아동수당은 없음" },
-  general_property: { amounts: [], evidence: null },
-  financial_property: { amounts: ["30만원"], evidence: "통장에 30만원" },
-  debt: { amounts: ["150만원"], evidence: "카드값 연체 150만원" },
-  health: { value: null, evidence: null },
-  work_ability: { value: "일반근로", evidence: "편의점 알바로 월 90만원 정도 벌고" },
-  support_obligor: { value: "있음", evidence: "친정 부모님은 연락은 되지만 도와줄 형편은 아님" },
-  crisis: [{ type: "단전단수", evidence: "지난달부터 가스가 끊겼다고 함" }]
+  name: { v: "박하늘", e: "박하늘 씨" },
+  birth: { v: "1979년 3월 5일", e: "1979년 3월 5일생" },
+  members: { v: 2, e: "중학생 딸과 둘이 삶" },
+  region: { v: "광주 북구", e: "광주 북구에서" },
+  housing: { v: "월세", e: "월세 보증금 300만원" },
+  deposit: { a: ["300만원"], e: "보증금 300만원" },
+  rent: { a: ["28만원"], e: "월세 28만원" },
+  earned: { a: ["90만원"], e: "월 90만원 정도 벌고" },
+  transfer: { a: ["0원"], e: "아동수당은 없음" },
+  financial: { a: ["30만원"], e: "통장에 30만원" },
+  debt: { a: ["150만원"], e: "카드값 연체 150만원" },
+  work: { v: "일반근로", e: "편의점 알바로" },
+  support: { v: "있음", e: "친정 부모님은 연락은 되지만" },
+  crisis: [{ t: "단전단수", e: "가스가 끊겼다고 함" }]
 });
 
 function buildExtractionMessages(text) {
@@ -1650,10 +1626,12 @@ function buildExtractionMessages(text) {
 
 function llmEndpoint(cfg, path) { return String(cfg.baseUrl || '').replace(/\/+$/, '') + path; }
 
-async function callChatCompletion(cfg, messages, useJsonFormat) {
+/* opts.onDelta(글자수): 스트리밍으로 받으며 진행 상황 표시 / opts.maxTokens: 출력 상한 */
+async function callChatCompletion(cfg, messages, useJsonFormat, opts) {
+  opts = opts || {};
   var ctrl = new AbortController();
-  var timer = setTimeout(function () { ctrl.abort(); }, (Number(cfg.timeoutSec) || 300) * 1000);
-  var body = { model: cfg.model, messages: messages, temperature: 0, stream: false };
+  var timer = setTimeout(function () { ctrl.abort(); }, (Number(opts.timeoutSec || cfg.timeoutSec) || 300) * 1000);
+  var body = { model: cfg.model, messages: messages, temperature: 0, stream: !!opts.onDelta, max_tokens: opts.maxTokens || 2000 };
   if (useJsonFormat) body.response_format = { type: 'json_object' };
   var headers = { 'Content-Type': 'application/json' };
   if (cfg.apiKey) headers.Authorization = 'Bearer ' + cfg.apiKey;
@@ -1667,6 +1645,30 @@ async function callChatCompletion(cfg, messages, useJsonFormat) {
       var err = new Error('서버 응답 오류 HTTP ' + res.status + (detail ? ' - ' + detail : ''));
       err.status = res.status;
       throw err;
+    }
+    var ctype = (res.headers.get('content-type') || '').toLowerCase();
+    if (opts.onDelta && res.body && res.body.getReader && ctype.indexOf('application/json') === -1) {
+      // 스트리밍(SSE): 'data: {...}' 줄을 이어 붙인다
+      var reader = res.body.getReader(), dec = new TextDecoder(), buf = '', out = '';
+      while (true) {
+        var chunk = await reader.read();
+        if (chunk.done) break;
+        buf += dec.decode(chunk.value, { stream: true });
+        var lines = buf.split('\n');
+        buf = lines.pop();
+        lines.forEach(function (line) {
+          line = line.trim();
+          if (line.indexOf('data:') !== 0) return;
+          var d = line.slice(5).trim();
+          if (!d || d === '[DONE]') return;
+          try {
+            var j = JSON.parse(d), c = j.choices && j.choices[0];
+            var piece = c ? ((c.delta && c.delta.content) || (c.message && c.message.content) || '') : '';
+            if (piece) { out += piece; opts.onDelta(out.length); }
+          } catch (e) { /* 깨진 줄은 무시 */ }
+        });
+      }
+      return out;
     }
     var data = await res.json();
     var content = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
@@ -1691,15 +1693,16 @@ function parseJsonLoose(s) {
   return null;
 }
 
-async function extractByLLM(text, cfg) {
+async function extractByLLM(text, cfg, onDelta) {
   var started = performance.now();
   var messages = buildExtractionMessages(text);
+  var copts = { onDelta: onDelta, maxTokens: 1500 };
   var content;
   try {
-    content = await callChatCompletion(cfg, messages, true);
+    content = await callChatCompletion(cfg, messages, true, copts);
   } catch (e) {
     // response_format 미지원 서버 대비: 400/422면 형식 지정 없이 재시도
-    if (e.status === 400 || e.status === 422) content = await callChatCompletion(cfg, messages, false);
+    if (e.status === 400 || e.status === 422) content = await callChatCompletion(cfg, messages, false, copts);
     else throw e;
   }
   var json = parseJsonLoose(content);
@@ -1708,7 +1711,7 @@ async function extractByLLM(text, cfg) {
       { role: 'assistant', content: content },
       { role: 'user', content: '출력이 올바른 JSON이 아닙니다. 설명 없이 스키마에 맞는 JSON 객체 하나만 다시 출력하세요.' }
     ]);
-    content = await callChatCompletion(cfg, messages, false);
+    content = await callChatCompletion(cfg, messages, false, copts);
     json = parseJsonLoose(content);
     if (!json) throw new Error('모델이 올바른 JSON을 출력하지 못했습니다.');
   }
@@ -1744,14 +1747,25 @@ function makeSourceChecker(text) {
   };
 }
 
+/* 짧은 키(v/e/a)와 예전 키(value/evidence/amounts)를 모두 받아들인다 */
+var FIELD_ALIASES = {
+  name: ['name'], birth_or_age: ['birth', 'birth_or_age'], household_members: ['members', 'household_members'],
+  region: ['region'], housing_type: ['housing', 'housing_type'], housing_deposit: ['deposit', 'housing_deposit'],
+  monthly_rent: ['rent', 'monthly_rent'], home_value: ['home_value'], earned_income: ['earned', 'earned_income'],
+  transfer_income: ['transfer', 'transfer_income'], general_property: ['general', 'general_property'],
+  financial_property: ['financial', 'financial_property'], debt: ['debt'], health: ['health'],
+  work_ability: ['work', 'work_ability'], support_obligor: ['support', 'support_obligor']
+};
 function fieldOf(json, key) {
-  var v = json ? json[key] : undefined;
+  var v;
+  (FIELD_ALIASES[key] || [key]).some(function (k) { if (json && json[k] !== undefined) { v = json[k]; return true; } return false; });
   if (v === null || v === undefined) return { value: null, evidence: null, amounts: [] };
   if (typeof v !== 'object' || Array.isArray(v)) return { value: v, evidence: null, amounts: Array.isArray(v) ? v : [] };
-  var amounts = v.amounts;
+  var amounts = v.a !== undefined ? v.a : v.amounts;
   if (amounts === undefined || amounts === null) amounts = [];
   if (!Array.isArray(amounts)) amounts = [amounts];
-  return { value: v.value === undefined ? null : v.value, evidence: v.evidence || null, amounts: amounts };
+  var value = v.v !== undefined ? v.v : v.value;
+  return { value: value === undefined ? null : value, evidence: v.e || v.evidence || null, amounts: amounts };
 }
 
 /* AI JSON → 표준 항목. 각 항목에 근거·검증 상태(meta)를 붙이고, 원문에 없는 값은 폐기 */
@@ -1821,8 +1835,8 @@ function normalizeLlmFacts(json, text) {
   }
   var deposit = money('resProp', 'housing_deposit');
   money('rentFee', 'monthly_rent');
-  if (f.housingType === HOUSING_TYPES['자가']) {
-    // 자가는 주택 가액을 주거용 재산으로 사용 (가액이 없을 때만 보증금 항목 유지)
+  if (f.housingType === HOUSING_TYPES['자가'] && fieldOf(json, 'home_value').amounts.length) {
+    // 예전 형식(home_value)이 따로 오면 자가 주택 가액으로 사용
     var depositMeta = meta.resProp;
     var hv = money('resProp', 'home_value');
     if (hv === null && deposit !== null) { f.resProp = deposit; meta.resProp = depositMeta; }
@@ -1857,8 +1871,8 @@ function normalizeLlmFacts(json, text) {
                   (json && json.crisis && Array.isArray(json.crisis.values) ? json.crisis.values.map(function (t) { return { type: t, evidence: json.crisis.evidence }; }) : []);
   var crisisMeta = [];
   crisisRaw.forEach(function (c) {
-    var type = typeof c === 'string' ? c : (c && c.type);
-    var evd = c && c.evidence;
+    var type = typeof c === 'string' ? c : (c && (c.t || c.type));
+    var evd = c && (c.e || c.evidence);
     if (!CRISIS_LABELS[type]) return;
     var st = chk.evidence(evd);
     if (st === 'exact' || st === 'similar') { if (f.crisis.indexOf(type) === -1) f.crisis.push(type); crisisMeta.push({ type: type, evidence: evd, ok: true }); }
@@ -2129,8 +2143,8 @@ async function diarizeTranscript(segs, cfg, ui) {
     var blockTurns = null;
     try {
       var content;
-      try { content = await callChatCompletion(cfg, messages, true); }
-      catch (e) { if (e.status === 400 || e.status === 422) content = await callChatCompletion(cfg, messages, false); else throw e; }
+      try { content = await callChatCompletion(cfg, messages, true, { maxTokens: 2500 }); }
+      catch (e) { if (e.status === 400 || e.status === 422) content = await callChatCompletion(cfg, messages, false, { maxTokens: 2500 }); else throw e; }
       var json = parseJsonLoose(content);
       var arr = json && Array.isArray(json.turns) ? json.turns : null;
       if (arr) {
@@ -3007,7 +3021,7 @@ async function runAiAnalysis() {
 
   setAiBusy(true);
   try {
-    var out = await extractByLLM(text, llmConfig);
+    var out = await extractByLLM(text, llmConfig, function (n) { aiProgressChars = n; updateAiBusyLabel(); });
     var norm = normalizeLlmFacts(out.json, text);
     var merged = mergeFacts(rf, norm);
     var result = { engine: 'llm', model: llmConfig.model, ms: out.ms, facts: merged.facts, rows: merged.rows,
@@ -3029,12 +3043,35 @@ async function runAiAnalysis() {
   }
 }
 
+var aiProgressChars = 0, aiStartedAt = 0, aiTicker = null;
+function updateAiBusyLabel() {
+  var btn = document.getElementById('btnRunAi');
+  if (!btn || !aiBusy) return;
+  var sec = (performance.now() - aiStartedAt) / 1000;
+  var stage = aiProgressChars > 0 ? '결과 작성 중 ' + aiProgressChars + '자' : 'AI가 상담 기록을 읽는 중';
+  btn.innerHTML = '⏳ ' + escapeHtml(llmConfig.model) + ' 분석 중 · ' + fmtClock(sec) + ' · ' + stage;
+}
 function setAiBusy(busy) {
   aiBusy = busy;
   var btn = document.getElementById('btnRunAi');
+  if (aiTicker) { clearInterval(aiTicker); aiTicker = null; }
   if (!btn) return;
   btn.disabled = busy;
-  btn.innerHTML = busy ? '⏳ AI 분석 중… (' + escapeHtml(llmConfig.model) + ')' : '⚡ AI 분석 실행 → 사정표·행복e음 일지 생성 (2단계) ➡️';
+  if (busy) {
+    aiProgressChars = 0; aiStartedAt = performance.now();
+    updateAiBusyLabel();
+    aiTicker = setInterval(updateAiBusyLabel, 1000);
+  } else {
+    btn.innerHTML = '⚡ AI 분석 실행 → 사정표·행복e음 일지 생성 (2단계) ➡️';
+  }
+}
+
+/* 모델 미리 깨우기: 화면을 열거나 설정을 저장하면 AI를 메모리에 미리 올려 첫 분석 대기를 줄임 */
+function warmUpLlm() {
+  if (llmConfig.mode !== 'llm' || !llmConfig.baseUrl || !llmConfig.model) return;
+  callChatCompletion(llmConfig, [{ role: 'user', content: '준비' }], false, { maxTokens: 1, timeoutSec: 180 })
+    .then(function () { console.info('AI 모델 준비 완료:', llmConfig.model); })
+    .catch(function () { /* 서버가 꺼져 있으면 조용히 무시 */ });
 }
 
 function handleCounselInputChanged() {
@@ -3333,6 +3370,7 @@ function saveLlmSettings() {
   if (sttState.file && !sttState.running) setSttUi('ready');
   updateEngineBadge();
   closeLlmSettings();
+  warmUpLlm();
   showToast(cfg.mode === 'rule' ? '규칙 기반(오프라인) 추출로 설정했습니다.' : 'AI 엔진을 ' + cfg.model + ' 모델로 설정했습니다.');
 }
 async function testLlmConnection() {
@@ -3355,7 +3393,19 @@ async function testLlmConnection() {
       (ids.length ? '<br><span style="color:#475569;">' + ids.slice(0, 8).map(escapeHtml).join(', ') + (ids.length > 8 ? ' …' : '') + '</span>' : '') +
       (cfg.model && !has && ids.length ? '<br><span style="color:#b45309;">입력한 모델 "' + escapeHtml(cfg.model) + '"이 목록에 없습니다.</span>' : ''));
   } catch (e) {
-    var msg = e.name === 'AbortError' ? '응답 시간 초과' : (e instanceof TypeError ? '서버에 연결할 수 없음 (주소 또는 CORS 설정 확인)' : e.message);
+    var msg = e.name === 'AbortError' ? '응답 시간 초과' : e.message;
+    if (e instanceof TypeError) {
+      // 서버가 꺼진 것인지, 켜져 있는데 브라우저 접속(CORS)이 막힌 것인지 구분
+      var alive = false;
+      try {
+        var c2 = new AbortController(); var t2 = setTimeout(function () { c2.abort(); }, 4000);
+        await fetch(String(cfg.baseUrl).replace(/\/v1\/?$/, '/'), { mode: 'no-cors', signal: c2.signal });
+        clearTimeout(t2); alive = true;
+      } catch (e2) { alive = false; }
+      msg = alive
+        ? 'AI 서버는 켜져 있지만 이 화면의 접속이 막혀 있습니다. Windows 사용자 환경 변수에 OLLAMA_ORIGINS = * 를 추가한 뒤, 작업표시줄 Ollama 아이콘에서 Quit Ollama → Ollama 다시 실행 (안 되면 PC 재부팅)'
+        : 'AI 서버가 꺼져 있거나 주소가 틀립니다. 작업표시줄에 Ollama(라마) 아이콘이 있는지 확인하고, 주소를 http://127.0.0.1:11434/v1 로도 시도해 보세요';
+    }
     safeSetHtml('cfgTestResult', '<span style="color:#b91c1c; font-weight:700;">✕ 연결 실패</span> · ' + escapeHtml(msg));
   } finally {
     clearTimeout(timer);
@@ -3386,6 +3436,7 @@ window.addEventListener('DOMContentLoaded', function () {
   updateEngineBadge();
   setAiBusy(false);
   loadPreset('basicLife');
+  setTimeout(warmUpLlm, 800);
 });
   </script>
 
