@@ -276,6 +276,8 @@
     .pg-opts label { font-weight: 700; display: inline-flex; align-items: center; gap: 5px; margin-right: 6px; }
     .pg-opts-sep { color: #64748b; font-weight: 700; border-left: 1px solid var(--border-dark); padding-left: 10px; }
     #printGuideArea { display: none; }
+    .pg-paper { border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; background: #fff; max-height: 760px; overflow-y: auto; }
+    .pg-paper .print-doc-header h2 { font-size: 16px; }
     #printGuideArea.pg-show { display: block; margin-top: 18px; padding-top: 14px; border-top: 2px dashed #cbd5e1; }
     .pg-intro { font-size: 12px; color: #334155; margin: 6px 0 10px; line-height: 1.6; }
     .pg-h { font-size: 13px; font-weight: 800; color: #1e3a8a; margin: 12px 0 6px; }
@@ -645,7 +647,7 @@
               <span style="font-size: 11px; color: #0f766e; font-weight: 700;" id="agencyJudgeMeta"></span>
             </div>
             <div class="aj-grid" id="agencyJudgeGrid"></div>
-            <div style="font-size: 11px; color: #64748b; margin-top: 6px;">공단·기관 사업은 상담 내용의 키워드·위기사유로 연결합니다. 신청 방법과 연락처는 3단계 안내문으로 출력할 수 있습니다.</div>
+            <div style="font-size: 11px; color: #64748b; margin-top: 6px;">공단·기관 사업은 상담 내용의 키워드·위기사유로 연결합니다. 신청 방법과 연락처는 3단계 신청 안내문으로 출력합니다.</div>
           </div>
         </div>
 
@@ -673,18 +675,10 @@
             <div class="card-title">📄 [민원인 맞춤 구비서류] 신청 시 지참 서류</div>
             <div style="display:flex; gap:8px;">
               <span class="badge badge-gov" id="clientDocCountBadge" style="white-space:nowrap;">총 9종 안내</span>
-              <button class="btn btn-outline" onclick="togglePrintGuidePreview()" id="btnGuidePreview">👁 신청 안내문 미리보기</button>
               <button class="btn btn-primary" onclick="printClientDocs()">🖨 구비서류 + 신청 안내 출력</button>
             </div>
           </div>
           
-          <div class="no-print pg-opts">
-            <label><input type="checkbox" id="pgInclude" checked> 지원사업 신청 안내문 함께 출력</label>
-            <span class="pg-opts-sep">안내 담당</span>
-            <input id="gcOffice" placeholder="○○동 행정복지센터" oninput="saveGuideContact()">
-            <input id="gcName" placeholder="담당자" oninput="saveGuideContact()" style="width:90px;">
-            <input id="gcPhone" placeholder="전화번호" oninput="saveGuideContact()" style="width:120px;">
-          </div>
           <div style="padding: 4px 0;">
             <div class="print-doc-header">
               <h2>사회보장급여 신청 안내 및 필수 구비서류 확인서</h2>
@@ -714,12 +708,19 @@
           </div>
         </div>
 
-        <div class="card">
+        <div class="card" id="guideCard">
           <div class="card-header">
-            <div class="card-title">🏛 [유관기관 지원망] 맞춤 연계 사업 안내</div>
-            <span class="badge" style="background:#ccfbf1; color:#0f766e;" id="agencyRecommendCountBadge">2건 맞춤 매칭됨</span>
+            <div class="card-title">📨 [민원인 신청 안내문] 지원사업 연락처·신청 방법</div>
+            <span class="badge" style="background:#ccfbf1; color:#0f766e; white-space:nowrap;" id="guideCountBadge">-</span>
           </div>
-          <div id="agencyRecommendListArea" style="display: flex; flex-direction: column; gap: 10px; max-height: 520px; overflow-y: auto;"><div style="background:#f0fdfa; border:1px solid #99f6e4; padding:12px; border-radius:6px; font-size:12.5px;"><div style="display:flex; justify-content:space-between; align-items:center;"><strong style="color:#0f766e; font-size:13px;">국민건강보험공단 [재난적 의료비 지원사업]</strong><span style="font-size:11px; font-weight:800; color:#047857; background:#d1fae5; padding:2px 6px; border-radius:4px;">☎ 1577-1000</span></div><div style="color:#334155; margin-top:4px;">• <strong>지원내용:</strong> 과도한 중증·입원 의료비 발생 시 본인부담금의 50~80% 지원 (연간 최대 5,000만 원)</div><div style="color:#2563eb; font-size:11.5px; margin-top:2px;">• <strong>신청방법:</strong> 퇴원 전 또는 퇴원 후 180일 이내 관할 건보공단 지사 신청</div></div><div style="background:#f0fdfa; border:1px solid #99f6e4; padding:12px; border-radius:6px; font-size:12.5px;"><div style="display:flex; justify-content:space-between; align-items:center;"><strong style="color:#0f766e; font-size:13px;">대한법률구조공단 [무료 법률구조 및 개인회생·파산면책 지원]</strong><span style="font-size:11px; font-weight:800; color:#047857; background:#d1fae5; padding:2px 6px; border-radius:4px;">☎ 132</span></div><div style="color:#334155; margin-top:4px;">• <strong>지원내용:</strong> 저소득 취약계층 대상 민사소송 대리 및 무료 개인회생·파산면책 원스톱 법률구조</div><div style="color:#2563eb; font-size:11.5px; margin-top:2px;">• <strong>신청방법:</strong> 가까운 법률구조공단 출장소(국번없이 132) 사전 예약 상담</div></div></div>
+          <div class="pg-opts">
+            <label><input type="checkbox" id="pgInclude" checked> 구비서류와 함께 출력</label>
+            <span class="pg-opts-sep">안내 담당</span>
+            <input id="gcOffice" placeholder="○○동 행정복지센터" oninput="saveGuideContact()">
+            <input id="gcName" placeholder="담당자" oninput="saveGuideContact()" style="width:90px;">
+            <input id="gcPhone" placeholder="전화번호" oninput="saveGuideContact()" style="width:120px;">
+          </div>
+          <div id="guideScreenArea" class="pg-paper"><div class="aj-empty">상담 내용을 입력하면 안내문이 만들어집니다.</div></div>
         </div>
       </div>
       
@@ -3656,7 +3657,7 @@ function renderLocalJudgePanel(p) {
       (detail ? '<div class="lj-detail">' + escapeHtml(detail) + '</div>' : '') + '</div>';
   }).join('');
   var more = cards.filter(function (c) { return !(c.slot >= 1 && c.slot <= 4); }).length;
-  safeSetText('localJudgeFoot', (more ? '그 밖의 등록 사업 ' + more + '종은 3단계 연계 안내에서 확인합니다. ' : '') + '판정 근거와 신청 방법은 3단계에 표시됩니다.');
+  safeSetText('localJudgeFoot', (more ? '그 밖의 등록 사업 ' + more + '종도 대상이면 3단계 신청 안내문에 함께 실립니다. ' : '') + '신청 방법·연락처는 3단계 신청 안내문에 표시됩니다.');
   renderAgencyJudgePanel(hasCase ? p : null);
 }
 
@@ -3717,6 +3718,8 @@ function renderPrintGuide(p, matched) {
   html += '<div class="pg-foot">' + (who ? '<div class="pg-who">안내 담당 : ' + escapeHtml(who) + '</div>' : '') +
     '<div>※ 공단·기관 연락처와 지원 내용은 2026년 10월 기준이며, 지자체 사업은 ' + escapeHtml((L && L.dataDate) || '-') + ' 기준 자료입니다. 바뀔 수 있으니 신청 전 확인하세요.</div></div>';
   area.innerHTML = html;
+  safeSetHtml('guideScreenArea', html);
+  safeSetText('guideCountBadge', no ? '지원사업 ' + no + '건' : '안내 사업 없음');
   var gcFill = function (id, v) { var el = document.getElementById(id); if (el && document.activeElement !== el && !el.value) el.value = v || ''; };
   gcFill('gcOffice', gc.office); gcFill('gcName', gc.name); gcFill('gcPhone', gc.phone);
 }
@@ -4349,8 +4352,9 @@ function resetViews() {
   safeSetText('printApplicantName', '[미입력] 성명 미상');
   safeSetText('clientDocCountBadge', '총 0종');
   safeSetHtml('clientDocListArea', "<li style='color:#94a3b8;'>상담 내용이 입력되지 않았습니다.</li>");
-  safeSetText('agencyRecommendCountBadge', '0건 매칭');
-  safeSetHtml('agencyRecommendListArea', '<div style="padding:14px; background:#f8fafc; border:1px solid var(--border); border-radius:6px; color:#64748b; font-size:12px;">상담 내용에서 특이 공단 연계 키워드가 감지되지 않았습니다.</div>');
+  safeSetText('guideCountBadge', '-');
+  safeSetHtml('guideScreenArea', '<div class="aj-empty">상담 내용을 입력하면 안내문이 만들어집니다.</div>');
+  safeSetHtml('printGuideArea', '');
   safeSetHtml('calcTraceBox', '<span style="color:#64748b;">상담 기록을 입력하면 법정 산출 공식 및 실시간 적합 여부가 이곳에 표시됩니다.</span>');
   var duty = document.getElementById('dutyAlertSection'); if (duty) duty.style.display = 'none';
   var emerg = document.getElementById('emergencyAlertBanner'); if (emerg) emerg.style.display = 'none';
