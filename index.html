@@ -231,6 +231,25 @@
       box-shadow: 0 10px 25px rgba(0,0,0,0.2);
     }
 
+    /* 지역 사업 관리 */
+    .regional-badge { font-size: 11px; font-weight: 700; color: #5b21b6; background: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 6px; padding: 4px 9px; white-space: nowrap; max-width: 300px; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+    #regionalPreviewBar { display: none; align-items: center; gap: 10px; justify-content: center; background: #f5f3ff; border-bottom: 1px solid #ddd6fe; color: #5b21b6; font-size: 12.5px; font-weight: 700; padding: 6px 12px; }
+    .rg-sec { border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-bottom: 10px; font-size: 12.5px; line-height: 1.6; }
+    .rg-h { font-weight: 800; color: #1e3a8a; margin-bottom: 6px; font-size: 13px; }
+    .rg-list { margin: 0; padding-left: 18px; } .rg-steps { margin: 0 0 8px; padding-left: 20px; }
+    .rg-muted { color: #64748b; font-size: 11.5px; } .rg-warn { color: #b45309; font-weight: 700; }
+    .rg-err { background: #fef2f2; border-color: #fecaca; color: #991b1b; font-weight: 700; }
+    .rg-errline { color: #b91c1c; font-weight: 700; margin: 4px 0; }
+    .rg-prev { background: #f5f3ff; border-color: #ddd6fe; color: #5b21b6; font-weight: 700; }
+    .rg-btns { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; margin-top: 8px; }
+    .rg-tablewrap { max-height: 300px; overflow: auto; border: 1px solid var(--border); border-radius: 6px; }
+    .rg-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+    .rg-table th { background: #f1f5f9; text-align: left; padding: 6px 8px; position: sticky; top: 0; }
+    .rg-table td { padding: 6px 8px; border-top: 1px solid var(--border); vertical-align: top; }
+    .rg-table td:nth-child(2) { min-width: 230px; } .rg-table td:nth-child(3) { min-width: 120px; } .rg-table td:nth-child(4) { min-width: 130px; } .rg-table td:nth-child(5) { white-space: nowrap; } .rg-table .status-chip { white-space: normal; }
+    .header-brand { flex-wrap: nowrap; } .header-brand h1 { white-space: nowrap; }
+    .rg-nat { margin-top: 10px; padding: 10px; border: 1px solid #fecaca; background: #fff7f7; border-radius: 6px; }
+
     #toast {
       position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); background: #1e293b; color: #fff;
       padding: 9px 18px; border-radius: 6px; font-size: 12.5px; font-weight: 600; opacity: 0; pointer-events: none;
@@ -347,9 +366,13 @@
     </div>
     <div class="header-controls">
       <span class="engine-badge engine-badge-ai" id="engineBadge">🤖 AI 추출</span>
+      <span class="regional-badge" id="regionalBadge" title="적용 중인 기준">📂 기준</span>
+      <button class="btn btn-outline" style="font-size:11.5px; padding:4px 10px;" onclick="openRegionalManager()">📂 지역 사업 관리</button>
       <button class="btn btn-outline" style="font-size:11.5px; padding:4px 10px;" onclick="openLlmSettings()">⚙ AI 엔진 설정</button>
     </div>
   </header>
+  <div id="regionalPreviewBar">👁 지역 사업 미리보기 적용 중 (파일로 만들기 전까지 이 화면에서만 반영) <button class="btn btn-outline" style="padding:2px 8px; font-size:11px;" onclick="clearRegionalPreview()">해제</button></div>
+  <div id="regionalWaitNote" style="text-align:center; font-size:12px; color:#b45309;"></div>
 
   <div class="container">
     <div class="nav-tabs">
@@ -824,8 +847,20 @@
     </div>
   </div>
 
+  <div id="regionalModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 860px; max-height: 92vh; overflow-y: auto;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h3 style="font-size:16px; font-weight:800; color:#1e3a8a;">📂 지역 사업 관리 <span style="font-size:12px; font-weight:600; color:#64748b;">구·군 자체사업 등록 · 본청 기준 갱신 (엑셀)</span></h3>
+        <button class="btn btn-outline" style="font-size:11px; padding:2px 8px;" onclick="closeRegionalManager()">✕</button>
+      </div>
+      <div id="regionalModalBody"></div>
+      <input type="file" id="regionalFile" accept=".xlsx" style="display:none" onchange="handleRegionalFile(this)">
+    </div>
+  </div>
+
   <div id="toast" class="">표준 프리셋이 로드되었습니다.</div>
 
+  <script type="application/json" id="esRegionalConfig">null</script>
   <script>
 /* =====================================================================
    행복 이어봄(Ear; Spring) — 사회복지공무원 상담지원 AI 서비스
@@ -1157,7 +1192,7 @@ function matchLocalPrograms(text, p) {
     income: known ? round1((p.earned || 0) + (p.other || 0)) : null
   };
   var out = [];
-  LOCAL_RULES.forEach(function (r) {
+  LOCAL_RULES.concat(customRules()).forEach(function (r) {
     var res = r.evaluate(p, ctx);
     if (!res) return;
     var o = {}; for (var k in r) o[k] = r[k];
@@ -2639,6 +2674,7 @@ function runSimulation() {
     '<div style="margin-top:6px;">생계 ' + sim.liveStd + ' · 차상위 ' + sim.nearStd + ' · 긴급 실소득 ' + sim.emergStd + ' / 재산 ' + sim.emergPropLimit.toLocaleString() + ' / 금융 ' + sim.finLimit +
       ' · 기초연금(별도 산식) ' + sim.pensionRecognized + ' vs ' + sim.pensionCutoff + ' (만원)</div>' +
     '<div style="margin-top:6px;color:#64748b;">※ 부양의무자 기준은 현행 제도상 대부분 폐지되어 본 모의계산에 반영하지 않습니다 (고소득·고재산 부양의무자 예외 여부는 담당자가 별도 확인). 자동차 재산은 반영하지 않습니다.</div>' +
+    '<div style="margin-top:6px; color:#5b21b6; font-weight:700;">📂 적용 기준: ' + escapeHtml(regionalBasisText()) + (NATIONAL_STATE.applied ? ' — 본청 변경 기준값이 반영되어 아래 출처 표와 다를 수 있습니다' : '') + '</div>' +
     '<details style="margin-top:8px;"><summary style="cursor:pointer; font-weight:700; color:#1e3a8a;">' + POLICY_2026.year + '년 기준값 출처 (✅ 지침 대조 완료 · ⏳ 확인 대기)</summary>' +
       '<ul style="list-style:none; margin-top:6px; padding-left:4px; font-family:inherit; font-size:11.5px; line-height:1.8;">' + sources + '</ul></details>');
 
@@ -2851,7 +2887,7 @@ function handleManualSimulatorChange() {
       if (agencies.length) {
         agencies.forEach(function(ag) {
           if (ag.local) {
-            doc += "\n • [대구시 연계] " + ag.program + ": " + ag.judgeNote + (ag.status === 'check' ? " [확인 필요]" : " [대상 추정]") + " → " + ag.guide;
+            doc += "\n • [" + (ag.badge || '대구시 연계') + "] " + ag.program + ": " + ag.judgeNote + (ag.status === 'check' ? " [확인 필요]" : " [대상 추정]") + " → " + ag.guide;
           } else {
             doc += "\n • " + ag.agency + " [" + ag.program + "]: " + ag.desc + " (문의: " + ag.contact + ")";
           }
@@ -2876,7 +2912,8 @@ function handleManualSimulatorChange() {
 "    - [차상위계층]: 소득인정액 약 " + sim.recognized.toLocaleString() + "만 원 (" + (sim.isNearPass ? ("기준 중위 50%인 " + sim.nearStd + "만 원 이하 [적합]") : "기준 초과 [부적합]") + ")\n" +
 "    - [기초연금]: 연금 소득인정액 약 " + sim.pensionRecognized.toLocaleString() + "만 원 (" + (!sim.isSenior ? ("만 65세 미만 [연령 미달 / 대상자 만 " + sim.ageVal + "세]") : (sim.isPensionPass ? ("선정기준액 " + sim.pensionCutoff + "만 원 이하 [적합]") : "소득인정액 초과 [부적합]")) + ")\n" +
 " ② 구비서류 징구: 사회보장급여 신청서, 금융정보제공동의서, 소득·재산신고서, 신분증, 통장사본 등 필수 법정서식 일체" + (p.debt > 0 ? " 및 압류방지 행복지킴이통장 연계" : "") + "\n" +
-" ③ 전산 접수: 서류 보완 즉시 행복e음 정식 접수 등록";
+" ③ 전산 접수: 서류 보완 즉시 행복e음 정식 접수 등록" +
+"\n\n※ 적용 기준: " + regionalBasisText();
 
       safeSetText('happyEumOutput', doc);
     }
@@ -2971,7 +3008,7 @@ function handleManualSimulatorChange() {
             var ok = ag.status === 'ok';
             return '<div style="background:#eff6ff; border:1px solid #93c5fd; border-left:4px solid #1d4ed8; padding:12px; border-radius:6px; font-size:12.5px;">' +
               '<div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">' +
-                '<strong style="color:#1e40af; font-size:13px;"><span style="font-size:10.5px; color:#fff; background:#1d4ed8; padding:2px 6px; border-radius:4px; margin-right:6px;">대구시 연계</span>' + escapeHtml(ag.program) + '</strong>' +
+                '<strong style="color:#1e40af; font-size:13px;"><span style="font-size:10.5px; color:#fff; background:' + (ag.badgeColor || '#1d4ed8') + '; padding:2px 6px; border-radius:4px; margin-right:6px;">' + escapeHtml(ag.badge || '대구시 연계') + '</span>' + escapeHtml(ag.program) + '</strong>' +
                 '<span style="font-size:11px; font-weight:800; white-space:nowrap; padding:2px 6px; border-radius:4px; ' + (ok ? 'color:#047857; background:#d1fae5;' : 'color:#b45309; background:#fef3c7;') + '">' + (ok ? '대상 추정' : '확인 필요') + '</span>' +
               '</div>' +
               '<div style="color:#334155; margin-top:4px;">• <strong>판정근거</strong></div>' +
@@ -3273,6 +3310,455 @@ function updateEngineBadge(state) {
   el.className = 'engine-badge engine-badge-ai';
   el.textContent = '🤖 AI 추출: ' + llmConfig.model + ' @ ' + host;
 }
+
+/* ───────────────────────── [12] 지역 사업·기준 관리 (노코드) ─────────────────────────
+   · 구·군은 엑셀 [사업목록]으로 자체사업을 등록하고, 시 본청은 [국가기준]으로 지침 변경을 반영합니다.
+   · 등록 내용은 이 HTML 파일 안의 <script id="esRegionalConfig"> 에 담겨 함께 배포됩니다.
+   · 읍·면·동 직원은 받은 파일을 열기만 하면 되며, 화면에서 기준을 바꾸지 않습니다. */
+var NATIONAL_SPEC = [{"code": "P.year", "group": "공통", "label": "기준 연도", "unit": "년", "kind": "num"}, {"code": "P.selection.livelihood", "group": "기초생활", "label": "생계급여 선정기준 (기준중위 32%)", "unit": "원/월", "kind": "arr7"}, {"code": "P.selection.medical", "group": "기초생활", "label": "의료급여 선정기준 (40%)", "unit": "원/월", "kind": "arr7"}, {"code": "P.selection.housing", "group": "기초생활", "label": "주거급여 선정기준 (48%)", "unit": "원/월", "kind": "arr7"}, {"code": "P.selection.education", "group": "기초생활", "label": "교육급여 선정기준 (50%) = 차상위 기준", "unit": "원/월", "kind": "arr7"}, {"code": "P.basicLife.baseDeduction.seoul", "group": "기초생활", "label": "기본재산액 - 서울", "unit": "만원", "kind": "num"}, {"code": "P.basicLife.baseDeduction.gyeonggi", "group": "기초생활", "label": "기본재산액 - 경기", "unit": "만원", "kind": "num"}, {"code": "P.basicLife.baseDeduction.metro", "group": "기초생활", "label": "기본재산액 - 광역·세종·창원", "unit": "만원", "kind": "num"}, {"code": "P.basicLife.baseDeduction.other", "group": "기초생활", "label": "기본재산액 - 그 외", "unit": "만원", "kind": "num"}, {"code": "P.basicLife.housingLimit.seoul", "group": "기초생활", "label": "주거용재산 한도 - 서울", "unit": "만원", "kind": "num"}, {"code": "P.basicLife.housingLimit.gyeonggi", "group": "기초생활", "label": "주거용재산 한도 - 경기", "unit": "만원", "kind": "num"}, {"code": "P.basicLife.housingLimit.metro", "group": "기초생활", "label": "주거용재산 한도 - 광역·세종·창원", "unit": "만원", "kind": "num"}, {"code": "P.basicLife.housingLimit.other", "group": "기초생활", "label": "주거용재산 한도 - 그 외", "unit": "만원", "kind": "num"}, {"code": "P.basicLife.conversionRates.residential", "group": "기초생활", "label": "월 소득환산율 - 주거용재산", "unit": "%", "kind": "num"}, {"code": "P.basicLife.conversionRates.general", "group": "기초생활", "label": "월 소득환산율 - 일반재산", "unit": "%", "kind": "num"}, {"code": "P.basicLife.conversionRates.financial", "group": "기초생활", "label": "월 소득환산율 - 금융재산", "unit": "%", "kind": "num"}, {"code": "P.basicLife.finReserve", "group": "기초생활", "label": "금융재산 생활준비금 공제", "unit": "만원", "kind": "num"}, {"code": "P.basicLife.incapableExempt.propLimit.seoul", "group": "기초생활", "label": "근로무능력 가구 재산 제외 - 재산 서울", "unit": "만원", "kind": "num"}, {"code": "P.basicLife.incapableExempt.propLimit.gyeonggi", "group": "기초생활", "label": "근로무능력 가구 재산 제외 - 재산 경기", "unit": "만원", "kind": "num"}, {"code": "P.basicLife.incapableExempt.propLimit.metro", "group": "기초생활", "label": "근로무능력 가구 재산 제외 - 재산 광역", "unit": "만원", "kind": "num"}, {"code": "P.basicLife.incapableExempt.propLimit.other", "group": "기초생활", "label": "근로무능력 가구 재산 제외 - 재산 그 외", "unit": "만원", "kind": "num"}, {"code": "P.basicLife.incapableExempt.finLimit.seoul", "group": "기초생활", "label": "근로무능력 가구 재산 제외 - 금융 서울", "unit": "만원", "kind": "num"}, {"code": "P.basicLife.incapableExempt.finLimit.gyeonggi", "group": "기초생활", "label": "근로무능력 가구 재산 제외 - 금융 경기", "unit": "만원", "kind": "num"}, {"code": "P.basicLife.incapableExempt.finLimit.metro", "group": "기초생활", "label": "근로무능력 가구 재산 제외 - 금융 광역", "unit": "만원", "kind": "num"}, {"code": "P.basicLife.incapableExempt.finLimit.other", "group": "기초생활", "label": "근로무능력 가구 재산 제외 - 금융 그 외", "unit": "만원", "kind": "num"}, {"code": "P.emergency.income", "group": "긴급지원", "label": "소득기준 (기준중위 75%)", "unit": "원/월", "kind": "arr7"}, {"code": "P.emergency.finance", "group": "긴급지원", "label": "금융재산 기준", "unit": "원", "kind": "arr7"}, {"code": "P.emergency.financeHousingAdd", "group": "긴급지원", "label": "주거지원 시 금융재산 추가", "unit": "만원", "kind": "num"}, {"code": "P.emergency.property.대도시", "group": "긴급지원", "label": "재산기준 - 대도시", "unit": "만원", "kind": "num"}, {"code": "P.emergency.property.중소도시", "group": "긴급지원", "label": "재산기준 - 중소도시", "unit": "만원", "kind": "num"}, {"code": "P.emergency.property.농어촌", "group": "긴급지원", "label": "재산기준 - 농어촌", "unit": "만원", "kind": "num"}, {"code": "P.emergency.payout", "group": "긴급지원", "label": "생계지원 월액", "unit": "원/월", "kind": "arr7"}, {"code": "P.pension.selection.single", "group": "기초연금", "label": "선정기준액 - 단독가구", "unit": "만원", "kind": "num"}, {"code": "P.pension.selection.couple", "group": "기초연금", "label": "선정기준액 - 부부가구", "unit": "만원", "kind": "num"}, {"code": "P.pension.earnedDeduct", "group": "기초연금", "label": "근로소득 공제", "unit": "만원", "kind": "num"}, {"code": "P.pension.baseProperty.대도시", "group": "기초연금", "label": "기본재산액 - 대도시", "unit": "만원", "kind": "num"}, {"code": "P.pension.baseProperty.중소도시", "group": "기초연금", "label": "기본재산액 - 중소도시", "unit": "만원", "kind": "num"}, {"code": "P.pension.baseProperty.농어촌", "group": "기초연금", "label": "기본재산액 - 농어촌", "unit": "만원", "kind": "num"}, {"code": "P.pension.finDeduct", "group": "기초연금", "label": "금융재산 공제", "unit": "만원", "kind": "num"}, {"code": "P.pension.annualRate", "group": "기초연금", "label": "재산 소득환산율 (연)", "unit": "%", "kind": "num"}, {"code": "D.median100", "group": "대구시 사업", "label": "기준 중위소득 100% (달구벌 희망급여·간병비 기준)", "unit": "원/월", "kind": "arr7"}, {"code": "D.hope.propertyLimit", "group": "대구시 사업", "label": "달구벌 희망급여 재산기준", "unit": "만원", "kind": "num"}, {"code": "D.hope.finance", "group": "대구시 사업", "label": "달구벌 희망급여 금융재산 기준", "unit": "천원", "kind": "arr7"}];
+var TEMPLATE_XLSX_B64 = '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';
+var REGIONAL = { national: null, local: null };      // 파일에 담긴 기준
+var REGIONAL_PREVIEW = null;                          // 미리보기(파일 저장 전, 이 화면에서만)
+var REGIONAL_PENDING = null;                          // 방금 불러온 엑셀 검사 결과
+var NATIONAL_DEFAULTS = {};                           // 프로그램 기본값(2026년 지침)
+
+function specRoot(code) { return code.split('.')[0] === 'D' ? DAEGU_LOCAL : POLICY_2026; }
+function specGet(code) {
+  var o = specRoot(code), ks = code.split('.').slice(1);
+  for (var i = 0; i < ks.length; i++) { if (o == null) return undefined; o = o[ks[i]]; }
+  return o;
+}
+function specSet(code, v) {
+  var o = specRoot(code), ks = code.split('.').slice(1);
+  for (var i = 0; i < ks.length - 1; i++) o = o[ks[i]];
+  o[ks[ks.length - 1]] = Array.isArray(v) ? v.slice() : v;
+}
+NATIONAL_SPEC.forEach(function (s) { var v = specGet(s.code); NATIONAL_DEFAULTS[s.code] = Array.isArray(v) ? v.slice() : v; });
+
+function todayStr() { var d = new Date(); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+function regionShort(name) { var t = String(name || '').trim().split(/\s+/); return t[t.length - 1] || '지역'; }
+
+/* 국가기준 적용: 기본값으로 되돌린 뒤 (미리보기 또는 파일) 기준을 덮어쓴다. 시행일 전이면 적용하지 않는다 */
+function applyNationalState() {
+  NATIONAL_SPEC.forEach(function (s) { specSet(s.code, NATIONAL_DEFAULTS[s.code]); });
+  var nat = (REGIONAL_PREVIEW && REGIONAL_PREVIEW.national) || REGIONAL.national;
+  var isPreview = !!(REGIONAL_PREVIEW && REGIONAL_PREVIEW.national);
+  if (!nat) return { applied: false };
+  if (!isPreview && nat.effective && nat.effective > todayStr()) return { applied: false, waiting: nat };
+  Object.keys(nat.values || {}).forEach(function (code) { if (NATIONAL_DEFAULTS.hasOwnProperty(code)) specSet(code, nat.values[code]); });
+  return { applied: true, nat: nat, preview: isPreview };
+}
+var NATIONAL_STATE = { applied: false };
+
+function activeLocal() { return (REGIONAL_PREVIEW && REGIONAL_PREVIEW.local !== undefined) ? REGIONAL_PREVIEW.local : REGIONAL.local; }
+
+/* 엑셀로 등록한 사업 → 판정 규칙 */
+var CHILD_RE = /(아동|자녀|아이|아들|딸|손자|손녀|초등|중학생|고등학생|청소년|영유아|아기|미성년)/;
+function makeCustomRule(d, L) {
+  var short = regionShort(L.region);
+  return {
+    id: 'custom_' + d.row, local: true, custom: true,
+    badge: short + ' 사업', badgeColor: '#7c3aed',
+    agency: L.region + ' 자체사업', program: d.name,
+    desc: d.desc, contact: d.contact || '관할 행정복지센터',
+    guide: d.apply + (d.contact ? ' (문의: ' + d.contact + ')' : ''),
+    source: (d.source || L.region + ' 자체사업') + ' · ' + L.region + ' ' + (L.version || ''),
+    evaluate: function (p, ctx) {
+      var today = todayStr(), notes = [], check = false;
+      if (d.end && d.end < today) return null;                                  // 종료된 사업
+      var flat = ctx.text.replace(/\s+/g, '');
+      var kwHit = d.keywords.filter(function (k) { return flat.indexOf(k.replace(/\s+/g, '')) !== -1; });
+      var needKw = d.keywords.length > 0;
+      var targetOk;
+      if (d.target === '위기가구') targetOk = ctx.crisis.length > 0;
+      else if (d.target === '노인(65세 이상)') targetOk = p.age !== null && p.age !== undefined && p.age >= 65;
+      else if (d.target === '아동·청소년') targetOk = CHILD_RE.test(ctx.text);
+      else if (d.target === '장애인') targetOk = /장애/.test(ctx.text);
+      else targetOk = true;                                                      // 전체: 키워드로만 판단
+      if (!targetOk) return null;
+      if (needKw && !kwHit.length) return null;
+      if (d.target === '위기가구') notes.push('위기사유: ' + ctx.crisis.map(function (c) { return CRISIS_LABELS[c] || c; }).join(', '));
+      else if (d.target !== '전체') notes.push('대상: ' + d.target);
+      if (kwHit.length) notes.push('키워드: ' + kwHit.join(', '));
+      var over = [];
+      if (d.incomeRate !== null) {
+        var std = round1(daeguMedian100(ctx.members) * d.incomeRate / 100);
+        if (ctx.income === null) { check = true; notes.push('소득 미확인 (기준중위 ' + d.incomeRate + '% = ' + std + '만 원)'); }
+        else if (ctx.income > std) over.push('소득 ' + ctx.income + '만 원 > 중위 ' + d.incomeRate + '% ' + std + '만 원');
+        else notes.push('소득 ' + ctx.income + '만 원 ≤ 중위 ' + d.incomeRate + '% ' + std + '만 원');
+      }
+      if (d.propLimit !== null) {
+        var prop = round1((p.resProp || 0) + (p.genProp || 0));
+        if (prop > d.propLimit) over.push('재산 ' + prop.toLocaleString() + '만 원 > ' + d.propLimit.toLocaleString() + '만 원');
+        else notes.push('재산 ' + prop.toLocaleString() + '만 원 ≤ ' + d.propLimit.toLocaleString() + '만 원');
+      }
+      if (d.finLimit !== null) {
+        var fin = p.finProp || 0;
+        if (fin > d.finLimit) over.push('금융 ' + fin.toLocaleString() + '만 원 > ' + d.finLimit.toLocaleString() + '만 원');
+        else notes.push('금융 ' + fin.toLocaleString() + '만 원 ≤ ' + d.finLimit.toLocaleString() + '만 원');
+      }
+      if (over.length) {
+        if (d.overPolicy === '안내 제외') return null;
+        check = true; notes.push('기준 초과(' + over.join(', ') + ') — 담당 부서 확인');
+      }
+      if (d.dup === '중복 불가' && ctx.sim && ctx.sim.isLivePass) { check = true; notes.push('모의판정상 생계급여 대상 → 이 사업은 생계급여와 중복 불가'); }
+      if (d.start && d.start > today) { check = true; notes.push('시행 전 (' + d.start + '부터)'); }
+      if (ctx.residency === 'unknown') { check = true; notes.push(short + ' 거주 여부 확인'); }
+      return { status: check ? 'check' : 'ok', notes: notes };
+    }
+  };
+}
+function customRules() {
+  var L = activeLocal();
+  if (!L || !L.programs) return [];
+  return L.programs.filter(function (d) { return d.use; }).map(function (d) { return makeCustomRule(d, L); });
+}
+
+/* 화면·일지에 표시할 '적용 기준' */
+function regionalBasisText() {
+  var parts = [POLICY_2026.year + '년 지침'];
+  if (NATIONAL_STATE.applied) parts[0] += ' (본청 변경 ' + (NATIONAL_STATE.nat.version || '') + (NATIONAL_STATE.preview ? ', 미리보기' : '') + ')';
+  parts.push('대구시 사업 ' + LOCAL_RULES.length + '종');
+  var L = activeLocal();
+  if (L && L.programs) {
+    var n = L.programs.filter(function (d) { return d.use; }).length;
+    parts.push(L.region + ' 사업 ' + n + '종 ' + (L.version || '') + (REGIONAL_PREVIEW && REGIONAL_PREVIEW.local !== undefined ? ' (미리보기)' : ''));
+  }
+  return parts.join(' · ');
+}
+function renderRegionalBadge() {
+  var el = document.getElementById('regionalBadge');
+  if (el) { el.textContent = '📂 ' + regionalBasisText(); el.title = '적용 기준: ' + regionalBasisText() + ' (눌러서 자세히 보기)'; el.onclick = openRegionalManager; }
+  var bar = document.getElementById('regionalPreviewBar');
+  if (bar) bar.style.display = REGIONAL_PREVIEW ? 'flex' : 'none';
+  var w = document.getElementById('regionalWaitNote');
+  if (w) w.textContent = NATIONAL_STATE.waiting ? '⏳ 본청 변경 기준 ' + NATIONAL_STATE.waiting.version + '은 ' + NATIONAL_STATE.waiting.effective + '부터 적용됩니다.' : '';
+}
+function refreshAfterRegionalChange() {
+  NATIONAL_STATE = applyNationalState();
+  renderRegionalBadge();
+  try { if (typeof runRulePreview === 'function') runRulePreview(); } catch (e) { console.warn(e); }
+  try { if (typeof runSimulation === 'function') runSimulation(); } catch (e) { console.warn(e); }
+}
+
+/* ── 엑셀(xlsx) 읽기: 브라우저 내장 압축 해제 사용 (인터넷·외부 라이브러리 불필요) ── */
+async function esInflateRaw(u8) {
+  if (typeof DecompressionStream === 'undefined') throw new Error('이 브라우저는 엑셀 읽기를 지원하지 않습니다. 최신 크롬 또는 엣지에서 열어 주세요.');
+  var stream = new Blob([u8]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+async function esUnzip(buf) {
+  var dv = new DataView(buf), u8 = new Uint8Array(buf), eocd = -1;
+  for (var i = buf.byteLength - 22; i >= Math.max(0, buf.byteLength - 65557); i--) { if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; } }
+  if (eocd < 0) throw new Error('엑셀(.xlsx) 파일이 아닙니다. 엑셀에서 "Excel 통합 문서(*.xlsx)"로 저장해 주세요.');
+  var n = dv.getUint16(eocd + 10, true), off = dv.getUint32(eocd + 16, true), files = {};
+  for (var k = 0; k < n; k++) {
+    if (dv.getUint32(off, true) !== 0x02014b50) break;
+    var method = dv.getUint16(off + 10, true), csize = dv.getUint32(off + 20, true);
+    var nlen = dv.getUint16(off + 28, true), xlen = dv.getUint16(off + 30, true), clen = dv.getUint16(off + 32, true), loff = dv.getUint32(off + 42, true);
+    var name = new TextDecoder().decode(u8.subarray(off + 46, off + 46 + nlen));
+    var start = loff + 30 + dv.getUint16(loff + 26, true) + dv.getUint16(loff + 28, true);
+    files[name] = { method: method, data: u8.subarray(start, start + csize) };
+    off += 46 + nlen + xlen + clen;
+  }
+  return async function read(name) {
+    name = name.replace(/^\//, '');
+    var f = files[name]; if (!f) return null;
+    var raw = f.method === 0 ? f.data : (f.method === 8 ? await esInflateRaw(f.data) : null);
+    if (!raw) throw new Error('지원하지 않는 압축 방식입니다: ' + name);
+    return new TextDecoder('utf-8').decode(raw);
+  };
+}
+function esXml(s) { return new DOMParser().parseFromString(s, 'application/xml'); }
+function esTags(node, local) { return Array.prototype.slice.call(node.getElementsByTagNameNS('*', local)); }
+function esColIndex(ref) { var m = /^([A-Z]+)/.exec(ref || ''), n = 0; if (!m) return -1; for (var i = 0; i < m[1].length; i++) n = n * 26 + (m[1].charCodeAt(i) - 64); return n - 1; }
+async function readXlsx(buf) {
+  var read = await esUnzip(buf);
+  var wb = esXml(await read('xl/workbook.xml') || '');
+  var rels = esXml(await read('xl/_rels/workbook.xml.rels') || '<x/>');
+  var relMap = {};
+  esTags(rels, 'Relationship').forEach(function (r) { relMap[r.getAttribute('Id')] = r.getAttribute('Target'); });
+  var shared = [];
+  var ssXml = await read('xl/sharedStrings.xml');
+  if (ssXml) esTags(esXml(ssXml), 'si').forEach(function (si) {
+    shared.push(esTags(si, 't').filter(function (t) { return !(t.parentNode && t.parentNode.localName === 'rPh'); }).map(function (t) { return t.textContent; }).join(''));
+  });
+  var out = {};
+  var sheets = esTags(wb, 'sheet');
+  for (var i = 0; i < sheets.length; i++) {
+    var sh = sheets[i], rid = sh.getAttribute('r:id') || sh.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships', 'id');
+    var target = relMap[rid] || ''; var path = target.charAt(0) === '/' ? target.slice(1) : 'xl/' + target.replace(/^\.\//, '');
+    var xml = await read(path); if (!xml) continue;
+    var rows = [];
+    esTags(esXml(xml), 'row').forEach(function (row) {
+      var r = parseInt(row.getAttribute('r'), 10) - 1, cells = [];
+      esTags(row, 'c').forEach(function (c, ci) {
+        var idx = esColIndex(c.getAttribute('r')); if (idx < 0) idx = ci;
+        var t = c.getAttribute('t'), vEl = esTags(c, 'v')[0], v = vEl ? vEl.textContent : null, val = null;
+        if (t === 's') val = v !== null ? shared[parseInt(v, 10)] : null;
+        else if (t === 'inlineStr') val = esTags(c, 't').map(function (x) { return x.textContent; }).join('');
+        else if (t === 'str' || t === 'e') val = v;
+        else if (t === 'b') val = v === '1';
+        else val = v !== null && v !== '' ? Number(v) : null;
+        cells[idx] = val;
+      });
+      rows[isNaN(r) ? rows.length : r] = cells;
+    });
+    out[sh.getAttribute('name')] = rows;
+  }
+  return out;
+}
+
+/* ── 엑셀 내용 검사 ── */
+var PROGRAM_TARGETS = ['위기가구', '노인(65세 이상)', '아동·청소년', '장애인', '전체'];
+function esCellStr(v) { return v === null || v === undefined ? '' : String(v).trim(); }
+function esNum(v) {
+  if (v === null || v === undefined || v === '') return { ok: true, val: null };
+  var n = typeof v === 'number' ? v : Number(String(v).replace(/[,\s원만%]/g, ''));
+  return isFinite(n) ? { ok: true, val: n } : { ok: false };
+}
+function esDate(v) {
+  if (v === null || v === undefined || v === '') return { ok: true, val: null };
+  if (typeof v === 'number') { var d = new Date(Math.round((v - 25569) * 86400000)); return { ok: true, val: d.toISOString().slice(0, 10) }; }
+  var m = /^(\d{4})\s*[.\-\/년]\s*(\d{1,2})\s*[.\-\/월]\s*(\d{1,2})/.exec(String(v).trim());
+  if (!m) return { ok: false };
+  return { ok: true, val: m[1] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[3]).slice(-2) };
+}
+function esFindSheet(book, name) { var k = Object.keys(book).filter(function (n) { return n.replace(/\s/g, '') === name; })[0]; return k ? book[k] : null; }
+
+function parseRegionalWorkbook(book) {
+  var res = { info: null, programs: [], skipped: 0, national: null, nationalError: [], fatal: [] };
+  // 기본정보
+  var infoRows = esFindSheet(book, '기본정보');
+  if (infoRows) {
+    var info = {};
+    infoRows.forEach(function (r) { if (r && r[0]) info[esCellStr(r[0]).replace(/\s/g, '')] = r[1]; });
+    var region = esCellStr(info['지자체(구·군)명']), ver = esCellStr(info['기준버전']), eff = esDate(info['시행일']);
+    var placeholder = !region || /○/.test(region);
+    res.info = { region: region, version: ver, effective: eff.ok ? eff.val : null, dept: esCellStr(info['작성부서']), contact: esCellStr(info['담당자(연락처)']), placeholder: placeholder, errors: [] };
+    if (!placeholder) {
+      if (!/^(대구|대구광역시)\s*\S+/.test(region)) res.info.errors.push('지자체명은 "대구 북구"처럼 적어 주세요');
+      if (!ver) res.info.errors.push('기준 버전(v1 등)을 적어 주세요');
+      if (!eff.ok) res.info.errors.push('시행일 형식이 맞지 않습니다 (예: 2027-01-01)');
+    }
+  }
+  // 사업목록
+  var rows = esFindSheet(book, '사업목록');
+  if (rows && rows[0]) {
+    var head = {};
+    rows[0].forEach(function (h, i) { if (h) head[esCellStr(h).replace(/\s*\*\s*$/, '').replace(/\s/g, '')] = i; });
+    var col = function (r, name) { var i = head[name.replace(/\s/g, '')]; return i === undefined ? null : r[i]; };
+    var need = ['사용', '사업명', '대상', '지원내용', '신청방법', '출처(근거문서)'];
+    var missing = need.filter(function (n) { return head[n.replace(/\s/g, '')] === undefined; });
+    if (missing.length) res.fatal.push('[사업목록] 시트의 제목 줄에 ' + missing.join(', ') + ' 칸이 없습니다. 제공된 양식을 사용해 주세요.');
+    else for (var i = 1; i < rows.length; i++) {
+      var r = rows[i]; if (!r) continue;
+      var name = esCellStr(col(r, '사업명'));
+      var any = r.some(function (v) { return esCellStr(v) !== ''; });
+      if (!any) continue;
+      if (/^\(예시\)/.test(name)) { res.skipped++; continue; }
+      var e = [];
+      var use = esCellStr(col(r, '사용')) !== '중단';
+      var target = esCellStr(col(r, '대상'));
+      var kws = esCellStr(col(r, '감지키워드')).split(/[,，、;]/).map(function (s) { return s.trim(); }).filter(Boolean);
+      var inc = esNum(col(r, '소득기준(기준중위%)')), pr = esNum(col(r, '재산기준(만원)')), fn = esNum(col(r, '금융재산기준(만원)'));
+      var st = esDate(col(r, '시행일')), en = esDate(col(r, '종료일'));
+      if (!name) e.push('사업명 없음');
+      if (PROGRAM_TARGETS.indexOf(target) === -1) e.push('대상은 목록에서 고르세요');
+      if (target === '전체' && !kws.length) e.push('대상이 "전체"면 감지 키워드가 필요합니다');
+      if (!inc.ok || (inc.val !== null && (inc.val <= 0 || inc.val > 300))) e.push('소득기준은 1~300 사이 숫자');
+      if (!pr.ok || (pr.val !== null && pr.val < 0)) e.push('재산기준은 만 원 단위 숫자');
+      if (!fn.ok || (fn.val !== null && fn.val < 0)) e.push('금융재산기준은 만 원 단위 숫자');
+      if (!esCellStr(col(r, '지원내용'))) e.push('지원내용 없음');
+      if (!esCellStr(col(r, '신청방법'))) e.push('신청방법 없음');
+      if (!esCellStr(col(r, '출처(근거문서)'))) e.push('출처 없음');
+      if (!st.ok) e.push('시행일 형식 오류'); if (!en.ok) e.push('종료일 형식 오류');
+      if (st.ok && en.ok && st.val && en.val && en.val < st.val) e.push('종료일이 시행일보다 빠름');
+      if (inc.ok && pr.ok && fn.ok && inc.val === null && pr.val === null && fn.val === null && !kws.length && target !== '위기가구')
+        e.push('소득·재산 기준이나 감지 키워드 중 하나는 있어야 합니다');
+      res.programs.push({
+        row: i + 1, use: use, name: name, kind: esCellStr(col(r, '사업구분')), target: target, keywords: kws,
+        incomeRate: inc.ok ? inc.val : null, propLimit: pr.ok ? pr.val : null, finLimit: fn.ok ? fn.val : null,
+        overPolicy: esCellStr(col(r, '기준초과시')) === '안내 제외' ? '안내 제외' : '확인 필요로 안내',
+        dup: esCellStr(col(r, '생계급여수급가구')) === '중복 불가' ? '중복 불가' : '중복 가능',
+        desc: esCellStr(col(r, '지원내용')), apply: esCellStr(col(r, '신청방법')), contact: esCellStr(col(r, '문의처')),
+        source: esCellStr(col(r, '출처(근거문서)')), start: st.ok ? st.val : null, end: en.ok ? en.val : null, errors: e
+      });
+    }
+  }
+  // 국가기준 (본청 전용: "적용"일 때만)
+  var nat = esFindSheet(book, '국가기준');
+  if (nat) {
+    var flag = '', ver = '', eff = null, hdrRow = -1;
+    nat.forEach(function (r, i) {
+      if (!r) return; var a = esCellStr(r[0]).replace(/\s/g, '');
+      if (a === '이시트적용') flag = esCellStr(r[1]);
+      if (a === '기준버전') ver = esCellStr(r[1]);
+      if (a === '시행일') eff = esDate(r[1]);
+      if (/^코드/.test(a)) hdrRow = i;
+    });
+    if (flag === '적용') {
+      var values = {}, changes = [], errs = [];
+      if (!ver) errs.push('국가기준 버전을 적어 주세요');
+      if (!eff || !eff.ok || !eff.val) errs.push('국가기준 시행일을 적어 주세요 (예: 2027-01-01)');
+      var specMap = {}; NATIONAL_SPEC.forEach(function (s) { specMap[s.code] = s; });
+      for (var j = hdrRow + 1; hdrRow >= 0 && j < nat.length; j++) {
+        var rr = nat[j]; if (!rr || !rr[0]) continue;
+        var s = specMap[esCellStr(rr[0])]; if (!s) continue;
+        var nums = rr.slice(4, s.kind === 'arr7' ? 11 : 5).map(function (v) { return esNum(v); });
+        if (nums.some(function (x) { return !x.ok || x.val === null || x.val <= 0; }) || nums.length < (s.kind === 'arr7' ? 7 : 1)) { errs.push(s.label + ': 빈칸이나 잘못된 숫자'); continue; }
+        var vals = nums.map(function (x) { return s.unit === '%' ? x.val / 100 : x.val; });
+        if (s.kind === 'arr7') {
+          for (var q = 1; q < 7; q++) if (vals[q] <= vals[q - 1]) { errs.push(s.label + ': 가구원 수가 늘수록 커져야 합니다'); break; }
+        }
+        if (s.unit === '%' && (vals[0] <= 0 || vals[0] >= 0.5)) errs.push(s.label + ': 백분율 값 확인 (예: 1.04)');
+        var v = s.kind === 'arr7' ? vals : vals[0];
+        values[s.code] = v;
+        var dflt = NATIONAL_DEFAULTS[s.code];
+        if (JSON.stringify(v) !== JSON.stringify(dflt)) changes.push({ label: s.group + ' · ' + s.label, unit: s.unit, from: dflt, to: v, pct: s.unit === '%' });
+      }
+      ['livelihood', 'medical', 'housing', 'education'].reduce(function (prev, k) {
+        var cur = values['P.selection.' + k] || NATIONAL_DEFAULTS['P.selection.' + k];
+        if (prev && cur.some(function (x, i) { return x <= prev[i]; })) errs.push('선정기준은 생계 < 의료 < 주거 < 교육 순서여야 합니다');
+        return cur;
+      }, null);
+      res.national = { version: ver, effective: eff && eff.ok ? eff.val : null, values: values, changes: changes };
+      res.nationalError = errs;
+    }
+  }
+  return res;
+}
+
+/* ── 지역 사업 관리 화면 ── */
+function openRegionalManager() { renderRegionalManager(); document.getElementById('regionalModal').style.display = 'flex'; }
+function closeRegionalManager() { document.getElementById('regionalModal').style.display = 'none'; }
+function esFmtVal(v, pct) { var f = function (x) { return pct ? round2(x * 100) + '%' : Number(x).toLocaleString(); }; return Array.isArray(v) ? v.map(f).join(' / ') : f(v); }
+function renderRegionalManager() {
+  var L = REGIONAL.local, N = REGIONAL.national, P = REGIONAL_PENDING;
+  var cur = '<div class="rg-sec"><div class="rg-h">현재 이 파일에 담긴 기준</div><ul class="rg-list">' +
+    '<li><b>국가 기준</b> : ' + (N ? '본청 변경 ' + escapeHtml(N.version) + ' (시행 ' + escapeHtml(N.effective || '-') + ', ' + Object.keys(N.values).length + '개 항목)' + (NATIONAL_STATE.waiting ? ' <span class="rg-warn">시행일 전이라 대기 중</span>' : '') : POLICY_2026.year + '년 지침 기본값') + '</li>' +
+    '<li><b>대구시 사업</b> : ' + LOCAL_RULES.map(function (r) { return escapeHtml(r.program); }).join(', ') + ' (본청 관리)</li>' +
+    '<li><b>구·군 사업</b> : ' + (L && L.programs ? escapeHtml(L.region) + ' ' + escapeHtml(L.version || '') + ' · ' + L.programs.filter(function (d) { return d.use; }).length + '종' +
+      (L.dept ? ' · ' + escapeHtml(L.dept) : '') : '등록 없음') + '</li></ul></div>';
+  var steps = '<div class="rg-sec"><div class="rg-h">구·군 사업 등록 · 기준 갱신</div>' +
+    '<ol class="rg-steps"><li>엑셀 양식을 내려받아 [기본정보]·[사업목록]을 작성합니다. <span class="rg-muted">(본청은 지침 변경 시 [국가기준])</span></li>' +
+    '<li>작성한 엑셀을 불러와 검사 결과를 확인합니다.</li><li>[미리보기]로 상담 예시에 사업이 뜨는지 확인합니다.</li>' +
+    '<li>[구 전용 파일 만들기]로 읍·면·동 배포 파일을 만듭니다.</li></ol>' +
+    '<div class="rg-btns"><button class="btn btn-outline" onclick="downloadRegionalTemplate()">📄 엑셀 양식 내려받기</button>' +
+    '<button class="btn btn-primary" onclick="document.getElementById(\'regionalFile\').click()">📥 엑셀 불러오기</button></div></div>';
+  var result = '';
+  if (P) {
+    if (P.error) result = '<div class="rg-sec rg-err">' + escapeHtml(P.error) + '</div>';
+    else {
+      var r = P.parsed, okCount = r.programs.filter(function (d) { return !d.errors.length; }).length, bad = r.programs.length - okCount;
+      var infoLine = r.info && !r.info.placeholder
+        ? '<b>' + escapeHtml(r.info.region) + '</b> · 버전 ' + escapeHtml(r.info.version || '-') + ' · 시행일 ' + escapeHtml(r.info.effective || '-') + (r.info.dept ? ' · ' + escapeHtml(r.info.dept) : '')
+        : '<span class="rg-muted">기본정보 미작성 (구·군 사업 없이 국가기준만 반영)</span>';
+      var infoErr = r.info && r.info.errors.length ? '<div class="rg-errline">⛔ ' + r.info.errors.map(escapeHtml).join(' · ') + '</div>' : '';
+      var progRows = r.programs.map(function (d) {
+        var crit = [d.incomeRate !== null ? '중위 ' + d.incomeRate + '%' : '', d.propLimit !== null ? '재산 ' + d.propLimit.toLocaleString() + '만' : '', d.finLimit !== null ? '금융 ' + d.finLimit.toLocaleString() + '만' : ''].filter(Boolean).join(' · ') || '—';
+        var st = d.errors.length ? '<span class="status-chip chip-bad">⛔ ' + escapeHtml(d.errors.join(', ')) + '</span>'
+               : (d.use ? '<span class="status-chip chip-ok">✔ 정상</span>' : '<span class="status-chip chip-muted">중단</span>');
+        return '<tr' + (d.errors.length ? ' class="row-review"' : '') + '><td>' + d.row + '</td><td><b>' + escapeHtml(d.name || '(사업명 없음)') + '</b><div class="rg-muted">' + escapeHtml(d.desc) + '</div></td><td>' + escapeHtml(d.target) +
+          (d.keywords.length ? '<div class="rg-muted">키워드: ' + escapeHtml(d.keywords.join(', ')) + '</div>' : '') + '</td><td>' + crit + (d.dup === '중복 불가' ? '<div class="rg-muted">생계급여 중복 불가</div>' : '') + '</td><td>' + escapeHtml((d.start || '') + (d.end ? ' ~ ' + d.end : '')) + '</td><td>' + st + '</td></tr>';
+      }).join('');
+      var natHtml = '';
+      if (r.national) {
+        natHtml = '<div class="rg-nat"><div class="rg-h" style="color:#b91c1c;">⚠ 국가기준 변경 포함 (본청 전용) — 버전 ' + escapeHtml(r.national.version || '-') + ', 시행일 ' + escapeHtml(r.national.effective || '-') + '</div>' +
+          (r.nationalError.length ? '<div class="rg-errline">⛔ ' + r.nationalError.map(escapeHtml).join('<br>⛔ ') + '</div>' : '') +
+          (r.national.changes.length ? '<table class="rg-table"><tr><th>항목</th><th>기본값</th><th>변경값</th></tr>' + r.national.changes.map(function (c) {
+            return '<tr><td>' + escapeHtml(c.label) + ' <span class="rg-muted">(' + escapeHtml(c.unit) + ')</span></td><td>' + esFmtVal(c.from, c.pct) + '</td><td><b>' + esFmtVal(c.to, c.pct) + '</b></td></tr>';
+          }).join('') + '</table>' : '<div class="rg-muted">기본값과 다른 항목이 없습니다.</div>') + '</div>';
+      }
+      var canUse = regionalPendingUsable();
+      result = '<div class="rg-sec"><div class="rg-h">검사 결과 · ' + escapeHtml(P.fileName) + '</div><div style="margin-bottom:6px;">' + infoLine + '</div>' + infoErr +
+        (r.fatal.length ? '<div class="rg-errline">⛔ ' + r.fatal.map(escapeHtml).join('<br>') + '</div>' : '') +
+        '<div style="margin:6px 0;">사업 <b>' + r.programs.length + '</b>건 · 정상 <b style="color:#047857;">' + okCount + '</b>' + (bad ? ' · 오류 <b style="color:#b91c1c;">' + bad + '</b> (오류 줄은 반영되지 않습니다)' : '') + (r.skipped ? ' · 예시 줄 ' + r.skipped + '건 제외' : '') + '</div>' +
+        (r.programs.length ? '<div class="rg-tablewrap"><table class="rg-table"><tr><th>줄</th><th>사업명 · 지원내용</th><th>대상</th><th>기준</th><th>기간</th><th>검사</th></tr>' + progRows + '</table></div>' : '') +
+        natHtml +
+        '<div class="rg-btns">' + (canUse ? '<button class="btn btn-outline" onclick="previewRegionalPending()">👁 미리보기 적용</button><button class="btn btn-happy" onclick="buildRegionalFile()">💾 구 전용 파일 만들기</button>'
+                                         : '<span class="rg-warn">오류를 고친 뒤 엑셀을 다시 불러오세요.</span>') + '</div></div>';
+    }
+  }
+  var prev = REGIONAL_PREVIEW ? '<div class="rg-sec rg-prev">👁 미리보기 적용 중 — 파일로 만들기 전까지 이 화면에서만 반영됩니다. <button class="btn btn-outline" style="padding:2px 8px; font-size:11px;" onclick="clearRegionalPreview()">미리보기 해제</button></div>' : '';
+  safeSetHtml('regionalModalBody', prev + cur + steps + result);
+}
+function regionalPendingUsable() {
+  var P = REGIONAL_PENDING; if (!P || P.error) return false;
+  var r = P.parsed;
+  if (r.fatal.length) return false;
+  if (r.info && !r.info.placeholder && r.info.errors.length) return false;
+  if (r.national && r.nationalError.length) return false;
+  var hasLocal = r.info && !r.info.placeholder;
+  return hasLocal || !!r.national;
+}
+function pendingToConfig() {
+  var r = REGIONAL_PENDING.parsed, cfg = {};
+  if (r.national) cfg.national = { version: r.national.version, effective: r.national.effective, values: r.national.values };
+  if (r.info && !r.info.placeholder) cfg.local = {
+    region: r.info.region, version: r.info.version, effective: r.info.effective, dept: r.info.dept, contact: r.info.contact,
+    createdAt: todayStr(), programs: r.programs.filter(function (d) { return !d.errors.length; }).map(function (d) { var o = {}; for (var k in d) if (k !== 'errors') o[k] = d[k]; return o; })
+  };
+  return cfg;
+}
+async function handleRegionalFile(input) {
+  var f = input.files && input.files[0]; if (!f) return;
+  try {
+    var book = await readXlsx(await f.arrayBuffer());
+    REGIONAL_PENDING = { fileName: f.name, parsed: parseRegionalWorkbook(book) };
+    if (!esFindSheet(book, '사업목록') && !esFindSheet(book, '국가기준')) REGIONAL_PENDING = { error: '[사업목록] 또는 [국가기준] 시트가 없습니다. 제공된 엑셀 양식을 사용해 주세요.' };
+  } catch (e) { REGIONAL_PENDING = { error: '엑셀을 읽지 못했습니다: ' + (e.message || e) }; }
+  input.value = '';
+  renderRegionalManager();
+}
+function previewRegionalPending() {
+  if (!regionalPendingUsable()) return;
+  var cfg = pendingToConfig();
+  REGIONAL_PREVIEW = { national: cfg.national || null, local: cfg.local !== undefined ? cfg.local : undefined };
+  refreshAfterRegionalChange();
+  renderRegionalManager();
+  showToast('미리보기 적용: 1단계에 상담 예시를 넣어 확인하세요.');
+}
+function clearRegionalPreview() { REGIONAL_PREVIEW = null; refreshAfterRegionalChange(); renderRegionalManager(); }
+
+/* 구 전용 파일 만들기: 처음 열었을 때의 깨끗한 원본(상담 내용 없음)에 기준만 넣어 저장 */
+function buildRegionalFile() {
+  if (!regionalPendingUsable()) return;
+  var src = window.__ES_PRISTINE__;
+  if (!src) { showToast('원본을 찾지 못했습니다. 파일을 새로 연 뒤 다시 시도하세요.'); return; }
+  var cfg = pendingToConfig();
+  var merged = { national: cfg.national || REGIONAL.national || null, local: cfg.local !== undefined ? cfg.local : (REGIONAL.local || null) };
+  var json = JSON.stringify(merged).replace(/</g, '\\u003c');
+  var re = /(<script type="application\/json" id="esRegionalConfig">)[\s\S]*?(<\/script>)/;
+  if (!re.test(src)) { showToast('기준을 넣을 위치를 찾지 못했습니다.'); return; }
+  var html = src.replace(re, function (_, a, b) { return a + json + b; });
+  var name = '행복이어봄_' + (merged.local ? merged.local.region.replace(/\s+/g, '') + '_' + (merged.local.version || 'v1') : '기본_' + (merged.national ? merged.national.version.replace(/\s+/g, '') : '')) + '.html';
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
+  a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  showToast('"' + name + '" 파일을 만들었습니다. 읍·면·동에 배포하세요.');
+}
+function downloadRegionalTemplate() {
+  var bin = atob(TEMPLATE_XLSX_B64), u8 = new Uint8Array(bin.length);
+  for (var i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([u8], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+  a.download = '행복이어봄_지역사업_등록양식.xlsx'; document.body.appendChild(a); a.click();
+  setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+
+/* 파일에 담긴 기준 읽기 */
+(function loadEmbeddedRegional() {
+  try {
+    var el = document.getElementById('esRegionalConfig');
+    var cfg = el ? JSON.parse(el.textContent || 'null') : null;
+    if (cfg) REGIONAL = { national: cfg.national || null, local: cfg.local || null };
+  } catch (e) { console.warn('지역 기준 읽기 실패', e); }
+  NATIONAL_STATE = applyNationalState();
+})();
+window.addEventListener('DOMContentLoaded', renderRegionalBadge);
+
 
 /* ───────────────────────── [11] 이벤트 처리·초기화 ───────────────────────── */
 function currentCounselText() {
@@ -3744,6 +4230,10 @@ window.addEventListener('DOMContentLoaded', function () {
   loadPreset('basicLife');
   setTimeout(warmUpLlm, 800);
 });
+  </script>
+  <script>
+    /* 구 전용 파일 만들기용: 화면이 그려지기 전(상담 내용 없음) 상태를 보관 */
+    window.__ES_PRISTINE__ = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
   </script>
 
 
