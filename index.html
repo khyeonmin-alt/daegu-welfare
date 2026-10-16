@@ -294,7 +294,34 @@
     .extract-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
     .extract-table tr.row-review td, .extract-table tr.row-review th { background: #fffbeb; }
     .extract-val { width: 22%; font-weight: 700; color: #0f172a; }
-    .extract-ev { color: #475569; font-size: 11.5px; }
+    .extract-ev { color: #475569; font-size: 11.5px; line-height: 1.6; }
+    .ev-quote { color: #64748b; }
+    .ev-mark { background: #fef08a; color: #0f172a; font-weight: 800; padding: 1px 3px; border-radius: 3px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+    .ev-none { color: #94a3b8; }
+    /* 4단계 시뮬레이터 입력 */
+    .sim-grid { display: grid; grid-template-columns: 100px 130px minmax(170px, 1fr) minmax(260px, 1.6fr) minmax(220px, 1.2fr); gap: 12px 14px; align-items: end; }
+    .sim-field label { display: block; font-size: 11.5px; font-weight: 700; color: #475569; margin-bottom: 5px; white-space: nowrap; }
+    .sim-field input[type="number"], .sim-field select { width: 100%; height: 36px; padding: 0 10px; border: 1px solid var(--border-dark); border-radius: 6px; font-size: 13px; font-weight: 700; color: var(--text-main); background: #fff; }
+    .sim-field input[type="number"]:focus, .sim-field select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(29,78,216,0.12); }
+    .sim-options { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 12px 0 14px; padding-top: 10px; border-top: 1px dashed var(--border); }
+    .sim-check { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 600; color: #334155; cursor: pointer; white-space: nowrap; }
+    .sim-check input { width: 15px; height: 15px; accent-color: var(--primary); }
+    .sim-money-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 16px; background: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid var(--border); }
+    .sim-money { position: relative; }
+    .sim-money input[type="number"] { text-align: right; padding-right: 44px; font-variant-numeric: tabular-nums; }
+    .sim-unit { position: absolute; right: 10px; bottom: 9px; font-size: 12px; font-weight: 700; color: #64748b; pointer-events: none; }
+    /* 3단계 맞춤 구비서류 */
+    .doc-group-title { display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 800; color: #475569; margin: 6px 0 2px; padding: 0 2px; list-style: none; }
+    .doc-group-title small { font-weight: 600; color: #94a3b8; }
+    @media print { #clientDocListArea li.doc-group-title { border: none !important; padding: 6px 0 0 !important; background: none !important; break-after: avoid; } .doc-item { break-inside: avoid; } }
+    .doc-item { padding: 8px 12px; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+    .doc-item.common strong { color: #334155; }
+    .doc-item.custom { border-color: #bfdbfe; border-left: 4px solid var(--primary); background: #f8fbff; }
+    .doc-item.custom strong { color: #1e40af; }
+    .doc-tag { font-size: 10.5px; font-weight: 800; padding: 2px 7px; border-radius: 4px; white-space: nowrap; border: 1px solid; }
+    .doc-tag.common { color: #475569; background: #f1f5f9; border-color: #e2e8f0; }
+    .doc-tag.custom { color: #fff; background: var(--primary); border-color: var(--primary); }
+    .doc-reason { color: #1d4ed8; font-size: 11.5px; font-weight: 700; margin-top: 3px; }
     .extract-note { font-size: 11px; font-weight: 600; color: #b45309; margin-top: 3px; }
     .extract-raw { font-size: 10.5px; font-weight: 500; color: #64748b; margin-top: 2px; }
     .extract-stale { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; border-radius: 6px; padding: 8px 12px; font-size: 12px; margin-bottom: 10px; }
@@ -557,9 +584,9 @@
       <div class="grid-2col">
         <div class="card" id="printableArea">
           <div class="card-header no-print">
-            <div class="card-title">📄 [민원인 맞춤 구비서류] 사회보장급여 신청 시 지참 서류</div>
+            <div class="card-title">📄 [민원인 맞춤 구비서류] 신청 시 지참 서류</div>
             <div style="display:flex; gap:8px;">
-              <span class="badge badge-gov" id="clientDocCountBadge">총 9종 안내</span>
+              <span class="badge badge-gov" id="clientDocCountBadge" style="white-space:nowrap;">총 9종 안내</span>
               <button class="btn btn-primary" onclick="window.print()">🖨 맞춤 구비서류 즉시 출력</button>
             </div>
           </div>
@@ -615,14 +642,14 @@
           <div class="card-title">🧮 [4단계] 소득인정액 산출 시뮬레이터 (2026년 법정 기준 상세)</div>
           <button class="btn btn-outline" id="btnToggleTrace" onclick="toggleCalcTrace()">🔍 법정 산출 공식(Trace) 접기/펼치기</button>
         </div>
-        <div style="display: grid; grid-template-columns: 110px 110px 1.2fr 1.3fr 1fr; gap: 12px; margin-bottom: 12px;">
-          <div>
-            <label style="font-size:11.5px; font-weight:700;">신청인 만 나이</label>
-            <input type="number" id="simAge" value="65" min="0" max="120" oninput="handleManualSimulatorChange()" style="width:100%; height:32px; padding:4px 8px; border:1px solid var(--border-dark); border-radius:4px; font-size:13px; font-weight:700;">
+        <div class="sim-grid">
+          <div class="sim-field">
+            <label for="simAge">신청인 만 나이</label>
+            <input type="number" id="simAge" value="65" min="0" max="120" oninput="handleManualSimulatorChange()">
           </div>
-          <div>
-            <label style="font-size:11.5px; font-weight:700;">가구원수</label>
-            <select id="simMembers" onchange="handleManualSimulatorChange()" style="height:32px;">
+          <div class="sim-field">
+            <label for="simMembers">가구원수</label>
+            <select id="simMembers" onchange="handleManualSimulatorChange()">
               <option value="1">1인 가구</option>
               <option value="2">2인 가구</option>
               <option value="3">3인 가구</option>
@@ -632,34 +659,32 @@
               <option value="7">7인 가구</option>
             </select>
           </div>
-          <div>
-            <label style="font-size:11.5px; font-weight:700;">거주 지역</label>
-            <select id="simRegion" onchange="handleManualSimulatorChange()" style="height:32px; width:100%;">
+          <div class="sim-field">
+            <label for="simRegion">거주 지역</label>
+            <select id="simRegion" onchange="handleManualSimulatorChange()">
+              <option value="daegu" selected>대구광역시</option>
+              <option value="metro">그 외 광역시·세종</option>
               <option value="seoul">서울특별시</option>
               <option value="incheon">인천광역시</option>
               <option value="gyeonggi_si">경기도 시 지역</option>
               <option value="gyeonggi_gun">경기도 군 지역 (가평·양평·연천)</option>
-              <option value="metro" selected>광역시·세종 (인천 제외)</option>
               <option value="changwon">창원시</option>
               <option value="other_si">그 외 도의 시 지역</option>
               <option value="other_gun">그 외 도의 군 지역</option>
             </select>
           </div>
-          <div>
-            <label style="font-size:11.5px; font-weight:700;">근로·사업소득 공제 유형</label>
-            <select id="simDeductType" onchange="handleManualSimulatorChange()" style="height:32px; width:100%;">
+          <div class="sim-field">
+            <label for="simDeductType">근로·사업소득 공제 유형</label>
+            <select id="simDeductType" onchange="handleManualSimulatorChange()">
               <option value="basic">기본 30% 공제 (일반·질병부상·임산부 등)</option>
               <option value="senior">65세 이상·등록장애인·북한이탈주민·35세 이상 학생 (20만 원 + 30%)</option>
               <option value="youth">34세 이하·대학생 (60만 원 + 30%)</option>
               <option value="rehab">등록장애인 직업재활 참여소득 (20만 원 + 50%)</option>
             </select>
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;margin-top:6px;cursor:pointer;">
-              <input type="checkbox" id="simAllIncapable" onchange="handleManualSimulatorChange()"> 가구원 전원 근로무능력 (재산 소득환산 제외 검토)
-            </label>
           </div>
-          <div>
-            <label style="font-size:11.5px; font-weight:700;">부양의무 상태</label>
-            <select id="simSupportObligor" onchange="handleManualSimulatorChange()" style="height:32px;">
+          <div class="sim-field">
+            <label for="simSupportObligor">부양의무 상태</label>
+            <select id="simSupportObligor" onchange="handleManualSimulatorChange()">
               <option value="severed">가족관계 해체 (지생보 심의 대상)</option>
               <option value="none">부양의무자 없음</option>
               <option value="normal">부양의무자 있음 (조사 대상)</option>
@@ -667,13 +692,18 @@
           </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid var(--border);">
-          <div><label style="font-size:11.5px; font-weight:700;">월 근로·사업소득 (만원)</label><input type="number" id="simEarnedIncome" value="0" min="0" oninput="handleManualSimulatorChange()"></div>
-          <div><label style="font-size:11.5px; font-weight:700;">공적·사적이전소득 (만원)</label><input type="number" id="simOtherIncome" value="0" min="0" oninput="handleManualSimulatorChange()"></div>
-          <div><label style="font-size:11.5px; font-weight:700;">주거용재산 (만원)</label><input type="number" id="simResProp" value="0" min="0" oninput="handleManualSimulatorChange()"></div>
-          <div><label style="font-size:11.5px; font-weight:700;">일반재산 (만원)</label><input type="number" id="simGenProp" value="0" min="0" oninput="handleManualSimulatorChange()"></div>
-          <div><label style="font-size:11.5px; font-weight:700;">금융재산 (만원)</label><input type="number" id="simFinProp" value="0" min="0" oninput="handleManualSimulatorChange()"></div>
-          <div><label style="font-size:11.5px; font-weight:700;">금융부채 (만원)</label><input type="number" id="simDebt" value="0" min="0" oninput="handleManualSimulatorChange()"></div>
+        <div class="sim-options">
+          <label class="sim-check"><input type="checkbox" id="simIsCouple"> 부부가구 (기초연금 부부 기준 적용)</label>
+          <label class="sim-check"><input type="checkbox" id="simAllIncapable" onchange="handleManualSimulatorChange()"> 가구원 전원 근로무능력 (재산 소득환산 제외 검토)</label>
+        </div>
+
+        <div class="sim-money-grid">
+          <div class="sim-field sim-money"><label for="simEarnedIncome">월 근로·사업소득</label><input type="number" id="simEarnedIncome" value="0" min="0" oninput="handleManualSimulatorChange()"><span class="sim-unit">만 원</span></div>
+          <div class="sim-field sim-money"><label for="simOtherIncome">공적·사적 이전소득 (월)</label><input type="number" id="simOtherIncome" value="0" min="0" oninput="handleManualSimulatorChange()"><span class="sim-unit">만 원</span></div>
+          <div class="sim-field sim-money"><label for="simResProp">주거용재산 (보증금·주택가액)</label><input type="number" id="simResProp" value="0" min="0" oninput="handleManualSimulatorChange()"><span class="sim-unit">만 원</span></div>
+          <div class="sim-field sim-money"><label for="simGenProp">일반재산</label><input type="number" id="simGenProp" value="0" min="0" oninput="handleManualSimulatorChange()"><span class="sim-unit">만 원</span></div>
+          <div class="sim-field sim-money"><label for="simFinProp">금융재산</label><input type="number" id="simFinProp" value="0" min="0" oninput="handleManualSimulatorChange()"><span class="sim-unit">만 원</span></div>
+          <div class="sim-field sim-money"><label for="simDebt">금융부채</label><input type="number" id="simDebt" value="0" min="0" oninput="handleManualSimulatorChange()"><span class="sim-unit">만 원</span></div>
         </div>
         
         <div id="calcTraceBox" style="display:block; background:#f1f5f9; padding:14px; border-radius:6px; margin-top:12px; font-family:monospace; font-size:12px; line-height:1.7; border: 1px solid #cbd5e1;"><div style="font-weight: 800; color: #1e3a8a; margin-bottom: 6px; font-size: 13px;">📌 [2026년 법정 소득인정액 산출 Trace 및 급여 적합성 실시간 판정]</div><div style="margin-bottom: 4px;">• <strong>신청인 기본정보:</strong> 만 58세 (만 65세 미만), 1인 가구, <strong>거주지역: 대도시 (광역시·세종)</strong></div><div style="margin-bottom: 4px;">• <strong>소득평가액:</strong> <strong>0만 원</strong> = [실제근로 0만 - 법정공제 0만] + 이전소득 0만</div><div style="margin-bottom: 6px;">• <strong>재산의 소득환산액:</strong> <strong>0만 원</strong> = 주거한도내(0만×1.04%=0만) + 한도초과(0만×4.17%=0만) + 일반재산(0만×4.17%=0만) + 금융재산(0만×6.26%=0만)</div><div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed #cbd5e1;"><div style="font-weight: 800; color: #334155; margin-bottom: 6px;">🎯 4대 복지급여 기준 비교 실시간 판정:</div><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 11.5px;"><div>1) <strong>생계급여 (32%):</strong> 인정액 0만 원 ➡️ <span class="trace-badge trace-badge-pass">적합 (기준 82만 이하)</span></div><div>2) <strong>긴급지원 (75%):</strong> 실소득 0만 원 ➡️ <span class="trace-badge trace-badge-pass">적합 (실소득 192.3만 &amp; 금융 890만 이하)</span></div><div>3) <strong>차상위 (50%):</strong> 인정액 0만 원 ➡️ <span class="trace-badge trace-badge-pass">적합 (기준 128.2만 이하)</span></div><div>4) <strong>기초연금:</strong> 연금인정액 0만 원 ➡️ <span class="trace-badge trace-badge-fail">연령미달 (만65세 미만)</span></div></div></div></div>
@@ -890,7 +920,8 @@ var REGIONS = {
   incheon:      { label: '인천광역시',                       basic: 'gyeonggi', tier3: '대도시' },
   gyeonggi_si:  { label: '경기도 시 지역',                   basic: 'gyeonggi', tier3: '중소도시' },
   gyeonggi_gun: { label: '경기도 군 지역 (가평·양평·연천)',   basic: 'gyeonggi', tier3: '농어촌' },
-  metro:        { label: '광역시·세종 (인천 제외)',           basic: 'metro',    tier3: '대도시' },
+  daegu:        { label: '대구광역시',                       basic: 'metro',    tier3: '대도시' },   // 계산 구간은 광역시와 동일
+  metro:        { label: '그 외 광역시·세종',                 basic: 'metro',    tier3: '대도시' },
   changwon:     { label: '창원시',                           basic: 'metro',    tier3: '중소도시' },
   other_si:     { label: '그 외 도의 시 지역',               basic: 'other',    tier3: '중소도시' },
   other_gun:    { label: '그 외 도의 군 지역',               basic: 'other',    tier3: '농어촌' }
@@ -1014,6 +1045,128 @@ var CRISIS_TO_AGENCY = {
   "전세사기": "hug_jeonse", "강제퇴거주거위기": "lh_housing", "자살위기": "mental_health",
   "실직폐업": "employment_center", "단전단수": "energy_voucher", "중한질병부상": "nhis_medical"
 };
+
+/* ── 대구시 연계 지원사업 (지역 자원) ──
+   · 키워드·위기사유 감지 + 거주지(대구) + 소득·재산 기준을 프로그램이 판정합니다.
+   · 매년 사업안내가 바뀌면 DAEGU_LOCAL 기준값만 갱신합니다. */
+var DAEGU_LOCAL = {
+  // 기준 중위소득 100% (원/월, 2026년 보건복지부 고시). 8인 이상은 1인당 959,198원 추가
+  median100: [2564238, 4199292, 5359036, 6494738, 7556719, 8555952, 9515150],
+  medianAddPer: 959198,
+  hope: {
+    propertyLimit: 35000,                                               // 재산 3억 5천만 원 이하 (만원)
+    finance: [9846, 12298, 14038, 15742, 17335, 18833, 20272],          // 금융재산 기준 (천원) = 기본공제 600만 + 기준중위 150%
+    payMin: 20, payMax: 100                                             // 지원금액 20~100만 원 (구·군별 기준)
+  }
+};
+
+var OTHER_REGION_RE = /(서울|인천|부산|대전|광주|울산|세종|경기|강원|충북|충남|충청|전북|전남|전라|경남|제주|창원|수원|성남|고양|용인)/;
+
+/* 대구 거주 여부: 'yes' | 'unknown' | 'no' */
+function daeguResidency(text, p) {
+  var t = text || '';
+  var regionLine = t.match(/거주\s*지역?\s*[:：]?\s*([^\n]{0,30})/);
+  var scope = regionLine ? regionLine[1] : t;
+  if (/(대구|군위|달서|수성|달성)/.test(scope)) return 'yes';
+  if (OTHER_REGION_RE.test(scope)) return 'no';
+  if (p && !p.regionAssumed && p.region === 'daegu') return 'yes';
+  if (p && !p.regionAssumed && p.region && p.region !== 'metro' && p.region !== 'daegu') return 'no';
+  return 'unknown';
+}
+
+function daeguMedian100(members) {
+  var m = Math.max(1, Math.round(members || 1)), T = DAEGU_LOCAL.median100;
+  var won = m <= 7 ? T[m - 1] : T[6] + (m - 7) * DAEGU_LOCAL.medianAddPer;
+  return round1(wonToMan(won));
+}
+
+/* 각 규칙의 evaluate(p, ctx)는 null(미해당) 또는 { status:'ok'|'check', notes:[...] }를 돌려줍니다 */
+var LOCAL_RULES = [
+  {
+    id: "daegu_hope_benefit",
+    local: true,
+    agency: "대구광역시 (달구벌 희망복지기동대)",
+    program: "달구벌 희망급여",
+    trigger: null,   // 위기사유(긴급복지지원법 제2조 준용) 감지 시
+    desc: "위기상황으로 생계가 곤란한 저소득 취약계층에 위기상황에 따라 20만~100만 원 지원 (구·군별 지원기준 적용)",
+    contact: "관할 행정복지센터 → 구·군",
+    guide: "요청·신고 접수 및 생활실태조사(읍·면·동) → 지원여부·금액 결정(구·군) → 계좌입금",
+    source: "2026년 대구시 달구벌복지기동대 사업운영 (구·군별 세부기준 확인)",
+    evaluate: function (p, ctx) {
+      if (!ctx.crisis.length) return null;
+      var H = DAEGU_LOCAL.hope, m = ctx.members, notes = [], check = false, over = [];
+      notes.push('위기사유: ' + ctx.crisis.map(function (c) { return CRISIS_LABELS[c] || c; }).join(', '));
+      var std = daeguMedian100(m);
+      if (ctx.income === null) { check = true; notes.push('소득 미확인 (기준 중위 100% ' + std + '만 원)'); }
+      else if (ctx.income > std) { over.push('소득 ' + ctx.income + '만 원 > 기준 ' + std + '만 원'); }
+      else notes.push('소득 ' + ctx.income + '만 원 ≤ 중위 100% ' + std + '만 원');
+      var prop = round1((p.resProp || 0) + (p.genProp || 0));
+      if (prop > H.propertyLimit) over.push('재산 ' + prop.toLocaleString() + '만 원 > 3억 5천만 원');
+      else notes.push('재산 ' + prop.toLocaleString() + '만 원 ≤ 3억 5천만 원');
+      var finStd = round1(H.finance[Math.min(7, m) - 1] / 10);
+      var fin = p.finProp || 0;
+      if (fin > finStd) over.push('금융 ' + fin + '만 원 > 기준 ' + finStd + '만 원');
+      else notes.push('금융 ' + fin + '만 원 ≤ ' + finStd + '만 원');
+      if (over.length) { check = true; notes.push('기준 초과(' + over.join(', ') + ') — 구·군에서 필요성 인정 시 지원 가능'); }
+      if (ctx.sim && ctx.sim.isLivePass) { check = true; notes.push('모의판정상 생계급여 대상 → 원칙적 중복 불가 (과다 의료비·재난·구청장 인정 시 예외)'); }
+      if (ctx.sim && ctx.sim.isEmergPass) notes.push('긴급복지 등 기존 공공부조 우선 활용 후 보충 지원');
+      if (/(입원|진료비|병원비)/.test(ctx.text)) notes.push('입원진료비는 달구벌건강주치의 사업 우선 활용');
+      if (ctx.residency === 'unknown') { check = true; notes.push('대구 거주 여부 확인'); }
+      return { status: check ? 'check' : 'ok', notes: notes };
+    }
+  },
+  {
+    id: "daegu_caregiving",
+    local: true,
+    agency: "대구광역시 연계 (사회복지공동모금회·밀알복지재단)",
+    program: "저소득 가구 입원 간병비 지원",
+    trigger: /(간병|입원|요양병원|중환자실|수술\s*(?:후|받|예정)|병원에\s*(?:있|누워))/,
+    desc: "간병비 부담으로 어려움을 겪는 기준 중위소득 100% 이하 가구 지원 · 사회복지공동모금회 최대 300만 원 / 밀알복지재단 최대 500만 원(의료비 포함 가능)",
+    contact: "관할 행정복지센터",
+    guide: "거주지 읍·면·동 행정복지센터에서 안내·신청 (기관별 세부요건·예산 소진 여부 확인)",
+    source: "2026년 대구시 달구벌복지기동대 사업운영 (기관별 세부요건 확인)",
+    evaluate: function (p, ctx) {
+      if (!this.trigger.test(ctx.text)) return null;
+      var std = daeguMedian100(ctx.members), notes = [], check = false;
+      if (ctx.income === null) { check = true; notes.push('소득 미확인 — 중위 100%(' + ctx.members + '인 ' + std + '만 원) 이하 여부 확인 필요'); }
+      else if (ctx.income > std) return null;
+      else if (ctx.income > std * 0.9) { check = true; notes.push('월 실소득 ' + ctx.income + '만 원 / 기준 ' + std + '만 원 (경계선 — 소득 재확인)'); }
+      else notes.push('월 실소득 ' + ctx.income + '만 원 ≤ 기준 중위 100% ' + std + '만 원 (' + ctx.members + '인 가구)');
+      if (ctx.residency === 'unknown') { check = true; notes.push('대구 거주 여부 확인'); }
+      return { status: check ? 'check' : 'ok', notes: notes };
+    }
+  }
+];
+
+/* 지역 연계 규칙 판정: 소득은 실소득(근로·사업 + 이전소득, 만원) 기준의 1차 선별 */
+function matchLocalPrograms(text, p) {
+  var residency = daeguResidency(text, p);
+  if (residency === 'no' || !p) return [];
+  var known = p.earned !== null && p.earned !== undefined;
+  var sim = null;
+  try {
+    sim = calcWelfare({
+      age: p.age || 0, members: p.members || 1, earned: p.earned || 0, other: p.other || 0,
+      resProp: p.resProp || 0, genProp: p.genProp || 0, finProp: p.finProp || 0, debt: p.debt || 0,
+      region: p.region || 'daegu', deductType: p.deductType || 'basic', isCouple: false, allIncapable: !!p.allIncapable
+    });
+  } catch (err) { sim = null; }
+  var ctx = {
+    text: text || '', residency: residency, sim: sim, crisis: crisisCodes(p),
+    members: Math.max(1, Math.round(p.members || 1)),
+    income: known ? round1((p.earned || 0) + (p.other || 0)) : null
+  };
+  var out = [];
+  LOCAL_RULES.forEach(function (r) {
+    var res = r.evaluate(p, ctx);
+    if (!res) return;
+    var o = {}; for (var k in r) o[k] = r[k];
+    o.status = res.status; o.judgeNotes = res.notes; o.judgeNote = res.notes.join(' · ');
+    out.push(o);
+  });
+  return out;
+}
+
 
 /* ───────────────────────── [3] 공통 유틸 ───────────────────────── */
 var activePreset = null;
@@ -1339,7 +1492,8 @@ function parseRegionKey(text, strict) {
   if (/(가평|양평|연천)/.test(text)) return 'gyeonggi_gun';
   if (/(경기|수원|성남|고양|용인|부천|안산|평택|안양|시흥|김포|의정부|화성|남양주|파주|광명|하남|오산|이천|구리|군포|의왕|양주|포천|여주|동두천|과천|안성)/.test(text)) return 'gyeonggi_si';
   if (/창원/.test(text)) return 'changwon';
-  if (/(부산|대구|대전|광주|울산|세종|광역시)/.test(text)) return 'metro';
+  if (/(대구|달서구|수성구|달성군|군위군)/.test(text)) return 'daegu';
+  if (/(부산|대전|광주|울산|세종|광역시)/.test(text)) return 'metro';
   if (/(강원|충북|충남|충청|전북|전남|전라|경북|경남|경상|제주)/.test(text) && strict) return 'other_si';
   if (strict) return null;
   if (/[가-힣]{1,4}군(?![가-힣])|[가-힣]{1,4}[읍면](?![가-힣])/.test(text)) return 'other_gun';
@@ -1389,7 +1543,7 @@ function collectAmount(lines, labelRe, mode) {
 /* ───────────────────────── [5] 규칙 기반 추출기 (오프라인 폴백 + 교차검증 기준) ───────────────────────── */
 var RULE_LABELS = {
   deposit:  /전세\s*보증금|전세금|보증금|전세(?!\s*(?:사기|피해))/,
-  rent:     /월\s*세|월\s*임대료|월\s*임차료/,
+  rent:     /월\s*세(?!\s*(?:방\s*)?보증금)|월\s*임대료|월\s*임차료/,   // '월세 보증금 1000만 원'의 보증금을 월세로 오인하지 않음
   ownValue: /공시\s*지가|주택\s*가액|집값|시세/,
   earned:   /근로\s*(?:및|·)?\s*사업\s*소득|근로\s*소득|사업\s*소득|월\s*총?\s*실소득|월\s*소득|월급|급여\s*소득/,
   other:    /공적\s*(?:및|·)?\s*사적\s*이전\s*소득|공적\s*이전\s*소득|사적\s*이전\s*소득|이전\s*소득|아동\s*수당|양육\s*수당|국민\s*연금|기초\s*연금|장애\s*수당|장애인\s*연금/,
@@ -1510,7 +1664,7 @@ function extractByRules(text) {
   var obligorBlock = text.match(/4\.\s*부양의무자[\s\S]*?(?=\n\s*5\.|$)/);
   var oScope = obligorBlock ? obligorBlock[0] : (mSupLine ? mSupLine[0] : '');
   if (/(연락\s*두절|단절|해체\s*사유서|가족관계\s*해체|생사\s*모름|가출|왕래\s*단절|연락\s*끊)/.test(oScope || text)) f.supportHint = '단절';
-  else if (/(부양의무자\s*없음|부양자\s*없음|가족\s*없음|무연고)/.test(text)) f.supportHint = '없음';
+  else if (/(부양\s*의무자\s*[:：]?\s*(?:는\s*)?없(?:음|다|어|습니다)|부양자\s*[:：]?\s*없음|가족\s*없음|무연고)/.test(text)) f.supportHint = '없음';
   else if (/(장남|차남|아들|딸|자녀|부모|모친|부친|배우자)[^\n]{0,10}(부양|지원|동거|소득|재산)|부양의무자\s*있음/.test(oScope)) f.supportHint = '있음';
   if (mSupLine) ev.supportHint = mSupLine[0].trim();
 
@@ -1531,21 +1685,23 @@ function crisisScopeText(text) {
   }).join('\n');
 }
 
+var CRISIS_RULE_RE = {
+  '전세사기': /(전세\s*사기|보증금\s*사기|깡통\s*전세|보증금\s*미반환|전세\s*피해|전세보증금\s*(?:떼임|못\s*받))/,
+  '실직폐업': /(실직|휴업|폐업|사업\s*실패|소득\s*상실|일자리\s*(?:를\s*)?잃|해고|권고\s*사직|일을\s*그만|그만\s*뒀|그만두었)/,
+  '중한질병부상': /(중한\s*질병|중증\s*질환(?!\s*없)|큰\s*수술|수술\s*(?:을|받|예정|후)|입원\s*(?:중|해|했|치료)|투병|중환자|암\s*(?:진단|투병|수술|환자)|암환자|사고로\s*(?:크게\s*)?(?:다쳐|부상)|부상을\s*(?:입|당))/,
+  '강제퇴거주거위기': /(쫓겨|퇴거|방을\s*빼|강제\s*집행|월세\s*(?:가\s*)?(?:[0-9]+\s*(?:달|개월)\s*)?밀려|명도|노숙|고시원\s*밀려)/,
+  '화재재난': /(화재|불이\s*나|산불|수해|침수|지진|재난|재해)/,
+  '사망가출수감': /(사망|숨지|돌아가셨|행방불명|실종|가출|구속|수감|교도소)/,
+  '가정폭력학대': /(가정폭력|폭행|폭력|학대|유기|방임|때린다|때려요|맞고\s*산다|협박)/,
+  '중대범죄피해': /(감금|갈취|성매매|성폭행)/,
+  '단전단수': /(단전|단수|가스\s*(?:가\s*)?끊|전기\s*(?:가\s*)?끊|수도\s*(?:가\s*)?끊|공과금\s*체납)/,
+  '자살위기': /(죽고\s*싶|자살|극단적|삶을\s*정리|목숨)/
+};
+
 function detectCrisisByRules(text) {
   var scope = crisisScopeText(text);
   var out = [];
-  var add = function (code, re) { if (re.test(scope)) out.push(code); };
-  add('전세사기', /(전세\s*사기|보증금\s*사기|깡통\s*전세|보증금\s*미반환|전세\s*피해|전세보증금\s*(?:떼임|못\s*받))/);
-  add('실직폐업', /(실직|휴업|폐업|사업\s*실패|소득\s*상실|일자리\s*(?:를\s*)?잃|해고|권고\s*사직|일을\s*그만|그만\s*뒀|그만두었)/);
-  // '질병·부상으로 인한 근로능력평가'처럼 일반 표현의 '부상'은 제외하고, 중한 질병·부상 정황만 본다
-  add('중한질병부상', /(중한\s*질병|중증\s*질환(?!\s*없)|큰\s*수술|수술\s*(?:을|받|예정|후)|입원\s*(?:중|해|했|치료)|투병|중환자|암\s*(?:진단|투병|수술|환자)|암환자|사고로\s*(?:크게\s*)?(?:다쳐|부상)|부상을\s*(?:입|당))/);
-  add('강제퇴거주거위기', /(쫓겨|퇴거|방을\s*빼|강제\s*집행|월세\s*(?:가\s*)?(?:[0-9]+\s*(?:달|개월)\s*)?밀려|명도|노숙|고시원\s*밀려)/);
-  add('화재재난', /(화재|불이\s*나|산불|수해|침수|지진|재난|재해)/);
-  add('사망가출수감', /(사망|숨지|돌아가셨|행방불명|실종|가출|구속|수감|교도소)/);
-  add('가정폭력학대', /(가정폭력|폭행|폭력|학대|유기|방임|때린다|때려요|맞고\s*산다|협박)/);
-  add('중대범죄피해', /(감금|갈취|성매매|성폭행)/);
-  add('단전단수', /(단전|단수|가스\s*(?:가\s*)?끊|전기\s*(?:가\s*)?끊|수도\s*(?:가\s*)?끊|공과금\s*체납)/);
-  add('자살위기', /(죽고\s*싶|자살|극단적|삶을\s*정리|목숨)/);
+  Object.keys(CRISIS_RULE_RE).forEach(function (code) { if (CRISIS_RULE_RE[code].test(scope)) out.push(code); });
   return out;
 }
 
@@ -2317,7 +2473,7 @@ function buildParsed(f, text) {
   var sp = decideSupport(f.supportHint, mode);
   return {
     name: f.name, age: f.age, ageConfidence: f.ageConfidence || 'explicit', ageNote: f.ageNote || '',
-    members: f.members, region: f.region || 'metro', regionAssumed: !f.region,
+    members: f.members, region: f.region || 'daegu', regionAssumed: !f.region,
     earned: f.earned, other: f.other || 0,
     housingType: f.housingType, resProp: f.resProp || 0, rentFee: f.rentFee || 0,
     genProp: f.genProp || 0, finProp: f.finProp || 0, debt: f.debt || 0,
@@ -2333,11 +2489,12 @@ function buildParsed(f, text) {
 
 function crisisCodes(p) { return (p && p.crisis ? p.crisis : []).map(function (c) { return c.code || c; }); }
 
-function matchAgencies(text, crisis) {
+function matchAgencies(text, crisis, p) {
   var codes = (crisis || []).map(function (c) { return c.code || c; });
   var ids = {};
   codes.forEach(function (c) { if (CRISIS_TO_AGENCY[c]) ids[CRISIS_TO_AGENCY[c]] = true; });
-  return AGENCY_RULES.filter(function (rule) { return rule.trigger.test(text || '') || ids[rule.id]; });
+  var national = AGENCY_RULES.filter(function (rule) { return rule.trigger.test(text || '') || ids[rule.id]; });
+  return national.concat(p ? matchLocalPrograms(text, p) : []);
 }
 
 /* ───────────────────────── [9] 소득인정액 계산 엔진 (결정론적) ───────────────────────── */
@@ -2348,7 +2505,7 @@ function calcWelfare(i) {
   var P = POLICY_2026, B = P.basicLife, E = P.emergency, PN = P.pension;
   var m = Math.min(7, Math.max(1, Math.round(i.members) || 1));
   var idx = m - 1;
-  var regionKey = REGIONS[i.region] ? i.region : 'metro';
+  var regionKey = REGIONS[i.region] ? i.region : 'daegu';
   var R = REGIONS[regionKey];
   var bt = R.basic, t3 = R.tier3;
   var dtKey = B.deductTypes[i.deductType] ? i.deductType : 'basic';
@@ -2441,7 +2598,7 @@ function runSimulation() {
     earned: num('simEarnedIncome'), other: num('simOtherIncome'),
     resProp: num('simResProp'), genProp: num('simGenProp'),
     finProp: num('simFinProp'), debt: num('simDebt'),
-    region: str('simRegion', 'metro'), deductType: str('simDeductType', 'basic'),
+    region: str('simRegion', 'daegu'), deductType: str('simDeductType', 'basic'),
     isCouple: bool('simIsCouple'), allIncapable: bool('simAllIncapable')
   });
   lastSim = sim;
@@ -2596,7 +2753,7 @@ function syncToSimulator(p) {
   var setVal = function (id, val) { var el = document.getElementById(id); if (el) el.value = (val !== null && val !== undefined) ? val : 0; };
   if (p.age !== null && p.age !== undefined) setVal('simAge', p.age);
   setVal('simMembers', p.members || 1);
-  setVal('simRegion', p.region || 'metro');
+  setVal('simRegion', p.region || 'daegu');
   setVal('simDeductType', p.deductType || 'basic');
   if (p.support) setVal('simSupportObligor', p.support);
   setVal('simEarnedIncome', p.earned !== null ? p.earned : 0);
@@ -2617,7 +2774,7 @@ function handleManualSimulatorChange() {
   var str = function (id, d) { var el = document.getElementById(id); return (el && el.value) ? el.value : d; };
   p.age = parseInt(num('simAge'), 10);
   p.members = parseInt(num('simMembers'), 10) || 1;
-  p.region = str('simRegion', 'metro');
+  p.region = str('simRegion', 'daegu');
   p.regionAssumed = false;
   p.deductType = str('simDeductType', 'basic');
   p.earned = num('simEarnedIncome'); p.other = num('simOtherIncome');
@@ -2689,11 +2846,15 @@ function handleManualSimulatorChange() {
       }
 
       var memoForAgency = document.getElementById('counselInput');
-      var agencies = matchAgencies(memoForAgency ? memoForAgency.value : '', p.crisis);
-      doc += "\n\n4. 범정부 타 공공기관·공단 연계 안내 내역";
+      var agencies = matchAgencies(memoForAgency ? memoForAgency.value : '', p.crisis, p);
+      doc += "\n\n4. 타 공공기관·공단 및 대구시 연계 안내 내역";
       if (agencies.length) {
         agencies.forEach(function(ag) {
-          doc += "\n • " + ag.agency + " [" + ag.program + "]: " + ag.desc + " (문의: " + ag.contact + ")";
+          if (ag.local) {
+            doc += "\n • [대구시 연계] " + ag.program + ": " + ag.judgeNote + (ag.status === 'check' ? " [확인 필요]" : " [대상 추정]") + " → " + ag.guide;
+          } else {
+            doc += "\n • " + ag.agency + " [" + ag.program + "]: " + ag.desc + " (문의: " + ag.contact + ")";
+          }
         });
       } else {
         doc += "\n • 해당 없음 (상담 내용상 연계 대상 사업 미감지)";
@@ -2730,73 +2891,101 @@ function handleManualSimulatorChange() {
       var hasDebtOrSeizure = (p.debt !== null && p.debt > 0) || /(압류|차압|신용불량|빚|연체|부채|파산)/.test(rawText);
 
       var docs = [
-        { name: "사회보장급여(사회서비스이용권) 신청서", desc: "주민센터 비치 필수 법정 1호 서식", required: true },
-        { name: "금융정보등(금융·신용·보험정보) 제공 동의서", desc: "신청인 및 가구원 전원 자필 서명 필수 (공적조회용)", required: true },
-        { name: "소득·재산 신고서", desc: "근로소득, 사업소득, 부동산, 임차보증금 등 자진 신고 서식", required: true },
-        { name: "신분증 (주민등록증, 운전면허증, 여권)", desc: "신청인 본인 확인 필수 지참", required: true }
+        { name: "사회보장급여(사회서비스이용권) 신청서", desc: "주민센터 비치 필수 법정 1호 서식", required: true, kind: 'common' },
+        { name: "금융정보등(금융·신용·보험정보) 제공 동의서", desc: "신청인 및 가구원 전원 자필 서명 필수 (공적조회용)", required: true, kind: 'common' },
+        { name: "소득·재산 신고서", desc: "근로소득, 사업소득, 부동산, 임차보증금 등 자진 신고 서식", required: true, kind: 'common' },
+        { name: "신분증 (주민등록증, 운전면허증, 여권)", desc: "신청인 본인 확인 필수 지참", required: true, kind: 'common' }
       ];
 
       if (hasDebtOrSeizure) {
         docs.push({ 
           name: "행복지킴이통장(압류방지 전용통장) 개설확인서 / 신규 통장사본", 
           desc: "부채·압류로 인한 수급금 보호용 법정 전용통장 (행정복지센터 발급 수급자증명서 지참 후 금융기관 개설)", 
-          required: true 
+          required: true, kind: 'custom',
+          reason: (p.debt > 0 ? "부채 " + p.debt.toLocaleString() + "만 원 확인" : "압류·연체 정황 언급") + " → 급여 압류 방지 필요"
         });
       } else {
         docs.push({ 
           name: "급여수급 계좌 통장사본", 
           desc: "복지급여 입금 희망 본인 명의 계좌 통장 사본", 
-          required: true 
+          required: true, kind: 'common'
         });
       }
 
       if (p.earned === 0 || (p.earned !== null && p.earned < 50)) {
-        docs.push({ name: "지출실태조사표", desc: "소득 미발생 가구의 최근 생활비·주거비 조달 출처 소명서 (창구 서식)", required: true });
+        docs.push({ name: "지출실태조사표", desc: "소득 미발생 가구의 최근 생활비·주거비 조달 출처 소명서 (창구 서식)", required: true, kind: 'custom', reason: "근로소득 " + (p.earned === 0 ? "없음" : "월 " + p.earned + "만 원(50만 원 미만)") + " → 생활비 조달 소명 필요" });
       } else if (p.earned !== null && p.earned > 0) {
-        docs.push({ name: "소득신고서 및 소득증빙서류", desc: "급여명세서, 소득금액증명원, 사업자등록 관련 서류 중 해당분", required: true });
+        docs.push({ name: "소득신고서 및 소득증빙서류", desc: "급여명세서, 소득금액증명원, 사업자등록 관련 서류 중 해당분", required: true, kind: 'custom', reason: "근로·사업소득 월 " + p.earned + "만 원 확인 → 소득 증빙 필요" });
       }
 
       if (p.housingType && p.housingType.indexOf("사용대차") !== -1) {
-        docs.push({ name: "무료임대확인서 (사용대차 확인서)", desc: "친인척/지인 소유 주택 무상거주 사실 확인용 (주택소유자 서명 날인)", required: true });
+        docs.push({ name: "무료임대확인서 (사용대차 확인서)", desc: "친인척/지인 소유 주택 무상거주 사실 확인용 (주택소유자 서명 날인)", required: true, kind: 'custom', reason: "무상거주(사용대차) 확인" });
       } else if (p.housingType && (p.housingType.indexOf("월세") !== -1 || p.housingType.indexOf("전세") !== -1)) {
-        docs.push({ name: "임대차계약서 사본", desc: "확정일자 날인본 권장 (보증금 및 월 임차료 지출 증빙)", required: true });
+        docs.push({ name: "임대차계약서 사본", desc: "확정일자 날인본 권장 (보증금 및 월 임차료 지출 증빙)", required: true, kind: 'custom', reason: p.housingType + " 거주" + (p.resProp ? " (보증금 " + p.resProp.toLocaleString() + "만 원" + (p.rentFee ? " / 월세 " + p.rentFee + "만 원" : "") + ")" : "") });
       }
 
       if (p.workAbility === 'illness' && !p.isPensionMode) {
-        docs.push({ name: "근로능력평가용 진단서 및 진료기록부", desc: "질병·부상 근로능력 판정 심사용 (국민연금공단 심사용, 최근 2개월 내 발급본)", required: true });
+        docs.push({ name: "근로능력평가용 진단서 및 진료기록부", desc: "질병·부상 근로능력 판정 심사용 (국민연금공단 심사용, 최근 2개월 내 발급본)", required: true, kind: 'custom', reason: "상담 내용에 질병·부상 확인 → 근로능력평가 대상 가구원 진단서 필요" });
       }
 
       if (!p.isPensionMode && !p.isNearPovertyMode && !p.isEmergencyMode) {
         if (p.support === 'severed') {
-          docs.push({ name: "가족관계 해체사유서 및 최근 1년 금융거래내역서", desc: "부양의무자와의 연락두절/왕래단절 소명 및 정기지원 전무 입증 (지생보 심의용)", required: true });
+          docs.push({ name: "가족관계 해체사유서 및 최근 1년 금융거래내역서", desc: "부양의무자와의 연락두절/왕래단절 소명 및 정기지원 전무 입증 (지생보 심의용)", required: true, kind: 'custom', reason: "부양의무자 연락두절·단절 진술 → 지생보 심의 소명" });
         } else if (p.support === 'normal') {
-          docs.push({ name: "부양의무자 금융정보등 제공 동의서", desc: "부양의무자(부모, 자녀)의 소득·재산 공적조회를 위한 자필 서명 동의서", required: true });
+          docs.push({ name: "부양의무자 금융정보등 제공 동의서", desc: "부양의무자(부모, 자녀)의 소득·재산 공적조회를 위한 자필 서명 동의서", required: true, kind: 'custom', reason: "부양의무자 있음 → 공적조회 동의 필요" });
         }
       }
 
       var isEmergencyRisk = /(실직|퇴거|쫓겨|방을\s*빼|월세\s*밀려|단전|단수|폭력|학대)/.test(rawText);
       if (p.isEmergencyMode || isEmergencyRisk || crisisCodes(p).length > 0) {
-        docs.push({ name: "위기상황 증빙서류", desc: "임대인 퇴거요구서/내용증명, 단전·단수고지서, 실직·폐업확인서, 진단서 중 해당 서류", required: true });
+        docs.push({ name: "위기상황 증빙서류", desc: "임대인 퇴거요구서/내용증명, 단전·단수고지서, 실직·폐업확인서, 진단서 중 해당 서류", required: true, kind: 'custom',
+          reason: crisisCodes(p).length ? "위기사유: " + crisisCodes(p).map(function (c) { return CRISIS_LABELS[c] || c; }).join(', ') : "위기상황 진술 확인" });
       }
 
-      safeSetText('clientDocCountBadge', "총 " + docs.length + "종 안내");
-      safeSetHtml('clientDocListArea', docs.map(function(d, i) {
-        return '<li style="padding: 7px 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; display: flex; justify-content: space-between; align-items: flex-start;">' +
+      var commonDocs = docs.filter(function (d) { return d.kind !== 'custom'; });
+      var customDocs = docs.filter(function (d) { return d.kind === 'custom'; });
+      safeSetText('clientDocCountBadge', "기본 " + commonDocs.length + "종 + 맞춤 " + customDocs.length + "종");
+      var no = 0;
+      var itemHtml = function (d) {
+        no++;
+        var custom = d.kind === 'custom';
+        return '<li class="doc-item ' + (custom ? 'custom' : 'common') + '">' +
           '<div>' +
-            '<strong style="color:#1e40af; font-size:13px;">' + (i + 1) + '. ' + d.name + '</strong>' +
-            '<div style="color:#64748b; font-size:11.5px; margin-top:2px;">• 제출 목적: ' + d.desc + '</div>' +
+            '<strong style="font-size:13px;">' + no + '. ' + escapeHtml(d.name) + '</strong>' +
+            (custom && d.reason ? '<div class="doc-reason">▸ 이 가구 해당: ' + escapeHtml(d.reason) + '</div>' : '') +
+            '<div style="color:#64748b; font-size:11.5px; margin-top:2px;">• 제출 목적: ' + escapeHtml(d.desc) + '</div>' +
           '</div>' +
-          '<span style="font-size:10.5px; font-weight:800; color:#dc2626; background:#fee2e2; border:1px solid #fecdd3; padding:2px 6px; border-radius:4px; white-space:nowrap;">' +
-            '필수 지참' +
-          '</span>' +
+          '<span class="doc-tag ' + (custom ? 'custom' : 'common') + '">' + (custom ? '맞춤 서류' : '기본 서류') + '</span>' +
         '</li>';
-      }).join(''));
+      };
+      safeSetHtml('clientDocListArea',
+        '<li class="doc-group-title">■ 기본 서류 <small>모든 신청 가구 공통</small></li>' + commonDocs.map(itemHtml).join('') +
+        (customDocs.length ? '<li class="doc-group-title" style="margin-top:10px; color:#1d4ed8;">■ 이 가구 맞춤 서류 <small>상담 내용 반영</small></li>' + customDocs.map(itemHtml).join('') : ''));
 
-      var matchedAgencies = matchAgencies(rawText, p.crisis);
+      var matchedAgencies = matchAgencies(rawText, p.crisis, p);
 
       if (matchedAgencies.length > 0) {
         safeSetText('agencyRecommendCountBadge', matchedAgencies.length + "건 맞춤 매칭됨");
         safeSetHtml('agencyRecommendListArea', matchedAgencies.map(function(ag) {
+          if (ag.local) {
+            var ok = ag.status === 'ok';
+            return '<div style="background:#eff6ff; border:1px solid #93c5fd; border-left:4px solid #1d4ed8; padding:12px; border-radius:6px; font-size:12.5px;">' +
+              '<div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">' +
+                '<strong style="color:#1e40af; font-size:13px;"><span style="font-size:10.5px; color:#fff; background:#1d4ed8; padding:2px 6px; border-radius:4px; margin-right:6px;">대구시 연계</span>' + escapeHtml(ag.program) + '</strong>' +
+                '<span style="font-size:11px; font-weight:800; white-space:nowrap; padding:2px 6px; border-radius:4px; ' + (ok ? 'color:#047857; background:#d1fae5;' : 'color:#b45309; background:#fef3c7;') + '">' + (ok ? '대상 추정' : '확인 필요') + '</span>' +
+              '</div>' +
+              '<div style="color:#334155; margin-top:4px;">• <strong>판정근거</strong></div>' +
+              '<ul style="margin:2px 0 0 18px; padding:0; color:#334155; font-size:12px; line-height:1.55;">' +
+                (ag.judgeNotes || [ag.judgeNote]).map(function (n) {
+                  var warn = /(초과|중복 불가|확인|미확인|우선 활용)/.test(n);
+                  return '<li style="' + (warn ? 'color:#b45309;' : '') + '">' + escapeHtml(n) + '</li>';
+                }).join('') +
+              '</ul>' +
+              '<div style="color:#334155; margin-top:2px;">• <strong>지원내용:</strong> ' + escapeHtml(ag.desc) + '</div>' +
+              '<div style="color:#2563eb; font-size:11.5px; margin-top:2px;">• <strong>신청방법:</strong> ' + escapeHtml(ag.guide) + '</div>' +
+              '<div style="color:#94a3b8; font-size:10.5px; margin-top:4px;">출처: ' + escapeHtml(ag.source) + '</div>' +
+            '</div>';
+          }
           return '<div style="background:#f0fdfa; border:1px solid #99f6e4; padding:12px; border-radius:6px; font-size:12.5px;">' +
             '<div style="display:flex; justify-content:space-between; align-items:center;">' +
               '<strong style="color:#0f766e; font-size:13px;">' + ag.agency + ' [' + ag.program + ']</strong>' +
@@ -2886,6 +3075,108 @@ var STATUS_CHIPS = {
 };
 var REVIEW_STATUSES = { conflict: true, rejected: true, rule_only: true };
 
+
+/* ── 근거 발췌: 원문 전체 대신 값이 나온 구절만 잘라 형광펜으로 강조 ── */
+var EV_MONEY_LABEL = { resProp: 'deposit', rentFee: 'rent', earned: 'earned', other: 'other', genProp: 'general', finProp: 'finance', debt: 'debt' };
+var EV_FOCUS = {
+  name: /(?:이름|성명|성함|대상자|세대주|신청인)\s*(?:은|는)?\s*[:：]?\s*[가-힣]{2,4}/,
+  age: /(?:생년월일\s*[:：]?\s*\(?\s*)?(?:19|20)\d{2}\s*[.\-년]\s*\d{1,2}\s*[.\-월]\s*\d{1,2}\s*일?\.?|만\s*\d{1,3}\s*세|\d{1,3}\s*세/,
+  members: [/\d+\s*인\s*(?:단독\s*)?(?:노인\s*)?(?:가구|가족)/, /(?:혼자|홀로|둘이|셋이|넷이)\s*(?:사는|살고|살아|거주)|단독\s*(?:세대|가구)|독거/],
+  region: /(?:서울|부산|대구|인천|광주|대전|울산|세종|경기|강원|충청|충[북남]|전라|전[북남]|경상|경[북남]|제주|창원|수원|성남|고양|용인)[가-힣]*(?:\s+[가-힣]{1,4}[시군구])?(?:\s*(?:거주|에\s*(?:살|거주)))?/,
+  housingType: /월\s*세|전\s*세|자\s*가|무상\s*거주|사용\s*대차|무료\s*임차/,
+  healthDesc: /[가-힣]*(?:뇌졸중|협착증|디스크|관절염|암|당뇨|고혈압|우울증?|치매|장애|질환|질병|거동\s*불편|투병|입원|수술)[가-힣\s]{0,8}/,
+  workHint: [/(?:뇌졸중|협착증|디스크|관절염|암\s*(?:진단|투병|수술)|질병|부상|장애|거동\s*불편|진단서)[^,.\n]{0,10}/, /(?:근로\s*능력[가-힣\s]{0,10}|임신|출산|간병\s*(?:중|으로|때문|하느라)|학생|일\s*(?:을\s*)?못)/],
+  supportHint: [/(?:연락\s*(?:이\s*)?두절|왕래\s*(?:가\s*)?(?:없|단절)|관계\s*단절|가출)[^.\n]{0,10}/, /(?:부양\s*의무자[가-힣\s:：]{0,12}|장남|장녀|아들|딸|자녀)/]
+};
+function evSnippetHtmlAt(ev, s, e) {
+  var pre = ev.slice(Math.max(0, s - 22), s), post = ev.slice(e, e + 22);
+  var b = Math.max(pre.lastIndexOf('. '), pre.lastIndexOf('? ')); if (b >= 0) pre = pre.slice(b + 2);
+  var pe = post.search(/[.?!](?:\s|$)/); if (pe >= 0) post = post.slice(0, pe + 1);
+  return '<span class="ev-quote">“' + (s > 22 && b < 0 ? '…' : '') + escapeHtml(pre) + '<mark class="ev-mark">' + escapeHtml(ev.slice(s, e)) + '</mark>' + escapeHtml(post) + (e + 22 < ev.length && pe < 0 ? '…' : '') + '”</span>';
+}
+function evFocusRe(key) {
+  if (EV_MONEY_LABEL[key]) {
+    var lab = RULE_LABELS[EV_MONEY_LABEL[key]];
+    return new RegExp('(?:' + lab.source + ')[^.\\n]{0,14}?(?:' + AMOUNT_RE.source + '|' + ZERO_WORD_RE.source + ')');
+  }
+  return EV_FOCUS[key] || null;
+}
+function evSnippetHtml(evidence, key, valueText, strict) {
+  if (!evidence) return '<span class="ev-none">—</span>';
+  var ev = String(evidence).replace(/\s+/g, ' ').trim();
+  var m = null, res = [].concat(evFocusRe(key) || []);
+  // 1순위: 화면에 적용된 값과 실제로 일치하는 구절 (라벨 + 같은 금액 / 라벨 + 같은 이름)
+  if (valueText && EV_MONEY_LABEL[key]) {
+    var dg = String(valueText).replace(/,/g, '').match(/^([0-9]+(?:\.[0-9]+)?)\s*만/);
+    if (dg) {
+      var numPat = dg[1].split('').map(function (ch) { return ch === '.' ? '\\.' : ch; }).join(',?');
+      var tail = '(?<![0-9])' + numPat + '\\s*(?:만|원)' + (Number(dg[1]) === 0 ? '|' + ZERO_WORD_RE.source : '');
+      var vre = new RegExp('(?:' + RULE_LABELS[EV_MONEY_LABEL[key]].source + ')[^.\\n]{0,16}?(?:' + tail + ')(?:\\s*원)?');
+      var vm = vre.exec(ev);
+      if (vm) {
+        // 라벨과 금액 사이에 다른 금액이 끼어 있으면 라벨부터 칠하지 않고 금액만 칠한다
+        var seg = vm[0], lastAmt = seg.search(new RegExp('(?:' + tail + ')(?:\\s*원)?$'));
+        var between = seg.slice(0, lastAmt);
+        AMOUNT_RE.lastIndex = 0;
+        if (AMOUNT_RE.test(between)) m = { s: vm.index + lastAmt, e: vm.index + seg.length };
+        else {
+          var lre = new RegExp(RULE_LABELS[EV_MONEY_LABEL[key]].source, 'g'), lm2, ls = 0;
+          while ((lm2 = lre.exec(between)) !== null) { ls = lm2.index; if (lm2[0].length === 0) lre.lastIndex++; }
+          m = { s: vm.index + ls, e: vm.index + seg.length };
+        }
+        AMOUNT_RE.lastIndex = 0;
+      }
+    }
+  }
+  if (!m && !strict && (key === 'healthDesc' || key === 'workHint' || key === 'supportHint')) {
+    var vtx = valueText ? String(valueText).trim() : '';
+    var vi = (key === 'healthDesc' && vtx.length >= 4) ? ev.indexOf(vtx.slice(0, Math.min(vtx.length, 14))) : -1;
+    if (vi < 0 && key === 'healthDesc' && ev.length <= 45 && !strict) { m = { s: 0, e: ev.length }; }
+    else if (vi >= 0) {
+      var ve = vi + vtx.length; if (ev.slice(vi, ve) !== vtx) { ve = ev.slice(vi).search(/[(.,\n]|$/); ve = vi + (ve > 0 ? ve : vtx.length); }
+      m = { s: vi, e: Math.min(ve, vi + 40) };
+    } else {
+      var cm2 = m ? null : /[:：]\s*/.exec(ev);
+      if (cm2) {
+        var cs = cm2.index + cm2[0].length, rest = ev.slice(cs), ce = rest.search(/\s*[(（]|[.。](?:\s|$)|\s•/);
+        ce = ce < 0 ? Math.min(rest.length, 40) : Math.min(ce, 40);
+        if (ce > 1) m = { s: cs, e: cs + ce };
+      }
+    }
+  }
+  if (!m && valueText && key === 'name') {
+    var ni = ev.indexOf(String(valueText));
+    if (ni >= 0) {
+      var lm = ev.slice(Math.max(0, ni - 10), ni).match(/(?:이름|성명|성함|대상자|세대주\s*성명|세대주|신청인(?:\s*이름)?)\s*(?:은|는)?\s*[:：]?\s*$/);
+      m = { s: lm ? ni - lm[0].length : ni, e: ni + String(valueText).length };
+    }
+  }
+  for (var ri = 0; ri < res.length && !m; ri++) { var mm = res[ri].exec(ev); if (mm) m = { s: mm.index, e: mm.index + mm[0].length }; }
+  if (!m && strict) return null;
+  if (!m && valueText && !strict) {
+    var vt = String(valueText).replace(/\s*원$/, '').replace(/[()]/g, '').trim();
+    var num = vt.match(/[0-9][0-9,.]*/);
+    var probe = (key === 'name' || key === 'healthDesc') ? vt.slice(0, 12) : (num ? num[0].replace(/,/g, '') : null);
+    if (probe) { var i = ev.replace(/,(?=\d)/g, '').indexOf(probe); if (i >= 0 && ev.indexOf(',') === -1) m = { s: i, e: i + probe.length }; else { i = ev.indexOf(probe); if (i >= 0) m = { s: i, e: i + probe.length }; } }
+  }
+  var MAXCTX = 22;
+  if (!m) {
+    var cut = ev.length > 70 ? ev.slice(0, 70) + '…' : ev;
+    return '<span class="ev-quote">“' + escapeHtml(cut) + '”</span>';
+  }
+  // 앞뒤 문맥: 같은 문장 안에서 최대 MAXCTX자
+  var pre = ev.slice(0, m.s), post = ev.slice(m.e);
+  var b = Math.max(pre.lastIndexOf('. '), pre.lastIndexOf('. '), pre.lastIndexOf('? '), pre.lastIndexOf('! '));
+  if (b >= 0) pre = pre.slice(b + 2);
+  var cutPre = pre.length > MAXCTX; if (cutPre) pre = pre.slice(pre.length - MAXCTX);
+  var pe = post.search(/[.?!](?:\s|$)/);
+  if (pe >= 0) post = post.slice(0, pe + 1);
+  var cutPost = post.length > MAXCTX; if (cutPost) post = post.slice(0, MAXCTX);
+  return '<span class="ev-quote">“' + (cutPre ? '…' : '') + escapeHtml(pre) +
+         '<mark class="ev-mark">' + escapeHtml(ev.slice(m.s, m.e)) + '</mark>' +
+         escapeHtml(post) + (cutPost ? '…' : '') + '”</span>';
+}
+
 function renderExtractionPanel(result) {
   var box = document.getElementById('extractionPanel');
   if (!box) return;
@@ -2897,7 +3188,7 @@ function renderExtractionPanel(result) {
 
   var head;
   if (result.engine === 'llm') {
-    head = '<span class="engine-pill engine-ai">🤖 AI 추출</span> <b>' + escapeHtml(result.model) + '</b> · ' + (result.ms / 1000).toFixed(1) + '초' +
+    head = '<span class="engine-pill engine-ai">🤖 AI 추출</span> <b>' + escapeHtml(result.model) + '</b>' + (result.ms > 0 ? ' · ' + (result.ms / 1000).toFixed(1) + '초' : '') +
            ' · 규칙 교차검증 일치 <b>' + matched + '/' + compared + '</b>' +
            (review ? ' · <span style="color:#b45309; font-weight:800;">확인 필요 ' + review + '건</span>' : ' · <span style="color:#047857; font-weight:800;">확인 필요 없음</span>');
   } else {
@@ -2920,7 +3211,12 @@ function renderExtractionPanel(result) {
                                         (r.finalVal !== null && r.finalVal !== undefined ? ' → 규칙 값 적용' : '') + '</div>';
     if (r.status === 'rule_only') note = '<div class="extract-note">AI는 미기재로 판단 → 규칙 파서 값 적용, 원문 확인 요망</div>';
     if (r.raw && r.def.type === 'money' && r.status !== 'rejected') note += '<div class="extract-raw">원문 표기: ' + escapeHtml(r.raw) + '</div>';
-    var evd = r.evidence ? '“' + escapeHtml(r.evidence) + '”' + (r.similar ? ' <span class="extract-raw">(유사 일치)</span>' : '') : '<span style="color:#94a3b8;">—</span>';
+    // 근거가 소제목뿐인 서술형 항목은 상담 원문에서 실제 진술을 찾아 보여준다
+    var headingOnly = r.evidence && /^(?:\d+\.\s*)?[가-힣\s]{2,20}(?:\([^)]*\))?$/.test(String(r.evidence).trim()) && (r.def.key === 'supportHint' || r.def.key === 'workHint');
+    var evd = (r.evidence && !headingOnly) ? evSnippetHtml(r.evidence, r.def.key, val) + (r.similar ? ' <span class="extract-raw">(유사 일치)</span>' : '') : null;
+    if (!evd && headingOnly) evd = evSnippetHtml(currentCounselText(), r.def.key, null, true);
+    if (!evd && r.finalVal !== null && r.finalVal !== undefined) evd = evSnippetHtml(currentCounselText(), r.def.key, null, true);
+    if (!evd) evd = '<span class="ev-none">—</span>';
     return '<tr class="' + (REVIEW_STATUSES[r.status] ? 'row-review' : '') + '">' +
       '<th>' + escapeHtml(r.def.label) + '</th>' +
       '<td class="extract-val">' + escapeHtml(val) + note + '</td>' +
@@ -2931,7 +3227,17 @@ function renderExtractionPanel(result) {
   var crisisHtml = (result.crisis || []).map(function (c) {
     var src = c.ai && c.rule ? '<span class="status-chip chip-ok">AI·키워드</span>' : (c.ai ? '<span class="status-chip chip-info">AI</span>' : '<span class="status-chip chip-warn">키워드만 · 확인 필요</span>');
     var evd = '';
-    (result.crisisMeta || []).forEach(function (m) { if (m.type === c.code && m.ok) evd = '“' + escapeHtml(m.evidence) + '”'; });
+    (result.crisisMeta || []).forEach(function (m) {
+      if (m.type !== c.code || !m.ok || !m.evidence) return;
+      var mev = String(m.evidence).replace(/\s+/g, ' ');
+      var mm = CRISIS_RULE_RE[c.code] ? CRISIS_RULE_RE[c.code].exec(mev) : null;
+      evd = mm ? evSnippetHtmlAt(mev, mm.index, mm.index + mm[0].length) : evSnippetHtml(mev, null);
+    });
+    if (!evd && CRISIS_RULE_RE[c.code]) {
+      var srcText = crisisScopeText(currentCounselText()).replace(/\s+/g, ' ');
+      var cm = CRISIS_RULE_RE[c.code].exec(srcText);
+      if (cm) evd = evSnippetHtmlAt(srcText, cm.index, cm.index + cm[0].length);
+    }
     return '<tr><th>' + escapeHtml(CRISIS_LABELS[c.code] || c.code) + '</th><td class="extract-val">위기사유</td><td class="extract-ev">' + (evd || '<span style="color:#94a3b8;">—</span>') + '</td><td>' + src + '</td></tr>';
   }).join('');
   var rejectedCrisis = (result.crisisMeta || []).filter(function (m) { return !m.ok; }).map(function (m) {
@@ -2939,7 +3245,7 @@ function renderExtractionPanel(result) {
   }).join('');
 
   var regionNote = (currentParsedData && currentParsedData.regionAssumed)
-    ? '<div class="extract-note" style="margin-top:6px;">※ 거주지역이 확인되지 않아 재산 공제는 <b>광역시·세종 기준</b>으로 가정했습니다. 4단계에서 지역을 확인하세요.</div>' : '';
+    ? '<div class="extract-note" style="margin-top:6px;">※ 거주지역이 확인되지 않아 <b>대구광역시</b>로 가정했습니다(재산 공제 구간: 광역시). 4단계에서 지역을 확인하세요.</div>' : '';
 
   var raw = (result.engine === 'llm' && result.rawJson)
     ? '<details class="extract-json"><summary>AI 추출 원본 JSON 보기</summary><pre>' + escapeHtml(JSON.stringify(result.rawJson, null, 2)) + '</pre></details>' : '';
@@ -3130,7 +3436,7 @@ function resetViews() {
     var el = document.getElementById(id); if (el) el.value = 0;
   });
   var setv = function (id, v) { var el = document.getElementById(id); if (el) el.value = v; };
-  setv('simAge', ELIGIBILITY_RULES.basicPension.minAge); setv('simMembers', '1'); setv('simRegion', 'metro');
+  setv('simAge', ELIGIBILITY_RULES.basicPension.minAge); setv('simMembers', '1'); setv('simRegion', 'daegu');
   setv('simDeductType', 'basic'); setv('simSupportObligor', 'normal');
   var incEl = document.getElementById('simAllIncapable'); if (incEl) incEl.checked = false;
   safeSetText('printApplicantName', '[미입력] 성명 미상');
