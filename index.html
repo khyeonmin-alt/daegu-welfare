@@ -260,6 +260,12 @@
     .lj-none { background: #f8fafc; } .lj-none .lj-status { color: #64748b; }
     .lj-empty { border: 1.5px dashed #cbd5e1; border-left-width: 1.5px; background: #fafafa; color: #94a3b8; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; }
     .lj-slot { width: 20px; height: 20px; border-radius: 50%; background: #e2e8f0; color: #64748b; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; }
+    .rg-status { margin-top: 10px; padding: 8px 10px; background: #f8fafc; border: 1px solid var(--border); border-radius: 6px; }
+    .rg-step { display: flex; align-items: center; gap: 8px; font-size: 12px; padding: 2px 0; color: #64748b; }
+    .rg-step b { min-width: 110px; color: #334155; } .rg-step.done span:last-child { color: #047857; font-weight: 700; }
+    .rg-stepno { width: 18px; height: 18px; border-radius: 50%; background: #e2e8f0; color: #475569; font-size: 11px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
+    .rg-step.done .rg-stepno { background: #059669; color: #fff; }
+    .rg-saved { background: #ecfdf5; border-color: #6ee7b7; }
     .rg-pw { margin-top: 10px; padding: 10px; border: 1px solid #ddd6fe; background: #faf5ff; border-radius: 6px; font-size: 12px; }
     .rg-pw input { height: 32px; padding: 0 10px; border: 1px solid var(--border-dark); border-radius: 6px; margin-top: 6px; width: 180px; }
     .rg-nat { margin-top: 10px; padding: 10px; border: 1px solid #fecaca; background: #fff7f7; border-radius: 6px; }
@@ -3462,6 +3468,7 @@ var REGIONAL_META = { digest: null, createdAt: null, integrity: 'none' };   // i
 var REGIONAL_PREVIEW = null;
 var REGIONAL_PENDING = null;
 var ADMIN_UNLOCKED = false;
+var REGIONAL_LASTBUILD = null;   // 마지막으로 만든 파일 (이름·지문·시간)
 var NATIONAL_DEFAULTS = {};
 
 /* ── SHA-256 (파일 지문·변경 확인용, 외부 라이브러리 없이) ── */
@@ -3882,7 +3889,7 @@ function renderRegionalManager() {
     '<li>작성한 엑셀을 불러와 검사 결과를 확인합니다.</li><li>[미리보기 적용] 후 위 예시 상담으로 사업이 뜨는지 확인합니다.</li>' +
     '<li>관리 비밀번호를 정하고 [구 전용 파일 만들기]로 읍·면·동 배포 파일을 만듭니다.</li></ol>' +
     '<div class="rg-btns"><button class="btn btn-outline" onclick="downloadRegionalTemplate()">📄 엑셀 양식 내려받기</button>' +
-    '<button class="btn btn-primary" onclick="document.getElementById(\'regionalFile\').click()">📥 엑셀 불러오기</button></div></div>';
+    '<button class="btn btn-primary" onclick="document.getElementById(\'regionalFile\').click()">📥 엑셀 불러오기</button></div>' + regionalStatusSteps() + '</div>';
   var result = '';
   if (P) {
     if (P.error) result = '<div class="rg-sec rg-err">' + escapeHtml(P.error) + '</div>';
@@ -3912,7 +3919,25 @@ function renderRegionalManager() {
     }
   }
   var prev = REGIONAL_PREVIEW ? '<div class="rg-sec rg-prev">👁 미리보기 적용 중 — 파일로 만들기 전까지 이 화면에서만 반영됩니다. <button class="btn btn-outline" style="padding:2px 8px; font-size:11px;" onclick="clearRegionalPreview()">미리보기 해제</button></div>' : '';
-  safeSetHtml('regionalModalBody', prev + result + cur + samples + steps);
+  safeSetHtml('regionalModalBody', regionalSavedBox() + prev + result + cur + samples + steps);
+}
+function regionalStatusSteps() {
+  var P = REGIONAL_PENDING, ok = P && !P.error ? P.parsed.programs.filter(function (d) { return !d.errors.length; }).length : 0;
+  var bad = P && !P.error ? P.parsed.programs.length - ok : 0;
+  var s1 = P ? (P.error ? '⛔ 읽기 실패' : '✔ ' + escapeHtml(P.fileName) + ' (정상 ' + ok + (bad ? ' · 오류 ' + bad : '') + ')') : '아직 안 함';
+  var s2 = REGIONAL_PREVIEW ? '✔ 적용 중 (이 화면에서만)' : '아직 안 함';
+  var s3 = REGIONAL_LASTBUILD ? '✔ ' + escapeHtml(REGIONAL_LASTBUILD.name) + ' (' + escapeHtml(REGIONAL_LASTBUILD.time) + ')' : '아직 안 함 — 이 단계를 해야 저장됩니다';
+  var row = function (n, t, v, done) { return '<div class="rg-step' + (done ? ' done' : '') + '"><span class="rg-stepno">' + n + '</span><b>' + t + '</b><span>' + v + '</span></div>'; };
+  return '<div class="rg-status"><div class="rg-muted" style="margin-bottom:4px;">진행 상황</div>' +
+    row(1, '엑셀 불러오기', s1, P && !P.error) + row(2, '미리보기', s2, !!REGIONAL_PREVIEW) + row(3, '구 전용 파일 저장', s3, !!REGIONAL_LASTBUILD) + '</div>';
+}
+function regionalSavedBox() {
+  var B = REGIONAL_LASTBUILD; if (!B) return '';
+  return '<div class="rg-sec rg-saved"><div class="rg-h" style="color:#047857;">💾 저장 완료 — 구 전용 파일을 만들었습니다</div>' +
+    '<ul class="rg-list"><li><b>파일 이름</b> : ' + escapeHtml(B.name) + '</li>' +
+    '<li><b>저장 위치</b> : 브라우저의 <b>다운로드 폴더</b> (크롬·엣지 오른쪽 위 ⬇ 다운로드 목록에서 확인)</li>' +
+    '<li><b>만든 시간</b> : ' + escapeHtml(B.time) + ' · <b>기준 지문</b> ' + escapeHtml(B.fp) + ' · 사업 ' + B.count + '종</li></ul>' +
+    '<div class="rg-muted">이 파일을 읍·면·동에 배포하세요. 받은 파일을 열면 화면 위쪽에 "' + escapeHtml(B.basis) + '"이 보입니다.</div></div>';
 }
 function regionalPendingUsable() {
   var P = REGIONAL_PENDING; if (!P || P.error) return false;
@@ -3940,7 +3965,12 @@ async function handleRegionalFile(input) {
     REGIONAL_PENDING = { fileName: f.name, fileDigest: sha256Bytes(new Uint8Array(buf)), parsed: parseRegionalWorkbook(book) };
   } catch (e) { REGIONAL_PENDING = { error: '엑셀을 읽지 못했습니다: ' + (e.message || e) }; }
   input.value = '';
+  REGIONAL_LASTBUILD = null;
   renderRegionalManager();
+  var card = document.querySelector('#regionalModal .modal-card'); if (card) card.scrollTop = 0;
+  if (REGIONAL_PENDING.error) showToast('엑셀을 읽지 못했습니다. 위쪽 안내를 확인하세요.');
+  else { var pr = REGIONAL_PENDING.parsed, okn = pr.programs.filter(function (d) { return !d.errors.length; }).length;
+         showToast('엑셀을 읽었습니다: 사업 정상 ' + okn + '건' + (pr.programs.length - okn ? ', 오류 ' + (pr.programs.length - okn) + '건' : '') + ' — 아직 저장 전입니다'); }
 }
 function previewRegionalPending() {
   if (!regionalPendingUsable()) return;
@@ -3979,8 +4009,12 @@ function buildRegionalFile() {
   a.href = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
   a.download = name; document.body.appendChild(a); a.click();
   setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
-  showToast('"' + name + '" 파일을 만들었습니다. (기준 지문 ' + fingerprint(digest) + ') 읍·면·동에 배포하세요.');
-  safeSetHtml('rgPwMsg', '<span style="color:#047857; font-weight:700;">✔ 파일을 만들었습니다 · 기준 지문 ' + fingerprint(digest) + ' (배포 공문에 적어 두면 확인에 좋습니다)</span>');
+  var prevPreview = REGIONAL_PREVIEW; REGIONAL_PREVIEW = { national: payload.national, local: payload.local };
+  var basis = regionalBasisText().replace(/ \(미리보기\)/g, ''); REGIONAL_PREVIEW = prevPreview;
+  REGIONAL_LASTBUILD = { name: name, time: nowStr(), fp: fingerprint(digest), count: cfg.local.programs.filter(function (d) { return d.use; }).length, basis: basis };
+  showToast('💾 저장 완료: "' + name + '" (다운로드 폴더)');
+  renderRegionalManager();
+  var card = document.querySelector('#regionalModal .modal-card'); if (card) card.scrollTop = 0;
 }
 function downloadRegionalTemplate() {
   var bin = atob(TEMPLATE_XLSX_B64), u8 = new Uint8Array(bin.length);
